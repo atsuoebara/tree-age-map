@@ -60,15 +60,12 @@
 </header>
 
 <div id="status">
-  データを読み込み中...
+  累積走行距離で縄張りを表示
 </div>
 
 <div id="map"></div>
 
-<!-- Leaflet本体を先に読み込む -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- その後でGPXライブラリを読み込む -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
@@ -85,15 +82,8 @@
 
 
   /*
-   * ========================================
-   * 仮の累積走行距離
-   * ========================================
-   *
-   * 現在は表示テスト用。
-   * 将来はGPX/Strava/Garminから自動集計する。
-   *
-   * 面積補正はしない。
-   * 前橋100kmも吉岡100kmも同じ価値。
+   * 仮の累積走行距離データ
+   * 後でGPXから自動集計する
    */
 
   const runningDistance = {
@@ -111,7 +101,7 @@
 
 
   /*
-   * 距離から面の濃さを決める
+   * 累積距離 → 面の濃さ
    */
 
   function getOpacity(km) {
@@ -127,14 +117,12 @@
   }
 
 
-  let municipalityLayer = null;
-  let gpxLayer = null;
+  let municipalityLayer;
+  let gpxLayer;
 
 
   /*
-   * ========================================
-   * 群馬県行政境界
-   * ========================================
+   * 群馬県行政区域
    */
 
   fetch('./N03-20250101_10.geojson')
@@ -167,7 +155,6 @@
 
         },
 
-
         onEachFeature: (feature, layer) => {
 
           const prefecture =
@@ -177,7 +164,6 @@
             feature.properties.N03_004 || '名称不明';
 
           const km = getDistance(city);
-
 
           layer.bindPopup(
             '<strong>' +
@@ -193,7 +179,6 @@
         }
 
       }).addTo(map);
-
 
       map.fitBounds(municipalityLayer.getBounds());
 
@@ -212,9 +197,7 @@
 
 
   /*
-   * ========================================
-   * 実際のGPX走路
-   * ========================================
+   * 実際のGPX
    */
 
   gpxLayer = new L.GPX(
@@ -237,53 +220,16 @@
   );
 
 
-  gpxLayer.on('loaded', function(e) {
-
-    console.log(
-      'GPX読み込み成功',
-      e.target.get_distance()
-    );
-
-    updateDisplay();
-
-  });
-
-
-  gpxLayer.on('error', function(error) {
-
-    console.error(
-      'GPX読み込み失敗',
-      error
-    );
-
-    document.getElementById('status').textContent =
-      'GPXデータの読み込みに失敗しました';
-
-  });
-
-
   /*
-   * ========================================
    * ズームによる表示切替
-   * ========================================
    *
-   * 広域
-   *   ↓
-   * 市町村の面
-   *
-   * 拡大
-   *   ↓
-   * 実際のGPS走路
+   * 広域 → 市町村の面
+   * 詳細 → 本物のGPX走路
    */
 
   function updateDisplay() {
 
     const zoom = map.getZoom();
-
-
-    /*
-     * 詳細表示
-     */
 
     if (zoom >= 13) {
 
@@ -294,7 +240,6 @@
         map.removeLayer(municipalityLayer);
       }
 
-
       if (
         gpxLayer &&
         !map.hasLayer(gpxLayer)
@@ -302,14 +247,8 @@
         gpxLayer.addTo(map);
       }
 
-
       document.getElementById('status').textContent =
-        '詳細表示：実際の走路';
-
-
-    /*
-     * 広域表示
-     */
+        '詳細表示：実際に走った道を表示';
 
     } else {
 
@@ -320,7 +259,6 @@
         municipalityLayer.addTo(map);
       }
 
-
       if (
         gpxLayer &&
         map.hasLayer(gpxLayer)
@@ -328,40 +266,15 @@
         map.removeLayer(gpxLayer);
       }
 
-
       document.getElementById('status').textContent =
-        '広域表示：累積走行距離を面の濃淡で表示';
+        '広域表示：累積走行距離を「面」の濃淡で表示';
 
     }
 
   }
 
 
-  map.on(
-    'zoomend',
-    updateDisplay
-  );
-
-
-  /*
-   * GPXデータを読み込み開始
-   *
-   * 最初は地図へ追加しない。
-   * ズーム13以上になった時だけ表示する。
-   */
-
-  gpxLayer.addTo(map);
-
-  gpxLayer.once(
-    'loaded',
-    function() {
-
-      if (map.getZoom() < 13) {
-        map.removeLayer(gpxLayer);
-      }
-
-    }
-  );
+  map.on('zoomend', updateDisplay);
 
 </script>
 
