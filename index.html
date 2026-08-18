@@ -50,6 +50,7 @@
       height: calc(100vh - 91px);
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 </head>
 
 <body>
@@ -277,6 +278,21 @@
 
 
   map.on('zoomend', updateDisplay);
+  const gpx = new L.GPX('午後のランニング.gpx', {
+  async: true,
+  polyline_options: {
+    color: '#ff3b30',
+    weight: 5,
+    opacity: 0.9
+  },
+  marker_options: {
+    startIconUrl: null,
+    endIconUrl: null,
+    shadowUrl: null
+  }
+}).on('loaded', function(e) {
+  map.fitBounds(e.target.getBounds());
+}).addTo(map);
 
 </script>
 
