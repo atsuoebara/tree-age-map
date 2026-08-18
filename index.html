@@ -1,45 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-<meta charset="utf-8">
-<title>樹齢マップ</title>
-<style>
-body {
-  margin: 0;
-  font-family: sans-serif;
-}
-header {
-  padding: 16px;
-  background: #1f7a3a;
-  color: white;
-}
-#map {
-  width: 100%;
-  height: 80vh;
-}
-</style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Runner's Rings</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b1422;
+    }
+
+    header {
+      background: #0f1d2f;
+      color: white;
+      padding: 12px 16px;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    #status {
+      background: #17283d;
+      color: #dce8f5;
+      padding: 8px 14px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 91px);
+    }
+
+    .area-label {
+      background: rgba(15, 29, 47, 0.88);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 4px 7px;
+      font-weight: bold;
+      box-shadow: none;
+    }
+  </style>
 </head>
+
 <body>
 
 <header>
-  <h1>🌳 樹齢マップ</h1>
-  <p>日本全国の巨樹・名木を集めるプロジェクト</p>
+  <h1>Runner's Rings</h1>
+  <p>走った記録ではなく、走った人生を残す。</p>
 </header>
+
+<div id="status">
+  広域では「面」／拡大すると「走路」
+</div>
 
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-const map = L.map('map').setView([36.3912, 139.0609], 6);
+  const map = L.map('map').setView([36.39, 139.06], 9);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }
+  ).addTo(map);
 
-L.marker([36.3912, 139.0609])
-  .addTo(map)
-  .bindPopup('🌳 サンプル地点：群馬県');
+  /*
+    まずは動作確認用の仮データ。
+    後で本物の行政区域データとGPSデータに置き換える。
+  */
+
+  const areas = [
+    {
+      name: '前橋市エリア',
+      bounds: [
+        [36.31, 138.98],
+        [36.48, 139.17]
+      ],
+      count: 120
+    },
+    {
+      name: '高崎市エリア',
+      bounds: [
+        [36.26, 138.86],
+        [36.40, 139.05]
+      ],
+      count: 55
+    },
+    {
+      name: '吉岡町エリア',
+      bounds: [
+        [36.42, 138.96],
+        [36.49, 139.05]
+      ],
+      count: 80
+    }
+  ];
+
+  const areaLayers = [];
+
+  function getOpacity(count) {
+    return Math.min(0.15 + count / 180, 0.75);
+  }
+
+  areas.forEach(area => {
+    const rectangle = L.rectangle(area.bounds, {
+      color: '#29b36a',
+      weight: 1,
+      fillColor: '#29b36a',
+      fillOpacity: getOpacity(area.count)
+    });
+
+    rectangle.bindTooltip(
+      `${area.name}<br>${area.count}回`,
+      {
+        permanent: false,
+        direction: 'center',
+        className: 'area-label'
+      }
+    );
+
+    areaLayers.push(rectangle);
+  });
+
+  const route = L.polyline(
+    [
+      [36.3912, 139.0609],
+      [36.4000, 139.0500],
+      [36.4100, 139.0450],
+      [36.4200, 139.0550],
+      [36.4300, 139.0700],
+      [36.4400, 139.0800]
+    ],
+    {
+      color: '#ff4d4d',
+      weight: 5
+    }
+  );
+
+  function updateDisplay() {
+    const zoom = map.getZoom();
+
+    areaLayers.forEach(layer => {
+      if (zoom <= 12) {
+        if (!map.hasLayer(layer)) {
+          layer.addTo(map);
+        }
+      } else {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      }
+    });
+
+    if (zoom >= 13) {
+      if (!map.hasLayer(route)) {
+        route.addTo(map);
+      }
+    } else {
+      if (map.hasLayer(route)) {
+        map.removeLayer(route);
+      }
+    }
+
+    const status = document.getElementById('status');
+
+    if (zoom <= 9) {
+      status.textContent = '広域表示：市町村を「面」の濃淡で表示';
+    } else if (zoom <= 12) {
+      status.textContent = '市町村表示：縄張りの濃淡を確認';
+    } else {
+      status.textContent = '詳細表示：実際の走路を表示';
+    }
+  }
+
+  map.on('zoomend', updateDisplay);
+
+  updateDisplay();
 </script>
 
 </body>
