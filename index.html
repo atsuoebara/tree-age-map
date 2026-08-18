@@ -60,7 +60,7 @@
 </header>
 
 <div id="status">
-  累積走行距離で縄張りを表示
+  データを読み込み中…
 </div>
 
 <div id="map"></div>
@@ -82,8 +82,7 @@
 
 
   /*
-   * 仮の累積走行距離データ
-   * 後でGPXから自動集計する
+   * 仮の累積走行距離
    */
 
   const runningDistance = {
@@ -100,10 +99,6 @@
   }
 
 
-  /*
-   * 累積距離 → 面の濃さ
-   */
-
   function getOpacity(km) {
 
     if (km === 0) return 0.05;
@@ -117,12 +112,8 @@
   }
 
 
-  let municipalityLayer;
-  let gpxLayer;
-
-
   /*
-   * 群馬県行政区域
+   * 市町村境界
    */
 
   fetch('./N03-20250101_10.geojson')
@@ -130,7 +121,7 @@
     .then(response => {
 
       if (!response.ok) {
-        throw new Error('GeoJSONを読み込めませんでした');
+        throw new Error('GeoJSON読み込み失敗');
       }
 
       return response.json();
@@ -139,12 +130,12 @@
 
     .then(data => {
 
-      municipalityLayer = L.geoJSON(data, {
+      const municipalityLayer = L.geoJSON(data, {
 
         style: feature => {
 
-          const name = feature.properties.N03_004;
-          const km = getDistance(name);
+          const city = feature.properties.N03_004;
+          const km = getDistance(city);
 
           return {
             color: '#14834f',
@@ -182,25 +173,20 @@
 
       map.fitBounds(municipalityLayer.getBounds());
 
-      updateDisplay();
-
     })
 
     .catch(error => {
 
-      console.error(error);
-
-      document.getElementById('status').textContent =
-        '行政境界データの読み込みに失敗しました';
+      console.error('GeoJSON ERROR:', error);
 
     });
 
 
   /*
-   * 実際のGPX
+   * 本物のGPXを読み込む
    */
 
-  gpxLayer = new L.GPX(
+  const gpx = new L.GPX(
     './午後のランニング.gpx',
     {
       async: true,
@@ -208,7 +194,7 @@
       polyline_options: {
         color: '#ff3b30',
         weight: 5,
-        opacity: 0.9
+        opacity: 1
       },
 
       marker_options: {
@@ -221,60 +207,38 @@
 
 
   /*
-   * ズームによる表示切替
-   *
-   * 広域 → 市町村の面
-   * 詳細 → 本物のGPX走路
+   * GPX読み込み成功
    */
 
-  function updateDisplay() {
+  gpx.on('loaded', function(e) {
 
-    const zoom = map.getZoom();
+    document.getElementById('status').textContent =
+      '✅ GPX読み込み成功：実際の走路を表示中';
 
-    if (zoom >= 13) {
+    map.fitBounds(e.target.getBounds());
 
-      if (
-        municipalityLayer &&
-        map.hasLayer(municipalityLayer)
-      ) {
-        map.removeLayer(municipalityLayer);
-      }
-
-      if (
-        gpxLayer &&
-        !map.hasLayer(gpxLayer)
-      ) {
-        gpxLayer.addTo(map);
-      }
-
-      document.getElementById('status').textContent =
-        '詳細表示：実際に走った道を表示';
-
-    } else {
-
-      if (
-        municipalityLayer &&
-        !map.hasLayer(municipalityLayer)
-      ) {
-        municipalityLayer.addTo(map);
-      }
-
-      if (
-        gpxLayer &&
-        map.hasLayer(gpxLayer)
-      ) {
-        map.removeLayer(gpxLayer);
-      }
-
-      document.getElementById('status').textContent =
-        '広域表示：累積走行距離を「面」の濃淡で表示';
-
-    }
-
-  }
+  });
 
 
-  map.on('zoomend', updateDisplay);
+  /*
+   * GPX読み込み失敗
+   */
+
+  gpx.on('error', function(e) {
+
+    console.error('GPX ERROR:', e);
+
+    document.getElementById('status').textContent =
+      '❌ GPX読み込み失敗';
+
+  });
+
+
+  /*
+   * GPXを常時表示
+   */
+
+  gpx.addTo(map);
 
 </script>
 
