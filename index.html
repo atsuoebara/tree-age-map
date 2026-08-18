@@ -59,17 +59,12 @@
   <p>走った記録ではなく、走った人生を残す。</p>
 </header>
 
-<div id="status">
-  データを読み込み中…
-</div>
-
+<div id="status">データを読み込み中…</div>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
-
   const map = L.map('map').setView([36.39, 139.06], 9);
 
   L.tileLayer(
@@ -80,11 +75,6 @@
     }
   ).addTo(map);
 
-
-  /*
-   * 仮の累積走行距離
-   */
-
   const runningDistance = {
     '前橋市': 1200,
     '高崎市': 350,
@@ -93,153 +83,169 @@
     '伊勢崎市': 60
   };
 
-
   function getDistance(name) {
     return runningDistance[name] || 0;
   }
 
-
   function getOpacity(km) {
-
     if (km === 0) return 0.05;
     if (km < 50) return 0.15;
     if (km < 100) return 0.25;
     if (km < 250) return 0.40;
     if (km < 500) return 0.55;
     if (km < 1000) return 0.70;
-
     return 0.85;
   }
 
+  let municipalityLayer = null;
+  let gpxLine = null;
 
-  /*
-   * 市町村境界
-   */
+  async function loadMunicipalities() {
+    const response = await fetch('./N03-20250101_10.geojson');
+    if (!response.ok) {
+      throw new Error('行政境界データを読み込めませんでした');
+    }
 
-  fetch('./N03-20250101_10.geojson')
+    const data = await response.json();
 
-    .then(response => {
+    municipalityLayer = L.geoJSON(data, {
+      style: feature => {
+        const city = feature.properties.N03_004;
+        const km = getDistance(city);
 
-      if (!response.ok) {
-        throw new Error('GeoJSON読み込み失敗');
-      }
-
-      return response.json();
-
-    })
-
-    .then(data => {
-
-      const municipalityLayer = L.geoJSON(data, {
-
-        style: feature => {
-
-          const city = feature.properties.N03_004;
-          const km = getDistance(city);
-
-          return {
-            color: '#14834f',
-            weight: 1.2,
-            fillColor: '#20b26b',
-            fillOpacity: getOpacity(km)
-          };
-
-        },
-
-        onEachFeature: (feature, layer) => {
-
-          const prefecture =
-            feature.properties.N03_001 || '群馬県';
-
-          const city =
-            feature.properties.N03_004 || '名称不明';
-
-          const km = getDistance(city);
-
-          layer.bindPopup(
-            '<strong>' +
-            prefecture +
-            ' ' +
-            city +
-            '</strong><br>' +
-            '累積走行距離：' +
-            km.toLocaleString() +
-            ' km'
-          );
-
-        }
-
-      }).addTo(map);
-
-      map.fitBounds(municipalityLayer.getBounds());
-
-    })
-
-    .catch(error => {
-
-      console.error('GeoJSON ERROR:', error);
-
-    });
-
-
-  /*
-   * 本物のGPXを読み込む
-   */
-
-  const gpx = new L.GPX(
-    './午後のランニング.gpx',
-    {
-      async: true,
-
-      polyline_options: {
-        color: '#ff3b30',
-        weight: 5,
-        opacity: 1
+        return {
+          color: '#14834f',
+          weight: 1.2,
+          fillColor: '#20b26b',
+          fillOpacity: getOpacity(km)
+        };
       },
 
-      marker_options: {
-        startIconUrl: null,
-        endIconUrl: null,
-        shadowUrl: null
+      onEachFeature: (feature, layer) => {
+        const prefecture =
+          feature.properties.N03_001 || '群馬県';
+
+        const city =
+          feature.properties.N03_004 || '名称不明';
+
+        const km = getDistance(city);
+
+        layer.bindPopup(
+          '<strong>' +
+          prefecture +
+          ' ' +
+          city +
+          '</strong><br>' +
+          '累積走行距離：' +
+          km.toLocaleString() +
+          ' km'
+        );
       }
+    }).addTo(map);
+
+    map.fitBounds(municipalityLayer.getBounds());
+  }
+
+  async function loadGPX() {
+    const response = await fetch('./午後のランニング.gpx');
+
+    if (!response.ok) {
+      throw new Error('GPXファイルを読み込めませんでした');
     }
-  );
 
+    const text = await response.text();
 
-  /*
-   * GPX読み込み成功
-   */
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'application/xml');
 
-  gpx.on('loaded', function(e) {
+    const points = Array.from(
+      xml.getElementsByTagName('trkpt')
+    );
 
-    document.getElementById('status').textContent =
-      '✅ GPX読み込み成功：実際の走路を表示中';
+    if (points.length === 0) {
+      throw new Error('GPX内に走行ポイントがありません');
+    }
 
-    map.fitBounds(e.target.getBounds());
+    const latlngs = points.map(point => {
+      return [
+        parseFloat(point.getAttribute('lat')),
+        parseFloat(point.getAttribute('lon'))
+      ];
+    });
 
-  });
+    gpxLine = L.polyline(latlngs, {
+      color: '#ff3b30',
+      weight: 5,
+      opacity: 1
+    });
 
+    return latlngs.length;
+  }
 
-  /*
-   * GPX読み込み失敗
-   */
+  function updateDisplay() {
+    const zoom = map.getZoom();
 
-  gpx.on('error', function(e) {
+    if (zoom >= 13) {
+      if (
+        municipalityLayer &&
+        map.hasLayer(municipalityLayer)
+      ) {
+        map.removeLayer(municipalityLayer);
+      }
 
-    console.error('GPX ERROR:', e);
+      if (
+        gpxLine &&
+        !map.hasLayer(gpxLine)
+      ) {
+        gpxLine.addTo(map);
+      }
 
-    document.getElementById('status').textContent =
-      '❌ GPX読み込み失敗';
+      document.getElementById('status').textContent =
+        '詳細表示：実際に走った道を表示';
 
-  });
+    } else {
+      if (
+        municipalityLayer &&
+        !map.hasLayer(municipalityLayer)
+      ) {
+        municipalityLayer.addTo(map);
+      }
 
+      if (
+        gpxLine &&
+        map.hasLayer(gpxLine)
+      ) {
+        map.removeLayer(gpxLine);
+      }
 
-  /*
-   * GPXを常時表示
-   */
+      document.getElementById('status').textContent =
+        '広域表示：累積走行距離を「面」の濃淡で表示';
+    }
+  }
 
-  gpx.addTo(map);
+  async function start() {
+    try {
+      await loadMunicipalities();
+      const pointCount = await loadGPX();
 
+      document.getElementById('status').textContent =
+        'GPX読み込み成功：' +
+        pointCount +
+        'ポイント';
+
+      updateDisplay();
+
+      map.on('zoomend', updateDisplay);
+
+    } catch (error) {
+      console.error(error);
+
+      document.getElementById('status').textContent =
+        '読み込みエラー：' + error.message;
+    }
+  }
+
+  start();
 </script>
 
 </body>
