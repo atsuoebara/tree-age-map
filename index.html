@@ -60,7 +60,7 @@
 </header>
 
 <div id="status">
-  市町村ごとの縄張りを表示
+  累積走行距離で縄張りを表示
 </div>
 
 <div id="map"></div>
@@ -68,6 +68,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+
   const map = L.map('map').setView([36.39, 139.06], 9);
 
   L.tileLayer(
@@ -80,36 +81,45 @@
 
 
   /*
-   * Runner's Rings 仮走行データ
+   * 仮の累積走行距離データ
    *
-   * 今は動作確認用。
-   * 将来はStrava/GarminのGPSデータから
-   * 自動計算する。
+   * 面積による補正はしない。
+   *
+   * 100km走った地域は、
+   * 市町村の大きさに関係なく
+   * 同じ価値・同じ濃さ。
+   *
+   * 将来はGPSデータから自動計算する。
    */
 
-  const runningCounts = {
-    '前橋市': 120,
-    '高崎市': 70,
-    '吉岡町': 95,
-    '渋川市': 45,
-    '伊勢崎市': 30
+  const runningDistance = {
+    '前橋市': 1200,
+    '高崎市': 350,
+    '吉岡町': 350,
+    '渋川市': 120,
+    '伊勢崎市': 60
   };
 
 
-  function getCount(name) {
-    return runningCounts[name] || 0;
+  function getDistance(name) {
+    return runningDistance[name] || 0;
   }
 
 
-  function getOpacity(count) {
+  /*
+   * 累積距離 → 面の濃さ
+   */
 
-    if (count === 0) return 0.05;
-    if (count < 20) return 0.20;
-    if (count < 50) return 0.35;
-    if (count < 80) return 0.50;
-    if (count < 110) return 0.65;
+  function getOpacity(km) {
 
-    return 0.80;
+    if (km === 0) return 0.05;
+    if (km < 50) return 0.15;
+    if (km < 100) return 0.25;
+    if (km < 250) return 0.40;
+    if (km < 500) return 0.55;
+    if (km < 1000) return 0.70;
+
+    return 0.85;
   }
 
 
@@ -117,8 +127,7 @@
 
 
   /*
-   * 国土数値情報
-   * 群馬県 行政区域GeoJSONを読み込む
+   * 群馬県行政区域GeoJSONを読み込む
    */
 
   fetch('./N03-20250101_10.geojson')
@@ -139,19 +148,14 @@
 
         style: feature => {
 
-          /*
-           * 国土数値情報 N03
-           * N03_004 = 市区町村名
-           */
-
           const name = feature.properties.N03_004;
-          const count = getCount(name);
+          const km = getDistance(name);
 
           return {
             color: '#14834f',
             weight: 1.2,
             fillColor: '#20b26b',
-            fillOpacity: getOpacity(count)
+            fillOpacity: getOpacity(km)
           };
 
         },
@@ -165,7 +169,7 @@
           const city =
             feature.properties.N03_004 || '名称不明';
 
-          const count = getCount(city);
+          const km = getDistance(city);
 
 
           layer.bindPopup(
@@ -174,9 +178,9 @@
             ' ' +
             city +
             '</strong><br>' +
-            '走行回数：' +
-            count +
-            '回'
+            '累積走行距離：' +
+            km.toLocaleString() +
+            ' km'
           );
 
         }
@@ -184,14 +188,10 @@
       }).addTo(map);
 
 
-      /*
-       * GeoJSONの範囲に地図を合わせる
-       */
-
       map.fitBounds(municipalityLayer.getBounds());
 
       document.getElementById('status').textContent =
-        '群馬県：市町村ごとの縄張りを表示';
+        '群馬県：累積走行距離で市町村を濃淡表示';
 
     })
 
@@ -207,8 +207,6 @@
 
   /*
    * 仮のGPS走路
-   *
-   * 将来は実際のランニングGPSに置き換える。
    */
 
   const route = L.polyline(
@@ -229,9 +227,6 @@
 
   /*
    * ズームによる表示切替
-   *
-   * 広域：行政区域の「面」
-   * 詳細：GPS走路
    */
 
   function updateDisplay() {
@@ -274,7 +269,7 @@
 
 
       document.getElementById('status').textContent =
-        '広域表示：市町村を「面」の濃淡で表示';
+        '広域表示：累積走行距離を「面」の濃淡で表示';
 
     }
 
