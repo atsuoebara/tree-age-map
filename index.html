@@ -50,7 +50,6 @@
       height: calc(100vh - 91px);
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 </head>
 
 <body>
@@ -61,12 +60,16 @@
 </header>
 
 <div id="status">
-  累積走行距離で縄張りを表示
+  データを読み込み中...
 </div>
 
 <div id="map"></div>
 
+<!-- Leaflet本体を先に読み込む -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- その後でGPXライブラリを読み込む -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
 
@@ -82,15 +85,15 @@
 
 
   /*
-   * 仮の累積走行距離データ
+   * ========================================
+   * 仮の累積走行距離
+   * ========================================
    *
-   * 面積による補正はしない。
+   * 現在は表示テスト用。
+   * 将来はGPX/Strava/Garminから自動集計する。
    *
-   * 100km走った地域は、
-   * 市町村の大きさに関係なく
-   * 同じ価値・同じ濃さ。
-   *
-   * 将来はGPSデータから自動計算する。
+   * 面積補正はしない。
+   * 前橋100kmも吉岡100kmも同じ価値。
    */
 
   const runningDistance = {
@@ -108,7 +111,7 @@
 
 
   /*
-   * 累積距離 → 面の濃さ
+   * 距離から面の濃さを決める
    */
 
   function getOpacity(km) {
@@ -124,11 +127,14 @@
   }
 
 
-  let municipalityLayer;
+  let municipalityLayer = null;
+  let gpxLayer = null;
 
 
   /*
-   * 群馬県行政区域GeoJSONを読み込む
+   * ========================================
+   * 群馬県行政境界
+   * ========================================
    */
 
   fetch('./N03-20250101_10.geojson')
@@ -191,8 +197,7 @@
 
       map.fitBounds(municipalityLayer.getBounds());
 
-      document.getElementById('status').textContent =
-        '群馬県：累積走行距離で市町村を濃淡表示';
+      updateDisplay();
 
     })
 
@@ -207,33 +212,78 @@
 
 
   /*
-   * 仮のGPS走路
+   * ========================================
+   * 実際のGPX走路
+   * ========================================
    */
 
-  const route = L.polyline(
-    [
-      [36.3912, 139.0609],
-      [36.4000, 139.0500],
-      [36.4100, 139.0450],
-      [36.4200, 139.0550],
-      [36.4300, 139.0700],
-      [36.4400, 139.0800]
-    ],
+  gpxLayer = new L.GPX(
+    './午後のランニング.gpx',
     {
-      color: '#ff4d4d',
-      weight: 5
+      async: true,
+
+      polyline_options: {
+        color: '#ff3b30',
+        weight: 5,
+        opacity: 0.9
+      },
+
+      marker_options: {
+        startIconUrl: null,
+        endIconUrl: null,
+        shadowUrl: null
+      }
     }
   );
 
 
+  gpxLayer.on('loaded', function(e) {
+
+    console.log(
+      'GPX読み込み成功',
+      e.target.get_distance()
+    );
+
+    updateDisplay();
+
+  });
+
+
+  gpxLayer.on('error', function(error) {
+
+    console.error(
+      'GPX読み込み失敗',
+      error
+    );
+
+    document.getElementById('status').textContent =
+      'GPXデータの読み込みに失敗しました';
+
+  });
+
+
   /*
+   * ========================================
    * ズームによる表示切替
+   * ========================================
+   *
+   * 広域
+   *   ↓
+   * 市町村の面
+   *
+   * 拡大
+   *   ↓
+   * 実際のGPS走路
    */
 
   function updateDisplay() {
 
     const zoom = map.getZoom();
 
+
+    /*
+     * 詳細表示
+     */
 
     if (zoom >= 13) {
 
@@ -245,14 +295,21 @@
       }
 
 
-      if (!map.hasLayer(route)) {
-        route.addTo(map);
+      if (
+        gpxLayer &&
+        !map.hasLayer(gpxLayer)
+      ) {
+        gpxLayer.addTo(map);
       }
 
 
       document.getElementById('status').textContent =
-        '詳細表示：走路を表示';
+        '詳細表示：実際の走路';
 
+
+    /*
+     * 広域表示
+     */
 
     } else {
 
@@ -264,35 +321,47 @@
       }
 
 
-      if (map.hasLayer(route)) {
-        map.removeLayer(route);
+      if (
+        gpxLayer &&
+        map.hasLayer(gpxLayer)
+      ) {
+        map.removeLayer(gpxLayer);
       }
 
 
       document.getElementById('status').textContent =
-        '広域表示：累積走行距離を「面」の濃淡で表示';
+        '広域表示：累積走行距離を面の濃淡で表示';
 
     }
 
   }
 
 
-  map.on('zoomend', updateDisplay);
-  const gpx = new L.GPX('午後のランニング.gpx', {
-  async: true,
-  polyline_options: {
-    color: '#ff3b30',
-    weight: 5,
-    opacity: 0.9
-  },
-  marker_options: {
-    startIconUrl: null,
-    endIconUrl: null,
-    shadowUrl: null
-  }
-}).on('loaded', function(e) {
-  map.fitBounds(e.target.getBounds());
-}).addTo(map);
+  map.on(
+    'zoomend',
+    updateDisplay
+  );
+
+
+  /*
+   * GPXデータを読み込み開始
+   *
+   * 最初は地図へ追加しない。
+   * ズーム13以上になった時だけ表示する。
+   */
+
+  gpxLayer.addTo(map);
+
+  gpxLayer.once(
+    'loaded',
+    function() {
+
+      if (map.getZoom() < 13) {
+        map.removeLayer(gpxLayer);
+      }
+
+    }
+  );
 
 </script>
 
