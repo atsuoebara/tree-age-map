@@ -83,10 +83,7 @@ L.tileLayer(
 
 
 /*
- * 読み込むGPX一覧
- *
- * 今後GPXが増えたら
- * ここにファイル名を追加していく
+ * 読み込むGPX
  */
 
 const gpxFiles = [
@@ -103,7 +100,6 @@ const routeGroup = L.layerGroup();
 const municipalityDistance = {};
 
 let totalDistanceKm = 0;
-let totalPoints = 0;
 
 
 /*
@@ -215,22 +211,18 @@ function pointInPolygon(point, polygon) {
 
 
 /*
- * GeoJSON Feature内判定
+ * GeoJSON Feature判定
  */
 
 function pointInFeature(point, feature) {
 
-  const geometry =
-    feature.geometry;
+  const geometry = feature.geometry;
 
   if (!geometry) {
     return false;
   }
 
-
-  if (
-    geometry.type === 'Polygon'
-  ) {
+  if (geometry.type === 'Polygon') {
 
     return pointInPolygon(
       point,
@@ -238,10 +230,7 @@ function pointInFeature(point, feature) {
     );
   }
 
-
-  if (
-    geometry.type === 'MultiPolygon'
-  ) {
+  if (geometry.type === 'MultiPolygon') {
 
     return geometry.coordinates.some(
       polygon =>
@@ -252,19 +241,17 @@ function pointInFeature(point, feature) {
     );
   }
 
-
   return false;
 }
 
 
 /*
- * 座標 → 市町村
+ * 座標から市町村を探す
  */
 
 function findMunicipality(lat, lon) {
 
-  const point =
-    [lon, lat];
+  const point = [lon, lat];
 
   for (
     const feature of
@@ -290,7 +277,7 @@ function findMunicipality(lat, lon) {
 
 
 /*
- * 累積距離 → 面の濃さ
+ * 累積距離から面の濃さ
  */
 
 function getOpacity(km) {
@@ -336,9 +323,7 @@ async function loadMunicipalities() {
 async function loadOneGPX(fileName) {
 
   const response =
-    await fetch(
-      encodeURI(fileName)
-    );
+    await fetch(fileName);
 
   if (!response.ok) {
 
@@ -349,21 +334,17 @@ async function loadOneGPX(fileName) {
     );
   }
 
-
   const text =
     await response.text();
 
-
   const parser =
     new DOMParser();
-
 
   const xml =
     parser.parseFromString(
       text,
       'application/xml'
     );
-
 
   if (
     xml.querySelector('parsererror')
@@ -375,7 +356,6 @@ async function loadOneGPX(fileName) {
     );
   }
 
-
   const points =
     Array.from(
       xml.getElementsByTagName(
@@ -383,9 +363,7 @@ async function loadOneGPX(fileName) {
       )
     );
 
-
   const latlngs = [];
-
 
   points.forEach(point => {
 
@@ -399,7 +377,6 @@ async function loadOneGPX(fileName) {
         point.getAttribute('lon')
       );
 
-
     if (
       Number.isFinite(lat) &&
       Number.isFinite(lon)
@@ -409,9 +386,7 @@ async function loadOneGPX(fileName) {
         [lat, lon]
       );
     }
-
   });
-
 
   if (
     latlngs.length < 2
@@ -424,16 +399,11 @@ async function loadOneGPX(fileName) {
   }
 
 
-  totalPoints +=
-    latlngs.length;
-
-
   /*
-   * このGPXの距離を計算
+   * このGPXの距離計算
    */
 
   let fileDistanceKm = 0;
-
 
   for (
     let i = 1;
@@ -447,7 +417,6 @@ async function loadOneGPX(fileName) {
     const current =
       latlngs[i];
 
-
     const segmentKm =
       distanceKm(
         prev[0],
@@ -456,14 +425,11 @@ async function loadOneGPX(fileName) {
         current[1]
       );
 
-
     fileDistanceKm +=
       segmentKm;
 
-
     /*
-     * 区間の中点から
-     * 市町村を判定
+     * 区間中点で市町村判定
      */
 
     const midLat =
@@ -472,13 +438,11 @@ async function loadOneGPX(fileName) {
     const midLon =
       (prev[1] + current[1]) / 2;
 
-
     const city =
       findMunicipality(
         midLat,
         midLon
       );
-
 
     if (city) {
 
@@ -490,13 +454,10 @@ async function loadOneGPX(fileName) {
         municipalityDistance[city] = 0;
       }
 
-
       municipalityDistance[city] +=
         segmentKm;
     }
-
   }
-
 
   totalDistanceKm +=
     fileDistanceKm;
@@ -516,14 +477,11 @@ async function loadOneGPX(fileName) {
       }
     );
 
-
   routeGroup.addLayer(route);
-
 
   return {
     fileName,
-    distance: fileDistanceKm,
-    points: latlngs.length
+    distance: fileDistanceKm
   };
 }
 
@@ -533,8 +491,6 @@ async function loadOneGPX(fileName) {
  */
 
 async function loadAllGPX() {
-
-  const results = [];
 
   for (
     const fileName of gpxFiles
@@ -546,17 +502,10 @@ async function loadAllGPX() {
       '読み込み中：' +
       fileName.replace('./', '');
 
-
-    const result =
-      await loadOneGPX(
-        fileName
-      );
-
-
-    results.push(result);
+    await loadOneGPX(
+      fileName
+    );
   }
-
-  return results;
 }
 
 
@@ -578,7 +527,6 @@ function drawMunicipalities() {
 
           const km =
             municipalityDistance[city] || 0;
-
 
           return {
             color: '#14834f',
@@ -604,7 +552,6 @@ function drawMunicipalities() {
             const km =
               municipalityDistance[city] || 0;
 
-
             layer.bindPopup(
               '<strong>' +
               prefecture +
@@ -620,9 +567,7 @@ function drawMunicipalities() {
       }
     );
 
-
   municipalityLayer.addTo(map);
-
 
   map.fitBounds(
     municipalityLayer.getBounds()
@@ -631,7 +576,7 @@ function drawMunicipalities() {
 
 
 /*
- * 市町村別の表示
+ * 市町村別サマリー
  */
 
 function municipalitySummary() {
@@ -647,14 +592,12 @@ function municipalitySummary() {
       (a, b) => b[1] - a[1]
     );
 
-
   if (
     entries.length === 0
   ) {
 
     return '市町村判定なし';
   }
-
 
   return entries
     .map(
@@ -677,11 +620,9 @@ function updateDisplay() {
   const zoom =
     map.getZoom();
 
-
   if (
     zoom >= 13
   ) {
-
 
     if (
       municipalityLayer &&
@@ -695,7 +636,6 @@ function updateDisplay() {
       );
     }
 
-
     if (
       !map.hasLayer(
         routeGroup
@@ -705,7 +645,6 @@ function updateDisplay() {
       routeGroup.addTo(map);
     }
 
-
     document.getElementById(
       'status'
     ).textContent =
@@ -713,9 +652,7 @@ function updateDisplay() {
       totalDistanceKm.toFixed(2) +
       ' km';
 
-
   } else {
-
 
     if (
       municipalityLayer &&
@@ -727,7 +664,6 @@ function updateDisplay() {
       municipalityLayer.addTo(map);
     }
 
-
     if (
       map.hasLayer(
         routeGroup
@@ -739,7 +675,6 @@ function updateDisplay() {
       );
     }
 
-
     document.getElementById(
       'status'
     ).textContent =
@@ -747,9 +682,7 @@ function updateDisplay() {
       ' ｜ 合計 ' +
       totalDistanceKm.toFixed(2) +
       'km';
-
   }
-
 }
 
 
@@ -763,26 +696,16 @@ async function start() {
 
     await loadMunicipalities();
 
-    const results =
-      await loadAllGPX();
-
-
-    console.log(
-      'GPX読み込み結果',
-      results
-    );
-
+    await loadAllGPX();
 
     drawMunicipalities();
 
     updateDisplay();
 
-
     map.on(
       'zoomend',
       updateDisplay
     );
-
 
   } catch (error) {
 
@@ -794,7 +717,6 @@ async function start() {
       '❌ ' +
       error.message;
   }
-
 }
 
 
