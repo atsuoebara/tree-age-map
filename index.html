@@ -123,6 +123,12 @@
       opacity: 0.85;
     }
 
+    .cityRuns {
+      margin-top: 7px;
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
     .barTrack {
       width: 100%;
       height: 9px;
@@ -144,6 +150,21 @@
       padding: 14px;
       font-size: 14px;
       opacity: 0.8;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 14px;
+    }
+
+    .popup-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .popup-row {
+      margin-top: 4px;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -222,18 +243,26 @@ let geojsonData = null;
 let municipalityLayer = null;
 
 const routeGroup = L.layerGroup();
+
 const municipalityDistance = {};
+const municipalityRunCount = {};
 
 let totalDistanceKm = 0;
 let loadedGPXCount = 0;
 
+
+/* =========================
+   ステータス
+========================= */
 
 function setStatus(text) {
   document.getElementById('status').textContent = text;
 }
 
 
-/* GitHubからGPX一覧取得 */
+/* =========================
+   GitHubからGPX一覧取得
+========================= */
 
 async function getGPXFiles() {
 
@@ -285,7 +314,9 @@ async function getGPXFiles() {
 }
 
 
-/* 2点間の距離 */
+/* =========================
+   2点間距離
+========================= */
 
 function distanceKm(lat1, lon1, lat2, lon2) {
 
@@ -318,7 +349,9 @@ function distanceKm(lat1, lon1, lat2, lon2) {
 }
 
 
-/* 点がリング内にあるか */
+/* =========================
+   点がリング内にあるか
+========================= */
 
 function pointInRing(point, ring) {
 
@@ -362,7 +395,9 @@ function pointInRing(point, ring) {
 }
 
 
-/* Polygon判定 */
+/* =========================
+   Polygon判定
+========================= */
 
 function pointInPolygon(point, polygon) {
 
@@ -387,7 +422,9 @@ function pointInPolygon(point, polygon) {
 }
 
 
-/* GeoJSON判定 */
+/* =========================
+   GeoJSON判定
+========================= */
 
 function pointInFeature(point, feature) {
 
@@ -423,7 +460,9 @@ function pointInFeature(point, feature) {
 }
 
 
-/* 座標 → 市町村 */
+/* =========================
+   座標 → 市町村
+========================= */
 
 function findMunicipality(lat, lon) {
 
@@ -446,7 +485,9 @@ function findMunicipality(lat, lon) {
 }
 
 
-/* 面の濃さ */
+/* =========================
+   面の濃さ
+========================= */
 
 function getOpacity(km) {
 
@@ -461,7 +502,9 @@ function getOpacity(km) {
 }
 
 
-/* 行政境界読み込み */
+/* =========================
+   行政境界読み込み
+========================= */
 
 async function loadMunicipalities() {
 
@@ -484,7 +527,9 @@ async function loadMunicipalities() {
 }
 
 
-/* GPXを1本読み込む */
+/* =========================
+   GPXを1本読み込む
+========================= */
 
 async function loadOneGPX(gpxFile) {
 
@@ -563,6 +608,9 @@ async function loadOneGPX(gpxFile) {
 
   let fileDistanceKm = 0;
 
+  const citiesThisRun =
+    new Set();
+
 
   for (
     let i = 1;
@@ -611,11 +659,32 @@ async function loadOneGPX(gpxFile) {
 
       municipalityDistance[city] +=
         segmentKm;
+
+
+      citiesThisRun.add(city);
     }
   }
 
 
-  totalDistanceKm += fileDistanceKm;
+  citiesThisRun.forEach(city => {
+
+    if (
+      municipalityRunCount[city]
+      === undefined
+    ) {
+
+      municipalityRunCount[city] = 0;
+    }
+
+
+    municipalityRunCount[city]++;
+  });
+
+
+  totalDistanceKm +=
+    fileDistanceKm;
+
+
   loadedGPXCount++;
 
 
@@ -633,7 +702,9 @@ async function loadOneGPX(gpxFile) {
 }
 
 
-/* 全GPX読み込み */
+/* =========================
+   全GPX読み込み
+========================= */
 
 async function loadAllGPX(gpxFiles) {
 
@@ -659,7 +730,9 @@ async function loadAllGPX(gpxFiles) {
 }
 
 
-/* 市町村面描画 */
+/* =========================
+   市町村面描画
+========================= */
 
 function drawMunicipalities() {
 
@@ -704,15 +777,30 @@ function drawMunicipalities() {
               municipalityDistance[city] || 0;
 
 
+            const runs =
+              municipalityRunCount[city] || 0;
+
+
             layer.bindPopup(
-              '<strong>' +
-              prefecture +
-              ' ' +
+
+              '<div class="popup-title">' +
               city +
-              '</strong><br>' +
+              '</div>' +
+
+              '<div class="popup-row">' +
               '累積走行距離：' +
+              '<strong>' +
               km.toFixed(2) +
-              ' km'
+              ' km</strong>' +
+              '</div>' +
+
+              '<div class="popup-row">' +
+              '走ったラン：' +
+              '<strong>' +
+              runs +
+              ' 回</strong>' +
+              '</div>'
+
             );
           }
 
@@ -729,7 +817,9 @@ function drawMunicipalities() {
 }
 
 
-/* ダッシュボード */
+/* =========================
+   ダッシュボード
+========================= */
 
 function updateDashboard() {
 
@@ -775,7 +865,9 @@ function updateDashboard() {
   if (entries.length === 0) {
 
     cityList.innerHTML =
-      '<div class="emptyMessage">市町村データがありません</div>';
+      '<div class="emptyMessage">' +
+      '市町村データがありません' +
+      '</div>';
 
     return;
   }
@@ -793,6 +885,10 @@ function updateDashboard() {
           3,
           (km / maxKm) * 100
         );
+
+
+      const runs =
+        municipalityRunCount[city] || 0;
 
 
       const card =
@@ -824,6 +920,11 @@ function updateDashboard() {
             percent +
             '%"></div>' +
 
+        '</div>' +
+
+        '<div class="cityRuns">' +
+          'RUNS ' +
+          runs +
         '</div>';
 
 
@@ -833,18 +934,23 @@ function updateDashboard() {
 }
 
 
-/* ズーム表示切替 */
+/* =========================
+   ズーム切替
+========================= */
 
 function updateDisplay() {
 
-  const zoom = map.getZoom();
+  const zoom =
+    map.getZoom();
 
 
   if (zoom >= 13) {
 
     if (
       municipalityLayer &&
-      map.hasLayer(municipalityLayer)
+      map.hasLayer(
+        municipalityLayer
+      )
     ) {
 
       map.removeLayer(
@@ -853,7 +959,11 @@ function updateDisplay() {
     }
 
 
-    if (!map.hasLayer(routeGroup)) {
+    if (
+      !map.hasLayer(
+        routeGroup
+      )
+    ) {
 
       routeGroup.addTo(map);
     }
@@ -868,16 +978,24 @@ function updateDisplay() {
 
     if (
       municipalityLayer &&
-      !map.hasLayer(municipalityLayer)
+      !map.hasLayer(
+        municipalityLayer
+      )
     ) {
 
       municipalityLayer.addTo(map);
     }
 
 
-    if (map.hasLayer(routeGroup)) {
+    if (
+      map.hasLayer(
+        routeGroup
+      )
+    ) {
 
-      map.removeLayer(routeGroup);
+      map.removeLayer(
+        routeGroup
+      );
     }
 
 
@@ -888,7 +1006,9 @@ function updateDisplay() {
 }
 
 
-/* 起動 */
+/* =========================
+   起動
+========================= */
 
 async function start() {
 
