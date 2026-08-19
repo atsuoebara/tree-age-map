@@ -104,6 +104,13 @@
       background: #132237;
       border-radius: 14px;
       padding: 12px 14px 14px;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+
+    .cityCard:active {
+      transform: scale(0.985);
+      background: #18304d;
     }
 
     .cityTop {
@@ -246,6 +253,7 @@ const routeGroup = L.layerGroup();
 
 const municipalityDistance = {};
 const municipalityRunCount = {};
+const municipalityLayers = {};
 
 let totalDistanceKm = 0;
 let loadedGPXCount = 0;
@@ -763,11 +771,6 @@ function drawMunicipalities() {
         onEachFeature:
           (feature, layer) => {
 
-            const prefecture =
-              feature.properties.N03_001 ||
-              '群馬県';
-
-
             const city =
               feature.properties.N03_004 ||
               '名称不明';
@@ -779,6 +782,10 @@ function drawMunicipalities() {
 
             const runs =
               municipalityRunCount[city] || 0;
+
+
+            municipalityLayers[city] =
+              layer;
 
 
             layer.bindPopup(
@@ -813,6 +820,83 @@ function drawMunicipalities() {
 
   map.fitBounds(
     municipalityLayer.getBounds()
+  );
+}
+
+
+/* =========================
+   市町村カード → 地図
+========================= */
+
+function focusMunicipality(city) {
+
+  const layer =
+    municipalityLayers[city];
+
+
+  if (!layer) {
+    return;
+  }
+
+
+  /*
+   * 詳細表示中なら
+   * 市町村面を戻す
+   */
+
+  if (
+    municipalityLayer &&
+    !map.hasLayer(municipalityLayer)
+  ) {
+
+    municipalityLayer.addTo(map);
+  }
+
+
+  if (map.hasLayer(routeGroup)) {
+
+    map.removeLayer(routeGroup);
+  }
+
+
+  const bounds =
+    layer.getBounds();
+
+
+  /*
+   * 市町村全体が見えるようにズーム
+   */
+
+  map.fitBounds(
+    bounds,
+    {
+      padding: [25, 25],
+      maxZoom: 11
+    }
+  );
+
+
+  /*
+   * 地図位置まで画面を戻す
+   */
+
+  document.getElementById(
+    'map'
+  ).scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+
+  /*
+   * 移動後にポップアップ
+   */
+
+  setTimeout(
+    () => {
+      layer.openPopup();
+    },
+    500
   );
 }
 
@@ -926,6 +1010,14 @@ function updateDashboard() {
           'RUNS ' +
           runs +
         '</div>';
+
+
+      card.addEventListener(
+        'click',
+        () => {
+          focusMunicipality(city);
+        }
+      );
 
 
       cityList.appendChild(card);
