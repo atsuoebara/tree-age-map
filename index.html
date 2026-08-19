@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Runner's Rings GPX Test</title>
+  <title>Runner's Rings</title>
 
   <link
     rel="stylesheet"
@@ -16,12 +16,14 @@
       margin: 0;
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b1422;
     }
 
     header {
       background: #0f1d2f;
       color: white;
       padding: 12px 16px;
+      box-sizing: border-box;
     }
 
     header h1 {
@@ -29,16 +31,23 @@
       font-size: 22px;
     }
 
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
     #status {
       background: #17283d;
-      color: white;
+      color: #dce8f5;
       padding: 8px 14px;
       font-size: 13px;
+      box-sizing: border-box;
     }
 
     #map {
       width: 100%;
-      height: calc(100vh - 86px);
+      height: calc(100vh - 91px);
     }
   </style>
 </head>
@@ -47,10 +56,11 @@
 
 <header>
   <h1>Runner's Rings</h1>
+  <p>走った記録ではなく、走った人生を残す。</p>
 </header>
 
 <div id="status">
-  GPXを読み込み中…
+  データを読み込み中…
 </div>
 
 <div id="map"></div>
@@ -59,7 +69,7 @@
 
 <script>
 
-  const map = L.map('map').setView([36.4, 139.05], 12);
+  const map = L.map('map').setView([36.39, 139.06], 9);
 
   L.tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -70,99 +80,119 @@
   ).addTo(map);
 
 
-  async function loadGPX() {
+  /*
+   * 仮の累積走行距離
+   * 後でGPXから自動計算する
+   */
+
+  const runningDistance = {
+    '前橋市': 1200,
+    '高崎市': 350,
+    '吉岡町': 350,
+    '渋川市': 120,
+    '伊勢崎市': 60
+  };
+
+
+  function getDistance(name) {
+    return runningDistance[name] || 0;
+  }
+
+
+  function getOpacity(km) {
+
+    if (km === 0) return 0.05;
+    if (km < 50) return 0.15;
+    if (km < 100) return 0.25;
+    if (km < 250) return 0.40;
+    if (km < 500) return 0.55;
+    if (km < 1000) return 0.70;
+
+    return 0.85;
+  }
+
+
+  let municipalityLayer = null;
+  let routeLayer = null;
+  let gpxLoaded = false;
+
+
+  /*
+   * 市町村境界を読み込む
+   */
+
+  async function loadMunicipalities() {
 
     try {
 
-      const response = await fetch('./run1.gpx');
+      const response =
+        await fetch('./N03-20250101_10.geojson');
 
       if (!response.ok) {
         throw new Error(
-          'GPX取得失敗 HTTP ' + response.status
+          '行政境界データを読み込めませんでした'
         );
       }
 
-      const text = await response.text();
+      const data = await response.json();
 
-      const parser = new DOMParser();
 
-      const xml = parser.parseFromString(
-        text,
-        'application/xml'
-      );
+      municipalityLayer = L.geoJSON(data, {
 
-      const parserError =
-        xml.querySelector('parsererror');
+        style: feature => {
 
-      if (parserError) {
-        throw new Error('GPXのXML解析に失敗');
-      }
+          const name =
+            feature.properties.N03_004;
 
-      const points = Array.from(
-        xml.getElementsByTagName('trkpt')
-      );
+          const km =
+            getDistance(name);
 
-      if (points.length === 0) {
-        throw new Error(
-          'GPX内にtrkptがありません'
-        );
-      }
+          return {
+            color: '#14834f',
+            weight: 1.2,
+            fillColor: '#20b26b',
+            fillOpacity: getOpacity(km)
+          };
 
-      const latlngs = [];
+        },
 
-      points.forEach(point => {
 
-        const lat =
-          parseFloat(
-            point.getAttribute('lat')
+        onEachFeature: (feature, layer) => {
+
+          const prefecture =
+            feature.properties.N03_001 || '群馬県';
+
+          const city =
+            feature.properties.N03_004 || '名称不明';
+
+          const km =
+            getDistance(city);
+
+
+          layer.bindPopup(
+            '<strong>' +
+            prefecture +
+            ' ' +
+            city +
+            '</strong><br>' +
+            '累積走行距離：' +
+            km.toLocaleString() +
+            ' km'
           );
 
-        const lon =
-          parseFloat(
-            point.getAttribute('lon')
-          );
-
-        if (
-          Number.isFinite(lat) &&
-          Number.isFinite(lon)
-        ) {
-          latlngs.push([lat, lon]);
         }
 
       });
 
 
-      if (latlngs.length === 0) {
-        throw new Error(
-          '有効なGPS座標がありません'
-        );
-      }
-
-
-      const route = L.polyline(
-        latlngs,
-        {
-          color: '#ff3b30',
-          weight: 5,
-          opacity: 1
-        }
-      ).addTo(map);
-
+      municipalityLayer.addTo(map);
 
       map.fitBounds(
-        route.getBounds(),
-        {
-          padding: [20, 20]
-        }
+        municipalityLayer.getBounds()
       );
 
 
-      document.getElementById(
-        'status'
-      ).textContent =
-        '✅ GPX読み込み成功：' +
-        latlngs.length +
-        'ポイント';
+      updateDisplay();
 
 
     } catch (error) {
@@ -179,6 +209,228 @@
   }
 
 
+  /*
+   * GPXを読み込む
+   */
+
+  async function loadGPX() {
+
+    try {
+
+      const response =
+        await fetch('./run1.gpx');
+
+      if (!response.ok) {
+        throw new Error(
+          'GPX取得失敗 HTTP ' +
+          response.status
+        );
+      }
+
+      const text =
+        await response.text();
+
+      const parser =
+        new DOMParser();
+
+      const xml =
+        parser.parseFromString(
+          text,
+          'application/xml'
+        );
+
+
+      const parserError =
+        xml.querySelector('parsererror');
+
+      if (parserError) {
+        throw new Error(
+          'GPXのXML解析に失敗'
+        );
+      }
+
+
+      const points =
+        Array.from(
+          xml.getElementsByTagName('trkpt')
+        );
+
+
+      if (points.length === 0) {
+        throw new Error(
+          'GPX内にtrkptがありません'
+        );
+      }
+
+
+      const latlngs = [];
+
+
+      points.forEach(point => {
+
+        const lat =
+          parseFloat(
+            point.getAttribute('lat')
+          );
+
+        const lon =
+          parseFloat(
+            point.getAttribute('lon')
+          );
+
+
+        if (
+          Number.isFinite(lat) &&
+          Number.isFinite(lon)
+        ) {
+
+          latlngs.push(
+            [lat, lon]
+          );
+
+        }
+
+      });
+
+
+      if (latlngs.length === 0) {
+        throw new Error(
+          '有効なGPS座標がありません'
+        );
+      }
+
+
+      routeLayer =
+        L.polyline(
+          latlngs,
+          {
+            color: '#ff3b30',
+            weight: 5,
+            opacity: 1
+          }
+        );
+
+
+      gpxLoaded = true;
+
+      updateDisplay();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      document.getElementById(
+        'status'
+      ).textContent =
+        '❌ ' + error.message;
+
+    }
+
+  }
+
+
+  /*
+   * ズームによる表示切替
+   */
+
+  function updateDisplay() {
+
+    const zoom =
+      map.getZoom();
+
+
+    /*
+     * ズーム13以上
+     * 実際の走路を表示
+     */
+
+    if (zoom >= 13) {
+
+
+      if (
+        municipalityLayer &&
+        map.hasLayer(municipalityLayer)
+      ) {
+
+        map.removeLayer(
+          municipalityLayer
+        );
+
+      }
+
+
+      if (
+        routeLayer &&
+        !map.hasLayer(routeLayer)
+      ) {
+
+        routeLayer.addTo(map);
+
+      }
+
+
+      if (gpxLoaded) {
+
+        document.getElementById(
+          'status'
+        ).textContent =
+          '詳細表示：実際に走った道路を表示';
+
+      }
+
+
+    /*
+     * ズーム12以下
+     * 市町村の面を表示
+     */
+
+    } else {
+
+
+      if (
+        municipalityLayer &&
+        !map.hasLayer(municipalityLayer)
+      ) {
+
+        municipalityLayer.addTo(map);
+
+      }
+
+
+      if (
+        routeLayer &&
+        map.hasLayer(routeLayer)
+      ) {
+
+        map.removeLayer(
+          routeLayer
+        );
+
+      }
+
+
+      document.getElementById(
+        'status'
+      ).textContent =
+        '広域表示：累積走行距離を「面」の濃淡で表示';
+
+    }
+
+  }
+
+
+  map.on(
+    'zoomend',
+    updateDisplay
+  );
+
+
+  /*
+   * 読み込み開始
+   */
+
+  loadMunicipalities();
   loadGPX();
 
 </script>
