@@ -83,12 +83,23 @@ L.tileLayer(
 
 
 /*
- * 読み込むGPX
+ * ==========================================
+ * 読み込むGPX一覧
+ * ==========================================
+ *
+ * run1はGitHub Pagesから。
+ * run2はPagesで404になるためGitHub Rawから取得。
  */
 
 const gpxFiles = [
-  './run1.gpx',
-  './run2.gpx'
+  {
+    name: 'run1',
+    url: './run1.gpx'
+  },
+  {
+    name: 'run2',
+    url: 'https://raw.githubusercontent.com/atsuoebara/tree-age-map/main/run2.gpx'
+  }
 ];
 
 
@@ -103,7 +114,9 @@ let totalDistanceKm = 0;
 
 
 /*
+ * ==========================================
  * 2点間の距離
+ * ==========================================
  */
 
 function distanceKm(lat1, lon1, lat2, lon2) {
@@ -139,7 +152,9 @@ function distanceKm(lat1, lon1, lat2, lon2) {
 
 
 /*
- * 点がリング内にあるか
+ * ==========================================
+ * 点がリング内にあるか判定
+ * ==========================================
  */
 
 function pointInRing(point, ring) {
@@ -222,6 +237,7 @@ function pointInFeature(point, feature) {
     return false;
   }
 
+
   if (geometry.type === 'Polygon') {
 
     return pointInPolygon(
@@ -229,6 +245,7 @@ function pointInFeature(point, feature) {
       geometry.coordinates
     );
   }
+
 
   if (geometry.type === 'MultiPolygon') {
 
@@ -241,12 +258,15 @@ function pointInFeature(point, feature) {
     );
   }
 
+
   return false;
 }
 
 
 /*
- * 座標から市町村を探す
+ * ==========================================
+ * 座標 → 市町村
+ * ==========================================
  */
 
 function findMunicipality(lat, lon) {
@@ -277,7 +297,9 @@ function findMunicipality(lat, lon) {
 
 
 /*
- * 累積距離から面の濃さ
+ * ==========================================
+ * 累積距離 → 面の濃さ
+ * ==========================================
  */
 
 function getOpacity(km) {
@@ -294,7 +316,9 @@ function getOpacity(km) {
 
 
 /*
- * 行政境界を読み込む
+ * ==========================================
+ * 行政境界読み込み
+ * ==========================================
  */
 
 async function loadMunicipalities() {
@@ -317,28 +341,43 @@ async function loadMunicipalities() {
 
 
 /*
+ * ==========================================
  * GPXを1本読み込む
+ * ==========================================
  */
 
-async function loadOneGPX(fileName) {
+async function loadOneGPX(gpxFile) {
+
+  document.getElementById(
+    'status'
+  ).textContent =
+    '読み込み中：' +
+    gpxFile.name;
+
 
   const response =
-    await fetch(fileName);
+    await fetch(
+      gpxFile.url
+    );
+
 
   if (!response.ok) {
 
     throw new Error(
-      fileName +
+      gpxFile.name +
       ' 取得失敗 HTTP ' +
       response.status
     );
   }
 
+
   const text =
     await response.text();
 
+
   const parser =
     new DOMParser();
+
 
   const xml =
     parser.parseFromString(
@@ -346,15 +385,17 @@ async function loadOneGPX(fileName) {
       'application/xml'
     );
 
+
   if (
     xml.querySelector('parsererror')
   ) {
 
     throw new Error(
-      fileName +
+      gpxFile.name +
       ' XML解析失敗'
     );
   }
+
 
   const points =
     Array.from(
@@ -363,7 +404,9 @@ async function loadOneGPX(fileName) {
       )
     );
 
+
   const latlngs = [];
+
 
   points.forEach(point => {
 
@@ -377,6 +420,7 @@ async function loadOneGPX(fileName) {
         point.getAttribute('lon')
       );
 
+
     if (
       Number.isFinite(lat) &&
       Number.isFinite(lon)
@@ -388,22 +432,24 @@ async function loadOneGPX(fileName) {
     }
   });
 
+
   if (
     latlngs.length < 2
   ) {
 
     throw new Error(
-      fileName +
+      gpxFile.name +
       ' GPS座標不足'
     );
   }
 
 
   /*
-   * このGPXの距離計算
+   * GPX内の各区間を計算
    */
 
   let fileDistanceKm = 0;
+
 
   for (
     let i = 1;
@@ -417,6 +463,7 @@ async function loadOneGPX(fileName) {
     const current =
       latlngs[i];
 
+
     const segmentKm =
       distanceKm(
         prev[0],
@@ -425,11 +472,13 @@ async function loadOneGPX(fileName) {
         current[1]
       );
 
+
     fileDistanceKm +=
       segmentKm;
 
+
     /*
-     * 区間中点で市町村判定
+     * 区間の中点
      */
 
     const midLat =
@@ -438,11 +487,17 @@ async function loadOneGPX(fileName) {
     const midLon =
       (prev[1] + current[1]) / 2;
 
+
+    /*
+     * どの市町村か判定
+     */
+
     const city =
       findMunicipality(
         midLat,
         midLon
       );
+
 
     if (city) {
 
@@ -454,17 +509,24 @@ async function loadOneGPX(fileName) {
         municipalityDistance[city] = 0;
       }
 
+
       municipalityDistance[city] +=
         segmentKm;
     }
+
   }
+
+
+  /*
+   * 全GPXの累積距離へ加算
+   */
 
   totalDistanceKm +=
     fileDistanceKm;
 
 
   /*
-   * 実走路を保存
+   * 実際の走路
    */
 
   const route =
@@ -477,40 +539,44 @@ async function loadOneGPX(fileName) {
       }
     );
 
-  routeGroup.addLayer(route);
 
-  return {
-    fileName,
-    distance: fileDistanceKm
-  };
+  routeGroup.addLayer(
+    route
+  );
+
+
+  console.log(
+    gpxFile.name,
+    fileDistanceKm.toFixed(2) +
+    ' km'
+  );
 }
 
 
 /*
+ * ==========================================
  * 全GPX読み込み
+ * ==========================================
  */
 
 async function loadAllGPX() {
 
   for (
-    const fileName of gpxFiles
+    const gpxFile of
+    gpxFiles
   ) {
 
-    document.getElementById(
-      'status'
-    ).textContent =
-      '読み込み中：' +
-      fileName.replace('./', '');
-
     await loadOneGPX(
-      fileName
+      gpxFile
     );
   }
 }
 
 
 /*
- * 市町村を描画
+ * ==========================================
+ * 市町村面を描画
+ * ==========================================
  */
 
 function drawMunicipalities() {
@@ -527,6 +593,7 @@ function drawMunicipalities() {
 
           const km =
             municipalityDistance[city] || 0;
+
 
           return {
             color: '#14834f',
@@ -552,6 +619,7 @@ function drawMunicipalities() {
             const km =
               municipalityDistance[city] || 0;
 
+
             layer.bindPopup(
               '<strong>' +
               prefecture +
@@ -567,7 +635,9 @@ function drawMunicipalities() {
       }
     );
 
+
   municipalityLayer.addTo(map);
+
 
   map.fitBounds(
     municipalityLayer.getBounds()
@@ -576,7 +646,9 @@ function drawMunicipalities() {
 
 
 /*
+ * ==========================================
  * 市町村別サマリー
+ * ==========================================
  */
 
 function municipalitySummary() {
@@ -592,12 +664,14 @@ function municipalitySummary() {
       (a, b) => b[1] - a[1]
     );
 
+
   if (
     entries.length === 0
   ) {
 
     return '市町村判定なし';
   }
+
 
   return entries
     .map(
@@ -612,7 +686,9 @@ function municipalitySummary() {
 
 
 /*
+ * ==========================================
  * ズーム表示切替
+ * ==========================================
  */
 
 function updateDisplay() {
@@ -620,9 +696,15 @@ function updateDisplay() {
   const zoom =
     map.getZoom();
 
+
+  /*
+   * 詳細表示
+   */
+
   if (
     zoom >= 13
   ) {
+
 
     if (
       municipalityLayer &&
@@ -636,6 +718,7 @@ function updateDisplay() {
       );
     }
 
+
     if (
       !map.hasLayer(
         routeGroup
@@ -645,6 +728,7 @@ function updateDisplay() {
       routeGroup.addTo(map);
     }
 
+
     document.getElementById(
       'status'
     ).textContent =
@@ -652,7 +736,13 @@ function updateDisplay() {
       totalDistanceKm.toFixed(2) +
       ' km';
 
+
+  /*
+   * 広域表示
+   */
+
   } else {
+
 
     if (
       municipalityLayer &&
@@ -664,6 +754,7 @@ function updateDisplay() {
       municipalityLayer.addTo(map);
     }
 
+
     if (
       map.hasLayer(
         routeGroup
@@ -675,6 +766,7 @@ function updateDisplay() {
       );
     }
 
+
     document.getElementById(
       'status'
     ).textContent =
@@ -683,29 +775,57 @@ function updateDisplay() {
       totalDistanceKm.toFixed(2) +
       'km';
   }
+
 }
 
 
 /*
- * 起動
+ * ==========================================
+ * Runner's Rings 起動
+ * ==========================================
  */
 
 async function start() {
 
   try {
 
+    /*
+     * 1. 行政境界
+     */
+
     await loadMunicipalities();
+
+
+    /*
+     * 2. run1 + run2
+     */
 
     await loadAllGPX();
 
+
+    /*
+     * 3. 面を作る
+     */
+
     drawMunicipalities();
 
+
+    /*
+     * 4. 表示
+     */
+
     updateDisplay();
+
+
+    /*
+     * 5. ズーム監視
+     */
 
     map.on(
       'zoomend',
       updateDisplay
     );
+
 
   } catch (error) {
 
@@ -717,6 +837,7 @@ async function start() {
       '❌ ' +
       error.message;
   }
+
 }
 
 
