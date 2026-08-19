@@ -82,7 +82,7 @@
 
   /*
    * 仮の累積走行距離
-   * 後でGPXから自動計算する
+   * 後でGPXから自動集計に置き換える
    */
 
   const runningDistance = {
@@ -114,7 +114,49 @@
 
   let municipalityLayer = null;
   let routeLayer = null;
-  let gpxLoaded = false;
+  let routeDistanceKm = null;
+
+
+  /*
+   * 2点間の距離をkmで計算
+   * Haversine formula
+   */
+
+  function distanceKm(lat1, lon1, lat2, lon2) {
+
+    const R = 6371;
+
+    const toRad =
+      deg => deg * Math.PI / 180;
+
+    const dLat =
+      toRad(lat2 - lat1);
+
+    const dLon =
+      toRad(lon2 - lon1);
+
+
+    const a =
+      Math.sin(dLat / 2) *
+      Math.sin(dLat / 2) +
+
+      Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+
+
+    return R * c;
+  }
 
 
   /*
@@ -134,55 +176,57 @@
         );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
 
-      municipalityLayer = L.geoJSON(data, {
+      municipalityLayer =
+        L.geoJSON(data, {
 
-        style: feature => {
+          style: feature => {
 
-          const name =
-            feature.properties.N03_004;
+            const name =
+              feature.properties.N03_004;
 
-          const km =
-            getDistance(name);
+            const km =
+              getDistance(name);
 
-          return {
-            color: '#14834f',
-            weight: 1.2,
-            fillColor: '#20b26b',
-            fillOpacity: getOpacity(km)
-          };
+            return {
+              color: '#14834f',
+              weight: 1.2,
+              fillColor: '#20b26b',
+              fillOpacity: getOpacity(km)
+            };
 
-        },
-
-
-        onEachFeature: (feature, layer) => {
-
-          const prefecture =
-            feature.properties.N03_001 || '群馬県';
-
-          const city =
-            feature.properties.N03_004 || '名称不明';
-
-          const km =
-            getDistance(city);
+          },
 
 
-          layer.bindPopup(
-            '<strong>' +
-            prefecture +
-            ' ' +
-            city +
-            '</strong><br>' +
-            '累積走行距離：' +
-            km.toLocaleString() +
-            ' km'
-          );
+          onEachFeature: (feature, layer) => {
 
-        }
+            const prefecture =
+              feature.properties.N03_001 || '群馬県';
 
-      });
+            const city =
+              feature.properties.N03_004 || '名称不明';
+
+            const km =
+              getDistance(city);
+
+
+            layer.bindPopup(
+              '<strong>' +
+              prefecture +
+              ' ' +
+              city +
+              '</strong><br>' +
+              '累積走行距離：' +
+              km.toLocaleString() +
+              ' km'
+            );
+
+          }
+
+        });
 
 
       municipalityLayer.addTo(map);
@@ -227,11 +271,14 @@
         );
       }
 
+
       const text =
         await response.text();
 
+
       const parser =
         new DOMParser();
+
 
       const xml =
         parser.parseFromString(
@@ -300,6 +347,34 @@
       }
 
 
+      /*
+       * GPXの総距離を計算
+       */
+
+      let totalKm = 0;
+
+
+      for (
+        let i = 1;
+        i < latlngs.length;
+        i++
+      ) {
+
+        totalKm +=
+          distanceKm(
+            latlngs[i - 1][0],
+            latlngs[i - 1][1],
+            latlngs[i][0],
+            latlngs[i][1]
+          );
+
+      }
+
+
+      routeDistanceKm =
+        totalKm;
+
+
       routeLayer =
         L.polyline(
           latlngs,
@@ -310,8 +385,6 @@
           }
         );
 
-
-      gpxLoaded = true;
 
       updateDisplay();
 
@@ -341,8 +414,7 @@
 
 
     /*
-     * ズーム13以上
-     * 実際の走路を表示
+     * 詳細表示
      */
 
     if (zoom >= 13) {
@@ -370,19 +442,22 @@
       }
 
 
-      if (gpxLoaded) {
+      if (
+        routeDistanceKm !== null
+      ) {
 
         document.getElementById(
           'status'
         ).textContent =
-          '詳細表示：実際に走った道路を表示';
+          '詳細表示：実際に走った道路を表示｜今回の走行距離：' +
+          routeDistanceKm.toFixed(2) +
+          ' km';
 
       }
 
 
     /*
-     * ズーム12以下
-     * 市町村の面を表示
+     * 広域表示
      */
 
     } else {
@@ -410,10 +485,25 @@
       }
 
 
-      document.getElementById(
-        'status'
-      ).textContent =
-        '広域表示：累積走行距離を「面」の濃淡で表示';
+      if (
+        routeDistanceKm !== null
+      ) {
+
+        document.getElementById(
+          'status'
+        ).textContent =
+          '広域表示：累積走行距離を「面」の濃淡で表示｜今回：' +
+          routeDistanceKm.toFixed(2) +
+          ' km';
+
+      } else {
+
+        document.getElementById(
+          'status'
+        ).textContent =
+          '広域表示：累積走行距離を「面」の濃淡で表示';
+
+      }
 
     }
 
@@ -425,10 +515,6 @@
     updateDisplay
   );
 
-
-  /*
-   * 読み込み開始
-   */
 
   loadMunicipalities();
   loadGPX();
