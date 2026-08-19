@@ -243,9 +243,9 @@
 
 </section>
 
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- 過去204ラン -->
 <script src="./runner_rings_archive.js"></script>
 
 <script>
@@ -262,9 +262,6 @@ const CELL_SIZE = 0.0009;
 
 /*
  * 色
- *
- * 面・セル = 蛍光ピンク
- * 実走線   = 赤
  */
 
 const AREA_COLOR = '#ff2bd6';
@@ -315,6 +312,7 @@ const municipalityLayers = {};
 ========================= */
 
 function setStatus(text) {
+
   document.getElementById(
     'status'
   ).textContent = text;
@@ -564,7 +562,8 @@ function findMunicipality(
     municipalityFeatures
   ) {
 
-    const b = item.bbox;
+    const b =
+      item.bbox;
 
     if (
       lon < b.minLon ||
@@ -653,7 +652,8 @@ function getCellBounds(
 
 
 /* =========================
-   年輪の濃さ
+   100mセルの濃さ
+   少し薄く調整
 ========================= */
 
 function getRingOpacity(
@@ -661,26 +661,26 @@ function getRingOpacity(
 ) {
 
   if (count <= 1)
-    return 0.08;
+    return 0.05;
 
   if (count === 2)
-    return 0.18;
+    return 0.11;
 
   if (count <= 4)
-    return 0.32;
+    return 0.20;
 
   if (count <= 7)
-    return 0.48;
+    return 0.30;
 
   if (count <= 15)
-    return 0.64;
+    return 0.42;
 
-  return 0.82;
+  return 0.56;
 }
 
 
 /* =========================
-   ルート → セル
+   ルートからセル生成
 ========================= */
 
 function buildCellsFromRoute(
@@ -763,6 +763,7 @@ function buildCellsFromRoute(
 
 /* =========================
    市町村面の濃さ
+   前より薄く調整
 ========================= */
 
 function getMunicipalityOpacity(
@@ -770,30 +771,30 @@ function getMunicipalityOpacity(
 ) {
 
   if (km <= 0)
-    return 0.015;
+    return 0.008;
 
   if (km < 5)
-    return 0.10;
+    return 0.06;
 
   if (km < 10)
-    return 0.20;
+    return 0.11;
 
   if (km < 20)
-    return 0.32;
+    return 0.18;
 
   if (km < 30)
-    return 0.44;
+    return 0.25;
 
   if (km < 50)
-    return 0.56;
+    return 0.32;
 
   if (km < 100)
-    return 0.66;
+    return 0.40;
 
   if (km < 300)
-    return 0.76;
+    return 0.48;
 
-  return 0.86;
+  return 0.58;
 }
 
 
@@ -1128,6 +1129,7 @@ async function getGPXFiles() {
       file => ({
         name:
           file.name,
+
         url:
           file.download_url
       })
@@ -1440,7 +1442,7 @@ function createYearFilters() {
 
 
 /* =========================
-   選択活動
+   選択中の活動
 ========================= */
 
 function getSelectedActivities() {
@@ -1524,9 +1526,13 @@ function buildSelectedStats() {
   return {
     activities:
       selected,
+
     municipalityDistance,
+
     municipalityRunCount,
+
     ringCells,
+
     totalDistanceKm
   };
 }
@@ -1569,7 +1575,7 @@ function clearMapLayers() {
 
 /* =========================
    実走線
-   赤
+   赤のまま
 ========================= */
 
 function drawRoutes(
@@ -1610,7 +1616,6 @@ function drawRoutes(
 
 /* =========================
    100mセル
-   蛍光ピンク
 ========================= */
 
 function drawRingCells(
@@ -1669,7 +1674,6 @@ function drawRingCells(
 
 /* =========================
    市町村面
-   蛍光ピンク
 ========================= */
 
 function drawMunicipalities(
@@ -1701,7 +1705,12 @@ function drawMunicipalities(
                 AREA_BORDER,
 
               weight:
-                1.2,
+                1.1,
+
+              opacity:
+                km > 0
+                  ? 0.85
+                  : 0.35,
 
               fillColor:
                 AREA_COLOR,
