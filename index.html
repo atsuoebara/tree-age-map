@@ -86,9 +86,6 @@ L.tileLayer(
  * ==========================================
  * 読み込むGPX一覧
  * ==========================================
- *
- * run1はGitHub Pagesから。
- * run2はPagesで404になるためGitHub Rawから取得。
  */
 
 const gpxFiles = [
@@ -98,7 +95,7 @@ const gpxFiles = [
   },
   {
     name: 'run2',
-    url: 'https://raw.githubusercontent.com/atsuoebara/tree-age-map/main/run2.gpx'
+    url: 'https://raw.githubusercontent.com/atsuoebara/tree-age-map/refs/heads/main/%20%20%20%20run2.gpx'
   }
 ];
 
@@ -195,10 +192,6 @@ function pointInRing(point, ring) {
 }
 
 
-/*
- * Polygon判定
- */
-
 function pointInPolygon(point, polygon) {
 
   if (!pointInRing(point, polygon[0])) {
@@ -225,10 +218,6 @@ function pointInPolygon(point, polygon) {
 }
 
 
-/*
- * GeoJSON Feature判定
- */
-
 function pointInFeature(point, feature) {
 
   const geometry = feature.geometry;
@@ -237,7 +226,6 @@ function pointInFeature(point, feature) {
     return false;
   }
 
-
   if (geometry.type === 'Polygon') {
 
     return pointInPolygon(
@@ -245,7 +233,6 @@ function pointInFeature(point, feature) {
       geometry.coordinates
     );
   }
-
 
   if (geometry.type === 'MultiPolygon') {
 
@@ -257,7 +244,6 @@ function pointInFeature(point, feature) {
         )
     );
   }
-
 
   return false;
 }
@@ -444,10 +430,6 @@ async function loadOneGPX(gpxFile) {
   }
 
 
-  /*
-   * GPX内の各区間を計算
-   */
-
   let fileDistanceKm = 0;
 
 
@@ -477,20 +459,12 @@ async function loadOneGPX(gpxFile) {
       segmentKm;
 
 
-    /*
-     * 区間の中点
-     */
-
     const midLat =
       (prev[0] + current[0]) / 2;
 
     const midLon =
       (prev[1] + current[1]) / 2;
 
-
-    /*
-     * どの市町村か判定
-     */
 
     const city =
       findMunicipality(
@@ -513,21 +487,12 @@ async function loadOneGPX(gpxFile) {
       municipalityDistance[city] +=
         segmentKm;
     }
-
   }
 
-
-  /*
-   * 全GPXの累積距離へ加算
-   */
 
   totalDistanceKm +=
     fileDistanceKm;
 
-
-  /*
-   * 実際の走路
-   */
 
   const route =
     L.polyline(
@@ -697,10 +662,6 @@ function updateDisplay() {
     map.getZoom();
 
 
-  /*
-   * 詳細表示
-   */
-
   if (
     zoom >= 13
   ) {
@@ -737,10 +698,6 @@ function updateDisplay() {
       ' km';
 
 
-  /*
-   * 広域表示
-   */
-
   } else {
 
 
@@ -775,7 +732,6 @@ function updateDisplay() {
       totalDistanceKm.toFixed(2) +
       'km';
   }
-
 }
 
 
@@ -789,37 +745,13 @@ async function start() {
 
   try {
 
-    /*
-     * 1. 行政境界
-     */
-
     await loadMunicipalities();
-
-
-    /*
-     * 2. run1 + run2
-     */
 
     await loadAllGPX();
 
-
-    /*
-     * 3. 面を作る
-     */
-
     drawMunicipalities();
 
-
-    /*
-     * 4. 表示
-     */
-
     updateDisplay();
-
-
-    /*
-     * 5. ズーム監視
-     */
 
     map.on(
       'zoomend',
@@ -837,7 +769,6 @@ async function start() {
       '❌ ' +
       error.message;
   }
-
 }
 
 
