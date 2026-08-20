@@ -3,304 +3,300 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Runner's Rings</title>
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
-    * {
-      box-sizing: border-box;
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+      background:#0b1422;
+      color:white
     }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0b1422;
-      color: white;
+    header{
+      background:#0f1d2f;
+      padding:14px 16px 12px
     }
 
-    header {
-      background: #0f1d2f;
-      padding: 14px 16px 12px;
+    header h1{
+      margin:0;
+      font-size:22px
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 22px;
+    header p{
+      margin:4px 0 0;
+      font-size:13px;
+      opacity:.75
     }
 
-    header p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      opacity: 0.75;
+    #status{
+      background:#17283d;
+      color:#dce8f5;
+      padding:8px 14px;
+      font-size:13px;
+      white-space:nowrap;
+      overflow-x:auto
     }
 
-    #status {
-      background: #17283d;
-      color: #dce8f5;
-      padding: 8px 14px;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow-x: auto;
-    }
-
-    #importArea {
-      background: #0f1d2f;
-      padding: 10px 12px 5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+    #importArea{
+      background:#0f1d2f;
+      padding:10px 12px 5px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap
     }
 
     #addRunButton,
-    #savedRunsButton {
-      border: 0;
-      border-radius: 12px;
-      color: white;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 11px 14px;
-      cursor: pointer;
+    #savedRunsButton{
+      border:0;
+      border-radius:12px;
+      color:white;
+      font-size:14px;
+      font-weight:700;
+      padding:11px 14px;
+      cursor:pointer
     }
 
-    #addRunButton {
-      background: #ff2bd6;
+    #addRunButton{
+      background:#ff2bd6
     }
 
-    #savedRunsButton {
-      background: #17283d;
-      border: 1px solid rgba(255,255,255,0.15);
+    #savedRunsButton{
+      background:#17283d;
+      border:1px solid rgba(255,255,255,.15)
     }
 
-    #localInfo {
-      width: 100%;
-      font-size: 11px;
-      opacity: 0.6;
-      padding: 1px 2px 4px;
+    #localInfo{
+      width:100%;
+      font-size:11px;
+      opacity:.6;
+      padding:1px 2px 4px
     }
 
-    #gpxInput {
-      display: none;
+    #gpxInput{
+      display:none
     }
 
-    #savedRunsPanel {
-      display: none;
-      background: #0f1d2f;
-      padding: 7px 12px 12px;
+    #savedRunsPanel{
+      display:none;
+      background:#0f1d2f;
+      padding:7px 12px 12px
     }
 
-    #savedRunsPanel.open {
-      display: block;
+    #savedRunsPanel.open{
+      display:block
     }
 
-    .savedRunsTitle {
-      font-size: 14px;
-      font-weight: 700;
-      margin: 4px 0 9px;
+    .savedRunsTitle{
+      font-size:14px;
+      font-weight:700;
+      margin:4px 0 9px
     }
 
-    #savedRunsList {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    #savedRunsList{
+      display:flex;
+      flex-direction:column;
+      gap:8px
     }
 
-    .savedRunRow {
-      background: #132237;
-      border-radius: 12px;
-      padding: 10px 11px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 10px;
-      align-items: center;
+    .savedRunRow{
+      background:#132237;
+      border-radius:12px;
+      padding:10px 11px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px 10px;
+      align-items:center
     }
 
-    .savedRunMain {
-      min-width: 0;
+    .savedRunMain{
+      min-width:0
     }
 
-    .savedRunName {
-      font-size: 13px;
-      font-weight: 700;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .savedRunName{
+      font-size:13px;
+      font-weight:700;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap
     }
 
-    .savedRunMeta {
-      margin-top: 4px;
-      font-size: 11px;
-      opacity: 0.65;
+    .savedRunMeta{
+      margin-top:4px;
+      font-size:11px;
+      opacity:.65
     }
 
-    .deleteRunButton {
-      border: 1px solid rgba(255,80,80,0.45);
-      background: rgba(255,80,80,0.10);
-      color: #ff7f7f;
-      border-radius: 9px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 700;
+    .deleteRunButton{
+      border:1px solid rgba(255,80,80,.45);
+      background:rgba(255,80,80,.10);
+      color:#ff7f7f;
+      border-radius:9px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:700
     }
 
-    .savedEmpty {
-      background: #132237;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 13px;
-      opacity: 0.7;
+    .savedEmpty{
+      background:#132237;
+      border-radius:12px;
+      padding:12px;
+      font-size:13px;
+      opacity:.7
     }
 
-    #filters {
-      background: #0f1d2f;
-      padding: 9px 10px;
-      display: flex;
-      gap: 7px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+    #filters{
+      background:#0f1d2f;
+      padding:9px 10px;
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch
     }
 
-    .yearButton {
-      flex: 0 0 auto;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: #17283d;
-      color: #dce8f5;
-      border-radius: 999px;
-      padding: 7px 13px;
-      font-size: 13px;
-      font-weight: 600;
+    .yearButton{
+      flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.14);
+      background:#17283d;
+      color:#dce8f5;
+      border-radius:999px;
+      padding:7px 13px;
+      font-size:13px;
+      font-weight:600
     }
 
-    .yearButton.active {
-      background: #ff2bd6;
-      color: white;
-      border-color: #ff2bd6;
+    .yearButton.active{
+      background:#ff2bd6;
+      color:white;
+      border-color:#ff2bd6
     }
 
-    #map {
-      width: 100%;
-      height: 44vh;
-      min-height: 320px;
+    #map{
+      width:100%;
+      height:44vh;
+      min-height:320px
     }
 
-    #dashboard {
-      padding: 18px 16px 32px;
+    #dashboard{
+      padding:18px 16px 32px
     }
 
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px
     }
 
-    .card {
-      background: #132237;
-      border-radius: 14px;
-      padding: 14px 8px;
-      text-align: center;
+    .card{
+      background:#132237;
+      border-radius:14px;
+      padding:14px 8px;
+      text-align:center
     }
 
-    .label {
-      font-size: 10px;
-      letter-spacing: 1px;
-      opacity: 0.65;
-      margin-bottom: 6px;
+    .label{
+      font-size:10px;
+      letter-spacing:1px;
+      opacity:.65;
+      margin-bottom:6px
     }
 
-    .value {
-      font-size: 21px;
-      font-weight: 700;
+    .value{
+      font-size:21px;
+      font-weight:700
     }
 
-    .unit {
-      font-size: 12px;
-      opacity: 0.65;
+    .unit{
+      font-size:12px;
+      opacity:.65
     }
 
-    h2 {
-      font-size: 16px;
-      margin: 22px 0 10px;
+    h2{
+      font-size:16px;
+      margin:22px 0 10px
     }
 
-    #cityList {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    #prefectureList,
+    #cityList{
+      display:flex;
+      flex-direction:column;
+      gap:10px
     }
 
-    .cityCard {
-      background: #132237;
-      border-radius: 14px;
-      padding: 12px 14px 14px;
-      cursor: pointer;
+    .prefectureCard,
+    .cityCard{
+      background:#132237;
+      border-radius:14px;
+      padding:12px 14px 14px;
+      cursor:pointer
     }
 
-    .cityTop {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 9px;
+    .prefectureTop,
+    .cityTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:9px
     }
 
-    .cityName {
-      font-size: 14px;
-      font-weight: 700;
+    .prefectureName,
+    .cityName{
+      font-size:14px;
+      font-weight:700
     }
 
-    .cityDistance {
-      font-size: 14px;
-      opacity: 0.85;
+    .prefectureDistance,
+    .cityDistance{
+      font-size:14px;
+      opacity:.85
     }
 
-    .cityRuns {
-      margin-top: 7px;
-      font-size: 11px;
-      opacity: 0.6;
+    .prefectureRuns,
+    .cityRuns{
+      margin-top:7px;
+      font-size:11px;
+      opacity:.6
     }
 
-    .barTrack {
-      width: 100%;
-      height: 9px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      overflow: hidden;
+    .barTrack{
+      width:100%;
+      height:9px;
+      background:rgba(255,255,255,.08);
+      border-radius:999px;
+      overflow:hidden
     }
 
-    .barFill {
-      height: 100%;
-      background: #ff2bd6;
-      border-radius: 999px;
-      min-width: 3px;
+    .barFill{
+      height:100%;
+      background:#ff2bd6;
+      border-radius:999px;
+      min-width:3px
     }
 
-    .emptyMessage {
-      background: #132237;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 14px;
-      opacity: 0.8;
+    .emptyMessage{
+      background:#132237;
+      border-radius:14px;
+      padding:14px;
+      font-size:14px;
+      opacity:.8
     }
 
-    .leaflet-popup-content-wrapper {
-      border-radius: 14px;
+    .leaflet-popup-content-wrapper{
+      border-radius:14px
     }
 
-    .popup-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .popup-title{
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:8px
     }
 
-    .popup-row {
-      margin-top: 4px;
-      font-size: 13px;
+    .popup-row{
+      margin-top:4px;
+      font-size:13px
     }
   </style>
 </head>
@@ -382,6 +378,16 @@
 
   </div>
 
+  <h2 id="prefectureHeading">
+    都道府県別
+  </h2>
+
+  <div id="prefectureList">
+    <div class="emptyMessage">
+      読み込み中…
+    </div>
+  </div>
+
   <h2 id="cityHeading">
     市町村別
   </h2>
@@ -399,6 +405,10 @@
 
 <script>
 
+/* =====================================
+   基本設定
+===================================== */
+
 const OWNER = 'atsuoebara';
 const REPO = 'tree-age-map';
 const BRANCH = 'main';
@@ -409,182 +419,283 @@ const AREA_COLOR = '#ff2bd6';
 const BORDER_COLOR = '#707580';
 const ROUTE_COLOR = '#ff3b30';
 
+
+/* =====================================
+   MAP
+===================================== */
+
 const map =
-  L.map('map').setView(
-    [36.39, 139.06],
-    9
-  );
+  L.map('map')
+   .setView(
+     [
+       36.39,
+       139.06
+     ],
+     9
+   );
+
 
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution:
+      '&copy; OpenStreetMap contributors'
   }
 ).addTo(map);
+
+
+/* =====================================
+   データ
+===================================== */
 
 let geojsonData = null;
 
 const municipalityFeatures = [];
+
 const activities = [];
-const activitySignatures = new Set();
 
-let selectedYear = 'ALL';
+const activitySignatures =
+  new Set();
 
-let municipalityLayer = null;
+let selectedYear =
+  'ALL';
 
-const routeGroup = L.layerGroup();
-const ringGroup = L.layerGroup();
 
-const municipalityLayers = {};
+/* =====================================
+   Layer
+===================================== */
 
-const DB_NAME = 'RunnersRingsDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'importedGPX';
+let municipalityLayer =
+  null;
+
+const routeGroup =
+  L.layerGroup();
+
+const ringGroup =
+  L.layerGroup();
+
+const municipalityLayers =
+  {};
+
+
+/* =====================================
+   IndexedDB
+===================================== */
+
+const DB_NAME =
+  'RunnersRingsDB';
+
+const DB_VERSION =
+  1;
+
+const STORE_NAME =
+  'importedGPX';
+
 
 function openDatabase() {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
 
-    const request =
-      indexedDB.open(
-        DB_NAME,
-        DB_VERSION
-      );
+      const request =
+        indexedDB.open(
+          DB_NAME,
+          DB_VERSION
+        );
 
-    request.onupgradeneeded =
-      event => {
 
-        const db =
-          event.target.result;
+      request.onupgradeneeded =
+        event => {
 
-        if (
-          !db.objectStoreNames.contains(
-            STORE_NAME
-          )
-        ) {
+          const db =
+            event.target.result;
 
-          db.createObjectStore(
-            STORE_NAME,
-            {
-              keyPath: 'id',
-              autoIncrement: true
-            }
+
+          if (
+            !db.objectStoreNames
+              .contains(
+                STORE_NAME
+              )
+          ) {
+
+            db.createObjectStore(
+              STORE_NAME,
+              {
+                keyPath: 'id',
+                autoIncrement: true
+              }
+            );
+
+          }
+
+        };
+
+
+      request.onsuccess =
+        () =>
+          resolve(
+            request.result
           );
 
-        }
 
-      };
+      request.onerror =
+        () =>
+          reject(
+            request.error
+          );
 
-    request.onsuccess =
-      () => resolve(request.result);
-
-    request.onerror =
-      () => reject(request.error);
-
-  });
+    }
+  );
 
 }
 
-async function saveGPXToDevice(name, text) {
+
+async function saveGPXToDevice(
+  name,
+  text
+) {
 
   const db =
     await openDatabase();
 
-  return new Promise((resolve, reject) => {
 
-    const transaction =
-      db.transaction(
-        STORE_NAME,
-        'readwrite'
-      );
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
 
-    const store =
-      transaction.objectStore(
-        STORE_NAME
-      );
+      const request =
+        db
+          .transaction(
+            STORE_NAME,
+            'readwrite'
+          )
+          .objectStore(
+            STORE_NAME
+          )
+          .add(
+            {
+              name,
+              text,
+              importedAt:
+                new Date()
+                  .toISOString()
+            }
+          );
 
-    const request =
-      store.add({
-        name: name,
-        text: text,
-        importedAt:
-          new Date().toISOString()
-      });
 
-    request.onsuccess =
-      () => resolve(request.result);
+      request.onsuccess =
+        () =>
+          resolve(
+            request.result
+          );
 
-    request.onerror =
-      () => reject(request.error);
 
-  });
+      request.onerror =
+        () =>
+          reject(
+            request.error
+          );
+
+    }
+  );
 
 }
+
 
 async function getSavedGPX() {
 
   const db =
     await openDatabase();
 
-  return new Promise((resolve, reject) => {
 
-    const transaction =
-      db.transaction(
-        STORE_NAME,
-        'readonly'
-      );
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
 
-    const store =
-      transaction.objectStore(
-        STORE_NAME
-      );
+      const request =
+        db
+          .transaction(
+            STORE_NAME,
+            'readonly'
+          )
+          .objectStore(
+            STORE_NAME
+          )
+          .getAll();
 
-    const request =
-      store.getAll();
 
-    request.onsuccess =
-      () => resolve(
-        request.result || []
-      );
+      request.onsuccess =
+        () =>
+          resolve(
+            request.result ||
+            []
+          );
 
-    request.onerror =
-      () => reject(request.error);
 
-  });
+      request.onerror =
+        () =>
+          reject(
+            request.error
+          );
+
+    }
+  );
 
 }
 
-async function deleteSavedGPX(id) {
+
+async function deleteSavedGPX(
+  id
+) {
 
   const db =
     await openDatabase();
 
-  return new Promise((resolve, reject) => {
 
-    const transaction =
-      db.transaction(
-        STORE_NAME,
-        'readwrite'
-      );
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
 
-    const store =
-      transaction.objectStore(
-        STORE_NAME
-      );
+      const request =
+        db
+          .transaction(
+            STORE_NAME,
+            'readwrite'
+          )
+          .objectStore(
+            STORE_NAME
+          )
+          .delete(
+            id
+          );
 
-    const request =
-      store.delete(id);
 
-    request.onsuccess =
-      () => resolve();
+      request.onsuccess =
+        () =>
+          resolve();
 
-    request.onerror =
-      () => reject(request.error);
 
-  });
+      request.onerror =
+        () =>
+          reject(
+            request.error
+          );
+
+    }
+  );
 
 }
+
 
 async function updateLocalInfo() {
 
@@ -593,35 +704,58 @@ async function updateLocalInfo() {
     const saved =
       await getSavedGPX();
 
+
     document
-      .getElementById('localInfo')
+      .getElementById(
+        'localInfo'
+      )
       .textContent =
         '端末保存 ' +
         saved.length +
         ' RUNS';
 
+
     document
-      .getElementById('savedRunsButton')
+      .getElementById(
+        'savedRunsButton'
+      )
       .textContent =
         '保存済みラン ' +
         saved.length;
 
-  } catch(error) {
+  }
+  catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
   }
 
 }
 
-function setStatus(text) {
+
+/* =====================================
+   STATUS
+===================================== */
+
+function setStatus(
+  text
+) {
 
   document
-    .getElementById('status')
+    .getElementById(
+      'status'
+    )
     .textContent =
       text;
 
 }
+
+
+/* =====================================
+   距離
+===================================== */
 
 function distanceKm(
   lat1,
@@ -630,7 +764,8 @@ function distanceKm(
   lon2
 ) {
 
-  const R = 6371;
+  const R =
+    6371;
 
   const toRad =
     deg =>
@@ -639,50 +774,106 @@ function distanceKm(
       180;
 
   const dLat =
-    toRad(lat2 - lat1);
+    toRad(
+      lat2 -
+      lat1
+    );
 
   const dLon =
-    toRad(lon2 - lon1);
+    toRad(
+      lon2 -
+      lon1
+    );
+
 
   const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-    Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) ** 2;
+
+    Math.sin(
+      dLat /
+      2
+    ) ** 2 +
+
+    Math.cos(
+      toRad(
+        lat1
+      )
+    ) *
+
+    Math.cos(
+      toRad(
+        lat2
+      )
+    ) *
+
+    Math.sin(
+      dLon /
+      2
+    ) ** 2;
+
 
   return (
     R *
     2 *
     Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1 - a)
+      Math.sqrt(
+        a
+      ),
+      Math.sqrt(
+        1 -
+        a
+      )
     )
   );
 
 }
 
-function pointInRing(point, ring) {
 
-  const x = point[0];
-  const y = point[1];
+/* =====================================
+   市町村判定
+===================================== */
 
-  let inside = false;
+function pointInRing(
+  point,
+  ring
+) {
+
+  const x =
+    point[0];
+
+  const y =
+    point[1];
+
+  let inside =
+    false;
+
 
   for (
     let i = 0,
         j = ring.length - 1;
+
     i < ring.length;
+
     j = i++
   ) {
 
-    const xi = ring[i][0];
-    const yi = ring[i][1];
+    const xi =
+      ring[i][0];
 
-    const xj = ring[j][0];
-    const yj = ring[j][1];
+    const yi =
+      ring[i][1];
+
+    const xj =
+      ring[j][0];
+
+    const yj =
+      ring[j][1];
+
 
     const intersect =
-      ((yi > y) !== (yj > y)) &&
+
+      ((yi > y) !==
+       (yj > y)) &&
+
       (
         x <
         (
@@ -693,17 +884,28 @@ function pointInRing(point, ring) {
         xi
       );
 
-    if (intersect) {
-      inside = !inside;
+
+    if (
+      intersect
+    ) {
+
+      inside =
+        !inside;
+
     }
 
   }
+
 
   return inside;
 
 }
 
-function pointInPolygon(point, polygon) {
+
+function pointInPolygon(
+  point,
+  polygon
+) {
 
   if (
     !pointInRing(
@@ -711,8 +913,11 @@ function pointInPolygon(point, polygon) {
       polygon[0]
     )
   ) {
+
     return false;
+
   }
+
 
   for (
     let i = 1;
@@ -726,23 +931,36 @@ function pointInPolygon(point, polygon) {
         polygon[i]
       )
     ) {
+
       return false;
+
     }
 
   }
+
 
   return true;
 
 }
 
-function pointInFeature(point, feature) {
+
+function pointInFeature(
+  point,
+  feature
+) {
 
   const geometry =
     feature.geometry;
 
-  if (!geometry) {
+
+  if (
+    !geometry
+  ) {
+
     return false;
+
   }
+
 
   if (
     geometry.type ===
@@ -756,24 +974,32 @@ function pointInFeature(point, feature) {
 
   }
 
+
   if (
     geometry.type ===
     'MultiPolygon'
   ) {
 
-    return geometry.coordinates.some(
-      polygon =>
-        pointInPolygon(
-          point,
-          polygon
-        )
-    );
+    return geometry.coordinates
+      .some(
+        polygon =>
+          pointInPolygon(
+            point,
+            polygon
+          )
+      );
 
   }
+
 
   return false;
 
 }
+
+
+/* =====================================
+   BBOX
+===================================== */
 
 function collectCoordinates(
   coords,
@@ -785,10 +1011,14 @@ function collectCoordinates(
     'number'
   ) {
 
-    output.push(coords);
+    output.push(
+      coords
+    );
+
     return;
 
   }
+
 
   coords.forEach(
     child =>
@@ -800,37 +1030,69 @@ function collectCoordinates(
 
 }
 
-function getFeatureBBox(feature) {
 
-  const points = [];
+function getFeatureBBox(
+  feature
+) {
+
+  const points =
+    [];
+
 
   collectCoordinates(
     feature.geometry.coordinates,
     points
   );
 
-  let minLon = Infinity;
-  let minLat = Infinity;
-  let maxLon = -Infinity;
-  let maxLat = -Infinity;
+
+  let minLon =
+    Infinity;
+
+  let minLat =
+    Infinity;
+
+  let maxLon =
+    -Infinity;
+
+  let maxLat =
+    -Infinity;
+
 
   points.forEach(
-    ([lon, lat]) => {
+    (
+      [
+        lon,
+        lat
+      ]
+    ) => {
 
       minLon =
-        Math.min(minLon, lon);
+        Math.min(
+          minLon,
+          lon
+        );
 
       minLat =
-        Math.min(minLat, lat);
+        Math.min(
+          minLat,
+          lat
+        );
 
       maxLon =
-        Math.max(maxLon, lon);
+        Math.max(
+          maxLon,
+          lon
+        );
 
       maxLat =
-        Math.max(maxLat, lat);
+        Math.max(
+          maxLat,
+          lat
+        );
 
     }
   );
+
 
   return {
     minLon,
@@ -841,33 +1103,96 @@ function getFeatureBBox(feature) {
 
 }
 
-function getPrefecture(feature) {
+
+/* =====================================
+   都道府県・市町村
+===================================== */
+
+function getPrefecture(
+  feature
+) {
 
   return (
-    feature.properties.N03_001 ||
+    feature
+      ?.properties
+      ?.N03_001 ||
     '都道府県不明'
   );
 
 }
 
-function getCity(feature) {
+
+function getCity(
+  feature
+) {
 
   return (
-    feature.properties.N03_004 ||
+    feature
+      ?.properties
+      ?.N03_004 ||
     '名称不明'
   );
 
 }
 
-function getCityKey(feature) {
+
+function getCityKey(
+  feature
+) {
 
   return (
-    getPrefecture(feature) +
+    getPrefecture(
+      feature
+    ) +
     '|' +
-    getCity(feature)
+    getCity(
+      feature
+    )
   );
 
 }
+
+
+function splitCityKey(
+  key
+) {
+
+  const i =
+    key.indexOf(
+      '|'
+    );
+
+
+  if (
+    i ===
+    -1
+  ) {
+
+    return {
+      prefecture: '',
+      city: key
+    };
+
+  }
+
+
+  return {
+
+    prefecture:
+      key.slice(
+        0,
+        i
+      ),
+
+    city:
+      key.slice(
+        i + 1
+      )
+
+  };
+
+}
+
 
 function findMunicipalityFeature(
   lat,
@@ -875,7 +1200,11 @@ function findMunicipalityFeature(
 ) {
 
   const point =
-    [lon, lat];
+    [
+      lon,
+      lat
+    ];
+
 
   for (
     const item of
@@ -885,14 +1214,18 @@ function findMunicipalityFeature(
     const b =
       item.bbox;
 
+
     if (
       lon < b.minLon ||
       lon > b.maxLon ||
       lat < b.minLat ||
       lat > b.maxLat
     ) {
+
       continue;
+
     }
+
 
     if (
       pointInFeature(
@@ -900,85 +1233,151 @@ function findMunicipalityFeature(
         item.feature
       )
     ) {
+
       return item.feature;
+
     }
 
   }
+
 
   return null;
 
 }
 
-function getCellKey(lat, lon) {
 
-  const latIndex =
+/* =====================================
+   100mセル
+===================================== */
+
+function getCellKey(
+  lat,
+  lon
+) {
+
+  return (
     Math.floor(
       lat /
       CELL_SIZE
-    );
-
-  const lonIndex =
+    ) +
+    ',' +
     Math.floor(
       lon /
       CELL_SIZE
-    );
-
-  return (
-    latIndex +
-    ',' +
-    lonIndex
+    )
   );
 
 }
 
-function getCellBounds(key) {
+
+function getCellBounds(
+  key
+) {
 
   const [
-    latIndex,
-    lonIndex
+    a,
+    b
   ] =
     key
       .split(',')
-      .map(Number);
+      .map(
+        Number
+      );
+
 
   const south =
-    latIndex *
+    a *
     CELL_SIZE;
 
   const west =
-    lonIndex *
+    b *
     CELL_SIZE;
 
+
   return [
-    [south, west],
     [
-      south + CELL_SIZE,
-      west + CELL_SIZE
+      south,
+      west
+    ],
+    [
+      south +
+      CELL_SIZE,
+      west +
+      CELL_SIZE
     ]
   ];
 
 }
 
-function getRingOpacity(count) {
 
-  if (count <= 1) return 0.10;
-  if (count === 2) return 0.16;
-  if (count <= 4) return 0.24;
-  if (count <= 7) return 0.34;
-  if (count <= 15) return 0.46;
+/* =====================================
+   セル濃度
+===================================== */
+
+function getRingOpacity(
+  count
+) {
+
+  if (
+    count <=
+    1
+  )
+    return 0.10;
+
+
+  if (
+    count ===
+    2
+  )
+    return 0.16;
+
+
+  if (
+    count <=
+    4
+  )
+    return 0.24;
+
+
+  if (
+    count <=
+    7
+  )
+    return 0.34;
+
+
+  if (
+    count <=
+    15
+  )
+    return 0.46;
+
 
   return 0.58;
 
 }
 
-function buildCellsFromRoute(latlngs) {
+
+/* =====================================
+   ルート → セル
+===================================== */
+
+function buildCellsFromRoute(
+  latlngs
+) {
 
   const cells =
     new Set();
 
-  if (!latlngs.length) {
+
+  if (
+    !latlngs.length
+  ) {
+
     return cells;
+
   }
+
 
   cells.add(
     getCellKey(
@@ -987,6 +1386,7 @@ function buildCellsFromRoute(latlngs) {
     )
   );
 
+
   for (
     let i = 1;
     i < latlngs.length;
@@ -994,10 +1394,13 @@ function buildCellsFromRoute(latlngs) {
   ) {
 
     const a =
-      latlngs[i - 1];
+      latlngs[
+        i - 1
+      ];
 
     const b =
       latlngs[i];
+
 
     const km =
       distanceKm(
@@ -1006,6 +1409,7 @@ function buildCellsFromRoute(latlngs) {
         b[0],
         b[1]
       );
+
 
     const steps =
       Math.max(
@@ -1016,6 +1420,7 @@ function buildCellsFromRoute(latlngs) {
         )
       );
 
+
     for (
       let s = 0;
       s <= steps;
@@ -1023,21 +1428,27 @@ function buildCellsFromRoute(latlngs) {
     ) {
 
       const t =
-        s / steps;
+        s /
+        steps;
+
 
       const lat =
         a[0] +
         (
-          b[0] - a[0]
+          b[0] -
+          a[0]
         ) *
         t;
+
 
       const lon =
         a[1] +
         (
-          b[1] - a[1]
+          b[1] -
+          a[1]
         ) *
         t;
+
 
       cells.add(
         getCellKey(
@@ -1050,25 +1461,38 @@ function buildCellsFromRoute(latlngs) {
 
   }
 
+
   return cells;
 
 }
 
-function getMunicipalityOpacity(km) {
 
-  if (km <= 0) return 0;
-  if (km < 5) return 0.04;
-  if (km < 10) return 0.08;
-  if (km < 20) return 0.14;
-  if (km < 30) return 0.22;
-  if (km < 50) return 0.30;
-  if (km < 100) return 0.40;
-  if (km < 200) return 0.50;
-  if (km < 400) return 0.60;
+/* =====================================
+   市町村濃度
+===================================== */
+
+function getMunicipalityOpacity(
+  km
+) {
+
+  if(km <= 0) return 0;
+  if(km < 5) return 0.04;
+  if(km < 10) return 0.08;
+  if(km < 20) return 0.14;
+  if(km < 30) return 0.22;
+  if(km < 50) return 0.30;
+  if(km < 100) return 0.40;
+  if(km < 200) return 0.50;
+  if(km < 400) return 0.60;
 
   return 0.70;
 
 }
+
+
+/* =====================================
+   行政境界
+===================================== */
 
 async function loadMunicipalities() {
 
@@ -1076,12 +1500,16 @@ async function loadMunicipalities() {
     '全国の行政境界を読み込み中…'
   );
 
+
   const response =
     await fetch(
       './runners-rings-japan-web.geojson'
     );
 
-  if (!response.ok) {
+
+  if (
+    !response.ok
+  ) {
 
     throw new Error(
       '全国行政境界データ取得失敗'
@@ -1089,34 +1517,56 @@ async function loadMunicipalities() {
 
   }
 
+
   geojsonData =
     await response.json();
 
-  municipalityFeatures.length = 0;
 
-  geojsonData.features.forEach(
-    feature => {
+  municipalityFeatures.length =
+    0;
 
-      municipalityFeatures.push({
-        feature: feature,
-        bbox:
-          getFeatureBBox(feature)
-      });
 
-    }
-  );
+  geojsonData.features
+    .forEach(
+      feature => {
+
+        municipalityFeatures.push(
+          {
+            feature,
+            bbox:
+              getFeatureBBox(
+                feature
+              )
+          }
+        );
+
+      }
+    );
 
 }
+
+
+/* =====================================
+   ルート解析
+===================================== */
 
 function analyseRoute(
   latlngs,
   targetDistanceKm = null
 ) {
 
-  const cityDistances = {};
-  const cities = new Set();
+  const cityDistances =
+    {};
 
-  let calculatedKm = 0;
+  const cities =
+    new Set();
+
+  const prefectures =
+    new Set();
+
+  let calculatedKm =
+    0;
+
 
   for (
     let i = 1;
@@ -1125,10 +1575,13 @@ function analyseRoute(
   ) {
 
     const prev =
-      latlngs[i - 1];
+      latlngs[
+        i - 1
+      ];
 
     const current =
       latlngs[i];
+
 
     const segmentKm =
       distanceKm(
@@ -1138,62 +1591,88 @@ function analyseRoute(
         current[1]
       );
 
+
     calculatedKm +=
       segmentKm;
 
-    const midLat =
-      (
-        prev[0] +
-        current[0]
-      ) /
-      2;
-
-    const midLon =
-      (
-        prev[1] +
-        current[1]
-      ) /
-      2;
 
     const feature =
       findMunicipalityFeature(
-        midLat,
-        midLon
+        (
+          prev[0] +
+          current[0]
+        ) /
+        2,
+
+        (
+          prev[1] +
+          current[1]
+        ) /
+        2
       );
 
-    if (feature) {
+
+    if (
+      feature
+    ) {
 
       const cityKey =
-        getCityKey(feature);
+        getCityKey(
+          feature
+        );
 
-      cityDistances[cityKey] =
+
+      const prefecture =
+        getPrefecture(
+          feature
+        );
+
+
+      cityDistances[
+        cityKey
+      ] =
         (
-          cityDistances[cityKey] ||
+          cityDistances[
+            cityKey
+          ] ||
           0
         ) +
         segmentKm;
 
-      cities.add(cityKey);
+
+      cities.add(
+        cityKey
+      );
+
+
+      prefectures.add(
+        prefecture
+      );
 
     }
 
   }
 
+
   if (
     targetDistanceKm &&
-    calculatedKm > 0
+    calculatedKm >
+    0
   ) {
 
     const scale =
       targetDistanceKm /
       calculatedKm;
 
+
     Object.keys(
       cityDistances
     ).forEach(
-      cityKey => {
+      key => {
 
-        cityDistances[cityKey] *=
+        cityDistances[
+          key
+        ] *=
           scale;
 
       }
@@ -1201,131 +1680,215 @@ function analyseRoute(
 
   }
 
+
   return {
-    cityDistances:
-      cityDistances,
+
+    cityDistances,
 
     cities:
-      Array.from(cities),
+      Array.from(
+        cities
+      ),
 
-    calculatedKm:
-      calculatedKm
+    prefectures:
+      Array.from(
+        prefectures
+      ),
+
+    calculatedKm
+
   };
 
 }
 
-function createActivitySignature(activity) {
+
+/* =====================================
+   活動シグネチャ
+===================================== */
+
+function createActivitySignature(
+  activity
+) {
 
   const first =
     activity.latlngs[0];
 
   const last =
     activity.latlngs[
-      activity.latlngs.length - 1
+      activity.latlngs.length -
+      1
     ];
+
 
   const round4 =
     value =>
-      Number(value).toFixed(4);
+      Number(
+        value
+      ).toFixed(
+        4
+      );
+
 
   const datePart =
+
     activity.date &&
     !Number.isNaN(
       activity.date.getTime()
     )
+
       ? [
-          activity.date.getFullYear(),
+
+          activity.date
+            .getFullYear(),
 
           String(
-            activity.date.getMonth() + 1
-          ).padStart(2, '0'),
+            activity.date
+              .getMonth() +
+            1
+          ).padStart(
+            2,
+            '0'
+          ),
 
           String(
-            activity.date.getDate()
-          ).padStart(2, '0')
+            activity.date
+              .getDate()
+          ).padStart(
+            2,
+            '0'
+          )
 
-        ].join('-')
+        ].join(
+          '-'
+        )
+
       : 'nodate';
 
+
   return [
+
     datePart,
-    activity.distance.toFixed(2),
-    activity.latlngs.length,
-    round4(first[0]),
-    round4(first[1]),
-    round4(last[0]),
-    round4(last[1])
-  ].join('|');
+
+    activity.distance
+      .toFixed(
+        2
+      ),
+
+    activity.latlngs
+      .length,
+
+    round4(
+      first[0]
+    ),
+
+    round4(
+      first[1]
+    ),
+
+    round4(
+      last[0]
+    ),
+
+    round4(
+      last[1]
+    )
+
+  ].join(
+    '|'
+  );
 
 }
 
-function registerActivity(activity) {
+
+function registerActivity(
+  activity
+) {
 
   const signature =
     createActivitySignature(
       activity
     );
 
+
   if (
-    activitySignatures.has(
-      signature
-    )
+    activitySignatures
+      .has(
+        signature
+      )
   ) {
+
     return false;
+
   }
+
 
   activity.signature =
     signature;
 
-  activitySignatures.add(
-    signature
-  );
+
+  activitySignatures
+    .add(
+      signature
+    );
+
 
   activities.push(
     activity
   );
 
+
   return true;
 
 }
 
-function sameCalendarDate(a, b) {
 
-  if (
-    !a ||
-    !b ||
-    Number.isNaN(a.getTime()) ||
-    Number.isNaN(b.getTime())
-  ) {
-    return false;
-  }
+/* =====================================
+   強化版 重複チェック
+===================================== */
 
-  return (
+function sameCalendarDate(
+  a,
+  b
+) {
+
+  return !!(
+    a &&
+    b &&
+    !Number.isNaN(
+      a.getTime()
+    ) &&
+    !Number.isNaN(
+      b.getTime()
+    ) &&
     a.getFullYear() ===
       b.getFullYear() &&
-
     a.getMonth() ===
       b.getMonth() &&
-
     a.getDate() ===
       b.getDate()
   );
 
 }
 
+
 function getRouteSamples(
   latlngs,
   count = 7
 ) {
 
-  const result = [];
+  const result =
+    [];
+
 
   if (
     latlngs.length <
     2
   ) {
+
     return result;
+
   }
+
 
   for (
     let i = 0;
@@ -1333,30 +1896,34 @@ function getRouteSamples(
     i++
   ) {
 
-    const ratio =
-      i /
-      (count - 1);
-
-    const index =
-      Math.round(
-        ratio *
-        (
-          latlngs.length -
-          1
-        )
-      );
-
     result.push(
-      latlngs[index]
+      latlngs[
+        Math.round(
+          i /
+          (
+            count -
+            1
+          ) *
+          (
+            latlngs.length -
+            1
+          )
+        )
+      ]
     );
 
   }
+
 
   return result;
 
 }
 
-function routeSimilarity(a, b) {
+
+function routeSimilarity(
+  a,
+  b
+) {
 
   const samplesA =
     getRouteSamples(
@@ -1368,16 +1935,24 @@ function routeSimilarity(a, b) {
       b.latlngs
     );
 
+
   if (
     samplesA.length !==
       samplesB.length ||
-    samplesA.length === 0
+    !samplesA.length
   ) {
+
     return false;
+
   }
 
-  let totalKm = 0;
-  let maxKm = 0;
+
+  let total =
+    0;
+
+  let max =
+    0;
+
 
   for (
     let i = 0;
@@ -1387,32 +1962,38 @@ function routeSimilarity(a, b) {
 
     const d =
       distanceKm(
+
         samplesA[i][0],
         samplesA[i][1],
+
         samplesB[i][0],
         samplesB[i][1]
+
       );
 
-    totalKm += d;
 
-    maxKm =
+    total +=
+      d;
+
+    max =
       Math.max(
-        maxKm,
+        max,
         d
       );
 
   }
 
-  const averageKm =
-    totalKm /
-    samplesA.length;
 
   return (
-    averageKm <= 0.12 &&
-    maxKm <= 0.30
+    total /
+    samplesA.length <=
+      0.12 &&
+    max <=
+      0.30
   );
 
 }
+
 
 function findPossibleDuplicate(
   newActivity
@@ -1423,18 +2004,27 @@ function findPossibleDuplicate(
     !Array.isArray(
       newActivity.latlngs
     ) ||
-    newActivity.latlngs.length < 2
+    newActivity.latlngs.length <
+      2
   ) {
+
     return null;
+
   }
 
+
   const newStart =
-    newActivity.latlngs[0];
+    newActivity.latlngs[
+      0
+    ];
+
 
   const newEnd =
     newActivity.latlngs[
-      newActivity.latlngs.length - 1
+      newActivity.latlngs.length -
+      1
     ];
+
 
   for (
     const oldActivity of
@@ -1445,76 +2035,86 @@ function findPossibleDuplicate(
       !Array.isArray(
         oldActivity.latlngs
       ) ||
-      oldActivity.latlngs.length < 2
-    ) {
-      continue;
-    }
-
-    if (
+      oldActivity.latlngs.length <
+        2 ||
       !sameCalendarDate(
         newActivity.date,
         oldActivity.date
       )
     ) {
+
       continue;
+
     }
 
-    const distanceDifference =
+
+    const difference =
       Math.abs(
         newActivity.distance -
         oldActivity.distance
       );
 
-    const allowedDifference =
+
+    const allowed =
       Math.max(
         0.5,
-        oldActivity.distance * 0.08
+        oldActivity.distance *
+        0.08
       );
 
+
     if (
-      distanceDifference >
-      allowedDifference
+      difference >
+      allowed
     ) {
+
       continue;
+
     }
 
-    const oldStart =
-      oldActivity.latlngs[0];
 
-    const startDifference =
+    const oldStart =
+      oldActivity.latlngs[
+        0
+      ];
+
+
+    const oldEnd =
+      oldActivity.latlngs[
+        oldActivity.latlngs.length -
+        1
+      ];
+
+
+    if (
       distanceKm(
         newStart[0],
         newStart[1],
         oldStart[0],
         oldStart[1]
-      );
-
-    if (
-      startDifference >
+      ) >
       0.4
     ) {
+
       continue;
+
     }
 
-    const oldEnd =
-      oldActivity.latlngs[
-        oldActivity.latlngs.length - 1
-      ];
 
-    const endDifference =
+    if (
       distanceKm(
         newEnd[0],
         newEnd[1],
         oldEnd[0],
         oldEnd[1]
-      );
-
-    if (
-      endDifference >
+      ) >
       0.6
     ) {
+
       continue;
+
     }
+
 
     if (
       !routeSimilarity(
@@ -1522,16 +2122,25 @@ function findPossibleDuplicate(
         oldActivity
       )
     ) {
+
       continue;
+
     }
+
 
     return oldActivity;
 
   }
 
+
   return null;
 
 }
+
+
+/* =====================================
+   GPX XML → Activity
+===================================== */
 
 function buildActivityFromGPXText(
   text,
@@ -1546,117 +2155,124 @@ function buildActivityFromGPXText(
         'application/xml'
       );
 
+
   if (
     xml.querySelector(
       'parsererror'
     )
   ) {
+
     throw new Error(
       'GPXを読み込めません'
     );
+
   }
 
-  const metadataTime =
+
+  const timeElement =
     xml.querySelector(
       'metadata > time'
-    );
-
-  const trackTime =
+    ) ||
     xml.querySelector(
       'trkpt > time'
     );
 
-  const timeElement =
-    metadataTime ||
-    trackTime;
 
-  let date = null;
+  let date =
+    null;
 
-  if (timeElement) {
+
+  if (
+    timeElement
+  ) {
 
     const d =
       new Date(
         timeElement.textContent
       );
 
+
     if (
       !Number.isNaN(
         d.getTime()
       )
     ) {
-      date = d;
+
+      date =
+        d;
+
     }
 
   }
 
-  const year =
-    date
-      ? date.getFullYear()
-      : null;
 
-  const points =
+  const latlngs =
     Array.from(
       xml.getElementsByTagName(
         'trkpt'
       )
+    )
+    .map(
+      point => [
+
+        parseFloat(
+          point.getAttribute(
+            'lat'
+          )
+        ),
+
+        parseFloat(
+          point.getAttribute(
+            'lon'
+          )
+        )
+
+      ]
+    )
+    .filter(
+      point =>
+        Number.isFinite(
+          point[0]
+        ) &&
+        Number.isFinite(
+          point[1]
+        )
     );
 
-  const latlngs =
-    points
-      .map(
-        point => [
-          parseFloat(
-            point.getAttribute(
-              'lat'
-            )
-          ),
-          parseFloat(
-            point.getAttribute(
-              'lon'
-            )
-          )
-        ]
-      )
-      .filter(
-        point =>
-          Number.isFinite(
-            point[0]
-          ) &&
-          Number.isFinite(
-            point[1]
-          )
-      );
 
   if (
     latlngs.length <
     2
   ) {
+
     throw new Error(
       'GPS座標が不足しています'
     );
+
   }
+
 
   const analysis =
     analyseRoute(
       latlngs
     );
 
-  const cells =
-    buildCellsFromRoute(
-      latlngs
-    );
 
   return {
-    source: source,
-    name: name,
-    date: date,
-    year: year,
+
+    source,
+    name,
+    date,
+
+    year:
+      date
+        ? date.getFullYear()
+        : null,
 
     distance:
       analysis.calculatedKm,
 
-    latlngs:
-      latlngs,
+    latlngs,
 
     cityDistances:
       analysis.cityDistances,
@@ -1664,16 +2280,30 @@ function buildActivityFromGPXText(
     cities:
       analysis.cities,
 
+    prefectures:
+      analysis.prefectures,
+
     cells:
-      Array.from(cells)
+      Array.from(
+        buildCellsFromRoute(
+          latlngs
+        )
+      )
+
   };
 
 }
+
+
+/* =====================================
+   過去ラン
+===================================== */
 
 function loadArchiveActivities() {
 
   const archive =
     window.RUNNERS_RINGS_ARCHIVE;
+
 
   if (
     !Array.isArray(
@@ -1689,7 +2319,10 @@ function loadArchiveActivities() {
 
   }
 
-  let loaded = 0;
+
+  let loaded =
+    0;
+
 
   archive.forEach(
     run => {
@@ -1698,17 +2331,28 @@ function loadArchiveActivities() {
         !Array.isArray(
           run.route
         ) ||
-        run.route.length < 2
+        run.route.length <
+          2
       ) {
+
         return;
+
       }
+
 
       const latlngs =
         run.route
           .map(
             point => [
-              Number(point[0]),
-              Number(point[1])
+
+              Number(
+                point[0]
+              ),
+
+              Number(
+                point[1]
+              )
+
             ]
           )
           .filter(
@@ -1721,54 +2365,54 @@ function loadArchiveActivities() {
               )
           );
 
+
       if (
         latlngs.length <
         2
       ) {
+
         return;
+
       }
+
 
       const storedDistance =
         Number(
           run.distance_km
         );
 
+
       const analysis =
         analyseRoute(
+
           latlngs,
+
           Number.isFinite(
             storedDistance
           )
+
             ? storedDistance
+
             : null
+
         );
 
-      const cells =
-        buildCellsFromRoute(
-          latlngs
-        );
 
       const date =
         run.date
+
           ? new Date(
               run.date +
               'T12:00:00'
             )
+
           : null;
 
-      const year =
-        Number(run.year) ||
-        (
-          date &&
-          !Number.isNaN(
-            date.getTime()
-          )
-            ? date.getFullYear()
-            : null
-        );
 
       const activity = {
-        source: 'archive',
+
+        source:
+          'archive',
 
         id:
           run.id,
@@ -1777,21 +2421,33 @@ function loadArchiveActivities() {
           run.name ||
           '過去ラン',
 
-        date:
-          date,
+        date,
 
         year:
-          year,
+          Number(
+            run.year
+          ) ||
+          (
+            date &&
+            !Number.isNaN(
+              date.getTime()
+            )
+
+              ? date.getFullYear()
+
+              : null
+          ),
 
         distance:
           Number.isFinite(
             storedDistance
           )
+
             ? storedDistance
+
             : analysis.calculatedKm,
 
-        latlngs:
-          latlngs,
+        latlngs,
 
         cityDistances:
           analysis.cityDistances,
@@ -1799,24 +2455,41 @@ function loadArchiveActivities() {
         cities:
           analysis.cities,
 
+        prefectures:
+          analysis.prefectures,
+
         cells:
-          Array.from(cells)
+          Array.from(
+            buildCellsFromRoute(
+              latlngs
+            )
+          )
+
       };
+
 
       if (
         registerActivity(
           activity
         )
       ) {
+
         loaded++;
+
       }
 
     }
   );
 
+
   return loaded;
 
 }
+
+
+/* =====================================
+   GitHub GPX
+===================================== */
 
 async function getGPXFiles() {
 
@@ -1824,26 +2497,37 @@ async function getGPXFiles() {
     '現在のGPXを探しています…'
   );
 
-  const apiURL =
-    'https://api.github.com/repos/' +
-    OWNER +
-    '/' +
-    REPO +
-    '/contents?ref=' +
-    BRANCH;
 
   const response =
     await fetch(
-      apiURL,
+
+      'https://api.github.com/repos/' +
+
+      OWNER +
+      '/' +
+      REPO +
+
+      '/contents?ref=' +
+
+      BRANCH,
+
       {
+
         headers: {
-          'Accept':
+
+          Accept:
             'application/vnd.github+json'
+
         }
+
       }
+
     );
 
-  if (!response.ok) {
+
+  if (
+    !response.ok
+  ) {
 
     throw new Error(
       'GPX一覧取得失敗 HTTP ' +
@@ -1852,113 +2536,146 @@ async function getGPXFiles() {
 
   }
 
-  const files =
-    await response.json();
 
-  return files
-    .filter(
-      file =>
-        file.type === 'file' &&
-        file.name
-          .toLowerCase()
-          .endsWith('.gpx')
-    )
-    .map(
-      file => ({
-        name:
-          file.name,
-
-        url:
-          file.download_url
-      })
-    );
+  return (
+    await response.json()
+  )
+  .filter(
+    file =>
+      file.type ===
+        'file' &&
+      file.name
+        .toLowerCase()
+        .endsWith(
+          '.gpx'
+        )
+  )
+  .map(
+    file => ({
+      name:
+        file.name,
+      url:
+        file.download_url
+    })
+  );
 
 }
 
-async function loadOneGPX(gpxFile) {
+
+async function loadOneGPX(
+  file
+) {
 
   const response =
     await fetch(
-      gpxFile.url
+      file.url
     );
 
-  if (!response.ok) {
+
+  if (
+    !response.ok
+  ) {
 
     throw new Error(
-      gpxFile.name +
+      file.name +
       ' 取得失敗 HTTP ' +
       response.status
     );
 
   }
 
-  const text =
-    await response.text();
-
-  const activity =
-    buildActivityFromGPXText(
-      text,
-      gpxFile.name,
-      'github'
-    );
 
   return registerActivity(
-    activity
+    buildActivityFromGPXText(
+
+      await response.text(),
+
+      file.name,
+
+      'github'
+
+    )
   );
 
 }
 
-async function loadAllGPX(gpxFiles) {
 
-  let loaded = 0;
+async function loadAllGPX(
+  files
+) {
+
+  let loaded =
+    0;
+
 
   for (
     let i = 0;
-    i < gpxFiles.length;
+    i < files.length;
     i++
   ) {
 
     setStatus(
+
       '現在GPX ' +
+
       (i + 1) +
+
       '/' +
-      gpxFiles.length +
+
+      files.length +
+
       ' 読み込み中…'
+
     );
 
-    const added =
-      await loadOneGPX(
-        gpxFiles[i]
-      );
 
-    if (added) {
+    if (
+      await loadOneGPX(
+        files[i]
+      )
+    ) {
+
       loaded++;
+
     }
 
   }
+
 
   return loaded;
 
 }
 
+
+/* =====================================
+   端末保存GPX
+===================================== */
+
 async function loadSavedActivities() {
 
   let saved;
+
 
   try {
 
     saved =
       await getSavedGPX();
 
-  } catch(error) {
+  }
+  catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     return 0;
 
   }
 
-  let loaded = 0;
+
+  let loaded =
+    0;
+
 
   for (
     const item of
@@ -1969,23 +2686,32 @@ async function loadSavedActivities() {
 
       const activity =
         buildActivityFromGPXText(
+
           item.text,
+
           item.name,
+
           'local'
+
         );
+
 
       activity.localId =
         item.id;
+
 
       if (
         registerActivity(
           activity
         )
       ) {
+
         loaded++;
+
       }
 
-    } catch(error) {
+    }
+    catch(error) {
 
       console.warn(
         '保存GPX復元失敗',
@@ -1997,11 +2723,19 @@ async function loadSavedActivities() {
 
   }
 
+
   return loaded;
 
 }
 
-function formatRunDate(date) {
+
+/* =====================================
+   保存済みラン一覧
+===================================== */
+
+function formatRunDate(
+  date
+) {
 
   if (
     !date ||
@@ -2009,31 +2743,39 @@ function formatRunDate(date) {
       date.getTime()
     )
   ) {
+
     return '日付不明';
+
   }
 
-  const y =
-    date.getFullYear();
-
-  const m =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, '0');
-
-  const d =
-    String(
-      date.getDate()
-    ).padStart(2, '0');
 
   return (
-    y +
+
+    date.getFullYear() +
+
     '/' +
-    m +
+
+    String(
+      date.getMonth() +
+      1
+    ).padStart(
+      2,
+      '0'
+    ) +
+
     '/' +
-    d
+
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      '0'
+    )
+
   );
 
 }
+
 
 async function renderSavedRuns() {
 
@@ -2042,31 +2784,40 @@ async function renderSavedRuns() {
       'savedRunsList'
     );
 
-  list.innerHTML = '';
+
+  list.innerHTML =
+    '';
+
 
   let saved;
+
 
   try {
 
     saved =
       await getSavedGPX();
 
-  } catch(error) {
+  }
+  catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     list.innerHTML =
       '<div class="savedEmpty">' +
       '保存済みランを読み込めませんでした' +
       '</div>';
 
+
     return;
 
   }
 
+
   if (
-    saved.length ===
-    0
+    !saved.length
   ) {
 
     list.innerHTML =
@@ -2074,11 +2825,15 @@ async function renderSavedRuns() {
       '端末に保存したランはありません' +
       '</div>';
 
+
     return;
 
   }
 
-  const rows = [];
+
+  const rows =
+    [];
+
 
   for (
     const item of
@@ -2087,79 +2842,96 @@ async function renderSavedRuns() {
 
     try {
 
-      const activity =
-        buildActivityFromGPXText(
-          item.text,
-          item.name,
-          'local'
-        );
-
-      rows.push({
-        item:
+      rows.push(
+        {
           item,
 
-        activity:
-          activity
-      });
+          activity:
+            buildActivityFromGPXText(
 
-    } catch(error) {
+              item.text,
 
-      rows.push({
-        item:
+              item.name,
+
+              'local'
+
+            )
+        }
+      );
+
+    }
+    catch(error) {
+
+      rows.push(
+        {
           item,
-
-        activity:
-          null
-      });
+          activity:
+            null
+        }
+      );
 
     }
 
   }
 
+
   rows.sort(
-    (a, b) => {
-
-      const aTime =
-        a.activity?.date
-          ? a.activity.date.getTime()
-          : 0;
-
-      const bTime =
-        b.activity?.date
-          ? b.activity.date.getTime()
-          : 0;
-
-      return bTime - aTime;
-
-    }
+    (
+      a,
+      b
+    ) =>
+      (
+        b.activity
+          ?.date
+          ?.getTime() ||
+        0
+      ) -
+      (
+        a.activity
+          ?.date
+          ?.getTime() ||
+        0
+      )
   );
 
+
   rows.forEach(
-    ({item, activity}) => {
+    (
+      {
+        item,
+        activity
+      }
+    ) => {
 
       const row =
         document.createElement(
           'div'
         );
 
+
       row.className =
         'savedRunRow';
+
 
       const main =
         document.createElement(
           'div'
         );
 
+
       main.className =
         'savedRunMain';
+
 
       const name =
         document.createElement(
           'div'
         );
 
+
       name.className =
         'savedRunName';
+
 
       name.textContent =
         item.name.replace(
@@ -2167,58 +2939,66 @@ async function renderSavedRuns() {
           ''
         );
 
+
       const meta =
         document.createElement(
           'div'
         );
 
+
       meta.className =
         'savedRunMeta';
 
-      if (activity) {
 
-        meta.textContent =
-          formatRunDate(
-            activity.date
-          ) +
-          ' ・ ' +
-          activity.distance.toFixed(2) +
-          ' km';
+      meta.textContent =
+        activity
 
-      } else {
+          ? formatRunDate(
+              activity.date
+            ) +
+            ' ・ ' +
+            activity.distance.toFixed(
+              2
+            ) +
+            ' km'
 
-        meta.textContent =
-          'GPX解析エラー';
+          : 'GPX解析エラー';
 
-      }
 
-      main.appendChild(name);
-      main.appendChild(meta);
+      main.append(
+        name,
+        meta
+      );
+
 
       const deleteButton =
         document.createElement(
           'button'
         );
 
+
       deleteButton.className =
         'deleteRunButton';
+
 
       deleteButton.textContent =
         '削除';
 
-      deleteButton.addEventListener(
-        'click',
+
+      deleteButton.onclick =
         async () => {
 
-          const ok =
-            confirm(
+          if (
+            !confirm(
               'このランを削除しますか？\n\n' +
               item.name
-            );
+            )
+          ) {
 
-          if (!ok) {
             return;
+
           }
+
 
           try {
 
@@ -2226,42 +3006,48 @@ async function renderSavedRuns() {
               item.id
             );
 
+
             removeLocalActivity(
               item.id
             );
 
+
             if (
               selectedYear !==
-              'ALL'
+              'ALL' &&
+              !activities.some(
+                activity =>
+                  activity.year ===
+                  Number(
+                    selectedYear
+                  )
+              )
             ) {
 
-              const stillExists =
-                activities.some(
-                  activity =>
-                    activity.year ===
-                    Number(selectedYear)
-                );
-
-              if (!stillExists) {
-                selectedYear =
-                  'ALL';
-              }
+              selectedYear =
+                'ALL';
 
             }
 
+
             createYearFilters();
+
             renderSelectedData();
 
             await updateLocalInfo();
+
             await renderSavedRuns();
 
             setStatus(
               '✅ 保存済みランを削除しました'
             );
 
-          } catch(error) {
+          }
+          catch(error) {
 
-            console.error(error);
+            console.error(
+              error
+            );
 
             alert(
               '削除に失敗しました。'
@@ -2269,18 +3055,24 @@ async function renderSavedRuns() {
 
           }
 
-        }
+        };
+
+
+      row.append(
+        main,
+        deleteButton
       );
 
-      row.appendChild(main);
-      row.appendChild(deleteButton);
 
-      list.appendChild(row);
+      list.appendChild(
+        row
+      );
 
     }
   );
 
 }
+
 
 function removeLocalActivity(
   localId
@@ -2290,30 +3082,36 @@ function removeLocalActivity(
     activities.findIndex(
       activity =>
         activity.source ===
-        'local' &&
+          'local' &&
         activity.localId ===
-        localId
+          localId
     );
+
 
   if (
     index ===
     -1
   ) {
+
     return;
+
   }
 
-  const activity =
-    activities[index];
 
   if (
-    activity.signature
+    activities[
+      index
+    ].signature
   ) {
 
     activitySignatures.delete(
-      activity.signature
+      activities[
+        index
+      ].signature
     );
 
   }
+
 
   activities.splice(
     index,
@@ -2321,6 +3119,11 @@ function removeLocalActivity(
   );
 
 }
+
+
+/* =====================================
+   ＋ランを追加
+===================================== */
 
 const addRunButton =
   document.getElementById(
@@ -2342,39 +3145,47 @@ const gpxInput =
     'gpxInput'
   );
 
-addRunButton.addEventListener(
-  'click',
-  () => {
-    gpxInput.click();
-  }
-);
 
-savedRunsButton.addEventListener(
-  'click',
+addRunButton.onclick =
+  () =>
+    gpxInput.click();
+
+
+savedRunsButton.onclick =
   async () => {
 
-    const isOpen =
+    if (
       savedRunsPanel
         .classList
-        .toggle('open');
+        .toggle(
+          'open'
+        )
+    ) {
 
-    if (isOpen) {
       await renderSavedRuns();
+
     }
 
-  }
-);
+  };
 
-gpxInput.addEventListener(
-  'change',
+
+gpxInput.onchange =
   async event => {
 
     const file =
-      event.target.files[0];
+      event.target.files[
+        0
+      ];
 
-    if (!file) {
+
+    if (
+      !file
+    ) {
+
       return;
+
     }
+
 
     try {
 
@@ -2382,24 +3193,32 @@ gpxInput.addEventListener(
         'GPXを読み込み中…'
       );
 
+
       const text =
         await file.text();
 
+
       const activity =
         buildActivityFromGPXText(
+
           text,
+
           file.name,
+
           'local'
+
         );
 
-      const exactSignature =
+
+      const exact =
         createActivitySignature(
           activity
         );
 
+
       if (
         activitySignatures.has(
-          exactSignature
+          exact
         )
       ) {
 
@@ -2408,63 +3227,103 @@ gpxInput.addEventListener(
           '同じランのため追加しませんでした。'
         );
 
+
         setStatus(
           '⚠️ 登録済みのランです'
         );
 
-        gpxInput.value = '';
+
+        gpxInput.value =
+          '';
+
 
         return;
 
       }
 
-      const possibleDuplicate =
+
+      const duplicate =
         findPossibleDuplicate(
           activity
         );
 
-      if (possibleDuplicate) {
 
-        const duplicateDate =
-          formatRunDate(
-            possibleDuplicate.date
-          );
+      if (
+        duplicate
+      ) {
 
-        const duplicateSource =
-          possibleDuplicate.source ===
-          'archive'
+        const source =
+          duplicate.source ===
+            'archive'
+
             ? '過去データ'
-            : possibleDuplicate.source ===
-              'github'
-                ? 'GitHubデータ'
-                : '端末保存';
 
-        const shouldAdd =
+            : duplicate.source ===
+              'github'
+
+              ? 'GitHubデータ'
+
+              : '端末保存';
+
+
+        const ok =
           confirm(
+
             '⚠️ 登録済みの可能性が高いランがあります。\n\n' +
+
             '登録済み\n' +
-            duplicateDate +
+
+            formatRunDate(
+              duplicate.date
+            ) +
+
             '\n' +
-            possibleDuplicate.distance.toFixed(2) +
+
+            duplicate.distance
+              .toFixed(
+                2
+              ) +
+
             ' km\n' +
-            duplicateSource +
+
+            source +
+
             '\n\n' +
+
             '今回\n' +
-            formatRunDate(activity.date) +
+
+            formatRunDate(
+              activity.date
+            ) +
+
             '\n' +
-            activity.distance.toFixed(2) +
+
+            activity.distance
+              .toFixed(
+                2
+              ) +
+
             ' km\n\n' +
+
             '［OK］それでも追加\n' +
+
             '［キャンセル］追加しない'
+
           );
 
-        if (!shouldAdd) {
+
+        if (
+          !ok
+        ) {
 
           setStatus(
             '⚠️ 重複候補のため追加を中止しました'
           );
 
-          gpxInput.value = '';
+
+          gpxInput.value =
+            '';
+
 
           return;
 
@@ -2472,66 +3331,82 @@ gpxInput.addEventListener(
 
       }
 
-      const localId =
-        await saveGPXToDevice(
-          file.name,
-          text
-        );
 
       activity.localId =
-        localId;
+        await saveGPXToDevice(
+
+          file.name,
+
+          text
+
+        );
+
 
       registerActivity(
         activity
       );
 
+
       selectedYear =
         'ALL';
 
+
       createYearFilters();
+
       renderSelectedData();
 
       await updateLocalInfo();
 
+
       if (
         savedRunsPanel
           .classList
-          .contains('open')
+          .contains(
+            'open'
+          )
       ) {
 
         await renderSavedRuns();
 
       }
 
+
       setStatus(
         '✅ ランを追加しました'
       );
 
-      const bounds =
-        L.latLngBounds(
-          activity.latlngs
-        );
 
       map.fitBounds(
-        bounds,
+        L.latLngBounds(
+          activity.latlngs
+        ),
         {
           padding:
-            [25, 25]
+            [
+              25,
+              25
+            ]
         }
       );
+
 
       alert(
         'ランを追加しました！'
       );
 
-    } catch(error) {
+    }
+    catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       alert(
         'GPXの読み込みに失敗しました。\n' +
         error.message
       );
+
 
       setStatus(
         '❌ GPX追加失敗'
@@ -2539,10 +3414,16 @@ gpxInput.addEventListener(
 
     }
 
-    gpxInput.value = '';
 
-  }
-);
+    gpxInput.value =
+      '';
+
+  };
+
+
+/* =====================================
+   年フィルター
+===================================== */
 
 function createYearFilters() {
 
@@ -2551,7 +3432,10 @@ function createYearFilters() {
       'filters'
     );
 
-  area.innerHTML = '';
+
+  area.innerHTML =
+    '';
+
 
   const years =
     Array.from(
@@ -2562,20 +3446,25 @@ function createYearFilters() {
               activity.year
           )
           .filter(
-            year =>
-              Number.isFinite(year)
+            Number.isFinite
           )
       )
     )
     .sort(
-      (a, b) =>
-        b - a
+      (
+        a,
+        b
+      ) =>
+        b -
+        a
     );
 
-  const options =
-    ['ALL', ...years];
 
-  options.forEach(
+  [
+    'ALL',
+    ...years
+  ]
+  .forEach(
     option => {
 
       const button =
@@ -2583,15 +3472,22 @@ function createYearFilters() {
           'button'
         );
 
+
       button.className =
         'yearButton';
+
 
       button.textContent =
         option;
 
+
       if (
-        String(option) ===
-        String(selectedYear)
+        String(
+          option
+        ) ===
+        String(
+          selectedYear
+        )
       ) {
 
         button.classList.add(
@@ -2600,12 +3496,13 @@ function createYearFilters() {
 
       }
 
-      button.addEventListener(
-        'click',
+
+      button.onclick =
         () => {
 
           selectedYear =
             option;
+
 
           document
             .querySelectorAll(
@@ -2618,49 +3515,80 @@ function createYearFilters() {
                 )
             );
 
+
           button.classList.add(
             'active'
           );
 
+
           renderSelectedData();
 
-        }
-      );
+        };
 
-      area.appendChild(button);
+
+      area.appendChild(
+        button
+      );
 
     }
   );
 
 }
 
+
+/* =====================================
+   選択活動
+===================================== */
+
 function getSelectedActivities() {
 
-  if (
+  return (
     selectedYear ===
     'ALL'
-  ) {
-    return activities;
-  }
 
-  return activities.filter(
-    activity =>
-      activity.year ===
-      Number(selectedYear)
+      ? activities
+
+      : activities.filter(
+          activity =>
+            activity.year ===
+            Number(
+              selectedYear
+            )
+        )
   );
 
 }
+
+
+/* =====================================
+   集計
+===================================== */
 
 function buildSelectedStats() {
 
   const selected =
     getSelectedActivities();
 
-  const municipalityDistance = {};
-  const municipalityRunCount = {};
-  const ringCells = {};
 
-  let totalDistanceKm = 0;
+  const municipalityDistance =
+    {};
+
+  const municipalityRunCount =
+    {};
+
+  const prefectureDistance =
+    {};
+
+  const prefectureRunCount =
+    {};
+
+  const ringCells =
+    {};
+
+
+  let totalDistanceKm =
+    0;
+
 
   selected.forEach(
     activity => {
@@ -2668,73 +3596,160 @@ function buildSelectedStats() {
       totalDistanceKm +=
         activity.distance;
 
+
+      const prefecturesInRun =
+        new Set();
+
+
       Object.entries(
         activity.cityDistances
-      ).forEach(
-        ([cityKey, km]) => {
+      )
+      .forEach(
+        (
+          [
+            cityKey,
+            km
+          ]
+        ) => {
 
-          municipalityDistance[cityKey] =
+          municipalityDistance[
+            cityKey
+          ] =
             (
-              municipalityDistance[cityKey] ||
+              municipalityDistance[
+                cityKey
+              ] ||
               0
             ) +
             km;
 
+
+          const {
+            prefecture
+          } =
+            splitCityKey(
+              cityKey
+            );
+
+
+          if (
+            prefecture
+          ) {
+
+            prefectureDistance[
+              prefecture
+            ] =
+              (
+                prefectureDistance[
+                  prefecture
+                ] ||
+                0
+              ) +
+              km;
+
+
+            prefecturesInRun.add(
+              prefecture
+            );
+
+          }
+
         }
       );
 
-      activity.cities.forEach(
-        cityKey => {
 
-          municipalityRunCount[cityKey] =
-            (
-              municipalityRunCount[cityKey] ||
-              0
-            ) +
-            1;
+      activity.cities
+        .forEach(
+          cityKey => {
 
-        }
-      );
+            municipalityRunCount[
+              cityKey
+            ] =
+              (
+                municipalityRunCount[
+                  cityKey
+                ] ||
+                0
+              ) +
+              1;
 
-      activity.cells.forEach(
-        key => {
+          }
+        );
 
-          ringCells[key] =
-            (
-              ringCells[key] ||
-              0
-            ) +
-            1;
 
-        }
-      );
+      prefecturesInRun
+        .forEach(
+          prefecture => {
+
+            prefectureRunCount[
+              prefecture
+            ] =
+              (
+                prefectureRunCount[
+                  prefecture
+                ] ||
+                0
+              ) +
+              1;
+
+          }
+        );
+
+
+      activity.cells
+        .forEach(
+          key => {
+
+            ringCells[
+              key
+            ] =
+              (
+                ringCells[
+                  key
+                ] ||
+                0
+              ) +
+              1;
+
+          }
+        );
 
     }
   );
 
+
   return {
+
     activities:
       selected,
 
-    municipalityDistance:
-      municipalityDistance,
+    municipalityDistance,
 
-    municipalityRunCount:
-      municipalityRunCount,
+    municipalityRunCount,
 
-    ringCells:
-      ringCells,
+    prefectureDistance,
 
-    totalDistanceKm:
-      totalDistanceKm
+    prefectureRunCount,
+
+    ringCells,
+
+    totalDistanceKm
+
   };
 
 }
 
+
+/* =====================================
+   Layer Clear
+===================================== */
+
 function clearMapLayers() {
 
   routeGroup.clearLayers();
+
   ringGroup.clearLayers();
+
 
   if (
     municipalityLayer &&
@@ -2749,114 +3764,154 @@ function clearMapLayers() {
 
   }
 
-  municipalityLayer = null;
+
+  municipalityLayer =
+    null;
+
 
   Object.keys(
     municipalityLayers
-  ).forEach(
+  )
+  .forEach(
     key =>
-      delete municipalityLayers[key]
+      delete municipalityLayers[
+        key
+      ]
   );
 
 }
+
+
+/* =====================================
+   実走線
+===================================== */
 
 function drawRoutes(
   selectedActivities
 ) {
 
-  const drawnSegments =
+  const drawn =
     new Set();
 
-  const roundCoord =
+
+  const round =
     value =>
       Math.round(
-        value * 10000
+        value *
+        10000
       ) /
       10000;
 
-  selectedActivities.forEach(
-    activity => {
 
-      const latlngs =
-        activity.latlngs;
+  selectedActivities
+    .forEach(
+      activity => {
 
-      for (
-        let i = 1;
-        i < latlngs.length;
-        i++
-      ) {
-
-        const a =
-          latlngs[i - 1];
-
-        const b =
-          latlngs[i];
-
-        const aKey =
-          roundCoord(a[0]) +
-          ',' +
-          roundCoord(a[1]);
-
-        const bKey =
-          roundCoord(b[0]) +
-          ',' +
-          roundCoord(b[1]);
-
-        const segmentKey =
-          aKey < bKey
-            ? aKey +
-              '|' +
-              bKey
-            : bKey +
-              '|' +
-              aKey;
-
-        if (
-          drawnSegments.has(
-            segmentKey
-          )
+        for (
+          let i = 1;
+          i < activity.latlngs.length;
+          i++
         ) {
-          continue;
-        }
 
-        drawnSegments.add(
-          segmentKey
-        );
+          const a =
+            activity.latlngs[
+              i - 1
+            ];
 
-        const route =
-          L.polyline(
-            [a, b],
-            {
-              color:
-                ROUTE_COLOR,
+          const b =
+            activity.latlngs[i];
 
-              weight:
-                1.5,
 
-              opacity:
-                0.30,
+          const aKey =
+            round(
+              a[0]
+            ) +
+            ',' +
+            round(
+              a[1]
+            );
 
-              lineCap:
-                'round',
 
-              lineJoin:
-                'round',
+          const bKey =
+            round(
+              b[0]
+            ) +
+            ',' +
+            round(
+              b[1]
+            );
 
-              interactive:
-                false
-            }
+
+          const key =
+            aKey <
+            bKey
+
+              ? aKey +
+                '|' +
+                bKey
+
+              : bKey +
+                '|' +
+                aKey;
+
+
+          if (
+            drawn.has(
+              key
+            )
+          ) {
+
+            continue;
+
+          }
+
+
+          drawn.add(
+            key
           );
 
-        routeGroup.addLayer(
-          route
-        );
+
+          routeGroup.addLayer(
+
+            L.polyline(
+              [
+                a,
+                b
+              ],
+              {
+                color:
+                  ROUTE_COLOR,
+
+                weight:
+                  1.5,
+
+                opacity:
+                  0.30,
+
+                lineCap:
+                  'round',
+
+                lineJoin:
+                  'round',
+
+                interactive:
+                  false
+              }
+            )
+
+          );
+
+        }
 
       }
-
-    }
-  );
+    );
 
 }
+
+
+/* =====================================
+   Rings
+===================================== */
 
 function drawRingCells(
   ringCells
@@ -2864,12 +3919,22 @@ function drawRingCells(
 
   Object.entries(
     ringCells
-  ).forEach(
-    ([key, count]) => {
+  )
+  .forEach(
+    (
+      [
+        key,
+        count
+      ]
+    ) => {
 
       const rectangle =
         L.rectangle(
-          getCellBounds(key),
+
+          getCellBounds(
+            key
+          ),
+
           {
             stroke:
               false,
@@ -2878,24 +3943,39 @@ function drawRingCells(
               AREA_COLOR,
 
             fillOpacity:
-              getRingOpacity(count),
+              getRingOpacity(
+                count
+              ),
 
             interactive:
               true
           }
+
         );
 
+
       rectangle.bindPopup(
+
         '<div class="popup-title">' +
+
         'Runner\'s Ring' +
+
         '</div>' +
+
         '<div class="popup-row">' +
+
         'このエリアを走ったラン：' +
+
         '<strong>' +
+
         count +
+
         ' 回</strong>' +
+
         '</div>'
+
       );
+
 
       ringGroup.addLayer(
         rectangle
@@ -2906,6 +3986,11 @@ function drawRingCells(
 
 }
 
+
+/* =====================================
+   市町村面
+===================================== */
+
 function drawMunicipalities(
   municipalityDistance,
   municipalityRunCount
@@ -2913,14 +3998,19 @@ function drawMunicipalities(
 
   municipalityLayer =
     L.geoJSON(
+
       geojsonData,
+
       {
 
         style:
           feature => {
 
             const cityKey =
-              getCityKey(feature);
+              getCityKey(
+                feature
+              );
+
 
             const km =
               municipalityDistance[
@@ -2928,18 +4018,26 @@ function drawMunicipalities(
               ] ||
               0;
 
+
             return {
+
               color:
                 BORDER_COLOR,
 
               weight:
-                km > 0
+                km >
+                0
+
                   ? 0.7
+
                   : 0.35,
 
               opacity:
-                km > 0
+                km >
+                0
+
                   ? 0.45
+
                   : 0.10,
 
               fillColor:
@@ -2949,21 +4047,35 @@ function drawMunicipalities(
                 getMunicipalityOpacity(
                   km
                 )
+
             };
 
           },
 
+
         onEachFeature:
-          (feature, layer) => {
+          (
+            feature,
+            layer
+          ) => {
 
             const prefecture =
-              getPrefecture(feature);
+              getPrefecture(
+                feature
+              );
+
 
             const city =
-              getCity(feature);
+              getCity(
+                feature
+              );
+
 
             const cityKey =
-              getCityKey(feature);
+              getCityKey(
+                feature
+              );
+
 
             const km =
               municipalityDistance[
@@ -2971,47 +4083,74 @@ function drawMunicipalities(
               ] ||
               0;
 
+
             const runs =
               municipalityRunCount[
                 cityKey
               ] ||
               0;
 
+
             municipalityLayers[
               cityKey
             ] =
               layer;
 
+
             layer.bindPopup(
+
               '<div class="popup-title">' +
+
               city +
+
               '</div>' +
 
               '<div class="popup-row">' +
+
               prefecture +
+
               '</div>' +
 
               '<div class="popup-row">' +
+
               '累積走行距離：' +
+
               '<strong>' +
-              km.toFixed(2) +
+
+              km.toFixed(
+                2
+              ) +
+
               ' km</strong>' +
+
               '</div>' +
 
               '<div class="popup-row">' +
+
               '走ったラン：' +
+
               '<strong>' +
+
               runs +
+
               ' 回</strong>' +
+
               '</div>'
+
             );
 
           }
 
       }
+
     );
 
 }
+
+
+/* =====================================
+   市町村へ移動
+===================================== */
 
 function focusMunicipality(
   cityKey
@@ -3022,9 +4161,15 @@ function focusMunicipality(
       cityKey
     ];
 
-  if (!layer) {
+
+  if (
+    !layer
+  ) {
+
     return;
+
   }
+
 
   if (
     municipalityLayer &&
@@ -3039,46 +4184,65 @@ function focusMunicipality(
 
   }
 
+
   if (
     map.hasLayer(
       routeGroup
     )
   ) {
+
     map.removeLayer(
       routeGroup
     );
+
   }
+
 
   if (
     map.hasLayer(
       ringGroup
     )
   ) {
+
     map.removeLayer(
       ringGroup
     );
+
   }
+
 
   map.fitBounds(
+
     layer.getBounds(),
+
     {
       padding:
-        [25, 25],
+        [
+          25,
+          25
+        ],
 
       maxZoom:
         11
     }
+
   );
 
-  document
-    .getElementById('map')
-    .scrollIntoView({
-      behavior:
-        'smooth',
 
-      block:
-        'start'
-    });
+  document
+    .getElementById(
+      'map'
+    )
+    .scrollIntoView(
+      {
+        behavior:
+          'smooth',
+
+        block:
+          'start'
+      }
+    );
+
 
   setTimeout(
     () =>
@@ -3088,35 +4252,375 @@ function focusMunicipality(
 
 }
 
-function updateDashboard(stats) {
+
+/* =====================================
+   都道府県へ移動
+===================================== */
+
+function getPrefectureBounds(
+  prefecture
+) {
+
+  const bounds =
+    L.latLngBounds(
+      []
+    );
+
+
+  municipalityFeatures
+    .forEach(
+      item => {
+
+        if (
+          getPrefecture(
+            item.feature
+          ) ===
+          prefecture
+        ) {
+
+          bounds.extend(
+            [
+              item.bbox.minLat,
+              item.bbox.minLon
+            ]
+          );
+
+
+          bounds.extend(
+            [
+              item.bbox.maxLat,
+              item.bbox.maxLon
+            ]
+          );
+
+        }
+
+      }
+    );
+
+
+  return bounds.isValid()
+    ? bounds
+    : null;
+
+}
+
+
+function focusPrefecture(
+  prefecture
+) {
+
+  const bounds =
+    getPrefectureBounds(
+      prefecture
+    );
+
+
+  if (
+    !bounds
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    municipalityLayer &&
+    !map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+
+    municipalityLayer.addTo(
+      map
+    );
+
+  }
+
+
+  if (
+    map.hasLayer(
+      routeGroup
+    )
+  ) {
+
+    map.removeLayer(
+      routeGroup
+    );
+
+  }
+
+
+  if (
+    map.hasLayer(
+      ringGroup
+    )
+  ) {
+
+    map.removeLayer(
+      ringGroup
+    );
+
+  }
+
+
+  map.fitBounds(
+    bounds,
+    {
+      padding:
+        [
+          20,
+          20
+        ]
+    }
+  );
+
+
+  document
+    .getElementById(
+      'map'
+    )
+    .scrollIntoView(
+      {
+        behavior:
+          'smooth',
+
+        block:
+          'start'
+      }
+    );
+
+
+  setStatus(
+    prefecture +
+    'を表示'
+  );
+
+}
+
+
+/* =====================================
+   都道府県 Dashboard
+===================================== */
+
+function updatePrefectureDashboard(
+  stats
+) {
+
+  document
+    .getElementById(
+      'prefectureHeading'
+    )
+    .textContent =
+      selectedYear ===
+      'ALL'
+
+        ? '都道府県別'
+
+        : selectedYear +
+          '年 都道府県別';
+
+
+  const list =
+    document.getElementById(
+      'prefectureList'
+    );
+
+
+  const entries =
+    Object.entries(
+      stats.prefectureDistance
+    )
+    .filter(
+      (
+        [
+          ,
+          km
+        ]
+      ) =>
+        km >
+        0.01
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
+    );
+
+
+  list.innerHTML =
+    '';
+
+
+  if (
+    !entries.length
+  ) {
+
+    list.innerHTML =
+      '<div class="emptyMessage">' +
+      'この期間の都道府県データがありません' +
+      '</div>';
+
+
+    return;
+
+  }
+
+
+  const maxKm =
+    entries[0][1];
+
+
+  entries.forEach(
+    (
+      [
+        prefecture,
+        km
+      ]
+    ) => {
+
+      const percent =
+        Math.max(
+          3,
+          km /
+          maxKm *
+          100
+        );
+
+
+      const runs =
+        stats
+          .prefectureRunCount[
+            prefecture
+          ] ||
+        0;
+
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+
+      card.className =
+        'prefectureCard';
+
+
+      card.innerHTML =
+
+        '<div class="prefectureTop">' +
+
+          '<div class="prefectureName">' +
+
+            prefecture +
+
+          '</div>' +
+
+          '<div class="prefectureDistance">' +
+
+            km.toFixed(
+              2
+            ) +
+
+            ' km' +
+
+          '</div>' +
+
+        '</div>' +
+
+        '<div class="barTrack">' +
+
+          '<div class="barFill" style="width:' +
+
+            percent +
+
+            '%"></div>' +
+
+        '</div>' +
+
+        '<div class="prefectureRuns">' +
+
+          'RUNS ' +
+
+          runs +
+
+        '</div>';
+
+
+      card.onclick =
+        () =>
+          focusPrefecture(
+            prefecture
+          );
+
+
+      list.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================
+   市町村 Dashboard
+===================================== */
+
+function updateDashboard(
+  stats
+) {
 
   const entries =
     Object.entries(
       stats.municipalityDistance
     )
     .filter(
-      ([, km]) =>
-        km > 0.01
+      (
+        [
+          ,
+          km
+        ]
+      ) =>
+        km >
+        0.01
     )
     .sort(
-      (a, b) =>
-        b[1] - a[1]
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
     );
+
 
   document
     .getElementById(
       'totalDistance'
     )
     .textContent =
-      stats.totalDistanceKm
-        .toFixed(1);
+      stats
+        .totalDistanceKm
+        .toFixed(
+          1
+        );
+
 
   document
     .getElementById(
       'runCount'
     )
     .textContent =
-      stats.activities.length;
+      stats
+        .activities
+        .length;
+
 
   document
     .getElementById(
@@ -3125,6 +4629,12 @@ function updateDashboard(stats) {
     .textContent =
       entries.length;
 
+
+  updatePrefectureDashboard(
+    stats
+  );
+
+
   document
     .getElementById(
       'cityHeading'
@@ -3132,20 +4642,25 @@ function updateDashboard(stats) {
     .textContent =
       selectedYear ===
       'ALL'
+
         ? '市町村別'
+
         : selectedYear +
           '年 市町村別';
+
 
   const cityList =
     document.getElementById(
       'cityList'
     );
 
-  cityList.innerHTML = '';
+
+  cityList.innerHTML =
+    '';
+
 
   if (
-    entries.length ===
-    0
+    !entries.length
   ) {
 
     cityList.innerHTML =
@@ -3153,36 +4668,41 @@ function updateDashboard(stats) {
       'この期間の市町村データがありません' +
       '</div>';
 
+
     return;
 
   }
 
+
   const maxKm =
     entries[0][1];
 
+
   entries.forEach(
-    ([cityKey, km]) => {
+    (
+      [
+        cityKey,
+        km
+      ]
+    ) => {
 
-      const parts =
-        cityKey.split('|');
+      const {
+        prefecture,
+        city
+      } =
+        splitCityKey(
+          cityKey
+        );
 
-      const prefecture =
-        parts[0] ||
-        '';
-
-      const city =
-        parts[1] ||
-        cityKey;
 
       const percent =
         Math.max(
           3,
-          (
-            km /
-            maxKm
-          ) *
+          km /
+          maxKm *
           100
         );
+
 
       const runs =
         stats
@@ -3191,24 +4711,35 @@ function updateDashboard(stats) {
           ] ||
         0;
 
+
       const card =
         document.createElement(
           'div'
         );
 
+
       card.className =
         'cityCard';
 
+
       card.innerHTML =
+
         '<div class="cityTop">' +
 
           '<div class="cityName">' +
+
             city +
+
           '</div>' +
 
           '<div class="cityDistance">' +
-            km.toFixed(2) +
+
+            km.toFixed(
+              2
+            ) +
+
             ' km' +
+
           '</div>' +
 
         '</div>' +
@@ -3216,24 +4747,30 @@ function updateDashboard(stats) {
         '<div class="barTrack">' +
 
           '<div class="barFill" style="width:' +
+
             percent +
+
             '%"></div>' +
 
         '</div>' +
 
         '<div class="cityRuns">' +
+
           prefecture +
+
           ' ・ RUNS ' +
+
           runs +
+
         '</div>';
 
-      card.addEventListener(
-        'click',
+
+      card.onclick =
         () =>
           focusMunicipality(
             cityKey
-          )
-      );
+          );
+
 
       cityList.appendChild(
         card
@@ -3244,13 +4781,20 @@ function updateDashboard(stats) {
 
 }
 
+
+/* =====================================
+   表示切替
+===================================== */
+
 function updateDisplay() {
 
   const zoom =
     map.getZoom();
 
+
   if (
-    zoom >= 13
+    zoom >=
+    13
   ) {
 
     if (
@@ -3259,40 +4803,54 @@ function updateDisplay() {
         municipalityLayer
       )
     ) {
+
       map.removeLayer(
         municipalityLayer
       );
+
     }
+
 
     if (
       !map.hasLayer(
         ringGroup
       )
     ) {
+
       ringGroup.addTo(
         map
       );
+
     }
+
 
     if (
       !map.hasLayer(
         routeGroup
       )
     ) {
+
       routeGroup.addTo(
         map
       );
+
     }
 
+
     setStatus(
+
       selectedYear ===
       'ALL'
+
         ? '詳細表示：実際に走った道路＋Runner\'s Rings'
+
         : selectedYear +
           '年：実際に走った道路＋Runner\'s Rings'
+
     );
 
-  } else {
+  }
+  else {
 
     if (
       municipalityLayer &&
@@ -3300,161 +4858,158 @@ function updateDisplay() {
         municipalityLayer
       )
     ) {
+
       municipalityLayer.addTo(
         map
       );
+
     }
+
 
     if (
       map.hasLayer(
         routeGroup
       )
     ) {
+
       map.removeLayer(
         routeGroup
       );
+
     }
+
 
     if (
       map.hasLayer(
         ringGroup
       )
     ) {
+
       map.removeLayer(
         ringGroup
       );
+
     }
+
 
     setStatus(
+
       selectedYear ===
       'ALL'
+
         ? '広域表示：累積走行距離を面で表示'
+
         : selectedYear +
           '年：走行距離を面で表示'
+
     );
 
   }
 
 }
+
+
+/* =====================================
+   再描画
+===================================== */
 
 function renderSelectedData() {
 
   const stats =
     buildSelectedStats();
 
+
   clearMapLayers();
+
 
   drawRoutes(
     stats.activities
   );
 
+
   drawRingCells(
     stats.ringCells
   );
 
+
   drawMunicipalities(
+
     stats.municipalityDistance,
+
     stats.municipalityRunCount
+
   );
+
 
   updateDashboard(
     stats
   );
 
+
   updateDisplay();
 
 }
+
+
+/* =====================================
+   初期表示
+   一番走っている都道府県
+===================================== */
 
 function getHomePrefectureBounds() {
 
   const stats =
     buildSelectedStats();
 
-  const prefectureKm = {};
-
-  Object.entries(
-    stats.municipalityDistance
-  ).forEach(
-    ([cityKey, km]) => {
-
-      const prefecture =
-        cityKey.split('|')[0];
-
-      if (!prefecture) {
-        return;
-      }
-
-      prefectureKm[prefecture] =
-        (
-          prefectureKm[prefecture] ||
-          0
-        ) +
-        km;
-
-    }
-  );
 
   const ranking =
     Object.entries(
-      prefectureKm
-    ).sort(
-      (a, b) =>
-        b[1] - a[1]
+      stats.prefectureDistance
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
     );
 
+
   if (
-    ranking.length ===
-    0
+    !ranking.length
   ) {
+
     return null;
+
   }
 
-  const homePrefecture =
+
+  const prefecture =
     ranking[0][0];
 
+
   const bounds =
-    L.latLngBounds([]);
+    getPrefectureBounds(
+      prefecture
+    );
 
-  municipalityFeatures.forEach(
-    item => {
 
-      if (
-        getPrefecture(
-          item.feature
-        ) ===
-        homePrefecture
-      ) {
+  return bounds
 
-        bounds.extend([
-          item.bbox.minLat,
-          item.bbox.minLon
-        ]);
-
-        bounds.extend([
-          item.bbox.maxLat,
-          item.bbox.maxLon
-        ]);
-
+    ? {
+        prefecture,
+        bounds
       }
 
-    }
-  );
-
-  if (
-    !bounds.isValid()
-  ) {
-    return null;
-  }
-
-  return {
-    prefecture:
-      homePrefecture,
-
-    bounds:
-      bounds
-  };
+    : null;
 
 }
+
+
+/* =====================================
+   起動
+===================================== */
 
 async function start() {
 
@@ -3462,93 +5017,122 @@ async function start() {
 
     await loadMunicipalities();
 
+
     setStatus(
       '過去ランを復元中…'
     );
 
+
     const archiveCount =
       loadArchiveActivities();
 
+
     const gpxFiles =
       await getGPXFiles();
+
 
     const githubCount =
       await loadAllGPX(
         gpxFiles
       );
 
+
     setStatus(
       '端末保存ランを復元中…'
     );
 
+
     const localCount =
       await loadSavedActivities();
 
+
     createYearFilters();
+
 
     renderSelectedData();
 
+
     await updateLocalInfo();
+
+
     await renderSavedRuns();
+
 
     const home =
       getHomePrefectureBounds();
 
-    if (home) {
+
+    if (
+      home
+    ) {
 
       map.fitBounds(
         home.bounds,
         {
           padding:
-            [20, 20]
+            [
+              20,
+              20
+            ]
         }
       );
 
-    } else if (
+    }
+    else if (
       municipalityLayer
     ) {
 
       map.fitBounds(
-        municipalityLayer.getBounds()
+        municipalityLayer
+          .getBounds()
       );
 
     }
+
 
     map.on(
       'zoomend',
       updateDisplay
     );
 
+
     setTimeout(
-      () => {
-        map.invalidateSize();
-      },
+      () =>
+        map.invalidateSize(),
       300
     );
+
 
     console.log(
       '過去:',
       archiveCount
     );
 
+
     console.log(
       'GitHub:',
       githubCount
     );
+
 
     console.log(
       '端末:',
       localCount
     );
 
+
     console.log(
       '合計:',
       activities.length
     );
 
-  } catch(error) {
+  }
+  catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     setStatus(
       '❌ ' +
@@ -3558,6 +5142,7 @@ async function start() {
   }
 
 }
+
 
 start();
 
