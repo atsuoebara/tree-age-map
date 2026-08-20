@@ -92,10 +92,6 @@ header p {
   padding: 1px 2px 4px;
 }
 
-/*
-  display:none は使わない。
-  label → input のSafari標準動作を使う。
-*/
 #gpxInput {
   position: absolute;
   width: 1px;
@@ -334,10 +330,7 @@ h2 {
 
 <div id="importArea">
 
-  <label
-    id="addRunButton"
-    for="gpxInput"
-  >
+  <label id="addRunButton" for="gpxInput">
     ＋ ランを追加
   </label>
 
@@ -521,25 +514,16 @@ function openDatabase() {
         };
 
       request.onsuccess =
-        () =>
-          resolve(
-            request.result
-          );
+        () => resolve(request.result);
 
       request.onerror =
-        () =>
-          reject(
-            request.error
-          );
+        () => reject(request.error);
     }
   );
 }
 
 
-async function saveGPXToDevice(
-  name,
-  text
-) {
+async function saveGPXToDevice(name,text) {
 
   const db =
     await openDatabase();
@@ -569,16 +553,10 @@ async function saveGPXToDevice(
         );
 
       request.onsuccess =
-        () =>
-          resolve(
-            request.result
-          );
+        () => resolve(request.result);
 
       request.onerror =
-        () =>
-          reject(
-            request.error
-          );
+        () => reject(request.error);
     }
   );
 }
@@ -614,17 +592,13 @@ async function getSavedGPX() {
 
       request.onerror =
         () =>
-          reject(
-            request.error
-          );
+          reject(request.error);
     }
   );
 }
 
 
-async function deleteSavedGPX(
-  id
-) {
+async function deleteSavedGPX(id) {
 
   const db =
     await openDatabase();
@@ -647,14 +621,10 @@ async function deleteSavedGPX(
         store.delete(id);
 
       request.onsuccess =
-        () =>
-          resolve();
+        () => resolve();
 
       request.onerror =
-        () =>
-          reject(
-            request.error
-          );
+        () => reject(request.error);
     }
   );
 }
@@ -720,31 +690,19 @@ function distanceKm(
       180;
 
   const dLat =
-    toRad(
-      lat2 - lat1
-    );
+    toRad(lat2-lat1);
 
   const dLon =
-    toRad(
-      lon2 - lon1
-    );
+    toRad(lon2-lon1);
 
   const a =
-    Math.sin(
-      dLat / 2
-    ) ** 2 +
+    Math.sin(dLat/2) ** 2 +
 
-    Math.cos(
-      toRad(lat1)
-    ) *
+    Math.cos(toRad(lat1)) *
 
-    Math.cos(
-      toRad(lat2)
-    ) *
+    Math.cos(toRad(lat2)) *
 
-    Math.sin(
-      dLon / 2
-    ) ** 2;
+    Math.sin(dLon/2) ** 2;
 
   return (
     R *
@@ -761,10 +719,7 @@ function distanceKm(
    市町村判定
 ===================================== */
 
-function pointInRing(
-  point,
-  ring
-) {
+function pointInRing(point,ring) {
 
   const x = point[0];
   const y = point[1];
@@ -772,12 +727,12 @@ function pointInRing(
   let inside = false;
 
   for (
-    let i = 0,
-        j = ring.length - 1;
+    let i=0,
+        j=ring.length-1;
 
-    i < ring.length;
+    i<ring.length;
 
-    j = i++
+    j=i++
   ) {
 
     const xi = ring[i][0];
@@ -787,7 +742,7 @@ function pointInRing(
     const yj = ring[j][1];
 
     const intersect =
-      ((yi > y) !== (yj > y)) &&
+      ((yi>y)!==(yj>y)) &&
       (
         x <
         (
@@ -807,10 +762,7 @@ function pointInRing(
 }
 
 
-function pointInPolygon(
-  point,
-  polygon
-) {
+function pointInPolygon(point,polygon) {
 
   if (
     !pointInRing(
@@ -841,10 +793,7 @@ function pointInPolygon(
 }
 
 
-function pointInFeature(
-  point,
-  feature
-) {
+function pointInFeature(point,feature) {
 
   const geometry =
     feature.geometry;
@@ -854,8 +803,7 @@ function pointInFeature(
   }
 
   if (
-    geometry.type ===
-    'Polygon'
+    geometry.type === 'Polygon'
   ) {
 
     return pointInPolygon(
@@ -865,8 +813,7 @@ function pointInFeature(
   }
 
   if (
-    geometry.type ===
-    'MultiPolygon'
+    geometry.type === 'MultiPolygon'
   ) {
 
     return geometry.coordinates.some(
@@ -886,14 +833,10 @@ function pointInFeature(
    BBOX
 ===================================== */
 
-function collectCoordinates(
-  coords,
-  output
-) {
+function collectCoordinates(coords,output) {
 
   if (
-    typeof coords[0] ===
-    'number'
+    typeof coords[0] === 'number'
   ) {
 
     output.push(coords);
@@ -910,9 +853,7 @@ function collectCoordinates(
 }
 
 
-function getFeatureBBox(
-  feature
-) {
+function getFeatureBBox(feature) {
 
   const points = [];
 
@@ -930,28 +871,16 @@ function getFeatureBBox(
     ([lon,lat]) => {
 
       minLon =
-        Math.min(
-          minLon,
-          lon
-        );
+        Math.min(minLon,lon);
 
       minLat =
-        Math.min(
-          minLat,
-          lat
-        );
+        Math.min(minLat,lat);
 
       maxLon =
-        Math.max(
-          maxLon,
-          lon
-        );
+        Math.max(maxLon,lon);
 
       maxLat =
-        Math.max(
-          maxLat,
-          lat
-        );
+        Math.max(maxLat,lat);
     }
   );
 
@@ -964,10 +893,7 @@ function getFeatureBBox(
 }
 
 
-function findMunicipality(
-  lat,
-  lon
-) {
+function findMunicipality(lat,lon) {
 
   const point =
     [lon,lat];
@@ -1013,10 +939,7 @@ function findMunicipality(
    100mセル
 ===================================== */
 
-function getCellKey(
-  lat,
-  lon
-) {
+function getCellKey(lat,lon) {
 
   const latIndex =
     Math.floor(
@@ -1038,9 +961,7 @@ function getCellKey(
 }
 
 
-function getCellBounds(
-  key
-) {
+function getCellBounds(key) {
 
   const [
     latIndex,
@@ -1072,9 +993,7 @@ function getCellBounds(
    セル濃度
 ===================================== */
 
-function getRingOpacity(
-  count
-) {
+function getRingOpacity(count) {
 
   if (count <= 1)
     return 0.10;
@@ -1099,9 +1018,7 @@ function getRingOpacity(
    ルート → セル
 ===================================== */
 
-function buildCellsFromRoute(
-  latlngs
-) {
+function buildCellsFromRoute(latlngs) {
 
   const cells =
     new Set();
@@ -1159,16 +1076,14 @@ function buildCellsFromRoute(
       const lat =
         a[0] +
         (
-          b[0] -
-          a[0]
+          b[0]-a[0]
         ) *
         t;
 
       const lon =
         a[1] +
         (
-          b[1] -
-          a[1]
+          b[1]-a[1]
         ) *
         t;
 
@@ -1189,9 +1104,7 @@ function buildCellsFromRoute(
    市町村濃度
 ===================================== */
 
-function getMunicipalityOpacity(
-  km
-) {
+function getMunicipalityOpacity(km) {
 
   if (km <= 0)
     return 0;
@@ -1225,25 +1138,24 @@ function getMunicipalityOpacity(
 
 
 /* =====================================
-   行政境界
-   ※今回は群馬版のまま
+   全国行政境界
 ===================================== */
 
 async function loadMunicipalities() {
 
   setStatus(
-    '行政境界を読み込み中…'
+    '全国の行政境界を読み込み中…'
   );
 
   const response =
     await fetch(
-      './N03-20250101_10.geojson'
+      './runners-rings-japan-web.geojson'
     );
 
   if (!response.ok) {
 
     throw new Error(
-      '行政境界データ取得失敗'
+      '全国行政境界データ取得失敗'
     );
   }
 
@@ -1311,13 +1223,15 @@ function analyseRoute(
       (
         prev[0] +
         current[0]
-      ) / 2;
+      ) /
+      2;
 
     const midLon =
       (
         prev[1] +
         current[1]
-      ) / 2;
+      ) /
+      2;
 
     const city =
       findMunicipality(
@@ -1371,9 +1285,7 @@ function analyseRoute(
    活動シグネチャ
 ===================================== */
 
-function createActivitySignature(
-  activity
-) {
+function createActivitySignature(activity) {
 
   const first =
     activity.latlngs[0];
@@ -1396,12 +1308,14 @@ function createActivitySignature(
 
       ? [
           activity.date.getFullYear(),
+
           String(
             activity.date.getMonth()+1
           ).padStart(
             2,
             '0'
           ),
+
           String(
             activity.date.getDate()
           ).padStart(
@@ -1424,9 +1338,7 @@ function createActivitySignature(
 }
 
 
-function registerActivity(
-  activity
-) {
+function registerActivity(activity) {
 
   const signature =
     createActivitySignature(
@@ -1457,23 +1369,16 @@ function registerActivity(
 
 
 /* =====================================
-   強化版 重複チェック
+   重複チェック
 ===================================== */
 
-function sameCalendarDate(
-  a,
-  b
-) {
+function sameCalendarDate(a,b) {
 
   if (
     !a ||
     !b ||
-    Number.isNaN(
-      a.getTime()
-    ) ||
-    Number.isNaN(
-      b.getTime()
-    )
+    Number.isNaN(a.getTime()) ||
+    Number.isNaN(b.getTime())
   ) {
     return false;
   }
@@ -1518,8 +1423,7 @@ function getRouteSamples(
       Math.round(
         ratio *
         (
-          latlngs.length -
-          1
+          latlngs.length-1
         )
       );
 
@@ -1532,10 +1436,7 @@ function getRouteSamples(
 }
 
 
-function routeSimilarity(
-  a,
-  b
-) {
+function routeSimilarity(a,b) {
 
   const samplesA =
     getRouteSamples(
@@ -1786,14 +1687,10 @@ function buildActivityFromGPXText(
       .map(
         point => [
           parseFloat(
-            point.getAttribute(
-              'lat'
-            )
+            point.getAttribute('lat')
           ),
           parseFloat(
-            point.getAttribute(
-              'lon'
-            )
+            point.getAttribute('lon')
           )
         ]
       )
@@ -1831,13 +1728,18 @@ function buildActivityFromGPXText(
     name,
     date,
     year,
+
     distance:
       analysis.calculatedKm,
+
     latlngs,
+
     cityDistances:
       analysis.cityDistances,
+
     cities:
       analysis.cities,
+
     cells:
       Array.from(cells)
   };
@@ -1912,6 +1814,7 @@ function loadArchiveActivities() {
       const analysis =
         analyseRoute(
           latlngs,
+
           Number.isFinite(
             storedDistance
           )
@@ -1944,8 +1847,12 @@ function loadArchiveActivities() {
         );
 
       const activity = {
-        source: 'archive',
-        id: run.id,
+
+        source:
+          'archive',
+
+        id:
+          run.id,
 
         name:
           run.name ||
@@ -2039,6 +1946,7 @@ async function getGPXFiles() {
       file => ({
         name:
           file.name,
+
         url:
           file.download_url
       })
@@ -2046,9 +1954,7 @@ async function getGPXFiles() {
 }
 
 
-async function loadOneGPX(
-  gpxFile
-) {
+async function loadOneGPX(gpxFile) {
 
   const response =
     await fetch(
@@ -2080,9 +1986,7 @@ async function loadOneGPX(
 }
 
 
-async function loadAllGPX(
-  gpxFiles
-) {
+async function loadAllGPX(gpxFiles) {
 
   let loaded = 0;
 
@@ -2177,9 +2081,7 @@ async function loadSavedActivities() {
    保存済みラン一覧
 ===================================== */
 
-function formatRunDate(
-  date
-) {
+function formatRunDate(date) {
 
   if (
     !date ||
@@ -2301,10 +2203,7 @@ async function renderSavedRuns() {
           ? b.activity.date.getTime()
           : 0;
 
-      return (
-        bTime -
-        aTime
-      );
+      return bTime-aTime;
     }
   );
 
@@ -2421,8 +2320,7 @@ async function renderSavedRuns() {
                 );
 
               if (!stillExists) {
-                selectedYear =
-                  'ALL';
+                selectedYear = 'ALL';
               }
             }
 
@@ -2460,9 +2358,7 @@ async function renderSavedRuns() {
 }
 
 
-function removeLocalActivity(
-  localId
-) {
+function removeLocalActivity(localId) {
 
   const index =
     activities.findIndex(
@@ -2499,9 +2395,7 @@ function removeLocalActivity(
 
 
 /* =====================================
-   ファイル選択
-   ※クリック用JSは使わない
-   label for="gpxInput" に任せる
+   ラン追加
 ===================================== */
 
 const savedRunsButton =
@@ -2563,9 +2457,6 @@ gpxInput.addEventListener(
           'local'
         );
 
-
-      /* 完全一致 */
-
       const exactSignature =
         createActivitySignature(
           activity
@@ -2590,9 +2481,6 @@ gpxInput.addEventListener(
 
         return;
       }
-
-
-      /* 類似ラン */
 
       const possibleDuplicate =
         findPossibleDuplicate(
@@ -2659,9 +2547,6 @@ gpxInput.addEventListener(
         }
       }
 
-
-      /* 端末保存 */
-
       const localId =
         await saveGPXToDevice(
           file.name,
@@ -2675,8 +2560,7 @@ gpxInput.addEventListener(
         activity
       );
 
-      selectedYear =
-        'ALL';
+      selectedYear = 'ALL';
 
       createYearFilters();
 
@@ -2835,8 +2719,7 @@ function createYearFilters() {
 function getSelectedActivities() {
 
   if (
-    selectedYear ===
-    'ALL'
+    selectedYear === 'ALL'
   ) {
     return activities;
   }
@@ -3064,9 +2947,7 @@ function drawRoutes(
    Rings
 ===================================== */
 
-function drawRingCells(
-  ringCells
-) {
+function drawRingCells(ringCells) {
 
   Object.entries(
     ringCells
@@ -3145,6 +3026,7 @@ function drawMunicipalities(
               0;
 
             return {
+
               color:
                 BORDER_COLOR,
 
@@ -3226,9 +3108,7 @@ function drawMunicipalities(
    市町村へ移動
 ===================================== */
 
-function focusMunicipality(
-  city
-) {
+function focusMunicipality(city) {
 
   const layer =
     municipalityLayers[
@@ -3285,9 +3165,7 @@ function focusMunicipality(
   );
 
   document
-    .getElementById(
-      'map'
-    )
+    .getElementById('map')
     .scrollIntoView(
       {
         behavior:
@@ -3309,9 +3187,7 @@ function focusMunicipality(
    Dashboard
 ===================================== */
 
-function updateDashboard(
-  stats
-) {
+function updateDashboard(stats) {
 
   const entries =
     Object.entries(
@@ -3324,8 +3200,7 @@ function updateDashboard(
     )
     .sort(
       (a,b) =>
-        b[1] -
-        a[1]
+        b[1]-a[1]
     );
 
   document
@@ -3358,8 +3233,7 @@ function updateDashboard(
       'cityHeading'
     )
     .textContent =
-      selectedYear ===
-      'ALL'
+      selectedYear === 'ALL'
         ? '市町村別'
         : selectedYear +
           '年 市町村別';
@@ -3505,8 +3379,7 @@ function updateDisplay() {
     }
 
     setStatus(
-      selectedYear ===
-      'ALL'
+      selectedYear === 'ALL'
 
         ? '詳細表示：実際に走った道路＋Runner\'s Rings'
 
@@ -3551,8 +3424,7 @@ function updateDisplay() {
     }
 
     setStatus(
-      selectedYear ===
-      'ALL'
+      selectedYear === 'ALL'
 
         ? '広域表示：累積走行距離を面で表示'
 
