@@ -246,8 +246,6 @@
 </section>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- 過去204ラン -->
 <script src="./runner_rings_archive.js"></script>
 
 <script>
@@ -257,10 +255,6 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const CELL_SIZE = 0.0009;
-
-/*
- * 配色
- */
 
 const AREA_COLOR = '#ff2bd6';
 const BORDER_COLOR = '#707580';
@@ -281,21 +275,12 @@ L.tileLayer(
 ).addTo(map);
 
 
-/* =========================
-   データ
-========================= */
-
 let geojsonData = null;
 
 const municipalityFeatures = [];
 const activities = [];
 
 let selectedYear = 'ALL';
-
-
-/* =========================
-   Layer
-========================= */
 
 let municipalityLayer = null;
 
@@ -305,18 +290,10 @@ const ringGroup = L.layerGroup();
 const municipalityLayers = {};
 
 
-/* =========================
-   STATUS
-========================= */
-
 function setStatus(text) {
   document.getElementById('status').textContent = text;
 }
 
-
-/* =========================
-   距離
-========================= */
 
 function distanceKm(lat1, lon1, lat2, lon2) {
 
@@ -347,10 +324,6 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   );
 }
 
-
-/* =========================
-   市町村判定
-========================= */
 
 function pointInRing(point, ring) {
 
@@ -442,10 +415,6 @@ function pointInFeature(point, feature) {
   return false;
 }
 
-
-/* =========================
-   BBOX
-========================= */
 
 function collectCoordinates(coords, output) {
 
@@ -546,10 +515,6 @@ function findMunicipality(lat, lon) {
 }
 
 
-/* =========================
-   100mセル
-========================= */
-
 function getCellKey(lat, lon) {
 
   const latIndex =
@@ -598,10 +563,6 @@ function getCellBounds(key) {
 }
 
 
-/* =========================
-   年輪濃度
-========================= */
-
 function getRingOpacity(count) {
 
   if (count <= 1)
@@ -622,10 +583,6 @@ function getRingOpacity(count) {
   return 0.56;
 }
 
-
-/* =========================
-   ルート → 100mセル
-========================= */
 
 function buildCellsFromRoute(latlngs) {
 
@@ -662,10 +619,6 @@ function buildCellsFromRoute(latlngs) {
         b[0],
         b[1]
       );
-
-    /*
-     * 過去データの座標間を補間
-     */
 
     const steps =
       Math.max(
@@ -707,10 +660,6 @@ function buildCellsFromRoute(latlngs) {
 }
 
 
-/* =========================
-   市町村面の濃さ
-========================= */
-
 function getMunicipalityOpacity(km) {
 
   if (km <= 0)
@@ -743,10 +692,6 @@ function getMunicipalityOpacity(km) {
   return 0.70;
 }
 
-
-/* =========================
-   行政境界
-========================= */
 
 async function loadMunicipalities() {
 
@@ -787,10 +732,6 @@ async function loadMunicipalities() {
   );
 }
 
-
-/* =========================
-   ルート解析
-========================= */
 
 function analyseRoute(
   latlngs,
@@ -856,10 +797,6 @@ function analyseRoute(
     }
   }
 
-  /*
-   * 過去データは保存済み距離へ補正
-   */
-
   if (
     targetDistanceKm &&
     calculatedKm > 0
@@ -891,10 +828,6 @@ function analyseRoute(
   };
 }
 
-
-/* =========================
-   過去204ラン
-========================= */
 
 function loadArchiveActivities() {
 
@@ -1027,10 +960,6 @@ function loadArchiveActivities() {
 }
 
 
-/* =========================
-   GitHub GPX一覧
-========================= */
-
 async function getGPXFiles() {
 
   setStatus(
@@ -1087,10 +1016,6 @@ async function getGPXFiles() {
 }
 
 
-/* =========================
-   GPX日時
-========================= */
-
 function getActivityDate(xml) {
 
   const metadataTime =
@@ -1127,10 +1052,6 @@ function getActivityDate(xml) {
   return date;
 }
 
-
-/* =========================
-   GPX 1本
-========================= */
 
 async function loadOneGPX(
   gpxFile
@@ -1261,10 +1182,6 @@ async function loadOneGPX(
 }
 
 
-/* =========================
-   GPX全部
-========================= */
-
 async function loadAllGPX(
   gpxFiles
 ) {
@@ -1289,10 +1206,6 @@ async function loadAllGPX(
   }
 }
 
-
-/* =========================
-   年フィルター
-========================= */
 
 function createYearFilters() {
 
@@ -1383,10 +1296,6 @@ function createYearFilters() {
 }
 
 
-/* =========================
-   選択活動
-========================= */
-
 function getSelectedActivities() {
 
   if (
@@ -1403,10 +1312,6 @@ function getSelectedActivities() {
   );
 }
 
-
-/* =========================
-   再集計
-========================= */
 
 function buildSelectedStats() {
 
@@ -1481,10 +1386,6 @@ function buildSelectedStats() {
 }
 
 
-/* =========================
-   Layerクリア
-========================= */
-
 function clearMapLayers() {
 
   routeGroup.clearLayers();
@@ -1517,7 +1418,8 @@ function clearMapLayers() {
 
 
 /* =========================
-   赤い実走路
+   実走線
+   今回ここを弱く調整
 ========================= */
 
 function drawRoutes(
@@ -1535,10 +1437,10 @@ function drawRoutes(
               ROUTE_COLOR,
 
             weight:
-              3,
+              2,
 
             opacity:
-              0.85,
+              0.45,
 
             lineCap:
               'round',
@@ -1555,10 +1457,6 @@ function drawRoutes(
   );
 }
 
-
-/* =========================
-   ピンク100mセル
-========================= */
 
 function drawRingCells(
   ringCells
@@ -1613,10 +1511,6 @@ function drawRingCells(
 }
 
 
-/* =========================
-   ピンク市町村面
-========================= */
-
 function drawMunicipalities(
   municipalityDistance,
   municipalityRunCount
@@ -1641,10 +1535,6 @@ function drawMunicipalities(
               ] || 0;
 
             return {
-
-              /*
-               * 境界は控えめ
-               */
 
               color:
                 BORDER_COLOR,
@@ -1723,10 +1613,6 @@ function drawMunicipalities(
 }
 
 
-/* =========================
-   市町村カード → 地図
-========================= */
-
 function focusMunicipality(city) {
 
   const layer =
@@ -1802,10 +1688,6 @@ function focusMunicipality(city) {
   );
 }
 
-
-/* =========================
-   ダッシュボード
-========================= */
 
 function updateDashboard(
   stats
@@ -1953,10 +1835,6 @@ function updateDashboard(
 }
 
 
-/* =========================
-   ズーム切替
-========================= */
-
 function updateDisplay() {
 
   const zoom =
@@ -2057,10 +1935,6 @@ function updateDisplay() {
 }
 
 
-/* =========================
-   再描画
-========================= */
-
 function renderSelectedData() {
 
   const stats =
@@ -2089,24 +1963,11 @@ function renderSelectedData() {
 }
 
 
-/* =========================
-   起動
-========================= */
-
 async function start() {
 
   try {
 
-    /*
-     * 行政境界
-     */
-
     await loadMunicipalities();
-
-
-    /*
-     * 過去204本
-     */
 
     setStatus(
       '過去ランを復元中…'
@@ -2115,11 +1976,6 @@ async function start() {
     const archiveCount =
       loadArchiveActivities();
 
-
-    /*
-     * 現在GPX
-     */
-
     const gpxFiles =
       await getGPXFiles();
 
@@ -2127,20 +1983,9 @@ async function start() {
       gpxFiles
     );
 
-
-    /*
-     * 年ボタン
-     */
-
     createYearFilters();
 
-
-    /*
-     * 表示
-     */
-
     renderSelectedData();
-
 
     if (
       municipalityLayer
@@ -2152,19 +1997,16 @@ async function start() {
       );
     }
 
-
     map.on(
       'zoomend',
       updateDisplay
     );
-
 
     setTimeout(
       () =>
         map.invalidateSize(),
       300
     );
-
 
     console.log(
       '過去ラン:',
@@ -2180,7 +2022,6 @@ async function start() {
       '合計:',
       activities.length
     );
-
 
   } catch(error) {
 
