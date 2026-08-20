@@ -2,11 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Runner's Rings</title>
 
@@ -16,37 +12,27 @@
   >
 
   <style>
-
     * {
       box-sizing: border-box;
     }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        sans-serif;
-
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0b1422;
       color: white;
     }
-
 
     header {
       background: #0f1d2f;
       padding: 14px 16px 12px;
     }
 
-
     header h1 {
       margin: 0;
       font-size: 22px;
     }
-
 
     header p {
       margin: 4px 0 0;
@@ -54,99 +40,142 @@
       opacity: 0.75;
     }
 
-
     #status {
       background: #17283d;
       color: #dce8f5;
-
       padding: 8px 14px;
-
       font-size: 13px;
-
       white-space: nowrap;
       overflow-x: auto;
     }
 
-
     #importArea {
       background: #0f1d2f;
-
-      padding:
-        10px 12px
-        3px;
-
+      padding: 10px 12px 5px;
       display: flex;
-
       align-items: center;
-
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-
-    #addRunButton {
+    #addRunButton,
+    #savedRunsButton {
       border: 0;
-
       border-radius: 12px;
-
-      background: #ff2bd6;
       color: white;
-
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
-
-      padding:
-        11px 16px;
-
+      padding: 11px 14px;
       cursor: pointer;
     }
 
-
-    #localInfo {
-      font-size: 11px;
-      opacity: 0.6;
+    #addRunButton {
+      background: #ff2bd6;
     }
 
+    #savedRunsButton {
+      background: #17283d;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    #localInfo {
+      width: 100%;
+      font-size: 11px;
+      opacity: 0.6;
+      padding: 1px 2px 4px;
+    }
 
     #gpxInput {
       display: none;
     }
 
+    #savedRunsPanel {
+      display: none;
+      background: #0f1d2f;
+      padding: 7px 12px 12px;
+    }
+
+    #savedRunsPanel.open {
+      display: block;
+    }
+
+    .savedRunsTitle {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 4px 0 9px;
+    }
+
+    #savedRunsList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .savedRunRow {
+      background: #132237;
+      border-radius: 12px;
+      padding: 10px 11px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 10px;
+      align-items: center;
+    }
+
+    .savedRunMain {
+      min-width: 0;
+    }
+
+    .savedRunName {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .savedRunMeta {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.65;
+    }
+
+    .deleteRunButton {
+      border: 1px solid rgba(255,80,80,0.45);
+      background: rgba(255,80,80,0.10);
+      color: #ff7f7f;
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .savedEmpty {
+      background: #132237;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      opacity: 0.7;
+    }
 
     #filters {
       background: #0f1d2f;
-
       padding: 9px 10px;
-
       display: flex;
-
       gap: 7px;
-
       overflow-x: auto;
-
-      -webkit-overflow-scrolling:
-        touch;
+      -webkit-overflow-scrolling: touch;
     }
-
 
     .yearButton {
       flex: 0 0 auto;
-
-      border:
-        1px solid
-        rgba(255,255,255,0.14);
-
+      border: 1px solid rgba(255,255,255,0.14);
       background: #17283d;
       color: #dce8f5;
-
       border-radius: 999px;
-
-      padding:
-        7px 13px;
-
+      padding: 7px 13px;
       font-size: 13px;
       font-weight: 600;
     }
-
 
     .yearButton.active {
       background: #ff2bd6;
@@ -154,215 +183,146 @@
       border-color: #ff2bd6;
     }
 
-
     #map {
       width: 100%;
-
       height: 44vh;
-
       min-height: 320px;
     }
 
-
     #dashboard {
-      padding:
-        18px 16px
-        32px;
+      padding: 18px 16px 32px;
     }
-
 
     .summary {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
 
-
     .card {
       background: #132237;
-
       border-radius: 14px;
-
-      padding:
-        14px 8px;
-
+      padding: 14px 8px;
       text-align: center;
     }
 
-
     .label {
       font-size: 10px;
-
       letter-spacing: 1px;
-
       opacity: 0.65;
-
       margin-bottom: 6px;
     }
-
 
     .value {
       font-size: 21px;
       font-weight: 700;
     }
 
-
     .unit {
       font-size: 12px;
       opacity: 0.65;
     }
 
-
     h2 {
       font-size: 16px;
-
-      margin:
-        22px 0 10px;
+      margin: 22px 0 10px;
     }
-
 
     #cityList {
       display: flex;
-
       flex-direction: column;
-
       gap: 10px;
     }
 
-
     .cityCard {
       background: #132237;
-
       border-radius: 14px;
-
-      padding:
-        12px 14px 14px;
-
+      padding: 12px 14px 14px;
       cursor: pointer;
     }
 
-
     .cityTop {
       display: flex;
-
-      justify-content:
-        space-between;
-
+      justify-content: space-between;
       align-items: center;
-
       margin-bottom: 9px;
     }
-
 
     .cityName {
       font-size: 14px;
       font-weight: 700;
     }
 
-
     .cityDistance {
       font-size: 14px;
       opacity: 0.85;
     }
 
-
     .cityRuns {
       margin-top: 7px;
-
       font-size: 11px;
-
       opacity: 0.6;
     }
-
 
     .barTrack {
       width: 100%;
       height: 9px;
-
-      background:
-        rgba(255,255,255,0.08);
-
+      background: rgba(255,255,255,0.08);
       border-radius: 999px;
-
       overflow: hidden;
     }
 
-
     .barFill {
       height: 100%;
-
       background: #ff2bd6;
-
       border-radius: 999px;
-
       min-width: 3px;
     }
 
-
     .emptyMessage {
       background: #132237;
-
       border-radius: 14px;
-
       padding: 14px;
-
       font-size: 14px;
-
       opacity: 0.8;
     }
-
 
     .leaflet-popup-content-wrapper {
       border-radius: 14px;
     }
 
-
     .popup-title {
       font-size: 16px;
       font-weight: 700;
-
       margin-bottom: 8px;
     }
 
-
     .popup-row {
       margin-top: 4px;
-
       font-size: 13px;
     }
-
   </style>
 </head>
 
-
 <body>
 
-
 <header>
-
-  <h1>
-    Runner's Rings
-  </h1>
-
-  <p>
-    走った記録ではなく、走った人生を残す。
-  </p>
-
+  <h1>Runner's Rings</h1>
+  <p>走った記録ではなく、走った人生を残す。</p>
 </header>
-
 
 <div id="status">
   データを読み込み中…
 </div>
 
-
 <div id="importArea">
 
   <button id="addRunButton">
     ＋ ランを追加
+  </button>
+
+  <button id="savedRunsButton">
+    保存済みラン
   </button>
 
   <div id="localInfo">
@@ -377,253 +337,130 @@
 
 </div>
 
+<div id="savedRunsPanel">
 
-<div id="filters">
+  <div class="savedRunsTitle">
+    端末に保存したラン
+  </div>
 
-  <button
-    class="yearButton active"
-  >
-    ALL
-  </button>
+  <div id="savedRunsList">
+    <div class="savedEmpty">読み込み中…</div>
+  </div>
 
 </div>
 
+<div id="filters">
+  <button class="yearButton active">ALL</button>
+</div>
 
 <div id="map"></div>
 
-
 <section id="dashboard">
-
 
   <div class="summary">
 
-
     <div class="card">
-
-      <div class="label">
-        TOTAL
-      </div>
-
-      <span
-        id="totalDistance"
-        class="value"
-      >
-        --
-      </span>
-
-      <span class="unit">
-        km
-      </span>
-
+      <div class="label">TOTAL</div>
+      <span id="totalDistance" class="value">--</span>
+      <span class="unit">km</span>
     </div>
 
-
     <div class="card">
-
-      <div class="label">
-        RUNS
-      </div>
-
-      <div
-        id="runCount"
-        class="value"
-      >
-        --
-      </div>
-
+      <div class="label">RUNS</div>
+      <div id="runCount" class="value">--</div>
     </div>
 
-
     <div class="card">
-
-      <div class="label">
-        CITIES
-      </div>
-
-      <div
-        id="cityCount"
-        class="value"
-      >
-        --
-      </div>
-
+      <div class="label">CITIES</div>
+      <div id="cityCount" class="value">--</div>
     </div>
-
 
   </div>
 
-
-  <h2 id="cityHeading">
-    市町村別
-  </h2>
-
+  <h2 id="cityHeading">市町村別</h2>
 
   <div id="cityList">
-
-    <div class="emptyMessage">
-      読み込み中…
-    </div>
-
+    <div class="emptyMessage">読み込み中…</div>
   </div>
-
 
 </section>
 
-
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
-
-
-<script
-  src="./runner_rings_archive.js"
-></script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./runner_rings_archive.js"></script>
 
 <script>
-
 
 /* =====================================
    基本設定
 ===================================== */
 
+const OWNER = 'atsuoebara';
+const REPO = 'tree-age-map';
+const BRANCH = 'main';
 
-const OWNER =
-  'atsuoebara';
+const CELL_SIZE = 0.0009;
 
-
-const REPO =
-  'tree-age-map';
-
-
-const BRANCH =
-  'main';
-
-
-const CELL_SIZE =
-  0.0009;
-
-
-const AREA_COLOR =
-  '#ff2bd6';
-
-
-const BORDER_COLOR =
-  '#707580';
-
-
-const ROUTE_COLOR =
-  '#ff3b30';
-
+const AREA_COLOR = '#ff2bd6';
+const BORDER_COLOR = '#707580';
+const ROUTE_COLOR = '#ff3b30';
 
 
 /* =====================================
    MAP
 ===================================== */
 
-
-const map =
-  L.map(
-    'map'
-  ).setView(
-    [
-      36.39,
-      139.06
-    ],
-    9
-  );
-
+const map = L.map('map').setView(
+  [36.39, 139.06],
+  9
+);
 
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {
-
-    maxZoom:
-      19,
-
-    attribution:
-      '&copy; OpenStreetMap contributors'
-
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
   }
-).addTo(
-  map
-);
-
+).addTo(map);
 
 
 /* =====================================
    データ
 ===================================== */
 
+let geojsonData = null;
 
-let geojsonData =
-  null;
+const municipalityFeatures = [];
+const activities = [];
+const activitySignatures = new Set();
 
-
-const municipalityFeatures =
-  [];
-
-
-const activities =
-  [];
-
-
-const activitySignatures =
-  new Set();
-
-
-let selectedYear =
-  'ALL';
-
+let selectedYear = 'ALL';
 
 
 /* =====================================
    Layer
 ===================================== */
 
+let municipalityLayer = null;
 
-let municipalityLayer =
-  null;
+const routeGroup = L.layerGroup();
+const ringGroup = L.layerGroup();
 
-
-const routeGroup =
-  L.layerGroup();
-
-
-const ringGroup =
-  L.layerGroup();
-
-
-const municipalityLayers =
-  {};
-
+const municipalityLayers = {};
 
 
 /* =====================================
    IndexedDB
 ===================================== */
 
-
-const DB_NAME =
-  'RunnersRingsDB';
-
-
-const DB_VERSION =
-  1;
-
-
-const STORE_NAME =
-  'importedGPX';
-
+const DB_NAME = 'RunnersRingsDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'importedGPX';
 
 
 function openDatabase() {
 
   return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
+    (resolve, reject) => {
 
       const request =
         indexedDB.open(
@@ -631,61 +468,36 @@ function openDatabase() {
           DB_VERSION
         );
 
-
       request.onupgradeneeded =
         event => {
 
           const db =
             event.target.result;
 
-
           if (
-            !db.objectStoreNames
-              .contains(
-                STORE_NAME
-              )
+            !db.objectStoreNames.contains(
+              STORE_NAME
+            )
           ) {
 
             db.createObjectStore(
               STORE_NAME,
               {
-                keyPath:
-                  'id',
-
-                autoIncrement:
-                  true
+                keyPath: 'id',
+                autoIncrement: true
               }
             );
-
           }
-
         };
-
 
       request.onsuccess =
-        () => {
-
-          resolve(
-            request.result
-          );
-
-        };
-
+        () => resolve(request.result);
 
       request.onerror =
-        () => {
-
-          reject(
-            request.error
-          );
-
-        };
-
+        () => reject(request.error);
     }
   );
-
 }
-
 
 
 async function saveGPXToDevice(
@@ -696,12 +508,8 @@ async function saveGPXToDevice(
   const db =
     await openDatabase();
 
-
   return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
+    (resolve, reject) => {
 
       const transaction =
         db.transaction(
@@ -709,55 +517,29 @@ async function saveGPXToDevice(
           'readwrite'
         );
 
-
       const store =
         transaction.objectStore(
           STORE_NAME
         );
 
-
       const request =
         store.add(
           {
-
-            name:
-              name,
-
-            text:
-              text,
-
+            name,
+            text,
             importedAt:
-              new Date()
-                .toISOString()
-
+              new Date().toISOString()
           }
         );
 
-
       request.onsuccess =
-        () => {
-
-          resolve(
-            request.result
-          );
-
-        };
-
+        () => resolve(request.result);
 
       request.onerror =
-        () => {
-
-          reject(
-            request.error
-          );
-
-        };
-
+        () => reject(request.error);
     }
   );
-
 }
-
 
 
 async function getSavedGPX() {
@@ -765,12 +547,8 @@ async function getSavedGPX() {
   const db =
     await openDatabase();
 
-
   return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
+    (resolve, reject) => {
 
       const transaction =
         db.transaction(
@@ -778,41 +556,59 @@ async function getSavedGPX() {
           'readonly'
         );
 
+      const store =
+        transaction.objectStore(
+          STORE_NAME
+        );
+
+      const request =
+        store.getAll();
+
+      request.onsuccess =
+        () =>
+          resolve(
+            request.result || []
+          );
+
+      request.onerror =
+        () => reject(request.error);
+    }
+  );
+}
+
+
+async function deleteSavedGPX(
+  id
+) {
+
+  const db =
+    await openDatabase();
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          STORE_NAME,
+          'readwrite'
+        );
 
       const store =
         transaction.objectStore(
           STORE_NAME
         );
 
-
       const request =
-        store.getAll();
-
+        store.delete(id);
 
       request.onsuccess =
-        () => {
-
-          resolve(
-            request.result || []
-          );
-
-        };
-
+        () => resolve();
 
       request.onerror =
-        () => {
-
-          reject(
-            request.error
-          );
-
-        };
-
+        () => reject(request.error);
     }
   );
-
 }
-
 
 
 async function updateLocalInfo() {
@@ -822,38 +618,35 @@ async function updateLocalInfo() {
     const saved =
       await getSavedGPX();
 
-
     document
       .getElementById(
         'localInfo'
       )
       .textContent =
-
         '端末保存 ' +
         saved.length +
         ' RUNS';
 
+    document
+      .getElementById(
+        'savedRunsButton'
+      )
+      .textContent =
+        '保存済みラン ' +
+        saved.length;
 
   } catch(error) {
 
-    console.error(
-      error
-    );
-
+    console.error(error);
   }
-
 }
-
 
 
 /* =====================================
    STATUS
 ===================================== */
 
-
-function setStatus(
-  text
-) {
+function setStatus(text) {
 
   document
     .getElementById(
@@ -861,15 +654,12 @@ function setStatus(
     )
     .textContent =
       text;
-
 }
-
 
 
 /* =====================================
    距離
 ===================================== */
-
 
 function distanceKm(
   lat1,
@@ -878,123 +668,70 @@ function distanceKm(
   lon2
 ) {
 
-  const R =
-    6371;
-
+  const R = 6371;
 
   const toRad =
     deg =>
-      deg *
-      Math.PI /
-      180;
-
+      deg * Math.PI / 180;
 
   const dLat =
     toRad(
-      lat2 -
-      lat1
+      lat2 - lat1
     );
-
 
   const dLon =
     toRad(
-      lon2 -
-      lon1
+      lon2 - lon1
     );
 
-
   const a =
-
-    Math.sin(
-      dLat / 2
-    ) ** 2 +
-
-    Math.cos(
-      toRad(lat1)
-    ) *
-
-    Math.cos(
-      toRad(lat2)
-    ) *
-
-    Math.sin(
-      dLon / 2
-    ) ** 2;
-
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
 
   return (
-
     R *
-
     2 *
-
     Math.atan2(
       Math.sqrt(a),
-      Math.sqrt(
-        1 - a
-      )
+      Math.sqrt(1 - a)
     )
-
   );
-
 }
-
 
 
 /* =====================================
    市町村判定
 ===================================== */
 
-
 function pointInRing(
   point,
   ring
 ) {
 
-  const x =
-    point[0];
+  const x = point[0];
+  const y = point[1];
 
-
-  const y =
-    point[1];
-
-
-  let inside =
-    false;
-
+  let inside = false;
 
   for (
-
     let i = 0,
         j = ring.length - 1;
 
     i < ring.length;
 
     j = i++
-
   ) {
 
-    const xi =
-      ring[i][0];
+    const xi = ring[i][0];
+    const yi = ring[i][1];
 
-
-    const yi =
-      ring[i][1];
-
-
-    const xj =
-      ring[j][0];
-
-
-    const yj =
-      ring[j][1];
-
+    const xj = ring[j][0];
+    const yj = ring[j][1];
 
     const intersect =
-
-      ((yi > y) !==
-       (yj > y)) &&
-
+      ((yi > y) !== (yj > y)) &&
       (
         x <
         (
@@ -1005,23 +742,13 @@ function pointInRing(
         xi
       );
 
-
-    if (
-      intersect
-    ) {
-
-      inside =
-        !inside;
-
+    if (intersect) {
+      inside = !inside;
     }
-
   }
 
-
   return inside;
-
 }
-
 
 
 function pointInPolygon(
@@ -1035,21 +762,13 @@ function pointInPolygon(
       polygon[0]
     )
   ) {
-
     return false;
-
   }
 
-
   for (
-
     let i = 1;
-
-    i <
-    polygon.length;
-
+    i < polygon.length;
     i++
-
   ) {
 
     if (
@@ -1058,18 +777,12 @@ function pointInPolygon(
         polygon[i]
       )
     ) {
-
       return false;
-
     }
-
   }
 
-
   return true;
-
 }
-
 
 
 function pointInFeature(
@@ -1080,15 +793,9 @@ function pointInFeature(
   const geometry =
     feature.geometry;
 
-
-  if (
-    !geometry
-  ) {
-
+  if (!geometry) {
     return false;
-
   }
-
 
   if (
     geometry.type ===
@@ -1099,37 +806,29 @@ function pointInFeature(
       point,
       geometry.coordinates
     );
-
   }
-
 
   if (
     geometry.type ===
     'MultiPolygon'
   ) {
 
-    return geometry.coordinates
-      .some(
-        polygon =>
-          pointInPolygon(
-            point,
-            polygon
-          )
-      );
-
+    return geometry.coordinates.some(
+      polygon =>
+        pointInPolygon(
+          point,
+          polygon
+        )
+    );
   }
 
-
   return false;
-
 }
-
 
 
 /* =====================================
    BBOX
 ===================================== */
-
 
 function collectCoordinates(
   coords,
@@ -1141,14 +840,9 @@ function collectCoordinates(
     'number'
   ) {
 
-    output.push(
-      coords
-    );
-
+    output.push(coords);
     return;
-
   }
-
 
   coords.forEach(
     child =>
@@ -1157,91 +851,49 @@ function collectCoordinates(
         output
       )
   );
-
 }
-
 
 
 function getFeatureBBox(
   feature
 ) {
 
-  const points =
-    [];
-
+  const points = [];
 
   collectCoordinates(
     feature.geometry.coordinates,
     points
   );
 
-
-  let minLon =
-    Infinity;
-
-
-  let minLat =
-    Infinity;
-
-
-  let maxLon =
-    -Infinity;
-
-
-  let maxLat =
-    -Infinity;
-
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
 
   points.forEach(
-    (
-      [
-        lon,
-        lat
-      ]
-    ) => {
+    ([lon, lat]) => {
 
       minLon =
-        Math.min(
-          minLon,
-          lon
-        );
-
+        Math.min(minLon, lon);
 
       minLat =
-        Math.min(
-          minLat,
-          lat
-        );
-
+        Math.min(minLat, lat);
 
       maxLon =
-        Math.max(
-          maxLon,
-          lon
-        );
-
+        Math.max(maxLon, lon);
 
       maxLat =
-        Math.max(
-          maxLat,
-          lat
-        );
-
+        Math.max(maxLat, lat);
     }
   );
 
-
   return {
-
     minLon,
     minLat,
     maxLon,
     maxLat
-
   };
-
 }
-
 
 
 function findMunicipality(
@@ -1250,11 +902,7 @@ function findMunicipality(
 ) {
 
   const point =
-    [
-      lon,
-      lat
-    ];
-
+    [lon, lat];
 
   for (
     const item of
@@ -1264,27 +912,14 @@ function findMunicipality(
     const b =
       item.bbox;
 
-
     if (
-
-      lon <
-      b.minLon ||
-
-      lon >
-      b.maxLon ||
-
-      lat <
-      b.minLat ||
-
-      lat >
-      b.maxLat
-
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
     ) {
-
       continue;
-
     }
-
 
     if (
       pointInFeature(
@@ -1294,30 +929,21 @@ function findMunicipality(
     ) {
 
       return (
-
         item.feature
           .properties
           .N03_004 ||
-
         '名称不明'
-
       );
-
     }
-
   }
 
-
   return null;
-
 }
-
 
 
 /* =====================================
    100mセル
 ===================================== */
-
 
 function getCellKey(
   lat,
@@ -1326,26 +952,20 @@ function getCellKey(
 
   const latIndex =
     Math.floor(
-      lat /
-      CELL_SIZE
+      lat / CELL_SIZE
     );
-
 
   const lonIndex =
     Math.floor(
-      lon /
-      CELL_SIZE
+      lon / CELL_SIZE
     );
-
 
   return (
     latIndex +
     ',' +
     lonIndex
   );
-
 }
-
 
 
 function getCellBounds(
@@ -1356,94 +976,59 @@ function getCellBounds(
     latIndex,
     lonIndex
   ] =
-
     key
       .split(',')
-      .map(
-        Number
-      );
-
+      .map(Number);
 
   const south =
     latIndex *
     CELL_SIZE;
 
-
   const west =
     lonIndex *
     CELL_SIZE;
 
-
   return [
+    [south, west],
 
     [
-      south,
-      west
-    ],
-
-    [
-      south +
-      CELL_SIZE,
-
-      west +
-      CELL_SIZE
+      south + CELL_SIZE,
+      west + CELL_SIZE
     ]
-
   ];
-
 }
-
 
 
 /* =====================================
    セル濃度
 ===================================== */
 
-
 function getRingOpacity(
   count
 ) {
 
-  if (
-    count <= 1
-  )
+  if (count <= 1)
     return 0.10;
 
-
-  if (
-    count === 2
-  )
+  if (count === 2)
     return 0.16;
 
-
-  if (
-    count <= 4
-  )
+  if (count <= 4)
     return 0.24;
 
-
-  if (
-    count <= 7
-  )
+  if (count <= 7)
     return 0.34;
 
-
-  if (
-    count <= 15
-  )
+  if (count <= 15)
     return 0.46;
 
-
   return 0.58;
-
 }
-
 
 
 /* =====================================
    ルート → セル
 ===================================== */
-
 
 function buildCellsFromRoute(
   latlngs
@@ -1452,15 +1037,9 @@ function buildCellsFromRoute(
   const cells =
     new Set();
 
-
-  if (
-    !latlngs.length
-  ) {
-
+  if (!latlngs.length) {
     return cells;
-
   }
-
 
   cells.add(
     getCellKey(
@@ -1469,25 +1048,17 @@ function buildCellsFromRoute(
     )
   );
 
-
   for (
-
     let i = 1;
-
-    i <
-    latlngs.length;
-
+    i < latlngs.length;
     i++
-
   ) {
 
     const a =
       latlngs[i - 1];
 
-
     const b =
       latlngs[i];
-
 
     const km =
       distanceKm(
@@ -1497,53 +1068,38 @@ function buildCellsFromRoute(
         b[1]
       );
 
-
     const steps =
       Math.max(
         1,
         Math.ceil(
-          km /
-          0.04
+          km / 0.04
         )
       );
 
-
     for (
-
       let s = 0;
-
       s <= steps;
-
       s++
-
     ) {
 
       const t =
-        s /
-        steps;
-
+        s / steps;
 
       const lat =
-
         a[0] +
-
         (
           b[0] -
           a[0]
         ) *
         t;
 
-
       const lon =
-
         a[1] +
-
         (
           b[1] -
           a[1]
         ) *
         t;
-
 
       cells.add(
         getCellKey(
@@ -1551,22 +1107,16 @@ function buildCellsFromRoute(
           lon
         )
       );
-
     }
-
   }
 
-
   return cells;
-
 }
-
 
 
 /* =====================================
    市町村濃度
 ===================================== */
-
 
 function getMunicipalityOpacity(
   km
@@ -1600,15 +1150,12 @@ function getMunicipalityOpacity(
     return 0.60;
 
   return 0.70;
-
 }
-
 
 
 /* =====================================
    行政境界
 ===================================== */
-
 
 async function loadMunicipalities() {
 
@@ -1616,100 +1163,67 @@ async function loadMunicipalities() {
     '行政境界を読み込み中…'
   );
 
-
   const response =
     await fetch(
       './N03-20250101_10.geojson'
     );
 
-
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
 
     throw new Error(
       '行政境界データ取得失敗'
     );
-
   }
-
 
   geojsonData =
     await response.json();
 
-
   municipalityFeatures.length =
     0;
 
+  geojsonData.features.forEach(
+    feature => {
 
-  geojsonData.features
-    .forEach(
-      feature => {
+      municipalityFeatures.push(
+        {
+          feature,
 
-        municipalityFeatures
-          .push(
-            {
-
-              feature:
-
-                feature,
-
-              bbox:
-
-                getFeatureBBox(
-                  feature
-                )
-
-            }
-          );
-
-      }
-    );
-
+          bbox:
+            getFeatureBBox(
+              feature
+            )
+        }
+      );
+    }
+  );
 }
-
 
 
 /* =====================================
    ルート解析
 ===================================== */
 
-
 function analyseRoute(
   latlngs,
   targetDistanceKm = null
 ) {
 
-  const cityDistances =
-    {};
+  const cityDistances = {};
+  const cities = new Set();
 
-
-  const cities =
-    new Set();
-
-
-  let calculatedKm =
-    0;
-
+  let calculatedKm = 0;
 
   for (
-
     let i = 1;
-
-    i <
-    latlngs.length;
-
+    i < latlngs.length;
     i++
-
   ) {
 
     const prev =
       latlngs[i - 1];
 
-
     const current =
       latlngs[i];
-
 
     const segmentKm =
       distanceKm(
@@ -1719,28 +1233,20 @@ function analyseRoute(
         current[1]
       );
 
-
     calculatedKm +=
       segmentKm;
 
-
     const midLat =
-
       (
         prev[0] +
         current[0]
-      ) /
-      2;
-
+      ) / 2;
 
     const midLon =
-
       (
         prev[1] +
         current[1]
-      ) /
-      2;
-
+      ) / 2;
 
     const city =
       findMunicipality(
@@ -1748,42 +1254,27 @@ function analyseRoute(
         midLon
       );
 
-
-    if (
-      city
-    ) {
+    if (city) {
 
       cityDistances[city] =
-
         (
           cityDistances[city] ||
           0
         ) +
-
         segmentKm;
 
-
-      cities.add(
-        city
-      );
-
+      cities.add(city);
     }
-
   }
 
-
   if (
-
     targetDistanceKm &&
     calculatedKm > 0
-
   ) {
 
     const scale =
-
       targetDistanceKm /
       calculatedKm;
-
 
     Object.keys(
       cityDistances
@@ -1792,40 +1283,22 @@ function analyseRoute(
 
         cityDistances[city] *=
           scale;
-
       }
     );
-
   }
 
-
   return {
-
-    cityDistances:
-
-      cityDistances,
-
+    cityDistances,
     cities:
-
-      Array.from(
-        cities
-      ),
-
-    calculatedKm:
-
-      calculatedKm
-
+      Array.from(cities),
+    calculatedKm
   };
-
 }
-
 
 
 /* =====================================
    活動シグネチャ
-   重複防止
 ===================================== */
-
 
 function createActivitySignature(
   activity
@@ -1834,21 +1307,16 @@ function createActivitySignature(
   const first =
     activity.latlngs[0];
 
-
   const last =
     activity.latlngs[
       activity.latlngs.length - 1
     ];
 
-
   const round4 =
     value =>
-      Number(value)
-        .toFixed(4);
-
+      Number(value).toFixed(4);
 
   const datePart =
-
     activity.date &&
     !Number.isNaN(
       activity.date.getTime()
@@ -1856,45 +1324,23 @@ function createActivitySignature(
 
       ? activity.date
           .toISOString()
-          .slice(
-            0,
-            10
-          )
+          .slice(0,10)
 
       : 'nodate';
 
-
   return [
-
     datePart,
-
-    activity.distance
-      .toFixed(2),
-
+    activity.distance.toFixed(2),
     activity.latlngs.length,
 
-    round4(
-      first[0]
-    ),
+    round4(first[0]),
+    round4(first[1]),
 
-    round4(
-      first[1]
-    ),
+    round4(last[0]),
+    round4(last[1])
 
-    round4(
-      last[0]
-    ),
-
-    round4(
-      last[1]
-    )
-
-  ].join(
-    '|'
-  );
-
+  ].join('|');
 }
-
 
 
 function registerActivity(
@@ -1906,42 +1352,32 @@ function registerActivity(
       activity
     );
 
-
   if (
     activitySignatures.has(
       signature
     )
   ) {
-
     return false;
-
   }
-
 
   activity.signature =
     signature;
-
 
   activitySignatures.add(
     signature
   );
 
-
   activities.push(
     activity
   );
 
-
   return true;
-
 }
-
 
 
 /* =====================================
    GPX XML → Activity
 ===================================== */
-
 
 function buildActivityFromGPXText(
   text,
@@ -1956,7 +1392,6 @@ function buildActivityFromGPXText(
         'application/xml'
       );
 
-
   if (
     xml.querySelector(
       'parsererror'
@@ -1966,40 +1401,30 @@ function buildActivityFromGPXText(
     throw new Error(
       'GPXを読み込めません'
     );
-
   }
-
 
   const metadataTime =
     xml.querySelector(
       'metadata > time'
     );
 
-
   const trackTime =
     xml.querySelector(
       'trkpt > time'
     );
 
-
   const timeElement =
     metadataTime ||
     trackTime;
 
+  let date = null;
 
-  let date =
-    null;
-
-
-  if (
-    timeElement
-  ) {
+  if (timeElement) {
 
     const d =
       new Date(
         timeElement.textContent
       );
-
 
     if (
       !Number.isNaN(
@@ -2007,19 +1432,14 @@ function buildActivityFromGPXText(
       )
     ) {
 
-      date =
-        d;
-
+      date = d;
     }
-
   }
-
 
   const year =
     date
       ? date.getFullYear()
       : null;
-
 
   const points =
     Array.from(
@@ -2027,7 +1447,6 @@ function buildActivityFromGPXText(
         'trkpt'
       )
     );
-
 
   const latlngs =
     points
@@ -2050,16 +1469,13 @@ function buildActivityFromGPXText(
       )
       .filter(
         point =>
-
           Number.isFinite(
             point[0]
           ) &&
-
           Number.isFinite(
             point[1]
           )
       );
-
 
   if (
     latlngs.length < 2
@@ -2068,78 +1484,49 @@ function buildActivityFromGPXText(
     throw new Error(
       'GPS座標が不足しています'
     );
-
   }
-
 
   const analysis =
     analyseRoute(
       latlngs
     );
 
-
   const cells =
     buildCellsFromRoute(
       latlngs
     );
 
-
   return {
-
-    source:
-
-      source,
-
-    name:
-
-      name,
-
-    date:
-
-      date,
-
-    year:
-
-      year,
+    source,
+    name,
+    date,
+    year,
 
     distance:
-
       analysis.calculatedKm,
 
-    latlngs:
-
-      latlngs,
+    latlngs,
 
     cityDistances:
-
       analysis.cityDistances,
 
     cities:
-
       analysis.cities,
 
     cells:
-
-      Array.from(
-        cells
-      )
-
+      Array.from(cells)
   };
-
 }
 
 
-
 /* =====================================
-   過去204ラン
+   過去ラン
 ===================================== */
-
 
 function loadArchiveActivities() {
 
   const archive =
     window.RUNNERS_RINGS_ARCHIVE;
-
 
   if (
     !Array.isArray(
@@ -2152,79 +1539,55 @@ function loadArchiveActivities() {
     );
 
     return 0;
-
   }
 
-
-  let loaded =
-    0;
-
+  let loaded = 0;
 
   archive.forEach(
     run => {
 
       if (
-
         !Array.isArray(
           run.route
         ) ||
-
-        run.route.length <
-        2
-
+        run.route.length < 2
       ) {
-
         return;
-
       }
-
 
       const latlngs =
         run.route
           .map(
             point => [
-
-              Number(
-                point[0]
-              ),
-
-              Number(
-                point[1]
-              )
-
+              Number(point[0]),
+              Number(point[1])
             ]
           )
           .filter(
             point =>
-
               Number.isFinite(
                 point[0]
               ) &&
-
               Number.isFinite(
                 point[1]
               )
           );
 
-
       if (
         latlngs.length < 2
       ) {
-
         return;
-
       }
-
 
       const storedDistance =
         Number(
           run.distance_km
         );
 
-
       const analysis =
         analyseRoute(
           latlngs,
+
           Number.isFinite(
             storedDistance
           )
@@ -2232,30 +1595,21 @@ function loadArchiveActivities() {
             : null
         );
 
-
       const cells =
         buildCellsFromRoute(
           latlngs
         );
 
-
       const date =
         run.date
-
           ? new Date(
               run.date +
               'T12:00:00'
             )
-
           : null;
 
-
       const year =
-
-        Number(
-          run.year
-        ) ||
-
+        Number(run.year) ||
         (
           date &&
           !Number.isNaN(
@@ -2263,14 +1617,11 @@ function loadArchiveActivities() {
           )
 
             ? date.getFullYear()
-
             : null
         );
 
-
       const activity =
         {
-
           source:
             'archive',
 
@@ -2282,62 +1633,44 @@ function loadArchiveActivities() {
             '過去ラン',
 
           date,
-
           year,
 
           distance:
-
             Number.isFinite(
               storedDistance
             )
-
               ? storedDistance
-
               : analysis.calculatedKm,
 
           latlngs,
 
           cityDistances:
-
             analysis.cityDistances,
 
           cities:
-
             analysis.cities,
 
           cells:
-
-            Array.from(
-              cells
-            )
-
+            Array.from(cells)
         };
-
 
       if (
         registerActivity(
           activity
         )
       ) {
-
         loaded++;
-
       }
-
     }
   );
 
-
   return loaded;
-
 }
-
 
 
 /* =====================================
    GitHub GPX
 ===================================== */
-
 
 async function getGPXFiles() {
 
@@ -2345,87 +1678,54 @@ async function getGPXFiles() {
     '現在のGPXを探しています…'
   );
 
-
   const apiURL =
-
     'https://api.github.com/repos/' +
-
     OWNER +
-
     '/' +
-
     REPO +
-
     '/contents?ref=' +
-
     BRANCH;
-
 
   const response =
     await fetch(
       apiURL,
       {
-
-        headers:
-          {
-
-            'Accept':
-              'application/vnd.github+json'
-
-          }
-
+        headers: {
+          'Accept':
+            'application/vnd.github+json'
+        }
       }
     );
 
-
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
 
     throw new Error(
-
       'GPX一覧取得失敗 HTTP ' +
-
       response.status
-
     );
-
   }
-
 
   const files =
     await response.json();
 
-
   return files
     .filter(
       file =>
-
-        file.type ===
-          'file' &&
-
+        file.type === 'file' &&
         file.name
           .toLowerCase()
-          .endsWith(
-            '.gpx'
-          )
+          .endsWith('.gpx')
     )
     .map(
-      file => (
-        {
+      file => ({
+        name:
+          file.name,
 
-          name:
-            file.name,
-
-          url:
-            file.download_url
-
-        }
-      )
+        url:
+          file.download_url
+      })
     );
-
 }
-
 
 
 async function loadOneGPX(
@@ -2437,200 +1737,464 @@ async function loadOneGPX(
       gpxFile.url
     );
 
-
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
 
     throw new Error(
-
       gpxFile.name +
-
       ' 取得失敗 HTTP ' +
-
       response.status
-
     );
-
   }
-
 
   const text =
     await response.text();
 
-
   const activity =
     buildActivityFromGPXText(
-
       text,
-
       gpxFile.name,
-
       'github'
-
     );
-
 
   return registerActivity(
     activity
   );
-
 }
-
 
 
 async function loadAllGPX(
   gpxFiles
 ) {
 
-  let loaded =
-    0;
-
+  let loaded = 0;
 
   for (
-
     let i = 0;
-
-    i <
-    gpxFiles.length;
-
+    i < gpxFiles.length;
     i++
-
   ) {
 
     setStatus(
-
       '現在GPX ' +
-
       (i + 1) +
-
       '/' +
-
       gpxFiles.length +
-
       ' 読み込み中…'
-
     );
-
 
     const added =
       await loadOneGPX(
         gpxFiles[i]
       );
 
-
-    if (
-      added
-    ) {
-
+    if (added) {
       loaded++;
-
     }
-
   }
 
-
   return loaded;
-
 }
 
 
-
 /* =====================================
-   端末保存GPXを復元
+   端末保存GPX復元
 ===================================== */
-
 
 async function loadSavedActivities() {
 
   let saved;
-
 
   try {
 
     saved =
       await getSavedGPX();
 
-
   } catch(error) {
 
-    console.error(
-      error
-    );
-
-
+    console.error(error);
     return 0;
-
   }
 
-
-  let loaded =
-    0;
-
+  let loaded = 0;
 
   for (
-    const item of
-    saved
+    const item of saved
   ) {
 
     try {
 
       const activity =
         buildActivityFromGPXText(
-
           item.text,
-
           item.name,
-
           'local'
-
         );
 
+      activity.localId =
+        item.id;
 
       if (
         registerActivity(
           activity
         )
       ) {
-
         loaded++;
-
       }
-
 
     } catch(error) {
 
       console.warn(
-
         '保存GPX復元失敗',
-
         item.name,
-
         error
-
       );
-
     }
-
   }
 
-
   return loaded;
-
 }
 
+
+/* =====================================
+   保存済みラン一覧
+===================================== */
+
+function formatRunDate(
+  date
+) {
+
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return '日付不明';
+  }
+
+  const y =
+    date.getFullYear();
+
+  const m =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      '0'
+    );
+
+  const d =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      '0'
+    );
+
+  return (
+    y +
+    '/' +
+    m +
+    '/' +
+    d
+  );
+}
+
+
+async function renderSavedRuns() {
+
+  const list =
+    document.getElementById(
+      'savedRunsList'
+    );
+
+  list.innerHTML = '';
+
+  let saved;
+
+  try {
+
+    saved =
+      await getSavedGPX();
+
+  } catch(error) {
+
+    console.error(error);
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      '保存済みランを読み込めませんでした' +
+      '</div>';
+
+    return;
+  }
+
+  if (
+    saved.length === 0
+  ) {
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      '端末に保存したランはありません' +
+      '</div>';
+
+    return;
+  }
+
+  const rows = [];
+
+  for (
+    const item of saved
+  ) {
+
+    try {
+
+      const activity =
+        buildActivityFromGPXText(
+          item.text,
+          item.name,
+          'local'
+        );
+
+      rows.push(
+        {
+          item,
+          activity
+        }
+      );
+
+    } catch(error) {
+
+      rows.push(
+        {
+          item,
+          activity: null
+        }
+      );
+    }
+  }
+
+  rows.sort(
+    (a, b) => {
+
+      const aTime =
+        a.activity?.date
+          ? a.activity.date.getTime()
+          : 0;
+
+      const bTime =
+        b.activity?.date
+          ? b.activity.date.getTime()
+          : 0;
+
+      return bTime - aTime;
+    }
+  );
+
+  rows.forEach(
+    ({item, activity}) => {
+
+      const row =
+        document.createElement(
+          'div'
+        );
+
+      row.className =
+        'savedRunRow';
+
+      const main =
+        document.createElement(
+          'div'
+        );
+
+      main.className =
+        'savedRunMain';
+
+      const name =
+        document.createElement(
+          'div'
+        );
+
+      name.className =
+        'savedRunName';
+
+      name.textContent =
+        item.name.replace(
+          /\.gpx$/i,
+          ''
+        );
+
+      const meta =
+        document.createElement(
+          'div'
+        );
+
+      meta.className =
+        'savedRunMeta';
+
+      if (activity) {
+
+        meta.textContent =
+          formatRunDate(
+            activity.date
+          ) +
+          ' ・ ' +
+          activity.distance.toFixed(2) +
+          ' km';
+
+      } else {
+
+        meta.textContent =
+          'GPX解析エラー';
+      }
+
+      main.appendChild(name);
+      main.appendChild(meta);
+
+      const deleteButton =
+        document.createElement(
+          'button'
+        );
+
+      deleteButton.className =
+        'deleteRunButton';
+
+      deleteButton.textContent =
+        '削除';
+
+      deleteButton.addEventListener(
+        'click',
+        async () => {
+
+          const ok =
+            confirm(
+              'このランを削除しますか？\n\n' +
+              item.name
+            );
+
+          if (!ok) {
+            return;
+          }
+
+          try {
+
+            await deleteSavedGPX(
+              item.id
+            );
+
+            removeLocalActivity(
+              item.id
+            );
+
+            if (
+              selectedYear !== 'ALL'
+            ) {
+
+              const stillExists =
+                activities.some(
+                  activity =>
+                    activity.year ===
+                    Number(
+                      selectedYear
+                    )
+                );
+
+              if (!stillExists) {
+                selectedYear =
+                  'ALL';
+              }
+            }
+
+            createYearFilters();
+
+            renderSelectedData();
+
+            await updateLocalInfo();
+
+            await renderSavedRuns();
+
+            setStatus(
+              '✅ 保存済みランを削除しました'
+            );
+
+          } catch(error) {
+
+            console.error(error);
+
+            alert(
+              '削除に失敗しました。'
+            );
+          }
+        }
+      );
+
+      row.appendChild(main);
+      row.appendChild(
+        deleteButton
+      );
+
+      list.appendChild(row);
+    }
+  );
+}
+
+
+function removeLocalActivity(
+  localId
+) {
+
+  const index =
+    activities.findIndex(
+      activity =>
+        activity.source ===
+          'local' &&
+        activity.localId ===
+          localId
+    );
+
+  if (
+    index === -1
+  ) {
+    return;
+  }
+
+  const activity =
+    activities[index];
+
+  if (
+    activity.signature
+  ) {
+
+    activitySignatures.delete(
+      activity.signature
+    );
+  }
+
+  activities.splice(
+    index,
+    1
+  );
+}
 
 
 /* =====================================
    ＋ランを追加
 ===================================== */
 
-
 const addRunButton =
   document.getElementById(
     'addRunButton'
   );
 
+const savedRunsButton =
+  document.getElementById(
+    'savedRunsButton'
+  );
+
+const savedRunsPanel =
+  document.getElementById(
+    'savedRunsPanel'
+  );
 
 const gpxInput =
   document.getElementById(
@@ -2638,176 +2202,158 @@ const gpxInput =
   );
 
 
-addRunButton
-  .addEventListener(
-    'click',
-    () => {
+addRunButton.addEventListener(
+  'click',
+  () => {
+    gpxInput.click();
+  }
+);
 
-      gpxInput.click();
 
+savedRunsButton.addEventListener(
+  'click',
+  async () => {
+
+    const isOpen =
+      savedRunsPanel.classList
+        .toggle(
+          'open'
+        );
+
+    if (isOpen) {
+
+      await renderSavedRuns();
     }
-  );
+  }
+);
 
 
-gpxInput
-  .addEventListener(
-    'change',
-    async event => {
+gpxInput.addEventListener(
+  'change',
+  async event => {
 
-      const file =
-        event.target.files[0];
+    const file =
+      event.target.files[0];
 
+    if (!file) {
+      return;
+    }
 
-      if (
-        !file
-      ) {
+    try {
 
-        return;
+      setStatus(
+        'GPXを読み込み中…'
+      );
 
-      }
+      const text =
+        await file.text();
 
-
-      try {
-
-        setStatus(
-          'GPXを読み込み中…'
-        );
-
-
-        const text =
-          await file.text();
-
-
-        const activity =
-          buildActivityFromGPXText(
-
-            text,
-
-            file.name,
-
-            'local'
-
-          );
-
-
-        const signature =
-          createActivitySignature(
-            activity
-          );
-
-
-        if (
-          activitySignatures.has(
-            signature
-          )
-        ) {
-
-          alert(
-            'このランはすでに登録されています。'
-          );
-
-
-          setStatus(
-            '重複ランのため追加しませんでした'
-          );
-
-
-          gpxInput.value =
-            '';
-
-
-          return;
-
-        }
-
-
-        await saveGPXToDevice(
-
+      const activity =
+        buildActivityFromGPXText(
+          text,
           file.name,
-
-          text
-
+          'local'
         );
 
-
-        registerActivity(
+      const signature =
+        createActivitySignature(
           activity
         );
 
-
-        selectedYear =
-          'ALL';
-
-
-        createYearFilters();
-
-
-        renderSelectedData();
-
-
-        await updateLocalInfo();
-
-
-        setStatus(
-          '✅ ランを追加しました'
-        );
-
-
-        const bounds =
-          L.latLngBounds(
-            activity.latlngs
-          );
-
-
-        map.fitBounds(
-          bounds,
-          {
-            padding:
-              [25, 25]
-          }
-        );
-
+      if (
+        activitySignatures.has(
+          signature
+        )
+      ) {
 
         alert(
-          'ランを追加しました！'
+          'このランはすでに登録されています。'
         );
-
-
-      } catch(error) {
-
-        console.error(
-          error
-        );
-
-
-        alert(
-
-          'GPXの読み込みに失敗しました。\n' +
-
-          error.message
-
-        );
-
 
         setStatus(
-          '❌ GPX追加失敗'
+          '重複ランのため追加しませんでした'
         );
 
+        gpxInput.value = '';
+
+        return;
       }
 
+      const localId =
+        await saveGPXToDevice(
+          file.name,
+          text
+        );
 
-      gpxInput.value =
-        '';
+      activity.localId =
+        localId;
 
+      registerActivity(
+        activity
+      );
+
+      selectedYear =
+        'ALL';
+
+      createYearFilters();
+
+      renderSelectedData();
+
+      await updateLocalInfo();
+
+      if (
+        savedRunsPanel.classList
+          .contains(
+            'open'
+          )
+      ) {
+
+        await renderSavedRuns();
+      }
+
+      setStatus(
+        '✅ ランを追加しました'
+      );
+
+      const bounds =
+        L.latLngBounds(
+          activity.latlngs
+        );
+
+      map.fitBounds(
+        bounds,
+        {
+          padding:
+            [25,25]
+        }
+      );
+
+      alert(
+        'ランを追加しました！'
+      );
+
+    } catch(error) {
+
+      console.error(error);
+
+      alert(
+        'GPXの読み込みに失敗しました。\n' +
+        error.message
+      );
+
+      setStatus(
+        '❌ GPX追加失敗'
+      );
     }
-  );
 
+    gpxInput.value = '';
+  }
+);
 
 
 /* =====================================
    年フィルター
 ===================================== */
-
 
 function createYearFilters() {
 
@@ -2816,10 +2362,7 @@ function createYearFilters() {
       'filters'
     );
 
-
-  area.innerHTML =
-    '';
-
+  area.innerHTML = '';
 
   const years =
     Array.from(
@@ -2838,17 +2381,12 @@ function createYearFilters() {
       )
     )
     .sort(
-      (a, b) =>
+      (a,b) =>
         b - a
     );
 
-
   const options =
-    [
-      'ALL',
-      ...years
-    ];
-
+    ['ALL', ...years];
 
   options.forEach(
     option => {
@@ -2858,14 +2396,11 @@ function createYearFilters() {
           'button'
         );
 
-
       button.className =
         'yearButton';
 
-
       button.textContent =
         option;
-
 
       if (
         String(option) ===
@@ -2875,9 +2410,7 @@ function createYearFilters() {
         button.classList.add(
           'active'
         );
-
       }
-
 
       button.addEventListener(
         'click',
@@ -2886,46 +2419,36 @@ function createYearFilters() {
           selectedYear =
             option;
 
-
           document
             .querySelectorAll(
               '.yearButton'
             )
             .forEach(
               btn =>
-
                 btn.classList.remove(
                   'active'
                 )
             );
 
-
           button.classList.add(
             'active'
           );
 
-
           renderSelectedData();
-
         }
       );
-
 
       area.appendChild(
         button
       );
-
     }
   );
-
 }
-
 
 
 /* =====================================
    選択活動
 ===================================== */
-
 
 function getSelectedActivities() {
 
@@ -2935,49 +2458,32 @@ function getSelectedActivities() {
   ) {
 
     return activities;
-
   }
-
 
   return activities.filter(
     activity =>
-
       activity.year ===
       Number(
         selectedYear
       )
   );
-
 }
-
 
 
 /* =====================================
    集計
 ===================================== */
 
-
 function buildSelectedStats() {
 
   const selected =
     getSelectedActivities();
 
+  const municipalityDistance = {};
+  const municipalityRunCount = {};
+  const ringCells = {};
 
-  const municipalityDistance =
-    {};
-
-
-  const municipalityRunCount =
-    {};
-
-
-  const ringCells =
-    {};
-
-
-  let totalDistanceKm =
-    0;
-
+  let totalDistanceKm = 0;
 
   selected.forEach(
     activity => {
@@ -2985,69 +2491,47 @@ function buildSelectedStats() {
       totalDistanceKm +=
         activity.distance;
 
-
       Object.entries(
         activity.cityDistances
       ).forEach(
-        (
-          [
-            city,
-            km
-          ]
-        ) => {
+        ([city, km]) => {
 
           municipalityDistance[city] =
-
             (
               municipalityDistance[city] ||
               0
             ) +
-
             km;
-
         }
       );
 
+      activity.cities.forEach(
+        city => {
 
-      activity.cities
-        .forEach(
-          city => {
+          municipalityRunCount[city] =
+            (
+              municipalityRunCount[city] ||
+              0
+            ) +
+            1;
+        }
+      );
 
-            municipalityRunCount[city] =
+      activity.cells.forEach(
+        key => {
 
-              (
-                municipalityRunCount[city] ||
-                0
-              ) +
-
-              1;
-
-          }
-        );
-
-
-      activity.cells
-        .forEach(
-          key => {
-
-            ringCells[key] =
-
-              (
-                ringCells[key] ||
-                0
-              ) +
-
-              1;
-
-          }
-        );
-
+          ringCells[key] =
+            (
+              ringCells[key] ||
+              0
+            ) +
+            1;
+        }
+      );
     }
   );
 
-
   return {
-
     activities:
       selected,
 
@@ -3058,66 +2542,48 @@ function buildSelectedStats() {
     ringCells,
 
     totalDistanceKm
-
   };
-
 }
-
 
 
 /* =====================================
    Layer Clear
 ===================================== */
 
-
 function clearMapLayers() {
 
   routeGroup.clearLayers();
-
-
   ringGroup.clearLayers();
 
-
   if (
-
     municipalityLayer &&
-
     map.hasLayer(
       municipalityLayer
     )
-
   ) {
 
     map.removeLayer(
       municipalityLayer
     );
-
   }
 
-
-  municipalityLayer =
-    null;
-
+  municipalityLayer = null;
 
   Object.keys(
     municipalityLayers
   ).forEach(
     key =>
-
       delete municipalityLayers[
         key
       ]
   );
-
 }
-
 
 
 /* =====================================
    実走線
    重複区間抑制
 ===================================== */
-
 
 function drawRoutes(
   selectedActivities
@@ -3126,148 +2592,93 @@ function drawRoutes(
   const drawnSegments =
     new Set();
 
-
   const roundCoord =
     value =>
-
       Math.round(
-        value *
-        10000
-      ) /
-      10000;
+        value * 10000
+      ) / 10000;
 
+  selectedActivities.forEach(
+    activity => {
 
-  selectedActivities
-    .forEach(
-      activity => {
+      const latlngs =
+        activity.latlngs;
 
-        const latlngs =
-          activity.latlngs;
+      for (
+        let i = 1;
+        i < latlngs.length;
+        i++
+      ) {
 
+        const a =
+          latlngs[i - 1];
 
-        for (
+        const b =
+          latlngs[i];
 
-          let i = 1;
+        const aKey =
+          roundCoord(a[0]) +
+          ',' +
+          roundCoord(a[1]);
 
-          i <
-          latlngs.length;
+        const bKey =
+          roundCoord(b[0]) +
+          ',' +
+          roundCoord(b[1]);
 
-          i++
+        const segmentKey =
+          aKey < bKey
+            ? aKey + '|' + bKey
+            : bKey + '|' + aKey;
 
-        ) {
-
-          const a =
-            latlngs[
-              i - 1
-            ];
-
-
-          const b =
-            latlngs[i];
-
-
-          const aKey =
-
-            roundCoord(
-              a[0]
-            ) +
-
-            ',' +
-
-            roundCoord(
-              a[1]
-            );
-
-
-          const bKey =
-
-            roundCoord(
-              b[0]
-            ) +
-
-            ',' +
-
-            roundCoord(
-              b[1]
-            );
-
-
-          const segmentKey =
-
-            aKey < bKey
-
-              ? aKey +
-                '|' +
-                bKey
-
-              : bKey +
-                '|' +
-                aKey;
-
-
-          if (
-            drawnSegments.has(
-              segmentKey
-            )
-          ) {
-
-            continue;
-
-          }
-
-
-          drawnSegments.add(
+        if (
+          drawnSegments.has(
             segmentKey
-          );
-
-
-          const route =
-            L.polyline(
-              [
-                a,
-                b
-              ],
-              {
-
-                color:
-                  ROUTE_COLOR,
-
-                weight:
-                  1.5,
-
-                opacity:
-                  0.30,
-
-                lineCap:
-                  'round',
-
-                lineJoin:
-                  'round',
-
-                interactive:
-                  false
-
-              }
-            );
-
-
-          routeGroup.addLayer(
-            route
-          );
-
+          )
+        ) {
+          continue;
         }
 
+        drawnSegments.add(
+          segmentKey
+        );
+
+        const route =
+          L.polyline(
+            [a,b],
+            {
+              color:
+                ROUTE_COLOR,
+
+              weight:
+                1.5,
+
+              opacity:
+                0.30,
+
+              lineCap:
+                'round',
+
+              lineJoin:
+                'round',
+
+              interactive:
+                false
+            }
+          );
+
+        routeGroup.addLayer(
+          route
+        );
       }
-    );
-
+    }
+  );
 }
-
 
 
 /* =====================================
    Rings
 ===================================== */
-
 
 function drawRingCells(
   ringCells
@@ -3276,12 +2687,7 @@ function drawRingCells(
   Object.entries(
     ringCells
   ).forEach(
-    (
-      [
-        key,
-        count
-      ]
-    ) => {
+    ([key, count]) => {
 
       const rectangle =
         L.rectangle(
@@ -3289,9 +2695,7 @@ function drawRingCells(
             key
           ),
           {
-
-            stroke:
-              false,
+            stroke: false,
 
             fillColor:
               AREA_COLOR,
@@ -3303,49 +2707,33 @@ function drawRingCells(
 
             interactive:
               true
-
           }
         );
 
-
       rectangle.bindPopup(
-
         '<div class="popup-title">' +
-
         'Runner\'s Ring' +
-
         '</div>' +
 
         '<div class="popup-row">' +
-
         'このエリアを走ったラン：' +
-
         '<strong>' +
-
         count +
-
         ' 回</strong>' +
-
         '</div>'
-
       );
-
 
       ringGroup.addLayer(
         rectangle
       );
-
     }
   );
-
 }
-
 
 
 /* =====================================
    市町村面
 ===================================== */
-
 
 function drawMunicipalities(
   municipalityDistance,
@@ -3365,27 +2753,22 @@ function drawMunicipalities(
                 .properties
                 .N03_004;
 
-
             const km =
               municipalityDistance[
                 city
               ] ||
               0;
 
-
             return {
-
               color:
                 BORDER_COLOR,
 
               weight:
-
                 km > 0
                   ? 0.7
                   : 0.35,
 
               opacity:
-
                 km > 0
                   ? 0.45
                   : 0.10,
@@ -3394,15 +2777,11 @@ function drawMunicipalities(
                 AREA_COLOR,
 
               fillOpacity:
-
                 getMunicipalityOpacity(
                   km
                 )
-
             };
-
           },
-
 
         onEachFeature:
           (
@@ -3411,85 +2790,56 @@ function drawMunicipalities(
           ) => {
 
             const city =
-
               feature
                 .properties
                 .N03_004 ||
-
               '名称不明';
 
-
             const km =
-
               municipalityDistance[
                 city
               ] ||
-
               0;
 
-
             const runs =
-
               municipalityRunCount[
                 city
               ] ||
-
               0;
-
 
             municipalityLayers[
               city
             ] =
               layer;
 
-
             layer.bindPopup(
-
               '<div class="popup-title">' +
-
               city +
-
               '</div>' +
 
               '<div class="popup-row">' +
-
               '累積走行距離：' +
-
               '<strong>' +
-
               km.toFixed(2) +
-
               ' km</strong>' +
-
               '</div>' +
 
               '<div class="popup-row">' +
-
               '走ったラン：' +
-
               '<strong>' +
-
               runs +
-
               ' 回</strong>' +
-
               '</div>'
-
             );
-
           }
-
       }
     );
-
 }
-
 
 
 /* =====================================
    市町村へ移動
 ===================================== */
-
 
 function focusMunicipality(
   city
@@ -3500,32 +2850,21 @@ function focusMunicipality(
       city
     ];
 
-
-  if (
-    !layer
-  ) {
-
+  if (!layer) {
     return;
-
   }
 
-
   if (
-
     municipalityLayer &&
-
     !map.hasLayer(
       municipalityLayer
     )
-
   ) {
 
     municipalityLayer.addTo(
       map
     );
-
   }
-
 
   if (
     map.hasLayer(
@@ -3536,9 +2875,7 @@ function focusMunicipality(
     map.removeLayer(
       routeGroup
     );
-
   }
-
 
   if (
     map.hasLayer(
@@ -3549,26 +2886,18 @@ function focusMunicipality(
     map.removeLayer(
       ringGroup
     );
-
   }
-
 
   map.fitBounds(
     layer.getBounds(),
     {
-
       padding:
-        [
-          25,
-          25
-        ],
+        [25,25],
 
       maxZoom:
         11
-
     }
   );
-
 
   document
     .getElementById(
@@ -3576,33 +2905,25 @@ function focusMunicipality(
     )
     .scrollIntoView(
       {
-
         behavior:
           'smooth',
 
         block:
           'start'
-
       }
     );
 
-
   setTimeout(
     () =>
-
       layer.openPopup(),
-
     500
   );
-
 }
-
 
 
 /* =====================================
    Dashboard
 ===================================== */
-
 
 function updateDashboard(
   stats
@@ -3614,120 +2935,78 @@ function updateDashboard(
         .municipalityDistance
     )
     .filter(
-      (
-        [
-          ,
-          km
-        ]
-      ) =>
-
-        km >
-        0.01
+      ([,km]) =>
+        km > 0.01
     )
     .sort(
-      (
-        a,
-        b
-      ) =>
-
-        b[1] -
-        a[1]
+      (a,b) =>
+        b[1] - a[1]
     );
-
 
   document
     .getElementById(
       'totalDistance'
     )
     .textContent =
-
       stats
         .totalDistanceKm
-        .toFixed(
-          1
-        );
-
+        .toFixed(1);
 
   document
     .getElementById(
       'runCount'
     )
     .textContent =
-
       stats
         .activities
         .length;
-
 
   document
     .getElementById(
       'cityCount'
     )
     .textContent =
-
       entries.length;
-
 
   document
     .getElementById(
       'cityHeading'
     )
     .textContent =
-
       selectedYear ===
       'ALL'
-
         ? '市町村別'
-
         : selectedYear +
           '年 市町村別';
-
 
   const cityList =
     document.getElementById(
       'cityList'
     );
 
-
-  cityList.innerHTML =
-    '';
-
+  cityList.innerHTML = '';
 
   if (
     entries.length === 0
   ) {
 
     cityList.innerHTML =
-
       '<div class="emptyMessage">' +
-
       'この期間の市町村データがありません' +
-
       '</div>';
 
-
     return;
-
   }
-
 
   const maxKm =
     entries[0][1];
 
-
   entries.forEach(
-    (
-      [
-        city,
-        km
-      ]
-    ) => {
+    ([city, km]) => {
 
       const percent =
-
         Math.max(
           3,
-
           (
             km /
             maxKm
@@ -3735,43 +3014,31 @@ function updateDashboard(
           100
         );
 
-
       const runs =
-
         stats
           .municipalityRunCount[
             city
           ] ||
-
         0;
-
 
       const card =
         document.createElement(
           'div'
         );
 
-
       card.className =
         'cityCard';
 
-
       card.innerHTML =
-
         '<div class="cityTop">' +
 
           '<div class="cityName">' +
-
             city +
-
           '</div>' +
 
           '<div class="cityDistance">' +
-
             km.toFixed(2) +
-
             ' km' +
-
           '</div>' +
 
         '</div>' +
@@ -3779,74 +3046,56 @@ function updateDashboard(
         '<div class="barTrack">' +
 
           '<div class="barFill" style="width:' +
-
             percent +
-
             '%"></div>' +
 
         '</div>' +
 
         '<div class="cityRuns">' +
-
           'RUNS ' +
-
           runs +
-
         '</div>';
-
 
       card.addEventListener(
         'click',
         () =>
-
           focusMunicipality(
             city
           )
       );
 
-
       cityList.appendChild(
         card
       );
-
     }
   );
-
 }
-
 
 
 /* =====================================
    表示切替
 ===================================== */
 
-
 function updateDisplay() {
 
   const zoom =
     map.getZoom();
-
 
   if (
     zoom >= 13
   ) {
 
     if (
-
       municipalityLayer &&
-
       map.hasLayer(
         municipalityLayer
       )
-
     ) {
 
       map.removeLayer(
         municipalityLayer
       );
-
     }
-
 
     if (
       !map.hasLayer(
@@ -3857,9 +3106,7 @@ function updateDisplay() {
       ringGroup.addTo(
         map
       );
-
     }
-
 
     if (
       !map.hasLayer(
@@ -3870,12 +3117,9 @@ function updateDisplay() {
       routeGroup.addTo(
         map
       );
-
     }
 
-
     setStatus(
-
       selectedYear ===
       'ALL'
 
@@ -3883,29 +3127,21 @@ function updateDisplay() {
 
         : selectedYear +
           '年：実際に走った道路＋Runner\'s Rings'
-
     );
-
 
   } else {
 
-
     if (
-
       municipalityLayer &&
-
       !map.hasLayer(
         municipalityLayer
       )
-
     ) {
 
       municipalityLayer.addTo(
         map
       );
-
     }
-
 
     if (
       map.hasLayer(
@@ -3916,9 +3152,7 @@ function updateDisplay() {
       map.removeLayer(
         routeGroup
       );
-
     }
-
 
     if (
       map.hasLayer(
@@ -3929,12 +3163,9 @@ function updateDisplay() {
       map.removeLayer(
         ringGroup
       );
-
     }
-
 
     setStatus(
-
       selectedYear ===
       'ALL'
 
@@ -3942,110 +3173,82 @@ function updateDisplay() {
 
         : selectedYear +
           '年：走行距離を面で表示'
-
     );
-
   }
-
 }
-
 
 
 /* =====================================
    再描画
 ===================================== */
 
-
 function renderSelectedData() {
 
   const stats =
     buildSelectedStats();
 
-
   clearMapLayers();
-
 
   drawRoutes(
     stats.activities
   );
 
-
   drawRingCells(
     stats.ringCells
   );
 
-
   drawMunicipalities(
-
-    stats
-      .municipalityDistance,
-
-    stats
-      .municipalityRunCount
-
+    stats.municipalityDistance,
+    stats.municipalityRunCount
   );
-
 
   updateDashboard(
     stats
   );
 
-
   updateDisplay();
-
 }
-
 
 
 /* =====================================
    起動
 ===================================== */
 
-
 async function start() {
 
   try {
 
-
     await loadMunicipalities();
-
 
     setStatus(
       '過去ランを復元中…'
     );
 
-
     const archiveCount =
       loadArchiveActivities();
 
-
     const gpxFiles =
       await getGPXFiles();
-
 
     const githubCount =
       await loadAllGPX(
         gpxFiles
       );
 
-
     setStatus(
       '端末保存ランを復元中…'
     );
 
-
     const localCount =
       await loadSavedActivities();
 
-
     createYearFilters();
-
 
     renderSelectedData();
 
-
     await updateLocalInfo();
 
+    await renderSavedRuns();
 
     if (
       municipalityLayer
@@ -4055,76 +3258,54 @@ async function start() {
         municipalityLayer
           .getBounds()
       );
-
     }
-
 
     map.on(
       'zoomend',
       updateDisplay
     );
 
-
     setTimeout(
-      () => {
-
-        map.invalidateSize();
-
-      },
+      () =>
+        map.invalidateSize(),
       300
     );
-
 
     console.log(
       '過去:',
       archiveCount
     );
 
-
     console.log(
       'GitHub:',
       githubCount
     );
-
 
     console.log(
       '端末:',
       localCount
     );
 
-
     console.log(
       '合計:',
       activities.length
     );
 
-
   } catch(error) {
 
-
-    console.error(
-      error
-    );
-
+    console.error(error);
 
     setStatus(
-
       '❌ ' +
-
       error.message
-
     );
-
   }
-
 }
 
 
 start();
 
-
 </script>
-
 
 </body>
 </html>
