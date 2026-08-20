@@ -1,19 +1,3567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Runner's Rings</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b1422;
+      color: white;
+    }
+
+    header {
+      background: #0f1d2f;
+      padding: 14px 16px 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    #status {
+      background: #17283d;
+      color: #dce8f5;
+      padding: 8px 14px;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    #importArea {
+      background: #0f1d2f;
+      padding: 10px 12px 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #addRunButton,
+    #savedRunsButton {
+      border: 0;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px 14px;
+      cursor: pointer;
+    }
+
+    #addRunButton {
+      background: #ff2bd6;
+    }
+
+    #savedRunsButton {
+      background: #17283d;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    #localInfo {
+      width: 100%;
+      font-size: 11px;
+      opacity: 0.6;
+      padding: 1px 2px 4px;
+    }
+
+    #gpxInput {
+      display: none;
+    }
+
+    #savedRunsPanel {
+      display: none;
+      background: #0f1d2f;
+      padding: 7px 12px 12px;
+    }
+
+    #savedRunsPanel.open {
+      display: block;
+    }
+
+    .savedRunsTitle {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 4px 0 9px;
+    }
+
+    #savedRunsList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .savedRunRow {
+      background: #132237;
+      border-radius: 12px;
+      padding: 10px 11px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 10px;
+      align-items: center;
+    }
+
+    .savedRunMain {
+      min-width: 0;
+    }
+
+    .savedRunName {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .savedRunMeta {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.65;
+    }
+
+    .deleteRunButton {
+      border: 1px solid rgba(255,80,80,0.45);
+      background: rgba(255,80,80,0.10);
+      color: #ff7f7f;
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .savedEmpty {
+      background: #132237;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    #filters {
+      background: #0f1d2f;
+      padding: 9px 10px;
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .yearButton {
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #17283d;
+      color: #dce8f5;
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .yearButton.active {
+      background: #ff2bd6;
+      color: white;
+      border-color: #ff2bd6;
+    }
+
+    #map {
+      width: 100%;
+      height: 44vh;
+      min-height: 320px;
+    }
+
+    #dashboard {
+      padding: 18px 16px 32px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .card {
+      background: #132237;
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+    .label {
+      font-size: 10px;
+      letter-spacing: 1px;
+      opacity: 0.65;
+      margin-bottom: 6px;
+    }
+
+    .value {
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .unit {
+      font-size: 12px;
+      opacity: 0.65;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin: 22px 0 10px;
+    }
+
+    #cityList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cityCard {
+      background: #132237;
+      border-radius: 14px;
+      padding: 12px 14px 14px;
+      cursor: pointer;
+    }
+
+    .cityTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .cityName {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .cityDistance {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .cityRuns {
+      margin-top: 7px;
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    .barTrack {
+      width: 100%;
+      height: 9px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .barFill {
+      height: 100%;
+      background: #ff2bd6;
+      border-radius: 999px;
+      min-width: 3px;
+    }
+
+    .emptyMessage {
+      background: #132237;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 14px;
+    }
+
+    .popup-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .popup-row {
+      margin-top: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Runner's Rings</h1>
+  <p>走った記録ではなく、走った人生を残す。</p>
+</header>
+
+<div id="status">
+  データを読み込み中…
+</div>
+
+<div id="importArea">
+
+  <button id="addRunButton">
+    ＋ ランを追加
+  </button>
+
+  <button id="savedRunsButton">
+    保存済みラン 0
+  </button>
+
+  <div id="localInfo">
+    端末保存 0 RUNS
+  </div>
+
+  <input
+    id="gpxInput"
+    type="file"
+    accept=".gpx,application/gpx+xml,application/xml,text/xml"
+  >
+
+</div>
+
+<div id="savedRunsPanel">
+
+  <div class="savedRunsTitle">
+    端末に保存したラン
+  </div>
+
+  <div id="savedRunsList">
+    <div class="savedEmpty">
+      読み込み中…
+    </div>
+  </div>
+
+</div>
+
+<div id="filters">
+  <button class="yearButton active">
+    ALL
+  </button>
+</div>
+
+<div id="map"></div>
+
+<section id="dashboard">
+
+  <div class="summary">
+
+    <div class="card">
+      <div class="label">TOTAL</div>
+      <span id="totalDistance" class="value">--</span>
+      <span class="unit">km</span>
+    </div>
+
+    <div class="card">
+      <div class="label">RUNS</div>
+      <div id="runCount" class="value">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">CITIES</div>
+      <div id="cityCount" class="value">--</div>
+    </div>
+
+  </div>
+
+  <h2 id="cityHeading">
+    市町村別
+  </h2>
+
+  <div id="cityList">
+    <div class="emptyMessage">
+      読み込み中…
+    </div>
+  </div>
+
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./runner_rings_archive.js"></script>
+
+<script>
+
+const OWNER = 'atsuoebara';
+const REPO = 'tree-age-map';
+const BRANCH = 'main';
+
+const CELL_SIZE = 0.0009;
+
+const AREA_COLOR = '#ff2bd6';
+const BORDER_COLOR = '#707580';
+const ROUTE_COLOR = '#ff3b30';
+
+const map =
+  L.map('map').setView(
+    [36.39, 139.06],
+    9
+  );
+
+L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }
+).addTo(map);
+
+let geojsonData = null;
+
+const municipalityFeatures = [];
+const activities = [];
+const activitySignatures = new Set();
+
+let selectedYear = 'ALL';
+
+let municipalityLayer = null;
+
+const routeGroup = L.layerGroup();
+const ringGroup = L.layerGroup();
+
+const municipalityLayers = {};
+
+const DB_NAME = 'RunnersRingsDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'importedGPX';
+
+function openDatabase() {
+
+  return new Promise((resolve, reject) => {
+
+    const request =
+      indexedDB.open(
+        DB_NAME,
+        DB_VERSION
+      );
+
+    request.onupgradeneeded =
+      event => {
+
+        const db =
+          event.target.result;
+
+        if (
+          !db.objectStoreNames.contains(
+            STORE_NAME
+          )
+        ) {
+
+          db.createObjectStore(
+            STORE_NAME,
+            {
+              keyPath: 'id',
+              autoIncrement: true
+            }
+          );
+
+        }
+
+      };
+
+    request.onsuccess =
+      () => resolve(request.result);
+
+    request.onerror =
+      () => reject(request.error);
+
+  });
+
+}
+
+async function saveGPXToDevice(name, text) {
+
+  const db =
+    await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction =
+      db.transaction(
+        STORE_NAME,
+        'readwrite'
+      );
+
+    const store =
+      transaction.objectStore(
+        STORE_NAME
+      );
+
+    const request =
+      store.add({
+        name: name,
+        text: text,
+        importedAt:
+          new Date().toISOString()
+      });
+
+    request.onsuccess =
+      () => resolve(request.result);
+
+    request.onerror =
+      () => reject(request.error);
+
+  });
+
+}
+
+async function getSavedGPX() {
+
+  const db =
+    await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction =
+      db.transaction(
+        STORE_NAME,
+        'readonly'
+      );
+
+    const store =
+      transaction.objectStore(
+        STORE_NAME
+      );
+
+    const request =
+      store.getAll();
+
+    request.onsuccess =
+      () => resolve(
+        request.result || []
+      );
+
+    request.onerror =
+      () => reject(request.error);
+
+  });
+
+}
+
+async function deleteSavedGPX(id) {
+
+  const db =
+    await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction =
+      db.transaction(
+        STORE_NAME,
+        'readwrite'
+      );
+
+    const store =
+      transaction.objectStore(
+        STORE_NAME
+      );
+
+    const request =
+      store.delete(id);
+
+    request.onsuccess =
+      () => resolve();
+
+    request.onerror =
+      () => reject(request.error);
+
+  });
+
+}
+
+async function updateLocalInfo() {
+
+  try {
+
+    const saved =
+      await getSavedGPX();
+
+    document
+      .getElementById('localInfo')
+      .textContent =
+        '端末保存 ' +
+        saved.length +
+        ' RUNS';
+
+    document
+      .getElementById('savedRunsButton')
+      .textContent =
+        '保存済みラン ' +
+        saved.length;
+
+  } catch(error) {
+
+    console.error(error);
+
+  }
+
+}
+
+function setStatus(text) {
+
+  document
+    .getElementById('status')
+    .textContent =
+      text;
+
+}
+
+function distanceKm(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+) {
+
+  const R = 6371;
+
+  const toRad =
+    deg =>
+      deg *
+      Math.PI /
+      180;
+
+  const dLat =
+    toRad(lat2 - lat1);
+
+  const dLon =
+    toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+
+  return (
+    R *
+    2 *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    )
+  );
+
+}
+
+function pointInRing(point, ring) {
+
+  const x = point[0];
+  const y = point[1];
+
+  let inside = false;
+
+  for (
+    let i = 0,
+        j = ring.length - 1;
+    i < ring.length;
+    j = i++
+  ) {
+
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+
+    const xj = ring[j][0];
+    const yj = ring[j][1];
+
+    const intersect =
+      ((yi > y) !== (yj > y)) &&
+      (
+        x <
+        (
+          (xj - xi) *
+          (y - yi) /
+          (yj - yi)
+        ) +
+        xi
+      );
+
+    if (intersect) {
+      inside = !inside;
+    }
+
+  }
+
+  return inside;
+
+}
+
+function pointInPolygon(point, polygon) {
+
+  if (
+    !pointInRing(
+      point,
+      polygon[0]
+    )
+  ) {
+    return false;
+  }
+
+  for (
+    let i = 1;
+    i < polygon.length;
+    i++
+  ) {
+
+    if (
+      pointInRing(
+        point,
+        polygon[i]
+      )
+    ) {
+      return false;
+    }
+
+  }
+
+  return true;
+
+}
+
+function pointInFeature(point, feature) {
+
+  const geometry =
+    feature.geometry;
+
+  if (!geometry) {
+    return false;
+  }
+
+  if (
+    geometry.type ===
+    'Polygon'
+  ) {
+
+    return pointInPolygon(
+      point,
+      geometry.coordinates
+    );
+
+  }
+
+  if (
+    geometry.type ===
+    'MultiPolygon'
+  ) {
+
+    return geometry.coordinates.some(
+      polygon =>
+        pointInPolygon(
+          point,
+          polygon
+        )
+    );
+
+  }
+
+  return false;
+
+}
+
+function collectCoordinates(
+  coords,
+  output
+) {
+
+  if (
+    typeof coords[0] ===
+    'number'
+  ) {
+
+    output.push(coords);
+    return;
+
+  }
+
+  coords.forEach(
+    child =>
+      collectCoordinates(
+        child,
+        output
+      )
+  );
+
+}
+
+function getFeatureBBox(feature) {
+
+  const points = [];
+
+  collectCoordinates(
+    feature.geometry.coordinates,
+    points
+  );
+
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
+
+  points.forEach(
+    ([lon, lat]) => {
+
+      minLon =
+        Math.min(minLon, lon);
+
+      minLat =
+        Math.min(minLat, lat);
+
+      maxLon =
+        Math.max(maxLon, lon);
+
+      maxLat =
+        Math.max(maxLat, lat);
+
+    }
+  );
+
+  return {
+    minLon,
+    minLat,
+    maxLon,
+    maxLat
+  };
+
+}
+
+function getPrefecture(feature) {
+
+  return (
+    feature.properties.N03_001 ||
+    '都道府県不明'
+  );
+
+}
+
+function getCity(feature) {
+
+  return (
+    feature.properties.N03_004 ||
+    '名称不明'
+  );
+
+}
+
+function getCityKey(feature) {
+
+  return (
+    getPrefecture(feature) +
+    '|' +
+    getCity(feature)
+  );
+
+}
+
+function findMunicipalityFeature(
+  lat,
+  lon
+) {
+
+  const point =
+    [lon, lat];
+
+  for (
+    const item of
+    municipalityFeatures
+  ) {
+
+    const b =
+      item.bbox;
+
+    if (
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
+    ) {
+      continue;
+    }
+
+    if (
+      pointInFeature(
+        point,
+        item.feature
+      )
+    ) {
+      return item.feature;
+    }
+
+  }
+
+  return null;
+
+}
+
+function getCellKey(lat, lon) {
+
+  const latIndex =
+    Math.floor(
+      lat /
+      CELL_SIZE
+    );
+
+  const lonIndex =
+    Math.floor(
+      lon /
+      CELL_SIZE
+    );
+
+  return (
+    latIndex +
+    ',' +
+    lonIndex
+  );
+
+}
+
+function getCellBounds(key) {
+
+  const [
+    latIndex,
+    lonIndex
+  ] =
+    key
+      .split(',')
+      .map(Number);
+
+  const south =
+    latIndex *
+    CELL_SIZE;
+
+  const west =
+    lonIndex *
+    CELL_SIZE;
+
+  return [
+    [south, west],
+    [
+      south + CELL_SIZE,
+      west + CELL_SIZE
+    ]
+  ];
+
+}
+
 function getRingOpacity(count) {
 
-  if (count <= 1)
-    return 0.10;
-
-  if (count === 2)
-    return 0.16;
-
-  if (count <= 4)
-    return 0.24;
-
-  if (count <= 7)
-    return 0.34;
-
-  if (count <= 15)
-    return 0.46;
+  if (count <= 1) return 0.10;
+  if (count === 2) return 0.16;
+  if (count <= 4) return 0.24;
+  if (count <= 7) return 0.34;
+  if (count <= 15) return 0.46;
 
   return 0.58;
+
 }
+
+function buildCellsFromRoute(latlngs) {
+
+  const cells =
+    new Set();
+
+  if (!latlngs.length) {
+    return cells;
+  }
+
+  cells.add(
+    getCellKey(
+      latlngs[0][0],
+      latlngs[0][1]
+    )
+  );
+
+  for (
+    let i = 1;
+    i < latlngs.length;
+    i++
+  ) {
+
+    const a =
+      latlngs[i - 1];
+
+    const b =
+      latlngs[i];
+
+    const km =
+      distanceKm(
+        a[0],
+        a[1],
+        b[0],
+        b[1]
+      );
+
+    const steps =
+      Math.max(
+        1,
+        Math.ceil(
+          km /
+          0.04
+        )
+      );
+
+    for (
+      let s = 0;
+      s <= steps;
+      s++
+    ) {
+
+      const t =
+        s / steps;
+
+      const lat =
+        a[0] +
+        (
+          b[0] - a[0]
+        ) *
+        t;
+
+      const lon =
+        a[1] +
+        (
+          b[1] - a[1]
+        ) *
+        t;
+
+      cells.add(
+        getCellKey(
+          lat,
+          lon
+        )
+      );
+
+    }
+
+  }
+
+  return cells;
+
+}
+
+function getMunicipalityOpacity(km) {
+
+  if (km <= 0) return 0;
+  if (km < 5) return 0.04;
+  if (km < 10) return 0.08;
+  if (km < 20) return 0.14;
+  if (km < 30) return 0.22;
+  if (km < 50) return 0.30;
+  if (km < 100) return 0.40;
+  if (km < 200) return 0.50;
+  if (km < 400) return 0.60;
+
+  return 0.70;
+
+}
+
+async function loadMunicipalities() {
+
+  setStatus(
+    '全国の行政境界を読み込み中…'
+  );
+
+  const response =
+    await fetch(
+      './runners-rings-japan-web.geojson'
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      '全国行政境界データ取得失敗'
+    );
+
+  }
+
+  geojsonData =
+    await response.json();
+
+  municipalityFeatures.length = 0;
+
+  geojsonData.features.forEach(
+    feature => {
+
+      municipalityFeatures.push({
+        feature: feature,
+        bbox:
+          getFeatureBBox(feature)
+      });
+
+    }
+  );
+
+}
+
+function analyseRoute(
+  latlngs,
+  targetDistanceKm = null
+) {
+
+  const cityDistances = {};
+  const cities = new Set();
+
+  let calculatedKm = 0;
+
+  for (
+    let i = 1;
+    i < latlngs.length;
+    i++
+  ) {
+
+    const prev =
+      latlngs[i - 1];
+
+    const current =
+      latlngs[i];
+
+    const segmentKm =
+      distanceKm(
+        prev[0],
+        prev[1],
+        current[0],
+        current[1]
+      );
+
+    calculatedKm +=
+      segmentKm;
+
+    const midLat =
+      (
+        prev[0] +
+        current[0]
+      ) /
+      2;
+
+    const midLon =
+      (
+        prev[1] +
+        current[1]
+      ) /
+      2;
+
+    const feature =
+      findMunicipalityFeature(
+        midLat,
+        midLon
+      );
+
+    if (feature) {
+
+      const cityKey =
+        getCityKey(feature);
+
+      cityDistances[cityKey] =
+        (
+          cityDistances[cityKey] ||
+          0
+        ) +
+        segmentKm;
+
+      cities.add(cityKey);
+
+    }
+
+  }
+
+  if (
+    targetDistanceKm &&
+    calculatedKm > 0
+  ) {
+
+    const scale =
+      targetDistanceKm /
+      calculatedKm;
+
+    Object.keys(
+      cityDistances
+    ).forEach(
+      cityKey => {
+
+        cityDistances[cityKey] *=
+          scale;
+
+      }
+    );
+
+  }
+
+  return {
+    cityDistances:
+      cityDistances,
+
+    cities:
+      Array.from(cities),
+
+    calculatedKm:
+      calculatedKm
+  };
+
+}
+
+function createActivitySignature(activity) {
+
+  const first =
+    activity.latlngs[0];
+
+  const last =
+    activity.latlngs[
+      activity.latlngs.length - 1
+    ];
+
+  const round4 =
+    value =>
+      Number(value).toFixed(4);
+
+  const datePart =
+    activity.date &&
+    !Number.isNaN(
+      activity.date.getTime()
+    )
+      ? [
+          activity.date.getFullYear(),
+
+          String(
+            activity.date.getMonth() + 1
+          ).padStart(2, '0'),
+
+          String(
+            activity.date.getDate()
+          ).padStart(2, '0')
+
+        ].join('-')
+      : 'nodate';
+
+  return [
+    datePart,
+    activity.distance.toFixed(2),
+    activity.latlngs.length,
+    round4(first[0]),
+    round4(first[1]),
+    round4(last[0]),
+    round4(last[1])
+  ].join('|');
+
+}
+
+function registerActivity(activity) {
+
+  const signature =
+    createActivitySignature(
+      activity
+    );
+
+  if (
+    activitySignatures.has(
+      signature
+    )
+  ) {
+    return false;
+  }
+
+  activity.signature =
+    signature;
+
+  activitySignatures.add(
+    signature
+  );
+
+  activities.push(
+    activity
+  );
+
+  return true;
+
+}
+
+function sameCalendarDate(a, b) {
+
+  if (
+    !a ||
+    !b ||
+    Number.isNaN(a.getTime()) ||
+    Number.isNaN(b.getTime())
+  ) {
+    return false;
+  }
+
+  return (
+    a.getFullYear() ===
+      b.getFullYear() &&
+
+    a.getMonth() ===
+      b.getMonth() &&
+
+    a.getDate() ===
+      b.getDate()
+  );
+
+}
+
+function getRouteSamples(
+  latlngs,
+  count = 7
+) {
+
+  const result = [];
+
+  if (
+    latlngs.length <
+    2
+  ) {
+    return result;
+  }
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    const ratio =
+      i /
+      (count - 1);
+
+    const index =
+      Math.round(
+        ratio *
+        (
+          latlngs.length -
+          1
+        )
+      );
+
+    result.push(
+      latlngs[index]
+    );
+
+  }
+
+  return result;
+
+}
+
+function routeSimilarity(a, b) {
+
+  const samplesA =
+    getRouteSamples(
+      a.latlngs
+    );
+
+  const samplesB =
+    getRouteSamples(
+      b.latlngs
+    );
+
+  if (
+    samplesA.length !==
+      samplesB.length ||
+    samplesA.length === 0
+  ) {
+    return false;
+  }
+
+  let totalKm = 0;
+  let maxKm = 0;
+
+  for (
+    let i = 0;
+    i < samplesA.length;
+    i++
+  ) {
+
+    const d =
+      distanceKm(
+        samplesA[i][0],
+        samplesA[i][1],
+        samplesB[i][0],
+        samplesB[i][1]
+      );
+
+    totalKm += d;
+
+    maxKm =
+      Math.max(
+        maxKm,
+        d
+      );
+
+  }
+
+  const averageKm =
+    totalKm /
+    samplesA.length;
+
+  return (
+    averageKm <= 0.12 &&
+    maxKm <= 0.30
+  );
+
+}
+
+function findPossibleDuplicate(
+  newActivity
+) {
+
+  if (
+    !newActivity ||
+    !Array.isArray(
+      newActivity.latlngs
+    ) ||
+    newActivity.latlngs.length < 2
+  ) {
+    return null;
+  }
+
+  const newStart =
+    newActivity.latlngs[0];
+
+  const newEnd =
+    newActivity.latlngs[
+      newActivity.latlngs.length - 1
+    ];
+
+  for (
+    const oldActivity of
+    activities
+  ) {
+
+    if (
+      !Array.isArray(
+        oldActivity.latlngs
+      ) ||
+      oldActivity.latlngs.length < 2
+    ) {
+      continue;
+    }
+
+    if (
+      !sameCalendarDate(
+        newActivity.date,
+        oldActivity.date
+      )
+    ) {
+      continue;
+    }
+
+    const distanceDifference =
+      Math.abs(
+        newActivity.distance -
+        oldActivity.distance
+      );
+
+    const allowedDifference =
+      Math.max(
+        0.5,
+        oldActivity.distance * 0.08
+      );
+
+    if (
+      distanceDifference >
+      allowedDifference
+    ) {
+      continue;
+    }
+
+    const oldStart =
+      oldActivity.latlngs[0];
+
+    const startDifference =
+      distanceKm(
+        newStart[0],
+        newStart[1],
+        oldStart[0],
+        oldStart[1]
+      );
+
+    if (
+      startDifference >
+      0.4
+    ) {
+      continue;
+    }
+
+    const oldEnd =
+      oldActivity.latlngs[
+        oldActivity.latlngs.length - 1
+      ];
+
+    const endDifference =
+      distanceKm(
+        newEnd[0],
+        newEnd[1],
+        oldEnd[0],
+        oldEnd[1]
+      );
+
+    if (
+      endDifference >
+      0.6
+    ) {
+      continue;
+    }
+
+    if (
+      !routeSimilarity(
+        newActivity,
+        oldActivity
+      )
+    ) {
+      continue;
+    }
+
+    return oldActivity;
+
+  }
+
+  return null;
+
+}
+
+function buildActivityFromGPXText(
+  text,
+  name,
+  source
+) {
+
+  const xml =
+    new DOMParser()
+      .parseFromString(
+        text,
+        'application/xml'
+      );
+
+  if (
+    xml.querySelector(
+      'parsererror'
+    )
+  ) {
+    throw new Error(
+      'GPXを読み込めません'
+    );
+  }
+
+  const metadataTime =
+    xml.querySelector(
+      'metadata > time'
+    );
+
+  const trackTime =
+    xml.querySelector(
+      'trkpt > time'
+    );
+
+  const timeElement =
+    metadataTime ||
+    trackTime;
+
+  let date = null;
+
+  if (timeElement) {
+
+    const d =
+      new Date(
+        timeElement.textContent
+      );
+
+    if (
+      !Number.isNaN(
+        d.getTime()
+      )
+    ) {
+      date = d;
+    }
+
+  }
+
+  const year =
+    date
+      ? date.getFullYear()
+      : null;
+
+  const points =
+    Array.from(
+      xml.getElementsByTagName(
+        'trkpt'
+      )
+    );
+
+  const latlngs =
+    points
+      .map(
+        point => [
+          parseFloat(
+            point.getAttribute(
+              'lat'
+            )
+          ),
+          parseFloat(
+            point.getAttribute(
+              'lon'
+            )
+          )
+        ]
+      )
+      .filter(
+        point =>
+          Number.isFinite(
+            point[0]
+          ) &&
+          Number.isFinite(
+            point[1]
+          )
+      );
+
+  if (
+    latlngs.length <
+    2
+  ) {
+    throw new Error(
+      'GPS座標が不足しています'
+    );
+  }
+
+  const analysis =
+    analyseRoute(
+      latlngs
+    );
+
+  const cells =
+    buildCellsFromRoute(
+      latlngs
+    );
+
+  return {
+    source: source,
+    name: name,
+    date: date,
+    year: year,
+
+    distance:
+      analysis.calculatedKm,
+
+    latlngs:
+      latlngs,
+
+    cityDistances:
+      analysis.cityDistances,
+
+    cities:
+      analysis.cities,
+
+    cells:
+      Array.from(cells)
+  };
+
+}
+
+function loadArchiveActivities() {
+
+  const archive =
+    window.RUNNERS_RINGS_ARCHIVE;
+
+  if (
+    !Array.isArray(
+      archive
+    )
+  ) {
+
+    console.warn(
+      '過去ランデータなし'
+    );
+
+    return 0;
+
+  }
+
+  let loaded = 0;
+
+  archive.forEach(
+    run => {
+
+      if (
+        !Array.isArray(
+          run.route
+        ) ||
+        run.route.length < 2
+      ) {
+        return;
+      }
+
+      const latlngs =
+        run.route
+          .map(
+            point => [
+              Number(point[0]),
+              Number(point[1])
+            ]
+          )
+          .filter(
+            point =>
+              Number.isFinite(
+                point[0]
+              ) &&
+              Number.isFinite(
+                point[1]
+              )
+          );
+
+      if (
+        latlngs.length <
+        2
+      ) {
+        return;
+      }
+
+      const storedDistance =
+        Number(
+          run.distance_km
+        );
+
+      const analysis =
+        analyseRoute(
+          latlngs,
+          Number.isFinite(
+            storedDistance
+          )
+            ? storedDistance
+            : null
+        );
+
+      const cells =
+        buildCellsFromRoute(
+          latlngs
+        );
+
+      const date =
+        run.date
+          ? new Date(
+              run.date +
+              'T12:00:00'
+            )
+          : null;
+
+      const year =
+        Number(run.year) ||
+        (
+          date &&
+          !Number.isNaN(
+            date.getTime()
+          )
+            ? date.getFullYear()
+            : null
+        );
+
+      const activity = {
+        source: 'archive',
+
+        id:
+          run.id,
+
+        name:
+          run.name ||
+          '過去ラン',
+
+        date:
+          date,
+
+        year:
+          year,
+
+        distance:
+          Number.isFinite(
+            storedDistance
+          )
+            ? storedDistance
+            : analysis.calculatedKm,
+
+        latlngs:
+          latlngs,
+
+        cityDistances:
+          analysis.cityDistances,
+
+        cities:
+          analysis.cities,
+
+        cells:
+          Array.from(cells)
+      };
+
+      if (
+        registerActivity(
+          activity
+        )
+      ) {
+        loaded++;
+      }
+
+    }
+  );
+
+  return loaded;
+
+}
+
+async function getGPXFiles() {
+
+  setStatus(
+    '現在のGPXを探しています…'
+  );
+
+  const apiURL =
+    'https://api.github.com/repos/' +
+    OWNER +
+    '/' +
+    REPO +
+    '/contents?ref=' +
+    BRANCH;
+
+  const response =
+    await fetch(
+      apiURL,
+      {
+        headers: {
+          'Accept':
+            'application/vnd.github+json'
+        }
+      }
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      'GPX一覧取得失敗 HTTP ' +
+      response.status
+    );
+
+  }
+
+  const files =
+    await response.json();
+
+  return files
+    .filter(
+      file =>
+        file.type === 'file' &&
+        file.name
+          .toLowerCase()
+          .endsWith('.gpx')
+    )
+    .map(
+      file => ({
+        name:
+          file.name,
+
+        url:
+          file.download_url
+      })
+    );
+
+}
+
+async function loadOneGPX(gpxFile) {
+
+  const response =
+    await fetch(
+      gpxFile.url
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      gpxFile.name +
+      ' 取得失敗 HTTP ' +
+      response.status
+    );
+
+  }
+
+  const text =
+    await response.text();
+
+  const activity =
+    buildActivityFromGPXText(
+      text,
+      gpxFile.name,
+      'github'
+    );
+
+  return registerActivity(
+    activity
+  );
+
+}
+
+async function loadAllGPX(gpxFiles) {
+
+  let loaded = 0;
+
+  for (
+    let i = 0;
+    i < gpxFiles.length;
+    i++
+  ) {
+
+    setStatus(
+      '現在GPX ' +
+      (i + 1) +
+      '/' +
+      gpxFiles.length +
+      ' 読み込み中…'
+    );
+
+    const added =
+      await loadOneGPX(
+        gpxFiles[i]
+      );
+
+    if (added) {
+      loaded++;
+    }
+
+  }
+
+  return loaded;
+
+}
+
+async function loadSavedActivities() {
+
+  let saved;
+
+  try {
+
+    saved =
+      await getSavedGPX();
+
+  } catch(error) {
+
+    console.error(error);
+
+    return 0;
+
+  }
+
+  let loaded = 0;
+
+  for (
+    const item of
+    saved
+  ) {
+
+    try {
+
+      const activity =
+        buildActivityFromGPXText(
+          item.text,
+          item.name,
+          'local'
+        );
+
+      activity.localId =
+        item.id;
+
+      if (
+        registerActivity(
+          activity
+        )
+      ) {
+        loaded++;
+      }
+
+    } catch(error) {
+
+      console.warn(
+        '保存GPX復元失敗',
+        item.name,
+        error
+      );
+
+    }
+
+  }
+
+  return loaded;
+
+}
+
+function formatRunDate(date) {
+
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return '日付不明';
+  }
+
+  const y =
+    date.getFullYear();
+
+  const m =
+    String(
+      date.getMonth() + 1
+    ).padStart(2, '0');
+
+  const d =
+    String(
+      date.getDate()
+    ).padStart(2, '0');
+
+  return (
+    y +
+    '/' +
+    m +
+    '/' +
+    d
+  );
+
+}
+
+async function renderSavedRuns() {
+
+  const list =
+    document.getElementById(
+      'savedRunsList'
+    );
+
+  list.innerHTML = '';
+
+  let saved;
+
+  try {
+
+    saved =
+      await getSavedGPX();
+
+  } catch(error) {
+
+    console.error(error);
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      '保存済みランを読み込めませんでした' +
+      '</div>';
+
+    return;
+
+  }
+
+  if (
+    saved.length ===
+    0
+  ) {
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      '端末に保存したランはありません' +
+      '</div>';
+
+    return;
+
+  }
+
+  const rows = [];
+
+  for (
+    const item of
+    saved
+  ) {
+
+    try {
+
+      const activity =
+        buildActivityFromGPXText(
+          item.text,
+          item.name,
+          'local'
+        );
+
+      rows.push({
+        item:
+          item,
+
+        activity:
+          activity
+      });
+
+    } catch(error) {
+
+      rows.push({
+        item:
+          item,
+
+        activity:
+          null
+      });
+
+    }
+
+  }
+
+  rows.sort(
+    (a, b) => {
+
+      const aTime =
+        a.activity?.date
+          ? a.activity.date.getTime()
+          : 0;
+
+      const bTime =
+        b.activity?.date
+          ? b.activity.date.getTime()
+          : 0;
+
+      return bTime - aTime;
+
+    }
+  );
+
+  rows.forEach(
+    ({item, activity}) => {
+
+      const row =
+        document.createElement(
+          'div'
+        );
+
+      row.className =
+        'savedRunRow';
+
+      const main =
+        document.createElement(
+          'div'
+        );
+
+      main.className =
+        'savedRunMain';
+
+      const name =
+        document.createElement(
+          'div'
+        );
+
+      name.className =
+        'savedRunName';
+
+      name.textContent =
+        item.name.replace(
+          /\.gpx$/i,
+          ''
+        );
+
+      const meta =
+        document.createElement(
+          'div'
+        );
+
+      meta.className =
+        'savedRunMeta';
+
+      if (activity) {
+
+        meta.textContent =
+          formatRunDate(
+            activity.date
+          ) +
+          ' ・ ' +
+          activity.distance.toFixed(2) +
+          ' km';
+
+      } else {
+
+        meta.textContent =
+          'GPX解析エラー';
+
+      }
+
+      main.appendChild(name);
+      main.appendChild(meta);
+
+      const deleteButton =
+        document.createElement(
+          'button'
+        );
+
+      deleteButton.className =
+        'deleteRunButton';
+
+      deleteButton.textContent =
+        '削除';
+
+      deleteButton.addEventListener(
+        'click',
+        async () => {
+
+          const ok =
+            confirm(
+              'このランを削除しますか？\n\n' +
+              item.name
+            );
+
+          if (!ok) {
+            return;
+          }
+
+          try {
+
+            await deleteSavedGPX(
+              item.id
+            );
+
+            removeLocalActivity(
+              item.id
+            );
+
+            if (
+              selectedYear !==
+              'ALL'
+            ) {
+
+              const stillExists =
+                activities.some(
+                  activity =>
+                    activity.year ===
+                    Number(selectedYear)
+                );
+
+              if (!stillExists) {
+                selectedYear =
+                  'ALL';
+              }
+
+            }
+
+            createYearFilters();
+            renderSelectedData();
+
+            await updateLocalInfo();
+            await renderSavedRuns();
+
+            setStatus(
+              '✅ 保存済みランを削除しました'
+            );
+
+          } catch(error) {
+
+            console.error(error);
+
+            alert(
+              '削除に失敗しました。'
+            );
+
+          }
+
+        }
+      );
+
+      row.appendChild(main);
+      row.appendChild(deleteButton);
+
+      list.appendChild(row);
+
+    }
+  );
+
+}
+
+function removeLocalActivity(
+  localId
+) {
+
+  const index =
+    activities.findIndex(
+      activity =>
+        activity.source ===
+        'local' &&
+        activity.localId ===
+        localId
+    );
+
+  if (
+    index ===
+    -1
+  ) {
+    return;
+  }
+
+  const activity =
+    activities[index];
+
+  if (
+    activity.signature
+  ) {
+
+    activitySignatures.delete(
+      activity.signature
+    );
+
+  }
+
+  activities.splice(
+    index,
+    1
+  );
+
+}
+
+const addRunButton =
+  document.getElementById(
+    'addRunButton'
+  );
+
+const savedRunsButton =
+  document.getElementById(
+    'savedRunsButton'
+  );
+
+const savedRunsPanel =
+  document.getElementById(
+    'savedRunsPanel'
+  );
+
+const gpxInput =
+  document.getElementById(
+    'gpxInput'
+  );
+
+addRunButton.addEventListener(
+  'click',
+  () => {
+    gpxInput.click();
+  }
+);
+
+savedRunsButton.addEventListener(
+  'click',
+  async () => {
+
+    const isOpen =
+      savedRunsPanel
+        .classList
+        .toggle('open');
+
+    if (isOpen) {
+      await renderSavedRuns();
+    }
+
+  }
+);
+
+gpxInput.addEventListener(
+  'change',
+  async event => {
+
+    const file =
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+
+      setStatus(
+        'GPXを読み込み中…'
+      );
+
+      const text =
+        await file.text();
+
+      const activity =
+        buildActivityFromGPXText(
+          text,
+          file.name,
+          'local'
+        );
+
+      const exactSignature =
+        createActivitySignature(
+          activity
+        );
+
+      if (
+        activitySignatures.has(
+          exactSignature
+        )
+      ) {
+
+        alert(
+          '⚠️ このランはすでに登録されています。\n\n' +
+          '同じランのため追加しませんでした。'
+        );
+
+        setStatus(
+          '⚠️ 登録済みのランです'
+        );
+
+        gpxInput.value = '';
+
+        return;
+
+      }
+
+      const possibleDuplicate =
+        findPossibleDuplicate(
+          activity
+        );
+
+      if (possibleDuplicate) {
+
+        const duplicateDate =
+          formatRunDate(
+            possibleDuplicate.date
+          );
+
+        const duplicateSource =
+          possibleDuplicate.source ===
+          'archive'
+            ? '過去データ'
+            : possibleDuplicate.source ===
+              'github'
+                ? 'GitHubデータ'
+                : '端末保存';
+
+        const shouldAdd =
+          confirm(
+            '⚠️ 登録済みの可能性が高いランがあります。\n\n' +
+            '登録済み\n' +
+            duplicateDate +
+            '\n' +
+            possibleDuplicate.distance.toFixed(2) +
+            ' km\n' +
+            duplicateSource +
+            '\n\n' +
+            '今回\n' +
+            formatRunDate(activity.date) +
+            '\n' +
+            activity.distance.toFixed(2) +
+            ' km\n\n' +
+            '［OK］それでも追加\n' +
+            '［キャンセル］追加しない'
+          );
+
+        if (!shouldAdd) {
+
+          setStatus(
+            '⚠️ 重複候補のため追加を中止しました'
+          );
+
+          gpxInput.value = '';
+
+          return;
+
+        }
+
+      }
+
+      const localId =
+        await saveGPXToDevice(
+          file.name,
+          text
+        );
+
+      activity.localId =
+        localId;
+
+      registerActivity(
+        activity
+      );
+
+      selectedYear =
+        'ALL';
+
+      createYearFilters();
+      renderSelectedData();
+
+      await updateLocalInfo();
+
+      if (
+        savedRunsPanel
+          .classList
+          .contains('open')
+      ) {
+
+        await renderSavedRuns();
+
+      }
+
+      setStatus(
+        '✅ ランを追加しました'
+      );
+
+      const bounds =
+        L.latLngBounds(
+          activity.latlngs
+        );
+
+      map.fitBounds(
+        bounds,
+        {
+          padding:
+            [25, 25]
+        }
+      );
+
+      alert(
+        'ランを追加しました！'
+      );
+
+    } catch(error) {
+
+      console.error(error);
+
+      alert(
+        'GPXの読み込みに失敗しました。\n' +
+        error.message
+      );
+
+      setStatus(
+        '❌ GPX追加失敗'
+      );
+
+    }
+
+    gpxInput.value = '';
+
+  }
+);
+
+function createYearFilters() {
+
+  const area =
+    document.getElementById(
+      'filters'
+    );
+
+  area.innerHTML = '';
+
+  const years =
+    Array.from(
+      new Set(
+        activities
+          .map(
+            activity =>
+              activity.year
+          )
+          .filter(
+            year =>
+              Number.isFinite(year)
+          )
+      )
+    )
+    .sort(
+      (a, b) =>
+        b - a
+    );
+
+  const options =
+    ['ALL', ...years];
+
+  options.forEach(
+    option => {
+
+      const button =
+        document.createElement(
+          'button'
+        );
+
+      button.className =
+        'yearButton';
+
+      button.textContent =
+        option;
+
+      if (
+        String(option) ===
+        String(selectedYear)
+      ) {
+
+        button.classList.add(
+          'active'
+        );
+
+      }
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          selectedYear =
+            option;
+
+          document
+            .querySelectorAll(
+              '.yearButton'
+            )
+            .forEach(
+              btn =>
+                btn.classList.remove(
+                  'active'
+                )
+            );
+
+          button.classList.add(
+            'active'
+          );
+
+          renderSelectedData();
+
+        }
+      );
+
+      area.appendChild(button);
+
+    }
+  );
+
+}
+
+function getSelectedActivities() {
+
+  if (
+    selectedYear ===
+    'ALL'
+  ) {
+    return activities;
+  }
+
+  return activities.filter(
+    activity =>
+      activity.year ===
+      Number(selectedYear)
+  );
+
+}
+
+function buildSelectedStats() {
+
+  const selected =
+    getSelectedActivities();
+
+  const municipalityDistance = {};
+  const municipalityRunCount = {};
+  const ringCells = {};
+
+  let totalDistanceKm = 0;
+
+  selected.forEach(
+    activity => {
+
+      totalDistanceKm +=
+        activity.distance;
+
+      Object.entries(
+        activity.cityDistances
+      ).forEach(
+        ([cityKey, km]) => {
+
+          municipalityDistance[cityKey] =
+            (
+              municipalityDistance[cityKey] ||
+              0
+            ) +
+            km;
+
+        }
+      );
+
+      activity.cities.forEach(
+        cityKey => {
+
+          municipalityRunCount[cityKey] =
+            (
+              municipalityRunCount[cityKey] ||
+              0
+            ) +
+            1;
+
+        }
+      );
+
+      activity.cells.forEach(
+        key => {
+
+          ringCells[key] =
+            (
+              ringCells[key] ||
+              0
+            ) +
+            1;
+
+        }
+      );
+
+    }
+  );
+
+  return {
+    activities:
+      selected,
+
+    municipalityDistance:
+      municipalityDistance,
+
+    municipalityRunCount:
+      municipalityRunCount,
+
+    ringCells:
+      ringCells,
+
+    totalDistanceKm:
+      totalDistanceKm
+  };
+
+}
+
+function clearMapLayers() {
+
+  routeGroup.clearLayers();
+  ringGroup.clearLayers();
+
+  if (
+    municipalityLayer &&
+    map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+
+    map.removeLayer(
+      municipalityLayer
+    );
+
+  }
+
+  municipalityLayer = null;
+
+  Object.keys(
+    municipalityLayers
+  ).forEach(
+    key =>
+      delete municipalityLayers[key]
+  );
+
+}
+
+function drawRoutes(
+  selectedActivities
+) {
+
+  const drawnSegments =
+    new Set();
+
+  const roundCoord =
+    value =>
+      Math.round(
+        value * 10000
+      ) /
+      10000;
+
+  selectedActivities.forEach(
+    activity => {
+
+      const latlngs =
+        activity.latlngs;
+
+      for (
+        let i = 1;
+        i < latlngs.length;
+        i++
+      ) {
+
+        const a =
+          latlngs[i - 1];
+
+        const b =
+          latlngs[i];
+
+        const aKey =
+          roundCoord(a[0]) +
+          ',' +
+          roundCoord(a[1]);
+
+        const bKey =
+          roundCoord(b[0]) +
+          ',' +
+          roundCoord(b[1]);
+
+        const segmentKey =
+          aKey < bKey
+            ? aKey +
+              '|' +
+              bKey
+            : bKey +
+              '|' +
+              aKey;
+
+        if (
+          drawnSegments.has(
+            segmentKey
+          )
+        ) {
+          continue;
+        }
+
+        drawnSegments.add(
+          segmentKey
+        );
+
+        const route =
+          L.polyline(
+            [a, b],
+            {
+              color:
+                ROUTE_COLOR,
+
+              weight:
+                1.5,
+
+              opacity:
+                0.30,
+
+              lineCap:
+                'round',
+
+              lineJoin:
+                'round',
+
+              interactive:
+                false
+            }
+          );
+
+        routeGroup.addLayer(
+          route
+        );
+
+      }
+
+    }
+  );
+
+}
+
+function drawRingCells(
+  ringCells
+) {
+
+  Object.entries(
+    ringCells
+  ).forEach(
+    ([key, count]) => {
+
+      const rectangle =
+        L.rectangle(
+          getCellBounds(key),
+          {
+            stroke:
+              false,
+
+            fillColor:
+              AREA_COLOR,
+
+            fillOpacity:
+              getRingOpacity(count),
+
+            interactive:
+              true
+          }
+        );
+
+      rectangle.bindPopup(
+        '<div class="popup-title">' +
+        'Runner\'s Ring' +
+        '</div>' +
+        '<div class="popup-row">' +
+        'このエリアを走ったラン：' +
+        '<strong>' +
+        count +
+        ' 回</strong>' +
+        '</div>'
+      );
+
+      ringGroup.addLayer(
+        rectangle
+      );
+
+    }
+  );
+
+}
+
+function drawMunicipalities(
+  municipalityDistance,
+  municipalityRunCount
+) {
+
+  municipalityLayer =
+    L.geoJSON(
+      geojsonData,
+      {
+
+        style:
+          feature => {
+
+            const cityKey =
+              getCityKey(feature);
+
+            const km =
+              municipalityDistance[
+                cityKey
+              ] ||
+              0;
+
+            return {
+              color:
+                BORDER_COLOR,
+
+              weight:
+                km > 0
+                  ? 0.7
+                  : 0.35,
+
+              opacity:
+                km > 0
+                  ? 0.45
+                  : 0.10,
+
+              fillColor:
+                AREA_COLOR,
+
+              fillOpacity:
+                getMunicipalityOpacity(
+                  km
+                )
+            };
+
+          },
+
+        onEachFeature:
+          (feature, layer) => {
+
+            const prefecture =
+              getPrefecture(feature);
+
+            const city =
+              getCity(feature);
+
+            const cityKey =
+              getCityKey(feature);
+
+            const km =
+              municipalityDistance[
+                cityKey
+              ] ||
+              0;
+
+            const runs =
+              municipalityRunCount[
+                cityKey
+              ] ||
+              0;
+
+            municipalityLayers[
+              cityKey
+            ] =
+              layer;
+
+            layer.bindPopup(
+              '<div class="popup-title">' +
+              city +
+              '</div>' +
+
+              '<div class="popup-row">' +
+              prefecture +
+              '</div>' +
+
+              '<div class="popup-row">' +
+              '累積走行距離：' +
+              '<strong>' +
+              km.toFixed(2) +
+              ' km</strong>' +
+              '</div>' +
+
+              '<div class="popup-row">' +
+              '走ったラン：' +
+              '<strong>' +
+              runs +
+              ' 回</strong>' +
+              '</div>'
+            );
+
+          }
+
+      }
+    );
+
+}
+
+function focusMunicipality(
+  cityKey
+) {
+
+  const layer =
+    municipalityLayers[
+      cityKey
+    ];
+
+  if (!layer) {
+    return;
+  }
+
+  if (
+    municipalityLayer &&
+    !map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+
+    municipalityLayer.addTo(
+      map
+    );
+
+  }
+
+  if (
+    map.hasLayer(
+      routeGroup
+    )
+  ) {
+    map.removeLayer(
+      routeGroup
+    );
+  }
+
+  if (
+    map.hasLayer(
+      ringGroup
+    )
+  ) {
+    map.removeLayer(
+      ringGroup
+    );
+  }
+
+  map.fitBounds(
+    layer.getBounds(),
+    {
+      padding:
+        [25, 25],
+
+      maxZoom:
+        11
+    }
+  );
+
+  document
+    .getElementById('map')
+    .scrollIntoView({
+      behavior:
+        'smooth',
+
+      block:
+        'start'
+    });
+
+  setTimeout(
+    () =>
+      layer.openPopup(),
+    500
+  );
+
+}
+
+function updateDashboard(stats) {
+
+  const entries =
+    Object.entries(
+      stats.municipalityDistance
+    )
+    .filter(
+      ([, km]) =>
+        km > 0.01
+    )
+    .sort(
+      (a, b) =>
+        b[1] - a[1]
+    );
+
+  document
+    .getElementById(
+      'totalDistance'
+    )
+    .textContent =
+      stats.totalDistanceKm
+        .toFixed(1);
+
+  document
+    .getElementById(
+      'runCount'
+    )
+    .textContent =
+      stats.activities.length;
+
+  document
+    .getElementById(
+      'cityCount'
+    )
+    .textContent =
+      entries.length;
+
+  document
+    .getElementById(
+      'cityHeading'
+    )
+    .textContent =
+      selectedYear ===
+      'ALL'
+        ? '市町村別'
+        : selectedYear +
+          '年 市町村別';
+
+  const cityList =
+    document.getElementById(
+      'cityList'
+    );
+
+  cityList.innerHTML = '';
+
+  if (
+    entries.length ===
+    0
+  ) {
+
+    cityList.innerHTML =
+      '<div class="emptyMessage">' +
+      'この期間の市町村データがありません' +
+      '</div>';
+
+    return;
+
+  }
+
+  const maxKm =
+    entries[0][1];
+
+  entries.forEach(
+    ([cityKey, km]) => {
+
+      const parts =
+        cityKey.split('|');
+
+      const prefecture =
+        parts[0] ||
+        '';
+
+      const city =
+        parts[1] ||
+        cityKey;
+
+      const percent =
+        Math.max(
+          3,
+          (
+            km /
+            maxKm
+          ) *
+          100
+        );
+
+      const runs =
+        stats
+          .municipalityRunCount[
+            cityKey
+          ] ||
+        0;
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+      card.className =
+        'cityCard';
+
+      card.innerHTML =
+        '<div class="cityTop">' +
+
+          '<div class="cityName">' +
+            city +
+          '</div>' +
+
+          '<div class="cityDistance">' +
+            km.toFixed(2) +
+            ' km' +
+          '</div>' +
+
+        '</div>' +
+
+        '<div class="barTrack">' +
+
+          '<div class="barFill" style="width:' +
+            percent +
+            '%"></div>' +
+
+        '</div>' +
+
+        '<div class="cityRuns">' +
+          prefecture +
+          ' ・ RUNS ' +
+          runs +
+        '</div>';
+
+      card.addEventListener(
+        'click',
+        () =>
+          focusMunicipality(
+            cityKey
+          )
+      );
+
+      cityList.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+function updateDisplay() {
+
+  const zoom =
+    map.getZoom();
+
+  if (
+    zoom >= 13
+  ) {
+
+    if (
+      municipalityLayer &&
+      map.hasLayer(
+        municipalityLayer
+      )
+    ) {
+      map.removeLayer(
+        municipalityLayer
+      );
+    }
+
+    if (
+      !map.hasLayer(
+        ringGroup
+      )
+    ) {
+      ringGroup.addTo(
+        map
+      );
+    }
+
+    if (
+      !map.hasLayer(
+        routeGroup
+      )
+    ) {
+      routeGroup.addTo(
+        map
+      );
+    }
+
+    setStatus(
+      selectedYear ===
+      'ALL'
+        ? '詳細表示：実際に走った道路＋Runner\'s Rings'
+        : selectedYear +
+          '年：実際に走った道路＋Runner\'s Rings'
+    );
+
+  } else {
+
+    if (
+      municipalityLayer &&
+      !map.hasLayer(
+        municipalityLayer
+      )
+    ) {
+      municipalityLayer.addTo(
+        map
+      );
+    }
+
+    if (
+      map.hasLayer(
+        routeGroup
+      )
+    ) {
+      map.removeLayer(
+        routeGroup
+      );
+    }
+
+    if (
+      map.hasLayer(
+        ringGroup
+      )
+    ) {
+      map.removeLayer(
+        ringGroup
+      );
+    }
+
+    setStatus(
+      selectedYear ===
+      'ALL'
+        ? '広域表示：累積走行距離を面で表示'
+        : selectedYear +
+          '年：走行距離を面で表示'
+    );
+
+  }
+
+}
+
+function renderSelectedData() {
+
+  const stats =
+    buildSelectedStats();
+
+  clearMapLayers();
+
+  drawRoutes(
+    stats.activities
+  );
+
+  drawRingCells(
+    stats.ringCells
+  );
+
+  drawMunicipalities(
+    stats.municipalityDistance,
+    stats.municipalityRunCount
+  );
+
+  updateDashboard(
+    stats
+  );
+
+  updateDisplay();
+
+}
+
+function getHomePrefectureBounds() {
+
+  const stats =
+    buildSelectedStats();
+
+  const prefectureKm = {};
+
+  Object.entries(
+    stats.municipalityDistance
+  ).forEach(
+    ([cityKey, km]) => {
+
+      const prefecture =
+        cityKey.split('|')[0];
+
+      if (!prefecture) {
+        return;
+      }
+
+      prefectureKm[prefecture] =
+        (
+          prefectureKm[prefecture] ||
+          0
+        ) +
+        km;
+
+    }
+  );
+
+  const ranking =
+    Object.entries(
+      prefectureKm
+    ).sort(
+      (a, b) =>
+        b[1] - a[1]
+    );
+
+  if (
+    ranking.length ===
+    0
+  ) {
+    return null;
+  }
+
+  const homePrefecture =
+    ranking[0][0];
+
+  const bounds =
+    L.latLngBounds([]);
+
+  municipalityFeatures.forEach(
+    item => {
+
+      if (
+        getPrefecture(
+          item.feature
+        ) ===
+        homePrefecture
+      ) {
+
+        bounds.extend([
+          item.bbox.minLat,
+          item.bbox.minLon
+        ]);
+
+        bounds.extend([
+          item.bbox.maxLat,
+          item.bbox.maxLon
+        ]);
+
+      }
+
+    }
+  );
+
+  if (
+    !bounds.isValid()
+  ) {
+    return null;
+  }
+
+  return {
+    prefecture:
+      homePrefecture,
+
+    bounds:
+      bounds
+  };
+
+}
+
+async function start() {
+
+  try {
+
+    await loadMunicipalities();
+
+    setStatus(
+      '過去ランを復元中…'
+    );
+
+    const archiveCount =
+      loadArchiveActivities();
+
+    const gpxFiles =
+      await getGPXFiles();
+
+    const githubCount =
+      await loadAllGPX(
+        gpxFiles
+      );
+
+    setStatus(
+      '端末保存ランを復元中…'
+    );
+
+    const localCount =
+      await loadSavedActivities();
+
+    createYearFilters();
+
+    renderSelectedData();
+
+    await updateLocalInfo();
+    await renderSavedRuns();
+
+    const home =
+      getHomePrefectureBounds();
+
+    if (home) {
+
+      map.fitBounds(
+        home.bounds,
+        {
+          padding:
+            [20, 20]
+        }
+      );
+
+    } else if (
+      municipalityLayer
+    ) {
+
+      map.fitBounds(
+        municipalityLayer.getBounds()
+      );
+
+    }
+
+    map.on(
+      'zoomend',
+      updateDisplay
+    );
+
+    setTimeout(
+      () => {
+        map.invalidateSize();
+      },
+      300
+    );
+
+    console.log(
+      '過去:',
+      archiveCount
+    );
+
+    console.log(
+      'GitHub:',
+      githubCount
+    );
+
+    console.log(
+      '端末:',
+      localCount
+    );
+
+    console.log(
+      '合計:',
+      activities.length
+    );
+
+  } catch(error) {
+
+    console.error(error);
+
+    setStatus(
+      '❌ ' +
+      error.message
+    );
+
+  }
+
+}
+
+start();
+
+</script>
+
+</body>
+</html>
