@@ -893,7 +893,39 @@ function getFeatureBBox(feature) {
 }
 
 
-function findMunicipality(lat,lon) {
+/* =====================================
+   都道府県・市町村キー
+===================================== */
+
+function getPrefectureName(feature) {
+
+  return (
+    feature?.properties?.N03_001 ||
+    '不明'
+  );
+}
+
+
+function getMunicipalityName(feature) {
+
+  return (
+    feature?.properties?.N03_004 ||
+    '名称不明'
+  );
+}
+
+
+function getMunicipalityKey(feature) {
+
+  return (
+    getPrefectureName(feature) +
+    '|' +
+    getMunicipalityName(feature)
+  );
+}
+
+
+function findMunicipalityFeature(lat,lon) {
 
   const point =
     [lon,lat];
@@ -921,13 +953,7 @@ function findMunicipality(lat,lon) {
         item.feature
       )
     ) {
-
-      return (
-        item.feature
-          .properties
-          .N03_004 ||
-        '名称不明'
-      );
+      return item.feature;
     }
   }
 
@@ -1193,6 +1219,7 @@ function analyseRoute(
 
   const cityDistances = {};
   const cities = new Set();
+  const prefectureDistances = {};
 
   let calculatedKm = 0;
 
@@ -1233,22 +1260,44 @@ function analyseRoute(
       ) /
       2;
 
-    const city =
-      findMunicipality(
+    const feature =
+      findMunicipalityFeature(
         midLat,
         midLon
       );
 
-    if (city) {
+    if (feature) {
 
-      cityDistances[city] =
+      const city =
+        getMunicipalityName(
+          feature
+        );
+
+      const cityKey =
+        getMunicipalityKey(
+          feature
+        );
+
+      const prefecture =
+        getPrefectureName(
+          feature
+        );
+
+      cityDistances[cityKey] =
         (
-          cityDistances[city] ||
+          cityDistances[cityKey] ||
           0
         ) +
         segmentKm;
 
-      cities.add(city);
+      cities.add(cityKey);
+
+      prefectureDistances[prefecture] =
+        (
+          prefectureDistances[prefecture] ||
+          0
+        ) +
+        segmentKm;
     }
   }
 
@@ -1264,9 +1313,19 @@ function analyseRoute(
     Object.keys(
       cityDistances
     ).forEach(
-      city => {
+      cityKey => {
 
-        cityDistances[city] *=
+        cityDistances[cityKey] *=
+          scale;
+      }
+    );
+
+    Object.keys(
+      prefectureDistances
+    ).forEach(
+      prefecture => {
+
+        prefectureDistances[prefecture] *=
           scale;
       }
     );
@@ -1276,6 +1335,7 @@ function analyseRoute(
     cityDistances,
     cities:
       Array.from(cities),
+    prefectureDistances,
     calculatedKm
   };
 }
@@ -1740,6 +1800,9 @@ function buildActivityFromGPXText(
     cities:
       analysis.cities,
 
+    prefectureDistances:
+      analysis.prefectureDistances,
+
     cells:
       Array.from(cells)
   };
@@ -1875,6 +1938,9 @@ function loadArchiveActivities() {
 
         cities:
           analysis.cities,
+
+        prefectureDistances:
+          analysis.prefectureDistances,
 
         cells:
           Array.from(cells)
@@ -2758,11 +2824,11 @@ function buildSelectedStats() {
       Object.entries(
         activity.cityDistances
       ).forEach(
-        ([city,km]) => {
+        ([cityKey,km]) => {
 
-          municipalityDistance[city] =
+          municipalityDistance[cityKey] =
             (
-              municipalityDistance[city] ||
+              municipalityDistance[cityKey] ||
               0
             ) +
             km;
@@ -2770,11 +2836,11 @@ function buildSelectedStats() {
       );
 
       activity.cities.forEach(
-        city => {
+        cityKey => {
 
-          municipalityRunCount[city] =
+          municipalityRunCount[cityKey] =
             (
-              municipalityRunCount[city] ||
+              municipalityRunCount[cityKey] ||
               0
             ) +
             1;
@@ -2807,6 +2873,182 @@ function buildSelectedStats() {
 
     totalDistanceKm
   };
+}
+
+
+/* =====================================
+   一番走っている都道府県
+===================================== */
+
+function getMostRunPrefecture() {
+
+  const prefectureDistance = {};
+
+  activities.forEach(
+    activity => {
+
+      Object.entries(
+        activity.prefectureDistances ||
+        {}
+      ).forEach(
+        ([prefecture,km]) => {
+
+          prefectureDistance[prefecture] =
+            (
+              prefectureDistance[prefecture] ||
+              0
+            ) +
+            km;
+        }
+      );
+    }
+  );
+
+  const entries =
+    Object.entries(
+      prefectureDistance
+    )
+    .filter(
+      ([prefecture,km]) =>
+        prefecture !== '不明' &&
+        km > 0
+    )
+    .sort(
+      (a,b) =>
+        b[1]-a[1]
+    );
+
+  if (
+    entries.length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    name:
+      entries[0][0],
+
+    distance:
+      entries[0][1]
+  };
+}
+
+
+/* =====================================
+   都道府県Bounds
+===================================== */
+
+function getPrefectureBounds(
+  prefectureName
+) {
+
+  let south = Infinity;
+  let west = Infinity;
+  let north = -Infinity;
+  let east = -Infinity;
+
+  let found = false;
+
+  municipalityFeatures.forEach(
+    item => {
+
+      if (
+        getPrefectureName(
+          item.feature
+        ) !==
+        prefectureName
+      ) {
+        return;
+      }
+
+      found = true;
+
+      south =
+        Math.min(
+          south,
+          item.bbox.minLat
+        );
+
+      west =
+        Math.min(
+          west,
+          item.bbox.minLon
+        );
+
+      north =
+        Math.max(
+          north,
+          item.bbox.maxLat
+        );
+
+      east =
+        Math.max(
+          east,
+          item.bbox.maxLon
+        );
+    }
+  );
+
+  if (!found) {
+    return null;
+  }
+
+  return L.latLngBounds(
+    [south,west],
+    [north,east]
+  );
+}
+
+
+/* =====================================
+   初期表示
+===================================== */
+
+function fitInitialHomeArea() {
+
+  const home =
+    getMostRunPrefecture();
+
+  if (home) {
+
+    const bounds =
+      getPrefectureBounds(
+        home.name
+      );
+
+    if (
+      bounds &&
+      bounds.isValid()
+    ) {
+
+      map.fitBounds(
+        bounds,
+        {
+          padding:
+            [18,18]
+        }
+      );
+
+      console.log(
+        '初期表示:',
+        home.name,
+        home.distance.toFixed(1) +
+        ' km'
+      );
+
+      return;
+    }
+  }
+
+  if (
+    municipalityLayer
+  ) {
+
+    map.fitBounds(
+      municipalityLayer
+        .getBounds()
+    );
+  }
 }
 
 
@@ -3014,14 +3256,14 @@ function drawMunicipalities(
         style:
           feature => {
 
-            const city =
-              feature
-                .properties
-                .N03_004;
+            const cityKey =
+              getMunicipalityKey(
+                feature
+              );
 
             const km =
               municipalityDistance[
-                city
+                cityKey
               ] ||
               0;
 
@@ -3057,31 +3299,44 @@ function drawMunicipalities(
           ) => {
 
             const city =
-              feature
-                .properties
-                .N03_004 ||
-              '名称不明';
+              getMunicipalityName(
+                feature
+              );
+
+            const prefecture =
+              getPrefectureName(
+                feature
+              );
+
+            const cityKey =
+              getMunicipalityKey(
+                feature
+              );
 
             const km =
               municipalityDistance[
-                city
+                cityKey
               ] ||
               0;
 
             const runs =
               municipalityRunCount[
-                city
+                cityKey
               ] ||
               0;
 
             municipalityLayers[
-              city
+              cityKey
             ] =
               layer;
 
             layer.bindPopup(
               '<div class="popup-title">' +
               city +
+              '</div>' +
+
+              '<div class="popup-row">' +
+              prefecture +
               '</div>' +
 
               '<div class="popup-row">' +
@@ -3108,11 +3363,11 @@ function drawMunicipalities(
    市町村へ移動
 ===================================== */
 
-function focusMunicipality(city) {
+function focusMunicipality(cityKey) {
 
   const layer =
     municipalityLayers[
-      city
+      cityKey
     ];
 
   if (!layer) {
@@ -3261,7 +3516,17 @@ function updateDashboard(stats) {
     entries[0][1];
 
   entries.forEach(
-    ([city,km]) => {
+    ([cityKey,km]) => {
+
+      const parts =
+        cityKey.split('|');
+
+      const prefecture =
+        parts[0] || '';
+
+      const city =
+        parts.slice(1).join('|') ||
+        cityKey;
 
       const percent =
         Math.max(
@@ -3276,7 +3541,7 @@ function updateDashboard(stats) {
       const runs =
         stats
           .municipalityRunCount[
-            city
+            cityKey
           ] ||
         0;
 
@@ -3311,7 +3576,8 @@ function updateDashboard(stats) {
         '</div>' +
 
         '<div class="cityRuns">' +
-          'RUNS ' +
+          prefecture +
+          ' ・ RUNS ' +
           runs +
         '</div>';
 
@@ -3319,7 +3585,7 @@ function updateDashboard(stats) {
         'click',
         () =>
           focusMunicipality(
-            city
+            cityKey
           )
       );
 
@@ -3507,15 +3773,13 @@ async function start() {
 
     await renderSavedRuns();
 
-    if (
-      municipalityLayer
-    ) {
+    /*
+     * ★ 新機能
+     * 最も走っている都道府県を
+     * 起動時に表示
+     */
 
-      map.fitBounds(
-        municipalityLayer
-          .getBounds()
-      );
-    }
+    fitInitialHomeArea();
 
     map.on(
       'zoomend',
