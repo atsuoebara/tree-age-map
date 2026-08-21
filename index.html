@@ -73,6 +73,7 @@
 
     #addRunButton{
       background:#ff2bd6;
+      display:inline-block;
     }
 
     #savedRunsButton,
@@ -89,7 +90,15 @@
     }
 
     #gpxInput{
-      display:none;
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
     }
 
     #savedRunsPanel,
@@ -329,9 +338,9 @@
 
 <div id="importArea">
 
-  <button id="addRunButton">
+  <label id="addRunButton" for="gpxInput">
     ＋ ランを追加
-  </button>
+  </label>
 
   <button id="savedRunsButton">
     端末保存 0
@@ -3758,11 +3767,6 @@ async function renderSavedRuns() {
    ＋ランを追加
 ===================================== */
 
-const addRunButton =
-  document.getElementById(
-    'addRunButton'
-  );
-
 const savedRunsButton =
   document.getElementById(
     'savedRunsButton'
@@ -3787,11 +3791,6 @@ const gpxInput =
   document.getElementById(
     'gpxInput'
   );
-
-
-addRunButton.onclick =
-  () =>
-    gpxInput.click();
 
 
 savedRunsButton.onclick =
