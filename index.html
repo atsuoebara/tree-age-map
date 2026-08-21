@@ -516,6 +516,22 @@ L.tileLayer(
 
 
 /* =====================================
+   縮尺スケール
+===================================== */
+
+L.control.scale(
+  {
+    position:'bottomleft',
+    metric:true,
+    imperial:false,
+    maxWidth:120
+  }
+).addTo(
+  map
+);
+
+
+/* =====================================
    データ
 ===================================== */
 
@@ -5398,8 +5414,13 @@ function updateDisplay() {
     map.getZoom();
 
 
+  /* =====================================
+     Zoom 14以上
+     詳細：実走コース＋100m Rings
+  ===================================== */
+
   if (
-    zoom >= 13
+    zoom >= 14
   ) {
 
     if (
@@ -5446,13 +5467,82 @@ function updateDisplay() {
       selectedYear ===
       'ALL'
 
-        ? '詳細表示：実際に走った道路＋Runner\'s Rings'
+        ? '詳細表示：実走コース＋100m Runner\'s Rings'
 
         : selectedYear +
-          '年：実際に走った道路＋Runner\'s Rings'
+          '年：実走コース＋100m Runner\'s Rings'
     );
 
   }
+
+
+  /* =====================================
+     Zoom 12〜13
+     中間：実走コース
+  ===================================== */
+
+  else if (
+    zoom >= 12
+  ) {
+
+    if (
+      municipalityLayer &&
+      map.hasLayer(
+        municipalityLayer
+      )
+    ) {
+
+      map.removeLayer(
+        municipalityLayer
+      );
+
+    }
+
+
+    if (
+      map.hasLayer(
+        ringGroup
+      )
+    ) {
+
+      map.removeLayer(
+        ringGroup
+      );
+
+    }
+
+
+    if (
+      !map.hasLayer(
+        routeGroup
+      )
+    ) {
+
+      routeGroup.addTo(
+        map
+      );
+
+    }
+
+
+    setStatus(
+      selectedYear ===
+      'ALL'
+
+        ? '路線表示：実際に走ったコース'
+
+        : selectedYear +
+          '年：実際に走ったコース'
+    );
+
+  }
+
+
+  /* =====================================
+     Zoom 11以下
+     広域：市町村面
+  ===================================== */
+
   else {
 
     if (
@@ -5499,10 +5589,10 @@ function updateDisplay() {
       selectedYear ===
       'ALL'
 
-        ? '広域表示：累積走行距離を面で表示'
+        ? '広域表示：累積走行距離を市町村面で表示'
 
         : selectedYear +
-          '年：走行距離を面で表示'
+          '年：走行距離を市町村面で表示'
     );
 
   }
