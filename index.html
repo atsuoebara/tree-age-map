@@ -60,7 +60,8 @@
     }
 
     #addRunButton,
-    #savedRunsButton{
+    #savedRunsButton,
+    #cloudRunsButton{
       border:0;
       border-radius:12px;
       color:white;
@@ -74,7 +75,8 @@
       background:#ff2bd6;
     }
 
-    #savedRunsButton{
+    #savedRunsButton,
+    #cloudRunsButton{
       background:#17283d;
       border:1px solid rgba(255,255,255,.15);
     }
@@ -90,13 +92,15 @@
       display:none;
     }
 
-    #savedRunsPanel{
+    #savedRunsPanel,
+    #cloudRunsPanel{
       display:none;
       background:#0f1d2f;
       padding:7px 12px 12px;
     }
 
-    #savedRunsPanel.open{
+    #savedRunsPanel.open,
+    #cloudRunsPanel.open{
       display:block;
     }
 
@@ -106,7 +110,8 @@
       margin:4px 0 9px;
     }
 
-    #savedRunsList{
+    #savedRunsList,
+    #cloudRunsList{
       display:flex;
       flex-direction:column;
       gap:8px;
@@ -332,6 +337,10 @@
     端末保存 0
   </button>
 
+  <button id="cloudRunsButton">
+    クラウド 0
+  </button>
+
   <div id="syncInfo">
     ☁️ クラウド確認中…
   </div>
@@ -351,6 +360,20 @@
   </div>
 
   <div id="savedRunsList">
+    <div class="savedEmpty">
+      読み込み中…
+    </div>
+  </div>
+
+</div>
+
+<div id="cloudRunsPanel">
+
+  <div class="savedRunsTitle">
+    クラウドに保存したラン
+  </div>
+
+  <div id="cloudRunsList">
     <div class="savedEmpty">
       読み込み中…
     </div>
@@ -504,6 +527,9 @@ let selectedYear =
 
 let cloudRunCount =
   0;
+
+let cloudRows =
+  [];
 
 
 /* =====================================
@@ -788,6 +814,15 @@ async function updateStorageInfo() {
     .textContent =
       '端末保存 ' +
       localCount;
+
+
+  document
+    .getElementById(
+      'cloudRunsButton'
+    )
+    .textContent =
+      'クラウド ' +
+      cloudRunCount;
 
 
   document
@@ -2524,6 +2559,7 @@ async function loadCloudActivities() {
   ) {
 
     cloudRunCount = 0;
+    cloudRows = [];
 
     return 0;
 
@@ -2539,6 +2575,10 @@ async function loadCloudActivities() {
 
     const rows =
       await fetchCloudRuns();
+
+
+    cloudRows =
+      rows;
 
 
     cloudRunCount =
@@ -2707,7 +2747,20 @@ async function saveActivityToCloud(
     await response.json();
 
 
-  cloudRunCount++;
+  if (
+    rows &&
+    rows[0]
+  ) {
+
+    cloudRows.push(
+      rows[0]
+    );
+
+  }
+
+
+  cloudRunCount =
+    cloudRows.length;
 
 
   cloudSignatures.add(
@@ -2723,6 +2776,209 @@ async function saveActivityToCloud(
   )
     ? rows[0]
     : null;
+
+}
+
+
+/* =====================================
+   クラウド保存ラン一覧
+===================================== */
+
+async function renderCloudRuns() {
+
+  const list =
+    document.getElementById(
+      'cloudRunsList'
+    );
+
+
+  list.innerHTML =
+    '<div class="savedEmpty">読み込み中…</div>';
+
+
+  if (
+    !cloudEnabled()
+  ) {
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      'クラウドが設定されていません' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  try {
+
+    const rows =
+      await fetchCloudRuns();
+
+
+    cloudRows =
+      rows;
+
+
+    cloudRunCount =
+      rows.length;
+
+
+    await updateStorageInfo();
+
+
+    list.innerHTML = '';
+
+
+    if (
+      !rows.length
+    ) {
+
+      list.innerHTML =
+        '<div class="savedEmpty">' +
+        'クラウドに保存したランはありません' +
+        '</div>';
+
+      return;
+
+    }
+
+
+    const sorted =
+      [...rows]
+        .sort(
+          (
+            a,
+            b
+          ) =>
+            String(
+              b.activity_date ||
+              ''
+            )
+            .localeCompare(
+              String(
+                a.activity_date ||
+                ''
+              )
+            )
+        );
+
+
+    sorted.forEach(
+      row => {
+
+        const item =
+          document.createElement(
+            'div'
+          );
+
+
+        item.className =
+          'savedRunRow';
+
+
+        const main =
+          document.createElement(
+            'div'
+          );
+
+
+        main.className =
+          'savedRunMain';
+
+
+        const name =
+          document.createElement(
+            'div'
+          );
+
+
+        name.className =
+          'savedRunName';
+
+
+        name.textContent =
+          row.name ||
+          'ラン';
+
+
+        const meta =
+          document.createElement(
+            'div'
+          );
+
+
+        meta.className =
+          'savedRunMeta';
+
+
+        const dateText =
+          row.activity_date
+
+            ? row.activity_date
+                .replaceAll(
+                  '-',
+                  '/'
+                )
+
+            : '日付不明';
+
+
+        const distance =
+          Number(
+            row.distance_km
+          );
+
+
+        meta.textContent =
+          dateText +
+          ' ・ ' +
+          (
+            Number.isFinite(
+              distance
+            )
+
+              ? distance.toFixed(
+                  2
+                ) +
+                ' km'
+
+              : '距離不明'
+          );
+
+
+        main.append(
+          name,
+          meta
+        );
+
+
+        item.append(
+          main
+        );
+
+
+        list.appendChild(
+          item
+        );
+
+      }
+    );
+
+  }
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      'クラウド保存ランを読み込めませんでした' +
+      '</div>';
+
+  }
 
 }
 
@@ -3512,9 +3768,19 @@ const savedRunsButton =
     'savedRunsButton'
   );
 
+const cloudRunsButton =
+  document.getElementById(
+    'cloudRunsButton'
+  );
+
 const savedRunsPanel =
   document.getElementById(
     'savedRunsPanel'
+  );
+
+const cloudRunsPanel =
+  document.getElementById(
+    'cloudRunsPanel'
   );
 
 const gpxInput =
@@ -3531,6 +3797,13 @@ addRunButton.onclick =
 savedRunsButton.onclick =
   async () => {
 
+    cloudRunsPanel
+      .classList
+      .remove(
+        'open'
+      );
+
+
     if (
       savedRunsPanel
         .classList
@@ -3540,6 +3813,31 @@ savedRunsButton.onclick =
     ) {
 
       await renderSavedRuns();
+
+    }
+
+  };
+
+
+cloudRunsButton.onclick =
+  async () => {
+
+    savedRunsPanel
+      .classList
+      .remove(
+        'open'
+      );
+
+
+    if (
+      cloudRunsPanel
+        .classList
+        .toggle(
+          'open'
+        )
+    ) {
+
+      await renderCloudRuns();
 
     }
 
@@ -3759,6 +4057,19 @@ gpxInput.onchange =
       ) {
 
         await renderSavedRuns();
+
+      }
+
+
+      if (
+        cloudRunsPanel
+          .classList
+          .contains(
+            'open'
+          )
+      ) {
+
+        await renderCloudRuns();
 
       }
 
