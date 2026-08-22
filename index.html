@@ -391,12 +391,12 @@
     id="gpxInput"
     type="file"
     accept=".gpx,application/gpx+xml,application/xml,text/xml"
+    multiple
   >
 
 </div>
 
 <div id="savedRunsPanel">
-
   <div class="savedRunsTitle">
     端末に保存したラン
   </div>
@@ -406,7 +406,6 @@
       読み込み中…
     </div>
   </div>
-
 </div>
 
 <div id="cloudRunsPanel">
@@ -575,9 +574,7 @@ L.control.scale(
     imperial:false,
     maxWidth:120
   }
-).addTo(
-  map
-);
+).addTo(map);
 
 
 /* =====================================
@@ -587,7 +584,6 @@ L.control.scale(
 let geojsonData = null;
 
 const municipalityFeatures = [];
-
 const activities = [];
 
 const activitySignatures =
@@ -662,10 +658,9 @@ function openDatabase() {
 
 
           if (
-            !db.objectStoreNames
-              .contains(
-                STORE_NAME
-              )
+            !db.objectStoreNames.contains(
+              STORE_NAME
+            )
           ) {
 
             db.createObjectStore(
@@ -960,7 +955,6 @@ function distanceKm(
 
 
   const a =
-
     Math.sin(
       dLat /
       2
@@ -1043,10 +1037,8 @@ function pointInRing(
 
 
     const intersect =
-
       ((yi > y) !==
        (yj > y)) &&
-
       (
         x <
         (
@@ -1153,14 +1145,13 @@ function pointInFeature(
     'MultiPolygon'
   ) {
 
-    return geometry.coordinates
-      .some(
-        polygon =>
-          pointInPolygon(
-            point,
-            polygon
-          )
-      );
+    return geometry.coordinates.some(
+      polygon =>
+        pointInPolygon(
+          point,
+          polygon
+        )
+    );
 
   }
 
@@ -1668,22 +1659,21 @@ async function loadMunicipalities() {
     0;
 
 
-  geojsonData.features
-    .forEach(
-      feature => {
+  geojsonData.features.forEach(
+    feature => {
 
-        municipalityFeatures.push(
-          {
-            feature,
-            bbox:
-              getFeatureBBox(
-                feature
-              )
-          }
-        );
+      municipalityFeatures.push(
+        {
+          feature,
+          bbox:
+            getFeatureBBox(
+              feature
+            )
+        }
+      );
 
-      }
-    );
+    }
+  );
 
 }
 
@@ -1807,8 +1797,7 @@ function analyseRoute(
 
     Object.keys(
       cityDistances
-    )
-    .forEach(
+    ).forEach(
       key => {
 
         cityDistances[
@@ -1869,7 +1858,6 @@ function createActivitySignature(
 
 
   const datePart =
-
     activity.date &&
     !Number.isNaN(
       activity.date.getTime()
@@ -1910,8 +1898,7 @@ function createActivitySignature(
         2
       ),
 
-    activity.latlngs
-      .length,
+    activity.latlngs.length,
 
     round4(
       first[0]
@@ -1946,10 +1933,9 @@ function registerActivity(
 
 
   if (
-    activitySignatures
-      .has(
-        signature
-      )
+    activitySignatures.has(
+      signature
+    )
   ) {
 
     return false;
@@ -2580,8 +2566,7 @@ function buildActivityFromCloudRow(
 
 
   return {
-    source:
-      'cloud',
+    source:'cloud',
 
     cloudId:
       row.id,
@@ -3761,7 +3746,8 @@ async function renderSavedRuns() {
   }
 
 
-  const rows = [];
+  const rows =
+    [];
 
 
   for (
@@ -4101,28 +4087,81 @@ document
   );
 
 
-gpxInput.onchange =
-  async event => {
+/* =====================================
+   一括インポート
+===================================== */
+
+async function importSelectedGPXFiles(
+  files
+) {
+
+  const isBatch =
+    files.length >
+    1;
+
+
+  let added =
+    0;
+
+  let duplicates =
+    0;
+
+  let invalidFormat =
+    0;
+
+  let failed =
+    0;
+
+  let cloudSaved =
+    0;
+
+  let cloudFailed =
+    0;
+
+  let lastAddedActivity =
+    null;
+
+
+  for (
+    let i = 0;
+    i < files.length;
+    i++
+  ) {
 
     const file =
-      event.target.files[0];
+      files[i];
+
+
+    setStatus(
+      'GPX ' +
+      (i + 1) +
+      '/' +
+      files.length +
+      ' を処理中…'
+    );
 
 
     if (
-      !file
+      !file.name
+        .toLowerCase()
+        .endsWith(
+          '.gpx'
+        )
     ) {
 
-      return;
+      invalidFormat++;
+
+      console.warn(
+        'GPX以外をスキップ:',
+        file.name
+      );
+
+      continue;
 
     }
 
 
     try {
-
-      setStatus(
-        'GPXを読み込み中…'
-      );
-
 
       const text =
         await file.text();
@@ -4148,20 +4187,9 @@ gpxInput.onchange =
         )
       ) {
 
-        alert(
-          '⚠️ このランはすでに登録されています。\n\n' +
-          '同じランのため追加しませんでした。'
-        );
+        duplicates++;
 
-
-        setStatus(
-          '⚠️ 登録済みのランです'
-        );
-
-
-        gpxInput.value = '';
-
-        return;
+        continue;
 
       }
 
@@ -4175,6 +4203,17 @@ gpxInput.onchange =
       if (
         duplicate
       ) {
+
+        if (
+          isBatch
+        ) {
+
+          duplicates++;
+
+          continue;
+
+        }
+
 
         const source =
           duplicate.source ===
@@ -4229,14 +4268,9 @@ gpxInput.onchange =
           !ok
         ) {
 
-          setStatus(
-            '⚠️ 重複候補のため追加を中止しました'
-          );
+          duplicates++;
 
-
-          gpxInput.value = '';
-
-          return;
+          continue;
 
         }
 
@@ -4255,8 +4289,10 @@ gpxInput.onchange =
       );
 
 
-      let cloudSaved =
-        false;
+      added++;
+
+      lastAddedActivity =
+        activity;
 
 
       if (
@@ -4266,7 +4302,11 @@ gpxInput.onchange =
         try {
 
           setStatus(
-            '☁️ クラウドへ保存中…'
+            '☁️ ' +
+            (i + 1) +
+            '/' +
+            files.length +
+            ' クラウド保存中…'
           );
 
 
@@ -4275,65 +4315,186 @@ gpxInput.onchange =
           );
 
 
-          cloudSaved =
-            true;
+          cloudSaved++;
 
         }
         catch(error) {
 
           console.error(
+            'クラウド保存失敗:',
+            file.name,
             error
           );
 
 
-          cloudSaved =
-            false;
+          cloudFailed++;
 
         }
 
       }
 
+    }
+    catch(error) {
 
-      selectedYear =
-        'ALL';
+      console.error(
+        'GPX処理失敗:',
+        file.name,
+        error
+      );
 
 
-      createYearFilters();
+      failed++;
 
-      renderSelectedData();
+    }
 
-      await updateStorageInfo();
+  }
+
+
+  selectedYear =
+    'ALL';
+
+
+  createYearFilters();
+
+  renderSelectedData();
+
+  await updateStorageInfo();
+
+
+  if (
+    savedRunsPanel
+      .classList
+      .contains(
+        'open'
+      )
+  ) {
+
+    await renderSavedRuns();
+
+  }
+
+
+  if (
+    cloudRunsPanel
+      .classList
+      .contains(
+        'open'
+      )
+  ) {
+
+    await renderCloudRuns();
+
+  }
+
+
+  if (
+    isBatch
+  ) {
+
+    const home =
+      getHomePrefectureBounds();
+
+
+    if (
+      home
+    ) {
+
+      map.fitBounds(
+        home.bounds,
+        {
+          padding:[
+            20,
+            20
+          ]
+        }
+      );
+
+    }
+
+
+    setStatus(
+      '✅ 一括インポート完了'
+    );
+
+
+    let message =
+      files.length +
+      '件を処理しました。\n\n' +
+      '✅ 新規追加 ' +
+      added +
+      '件\n' +
+      '⏭️ 重複スキップ ' +
+      duplicates +
+      '件\n';
+
+
+    if (
+      invalidFormat >
+      0
+    ) {
+
+      message +=
+        '⚠️ GPX以外 ' +
+        invalidFormat +
+        '件\n';
+
+    }
+
+
+    if (
+      failed >
+      0
+    ) {
+
+      message +=
+        '❌ 読み込み失敗 ' +
+        failed +
+        '件\n';
+
+    }
+
+
+    if (
+      cloudEnabled()
+    ) {
+
+      message +=
+        '☁️ クラウド保存 ' +
+        cloudSaved +
+        '件';
 
 
       if (
-        savedRunsPanel
-          .classList
-          .contains(
-            'open'
-          )
+        cloudFailed >
+        0
       ) {
 
-        await renderSavedRuns();
+        message +=
+          '\n⚠️ クラウド未同期 ' +
+          cloudFailed +
+          '件';
 
       }
 
+    }
 
-      if (
-        cloudRunsPanel
-          .classList
-          .contains(
-            'open'
-          )
-      ) {
 
-        await renderCloudRuns();
+    alert(
+      message
+    );
 
-      }
+  }
+  else {
 
+    if (
+      added ===
+      1 &&
+      lastAddedActivity
+    ) {
 
       map.fitBounds(
         L.latLngBounds(
-          activity.latlngs
+          lastAddedActivity.latlngs
         ),
         {
           padding:[
@@ -4345,7 +4506,8 @@ gpxInput.onchange =
 
 
       if (
-        cloudSaved
+        cloudFailed ===
+        0
       ) {
 
         setStatus(
@@ -4366,10 +4528,96 @@ gpxInput.onchange =
 
 
         alert(
-          'ランを追加しました。\n\n端末には保存できましたが、クラウド保存は完了していません。\n次回起動時に再同期します。'
+          'ランを追加しました。\n\n' +
+          '端末には保存できましたが、' +
+          'クラウド保存は完了していません。\n' +
+          '次回起動時に再同期します。'
         );
 
       }
+
+    }
+    else if (
+      duplicates ===
+      1
+    ) {
+
+      setStatus(
+        '⚠️ 登録済みのランです'
+      );
+
+
+      alert(
+        '⚠️ このランはすでに登録されています。\n\n' +
+        '同じランのため追加しませんでした。'
+      );
+
+    }
+    else if (
+      invalidFormat ===
+      1
+    ) {
+
+      setStatus(
+        '⚠️ GPX形式ではありません'
+      );
+
+
+      alert(
+        'このファイルはGPX形式ではありません。\n\n' +
+        '「.gpx」のファイルを選択してください。'
+      );
+
+    }
+    else if (
+      failed ===
+      1
+    ) {
+
+      setStatus(
+        '❌ GPX追加失敗'
+      );
+
+
+      alert(
+        'GPXの読み込みに失敗しました。'
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =====================================
+   ファイル選択
+===================================== */
+
+gpxInput.onchange =
+  async event => {
+
+    const files =
+      Array.from(
+        event.target.files ||
+        []
+      );
+
+
+    if (
+      !files.length
+    ) {
+
+      return;
+
+    }
+
+
+    try {
+
+      await importSelectedGPXFiles(
+        files
+      );
 
     }
     catch(error) {
@@ -4379,20 +4627,23 @@ gpxInput.onchange =
       );
 
 
+      setStatus(
+        '❌ インポート失敗'
+      );
+
+
       alert(
-        'GPXの読み込みに失敗しました。\n' +
+        'ランの取り込み中にエラーが発生しました。\n' +
         error.message
       );
 
+    }
+    finally {
 
-      setStatus(
-        '❌ GPX追加失敗'
-      );
+      gpxInput.value =
+        '';
 
     }
-
-
-    gpxInput.value = '';
 
   };
 
@@ -4409,7 +4660,8 @@ function createYearFilters() {
     );
 
 
-  area.innerHTML = '';
+  area.innerHTML =
+    '';
 
 
   const years =
@@ -4632,61 +4884,58 @@ function buildSelectedStats() {
       );
 
 
-      activity.cities
-        .forEach(
-          cityKey => {
+      activity.cities.forEach(
+        cityKey => {
 
-            municipalityRunCount[
-              cityKey
-            ] =
-              (
-                municipalityRunCount[
-                  cityKey
-                ] ||
-                0
-              ) +
-              1;
+          municipalityRunCount[
+            cityKey
+          ] =
+            (
+              municipalityRunCount[
+                cityKey
+              ] ||
+              0
+            ) +
+            1;
 
-          }
-        );
-
-
-      prefecturesInRun
-        .forEach(
-          prefecture => {
-
-            prefectureRunCount[
-              prefecture
-            ] =
-              (
-                prefectureRunCount[
-                  prefecture
-                ] ||
-                0
-              ) +
-              1;
-
-          }
-        );
+        }
+      );
 
 
-      activity.cells
-        .forEach(
-          key => {
+      prefecturesInRun.forEach(
+        prefecture => {
 
-            ringCells[
-              key
-            ] =
-              (
-                ringCells[
-                  key
-                ] ||
-                0
-              ) +
-              1;
+          prefectureRunCount[
+            prefecture
+          ] =
+            (
+              prefectureRunCount[
+                prefecture
+              ] ||
+              0
+            ) +
+            1;
 
-          }
-        );
+        }
+      );
+
+
+      activity.cells.forEach(
+        key => {
+
+          ringCells[
+            key
+          ] =
+            (
+              ringCells[
+                key
+              ] ||
+              0
+            ) +
+            1;
+
+        }
+      );
 
     }
   );
@@ -4737,7 +4986,8 @@ function clearMapLayers() {
   }
 
 
-  municipalityLayer = null;
+  municipalityLayer =
+    null;
 
 
   Object.keys(
@@ -4774,105 +5024,104 @@ function drawRoutes(
       10000;
 
 
-  selectedActivities
-    .forEach(
-      activity => {
+  selectedActivities.forEach(
+    activity => {
 
-        for (
-          let i = 1;
-          i < activity.latlngs.length;
-          i++
+      for (
+        let i = 1;
+        i < activity.latlngs.length;
+        i++
+      ) {
+
+        const a =
+          activity.latlngs[
+            i - 1
+          ];
+
+        const b =
+          activity.latlngs[i];
+
+
+        const aKey =
+          round(
+            a[0]
+          ) +
+          ',' +
+          round(
+            a[1]
+          );
+
+
+        const bKey =
+          round(
+            b[0]
+          ) +
+          ',' +
+          round(
+            b[1]
+          );
+
+
+        const key =
+          aKey < bKey
+
+            ? aKey +
+              '|' +
+              bKey
+
+            : bKey +
+              '|' +
+              aKey;
+
+
+        if (
+          drawn.has(
+            key
+          )
         ) {
 
-          const a =
-            activity.latlngs[
-              i - 1
-            ];
-
-          const b =
-            activity.latlngs[i];
-
-
-          const aKey =
-            round(
-              a[0]
-            ) +
-            ',' +
-            round(
-              a[1]
-            );
-
-
-          const bKey =
-            round(
-              b[0]
-            ) +
-            ',' +
-            round(
-              b[1]
-            );
-
-
-          const key =
-            aKey < bKey
-
-              ? aKey +
-                '|' +
-                bKey
-
-              : bKey +
-                '|' +
-                aKey;
-
-
-          if (
-            drawn.has(
-              key
-            )
-          ) {
-
-            continue;
-
-          }
-
-
-          drawn.add(
-            key
-          );
-
-
-          routeGroup.addLayer(
-            L.polyline(
-              [
-                a,
-                b
-              ],
-              {
-                color:
-                  ROUTE_COLOR,
-
-                weight:
-                  1.5,
-
-                opacity:
-                  0.30,
-
-                lineCap:
-                  'round',
-
-                lineJoin:
-                  'round',
-
-                interactive:
-                  false
-              }
-            )
-          );
+          continue;
 
         }
 
+
+        drawn.add(
+          key
+        );
+
+
+        routeGroup.addLayer(
+          L.polyline(
+            [
+              a,
+              b
+            ],
+            {
+              color:
+                ROUTE_COLOR,
+
+              weight:
+                1.5,
+
+              opacity:
+                0.30,
+
+              lineCap:
+                'round',
+
+              lineJoin:
+                'round',
+
+              interactive:
+                false
+            }
+          )
+        );
+
       }
-    );
+
+    }
+  );
 
 }
 
@@ -5180,36 +5429,35 @@ function getPrefectureBounds(
     );
 
 
-  municipalityFeatures
-    .forEach(
-      item => {
+  municipalityFeatures.forEach(
+    item => {
 
-        if (
-          getPrefecture(
-            item.feature
-          ) ===
-          prefecture
-        ) {
+      if (
+        getPrefecture(
+          item.feature
+        ) ===
+        prefecture
+      ) {
 
-          bounds.extend(
-            [
-              item.bbox.minLat,
-              item.bbox.minLon
-            ]
-          );
+        bounds.extend(
+          [
+            item.bbox.minLat,
+            item.bbox.minLon
+          ]
+        );
 
 
-          bounds.extend(
-            [
-              item.bbox.maxLat,
-              item.bbox.maxLon
-            ]
-          );
-
-        }
+        bounds.extend(
+          [
+            item.bbox.maxLat,
+            item.bbox.maxLon
+          ]
+        );
 
       }
-    );
+
+    }
+  );
 
 
   return bounds.isValid()
@@ -5360,7 +5608,8 @@ function updatePrefectureDashboard(
     );
 
 
-  list.innerHTML = '';
+  list.innerHTML =
+    '';
 
 
   if (
@@ -5540,7 +5789,8 @@ function updateDashboard(
     );
 
 
-  cityList.innerHTML = '';
+  cityList.innerHTML =
+    '';
 
 
   if (
