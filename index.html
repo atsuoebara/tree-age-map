@@ -119,6 +119,29 @@
       margin:4px 0 9px;
     }
 
+    #historySortArea{
+      display:flex;
+      gap:7px;
+      margin:0 0 10px;
+    }
+
+    .historySortButton{
+      border:1px solid rgba(255,255,255,.14);
+      background:#17283d;
+      color:#dce8f5;
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .historySortButton.active{
+      background:#ff2bd6;
+      border-color:#ff2bd6;
+      color:white;
+    }
+
     #savedRunsList,
     #cloudRunsList{
       display:flex;
@@ -134,6 +157,10 @@
       grid-template-columns:1fr auto;
       gap:8px 10px;
       align-items:center;
+    }
+
+    .cloudRunRow{
+      cursor:pointer;
     }
 
     .savedRunMain{
@@ -152,6 +179,12 @@
       margin-top:4px;
       font-size:11px;
       opacity:.65;
+    }
+
+    .historyChevron{
+      font-size:22px;
+      line-height:1;
+      opacity:.45;
     }
 
     .deleteRunButton{
@@ -382,6 +415,22 @@
     クラウドに保存したラン
   </div>
 
+  <div id="historySortArea">
+    <button
+      class="historySortButton active"
+      data-order="desc"
+    >
+      新しい順
+    </button>
+
+    <button
+      class="historySortButton"
+      data-order="asc"
+    >
+      古い順
+    </button>
+  </div>
+
   <div id="cloudRunsList">
     <div class="savedEmpty">
       読み込み中…
@@ -555,6 +604,9 @@ let cloudRunCount =
 
 let cloudRows =
   [];
+
+let historySortOrder =
+  'desc';
 
 
 /* =====================================
@@ -2806,6 +2858,293 @@ async function saveActivityToCloud(
 
 
 /* =====================================
+   クラウドラン → 地図へ移動
+===================================== */
+
+function focusCloudRun(
+  row
+) {
+
+  const activity =
+    buildActivityFromCloudRow(
+      row
+    );
+
+
+  if (
+    !activity ||
+    !activity.latlngs.length
+  ) {
+
+    alert(
+      'このランの地図データを表示できません。'
+    );
+
+    return;
+
+  }
+
+
+  const bounds =
+    L.latLngBounds(
+      activity.latlngs
+    );
+
+
+  cloudRunsPanel
+    .classList
+    .remove(
+      'open'
+    );
+
+
+  map.fitBounds(
+    bounds,
+    {
+      padding:[
+        25,
+        25
+      ],
+
+      maxZoom:13
+    }
+  );
+
+
+  document
+    .getElementById(
+      'map'
+    )
+    .scrollIntoView(
+      {
+        behavior:'smooth',
+        block:'start'
+      }
+    );
+
+
+  setTimeout(
+    () => {
+
+      if (
+        map.getZoom() <
+        12
+      ) {
+
+        map.setView(
+          bounds.getCenter(),
+          12
+        );
+
+      }
+      else {
+
+        updateDisplay();
+
+      }
+
+    },
+    450
+  );
+
+}
+
+
+/* =====================================
+   クラウド一覧描画
+===================================== */
+
+function renderCloudRowsList() {
+
+  const list =
+    document.getElementById(
+      'cloudRunsList'
+    );
+
+
+  list.innerHTML = '';
+
+
+  if (
+    !cloudRows.length
+  ) {
+
+    list.innerHTML =
+      '<div class="savedEmpty">' +
+      'クラウドに保存したランはありません' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  const sorted =
+    [...cloudRows]
+      .sort(
+        (
+          a,
+          b
+        ) => {
+
+          const aDate =
+            String(
+              a.activity_date ||
+              ''
+            );
+
+
+          const bDate =
+            String(
+              b.activity_date ||
+              ''
+            );
+
+
+          return (
+            historySortOrder ===
+            'asc'
+
+              ? aDate.localeCompare(
+                  bDate
+                )
+
+              : bDate.localeCompare(
+                  aDate
+                )
+          );
+
+        }
+      );
+
+
+  sorted.forEach(
+    row => {
+
+      const item =
+        document.createElement(
+          'div'
+        );
+
+
+      item.className =
+        'savedRunRow cloudRunRow';
+
+
+      const main =
+        document.createElement(
+          'div'
+        );
+
+
+      main.className =
+        'savedRunMain';
+
+
+      const name =
+        document.createElement(
+          'div'
+        );
+
+
+      name.className =
+        'savedRunName';
+
+
+      name.textContent =
+        row.name ||
+        'ラン';
+
+
+      const meta =
+        document.createElement(
+          'div'
+        );
+
+
+      meta.className =
+        'savedRunMeta';
+
+
+      const dateText =
+        row.activity_date
+
+          ? row.activity_date
+              .replaceAll(
+                '-',
+                '/'
+              )
+
+          : '日付不明';
+
+
+      const distance =
+        Number(
+          row.distance_km
+        );
+
+
+      meta.textContent =
+        dateText +
+        ' ・ ' +
+        (
+          Number.isFinite(
+            distance
+          )
+
+            ? distance.toFixed(
+                2
+              ) +
+              ' km'
+
+            : '距離不明'
+        );
+
+
+      main.append(
+        name,
+        meta
+      );
+
+
+      const chevron =
+        document.createElement(
+          'div'
+        );
+
+
+      chevron.className =
+        'historyChevron';
+
+
+      chevron.textContent =
+        '›';
+
+
+      item.append(
+        main,
+        chevron
+      );
+
+
+      item.onclick =
+        () =>
+          focusCloudRun(
+            row
+          );
+
+
+      list.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================
    クラウド保存ラン一覧
 ===================================== */
 
@@ -2852,143 +3191,7 @@ async function renderCloudRuns() {
     await updateStorageInfo();
 
 
-    list.innerHTML = '';
-
-
-    if (
-      !rows.length
-    ) {
-
-      list.innerHTML =
-        '<div class="savedEmpty">' +
-        'クラウドに保存したランはありません' +
-        '</div>';
-
-      return;
-
-    }
-
-
-    const sorted =
-      [...rows]
-        .sort(
-          (
-            a,
-            b
-          ) =>
-            String(
-              b.activity_date ||
-              ''
-            )
-            .localeCompare(
-              String(
-                a.activity_date ||
-                ''
-              )
-            )
-        );
-
-
-    sorted.forEach(
-      row => {
-
-        const item =
-          document.createElement(
-            'div'
-          );
-
-
-        item.className =
-          'savedRunRow';
-
-
-        const main =
-          document.createElement(
-            'div'
-          );
-
-
-        main.className =
-          'savedRunMain';
-
-
-        const name =
-          document.createElement(
-            'div'
-          );
-
-
-        name.className =
-          'savedRunName';
-
-
-        name.textContent =
-          row.name ||
-          'ラン';
-
-
-        const meta =
-          document.createElement(
-            'div'
-          );
-
-
-        meta.className =
-          'savedRunMeta';
-
-
-        const dateText =
-          row.activity_date
-
-            ? row.activity_date
-                .replaceAll(
-                  '-',
-                  '/'
-                )
-
-            : '日付不明';
-
-
-        const distance =
-          Number(
-            row.distance_km
-          );
-
-
-        meta.textContent =
-          dateText +
-          ' ・ ' +
-          (
-            Number.isFinite(
-              distance
-            )
-
-              ? distance.toFixed(
-                  2
-                ) +
-                ' km'
-
-              : '距離不明'
-          );
-
-
-        main.append(
-          name,
-          meta
-        );
-
-
-        item.append(
-          main
-        );
-
-
-        list.appendChild(
-          item
-        );
-
-      }
-    );
+    renderCloudRowsList();
 
   }
   catch(error) {
@@ -3857,6 +4060,45 @@ cloudRunsButton.onclick =
     }
 
   };
+
+
+document
+  .querySelectorAll(
+    '.historySortButton'
+  )
+  .forEach(
+    button => {
+
+      button.onclick =
+        () => {
+
+          historySortOrder =
+            button.dataset.order;
+
+
+          document
+            .querySelectorAll(
+              '.historySortButton'
+            )
+            .forEach(
+              btn =>
+                btn.classList.remove(
+                  'active'
+                )
+            );
+
+
+          button.classList.add(
+            'active'
+          );
+
+
+          renderCloudRowsList();
+
+        };
+
+    }
+  );
 
 
 gpxInput.onchange =
@@ -5414,11 +5656,6 @@ function updateDisplay() {
     map.getZoom();
 
 
-  /* =====================================
-     Zoom 14以上
-     詳細：実走コース＋100m Rings
-  ===================================== */
-
   if (
     zoom >= 14
   ) {
@@ -5476,11 +5713,6 @@ function updateDisplay() {
   }
 
 
-  /* =====================================
-     Zoom 12〜13
-     中間：実走コース
-  ===================================== */
-
   else if (
     zoom >= 12
   ) {
@@ -5537,11 +5769,6 @@ function updateDisplay() {
 
   }
 
-
-  /* =====================================
-     Zoom 11以下
-     広域：市町村面
-  ===================================== */
 
   else {
 
