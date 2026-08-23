@@ -41,6 +41,121 @@
       opacity:.75;
     }
 
+    #authArea{
+      min-height:calc(100vh - 74px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px 16px;
+      background:#0b1422;
+    }
+
+    #authCard{
+      width:100%;
+      max-width:420px;
+      background:#132237;
+      border-radius:18px;
+      padding:22px 18px;
+    }
+
+    #authCard h2{
+      margin:0 0 6px;
+      font-size:20px;
+    }
+
+    #authCard p{
+      margin:0 0 18px;
+      font-size:13px;
+      opacity:.7;
+      line-height:1.6;
+    }
+
+    .authInput{
+      width:100%;
+      border:1px solid rgba(255,255,255,.16);
+      background:#0f1d2f;
+      color:white;
+      border-radius:12px;
+      padding:13px 12px;
+      font-size:16px;
+      margin-bottom:10px;
+      outline:none;
+    }
+
+    .authInput:focus{
+      border-color:#ff2bd6;
+    }
+
+    #authButtons{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+      margin-top:4px;
+    }
+
+    .authButton{
+      border:0;
+      border-radius:12px;
+      padding:12px 8px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    #loginButton{
+      background:#ff2bd6;
+      color:white;
+    }
+
+    #signupButton{
+      background:#17283d;
+      color:white;
+      border:1px solid rgba(255,255,255,.15);
+    }
+
+    #authMessage{
+      min-height:20px;
+      margin-top:13px;
+      font-size:12px;
+      line-height:1.5;
+      color:#dce8f5;
+    }
+
+    #appRoot{
+      display:none;
+    }
+
+    #accountBar{
+      background:#0f1d2f;
+      padding:7px 12px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+
+    #accountEmail{
+      min-width:0;
+      font-size:11px;
+      opacity:.68;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    #logoutButton{
+      flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.15);
+      background:#17283d;
+      color:#dce8f5;
+      border-radius:999px;
+      padding:6px 11px;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
     #status{
       background:#17283d;
       color:#dce8f5;
@@ -365,132 +480,182 @@
   <p>走った記録ではなく、走った人生を残す。</p>
 </header>
 
-<div id="status">
-  データを読み込み中…
-</div>
+<section id="authArea">
+  <div id="authCard">
+    <h2>Runner's Rings</h2>
+    <p>
+      メールアドレスとパスワードでログインしてください。
+      初めて使う場合は「新規登録」です。
+    </p>
 
-<div id="importArea">
-
-  <label id="addRunButton" for="gpxInput">
-    ＋ ランを追加
-  </label>
-
-  <button id="savedRunsButton">
-    端末保存 0
-  </button>
-
-  <button id="cloudRunsButton">
-    クラウド 0
-  </button>
-
-  <div id="syncInfo">
-    ☁️ クラウド確認中…
-  </div>
-
-  <input
-    id="gpxInput"
-    type="file"
-    accept=".gpx,application/gpx+xml,application/xml,text/xml"
-    multiple
-  >
-
-</div>
-
-<div id="savedRunsPanel">
-  <div class="savedRunsTitle">
-    端末に保存したラン
-  </div>
-
-  <div id="savedRunsList">
-    <div class="savedEmpty">
-      読み込み中…
-    </div>
-  </div>
-</div>
-
-<div id="cloudRunsPanel">
-
-  <div class="savedRunsTitle">
-    クラウドに保存したラン
-  </div>
-
-  <div id="historySortArea">
-    <button
-      class="historySortButton active"
-      data-order="desc"
+    <input
+      id="emailInput"
+      class="authInput"
+      type="email"
+      autocomplete="email"
+      placeholder="メールアドレス"
     >
-      新しい順
-    </button>
 
-    <button
-      class="historySortButton"
-      data-order="asc"
+    <input
+      id="passwordInput"
+      class="authInput"
+      type="password"
+      autocomplete="current-password"
+      placeholder="パスワード"
     >
-      古い順
-    </button>
+
+    <div id="authButtons">
+      <button id="loginButton" class="authButton">
+        ログイン
+      </button>
+
+      <button id="signupButton" class="authButton">
+        新規登録
+      </button>
+    </div>
+
+    <div id="authMessage"></div>
   </div>
-
-  <div id="cloudRunsList">
-    <div class="savedEmpty">
-      読み込み中…
-    </div>
-  </div>
-
-</div>
-
-<div id="filters">
-  <button class="yearButton active">
-    ALL
-  </button>
-</div>
-
-<div id="map"></div>
-
-<section id="dashboard">
-
-  <div class="summary">
-
-    <div class="card">
-      <div class="label">TOTAL</div>
-      <span id="totalDistance" class="value">--</span>
-      <span class="unit">km</span>
-    </div>
-
-    <div class="card">
-      <div class="label">RUNS</div>
-      <div id="runCount" class="value">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">CITIES</div>
-      <div id="cityCount" class="value">--</div>
-    </div>
-
-  </div>
-
-  <h2 id="prefectureHeading">
-    都道府県別
-  </h2>
-
-  <div id="prefectureList">
-    <div class="emptyMessage">
-      読み込み中…
-    </div>
-  </div>
-
-  <h2 id="cityHeading">
-    市町村別
-  </h2>
-
-  <div id="cityList">
-    <div class="emptyMessage">
-      読み込み中…
-    </div>
-  </div>
-
 </section>
 
+<main id="appRoot">
+
+  <div id="accountBar">
+    <div id="accountEmail"></div>
+    <button id="logoutButton">
+      ログアウト
+    </button>
+  </div>
+
+  <div id="status">
+    データを読み込み中…
+  </div>
+
+  <div id="importArea">
+
+    <label id="addRunButton" for="gpxInput">
+      ＋ ランを追加
+    </label>
+
+    <button id="savedRunsButton">
+      端末保存 0
+    </button>
+
+    <button id="cloudRunsButton">
+      クラウド 0
+    </button>
+
+    <div id="syncInfo">
+      ☁️ クラウド確認中…
+    </div>
+
+    <input
+      id="gpxInput"
+      type="file"
+      accept=".gpx,application/gpx+xml,application/xml,text/xml"
+      multiple
+    >
+
+  </div>
+
+  <div id="savedRunsPanel">
+    <div class="savedRunsTitle">
+      端末に保存したラン
+    </div>
+
+    <div id="savedRunsList">
+      <div class="savedEmpty">
+        読み込み中…
+      </div>
+    </div>
+  </div>
+
+  <div id="cloudRunsPanel">
+
+    <div class="savedRunsTitle">
+      クラウドに保存したラン
+    </div>
+
+    <div id="historySortArea">
+      <button
+        class="historySortButton active"
+        data-order="desc"
+      >
+        新しい順
+      </button>
+
+      <button
+        class="historySortButton"
+        data-order="asc"
+      >
+        古い順
+      </button>
+    </div>
+
+    <div id="cloudRunsList">
+      <div class="savedEmpty">
+        読み込み中…
+      </div>
+    </div>
+
+  </div>
+
+  <div id="filters">
+    <button class="yearButton active">
+      ALL
+    </button>
+  </div>
+
+  <div id="map"></div>
+
+  <section id="dashboard">
+
+    <div class="summary">
+
+      <div class="card">
+        <div class="label">TOTAL</div>
+        <span id="totalDistance" class="value">--</span>
+        <span class="unit">km</span>
+      </div>
+
+      <div class="card">
+        <div class="label">RUNS</div>
+        <div id="runCount" class="value">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">CITIES</div>
+        <div id="cityCount" class="value">--</div>
+      </div>
+
+    </div>
+
+    <h2 id="prefectureHeading">
+      都道府県別
+    </h2>
+
+    <div id="prefectureList">
+      <div class="emptyMessage">
+        読み込み中…
+      </div>
+    </div>
+
+    <h2 id="cityHeading">
+      市町村別
+    </h2>
+
+    <div id="cityList">
+      <div class="emptyMessage">
+        読み込み中…
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./runner_rings_archive.js"></script>
 
 <script>
@@ -524,10 +689,384 @@ const SUPABASE_RUNS_URL =
   SUPABASE_URL +
   '/rest/v1/runs';
 
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true
+      }
+    }
+  );
+
+let currentSession =
+  null;
+
+let currentUser =
+  null;
+
+
+/* =====================================
+   AUTH UI
+===================================== */
+
+const authArea =
+  document.getElementById(
+    'authArea'
+  );
+
+const appRoot =
+  document.getElementById(
+    'appRoot'
+  );
+
+const emailInput =
+  document.getElementById(
+    'emailInput'
+  );
+
+const passwordInput =
+  document.getElementById(
+    'passwordInput'
+  );
+
+const loginButton =
+  document.getElementById(
+    'loginButton'
+  );
+
+const signupButton =
+  document.getElementById(
+    'signupButton'
+  );
+
+const logoutButton =
+  document.getElementById(
+    'logoutButton'
+  );
+
+const authMessage =
+  document.getElementById(
+    'authMessage'
+  );
+
+const accountEmail =
+  document.getElementById(
+    'accountEmail'
+  );
+
+
+function setAuthMessage(
+  text
+) {
+
+  authMessage.textContent =
+    text;
+
+}
+
+
+function setAuthBusy(
+  busy
+) {
+
+  loginButton.disabled =
+    busy;
+
+  signupButton.disabled =
+    busy;
+
+  loginButton.style.opacity =
+    busy
+      ? '.55'
+      : '1';
+
+  signupButton.style.opacity =
+    busy
+      ? '.55'
+      : '1';
+
+}
+
+
+async function login() {
+
+  const email =
+    emailInput.value.trim();
+
+  const password =
+    passwordInput.value;
+
+
+  if (
+    !email ||
+    !password
+  ) {
+
+    setAuthMessage(
+      'メールアドレスとパスワードを入力してください。'
+    );
+
+    return;
+
+  }
+
+
+  setAuthBusy(
+    true
+  );
+
+  setAuthMessage(
+    'ログイン中…'
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signInWithPassword(
+          {
+            email,
+            password
+          }
+        );
+
+
+    if (
+      error
+    ) {
+
+      throw error;
+
+    }
+
+
+    currentSession =
+      data.session;
+
+    currentUser =
+      data.user;
+
+
+    location.reload();
+
+  }
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+
+    setAuthMessage(
+      'ログインできませんでした。メールアドレスまたはパスワードを確認してください。'
+    );
+
+  }
+  finally {
+
+    setAuthBusy(
+      false
+    );
+
+  }
+
+}
+
+
+async function signup() {
+
+  const email =
+    emailInput.value.trim();
+
+  const password =
+    passwordInput.value;
+
+
+  if (
+    !email ||
+    !password
+  ) {
+
+    setAuthMessage(
+      'メールアドレスとパスワードを入力してください。'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    password.length <
+    6
+  ) {
+
+    setAuthMessage(
+      'パスワードは6文字以上にしてください。'
+    );
+
+    return;
+
+  }
+
+
+  setAuthBusy(
+    true
+  );
+
+  setAuthMessage(
+    '新規登録中…'
+  );
+
+
+  try {
+
+    const redirectTo =
+      location.origin +
+      location.pathname;
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signUp(
+          {
+            email,
+            password,
+            options:{
+              emailRedirectTo:
+                redirectTo
+            }
+          }
+        );
+
+
+    if (
+      error
+    ) {
+
+      throw error;
+
+    }
+
+
+    if (
+      data.session
+    ) {
+
+      currentSession =
+        data.session;
+
+      currentUser =
+        data.user;
+
+
+      location.reload();
+
+      return;
+
+    }
+
+
+    setAuthMessage(
+      '登録メールを送信しました。メール内の確認リンクを開いてからログインしてください。'
+    );
+
+  }
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+
+    setAuthMessage(
+      '新規登録できませんでした。入力内容を確認してください。'
+    );
+
+  }
+  finally {
+
+    setAuthBusy(
+      false
+    );
+
+  }
+
+}
+
+
+async function logout() {
+
+  try {
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+  }
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+  }
+
+
+  location.reload();
+
+}
+
+
+loginButton.onclick =
+  login;
+
+signupButton.onclick =
+  signup;
+
+logoutButton.onclick =
+  logout;
+
+
+passwordInput.addEventListener(
+  'keydown',
+  event => {
+
+    if (
+      event.key ===
+      'Enter'
+    ) {
+
+      login();
+
+    }
+
+  }
+);
+
+
+/* =====================================
+   AUTH HELPERS
+===================================== */
 
 function cloudEnabled() {
 
-  return (
+  return !!(
+    currentUser &&
+    currentSession &&
     typeof SUPABASE_KEY ===
       'string' &&
     SUPABASE_KEY.startsWith(
@@ -538,19 +1077,88 @@ function cloudEnabled() {
 }
 
 
+async function refreshCurrentSession() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  if (
+    error
+  ) {
+
+    throw error;
+
+  }
+
+
+  currentSession =
+    data.session;
+
+  currentUser =
+    data.session
+      ?.user ||
+    null;
+
+
+  return currentSession;
+
+}
+
+
+async function getCloudHeaders(
+  extra = {}
+) {
+
+  const session =
+    await refreshCurrentSession();
+
+
+  if (
+    !session
+  ) {
+
+    throw new Error(
+      'ログイン情報がありません'
+    );
+
+  }
+
+
+  return {
+    apikey:
+      SUPABASE_KEY,
+
+    Authorization:
+      'Bearer ' +
+      session.access_token,
+
+    ...extra
+  };
+
+}
+
+
 /* =====================================
    MAP
 ===================================== */
 
 const map =
-  L.map('map')
-    .setView(
-      [
-        36.39,
-        139.06
-      ],
-      9
-    );
+  L.map(
+    'map'
+  )
+  .setView(
+    [
+      36.39,
+      139.06
+    ],
+    9
+  );
 
 
 L.tileLayer(
@@ -560,12 +1168,11 @@ L.tileLayer(
     attribution:
       '&copy; OpenStreetMap contributors'
   }
-).addTo(map);
+)
+.addTo(
+  map
+);
 
-
-/* =====================================
-   縮尺スケール
-===================================== */
 
 L.control.scale(
   {
@@ -574,17 +1181,24 @@ L.control.scale(
     imperial:false,
     maxWidth:120
   }
-).addTo(map);
+)
+.addTo(
+  map
+);
 
 
 /* =====================================
    データ
 ===================================== */
 
-let geojsonData = null;
+let geojsonData =
+  null;
 
-const municipalityFeatures = [];
-const activities = [];
+const municipalityFeatures =
+  [];
+
+const activities =
+  [];
 
 const activitySignatures =
   new Set();
@@ -609,7 +1223,8 @@ let historySortOrder =
    Layer
 ===================================== */
 
-let municipalityLayer = null;
+let municipalityLayer =
+  null;
 
 const routeGroup =
   L.layerGroup();
@@ -633,6 +1248,9 @@ const DB_VERSION =
 
 const STORE_NAME =
   'importedGPX';
+
+const LEGACY_OWNER_KEY =
+  'RunnersRingsLegacyOwnerUserId';
 
 
 function openDatabase() {
@@ -658,9 +1276,11 @@ function openDatabase() {
 
 
           if (
-            !db.objectStoreNames.contains(
-              STORE_NAME
-            )
+            !db
+              .objectStoreNames
+              .contains(
+                STORE_NAME
+              )
           ) {
 
             db.createObjectStore(
@@ -695,61 +1315,7 @@ function openDatabase() {
 }
 
 
-async function saveGPXToDevice(
-  name,
-  text
-) {
-
-  const db =
-    await openDatabase();
-
-
-  return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-
-      const request =
-        db
-          .transaction(
-            STORE_NAME,
-            'readwrite'
-          )
-          .objectStore(
-            STORE_NAME
-          )
-          .add(
-            {
-              name,
-              text,
-              importedAt:
-                new Date()
-                  .toISOString()
-            }
-          );
-
-
-      request.onsuccess =
-        () =>
-          resolve(
-            request.result
-          );
-
-
-      request.onerror =
-        () =>
-          reject(
-            request.error
-          );
-
-    }
-  );
-
-}
-
-
-async function getSavedGPX() {
+async function getAllSavedGPXRaw() {
 
   const db =
     await openDatabase();
@@ -788,6 +1354,257 @@ async function getSavedGPX() {
           );
 
     }
+  );
+
+}
+
+
+async function claimLegacyLocalGPX() {
+
+  if (
+    !currentUser
+  ) {
+
+    return;
+
+  }
+
+
+  const all =
+    await getAllSavedGPXRaw();
+
+
+  const legacy =
+    all.filter(
+      item =>
+        !item.userId
+    );
+
+
+  let legacyOwnerId =
+    localStorage.getItem(
+      LEGACY_OWNER_KEY
+    );
+
+
+  const forceLegacy =
+    new URLSearchParams(
+      location.search
+    )
+    .get(
+      'legacy'
+    ) ===
+    '1';
+
+
+  if (
+    forceLegacy &&
+    !legacyOwnerId
+  ) {
+
+    legacyOwnerId =
+      currentUser.id;
+
+
+    localStorage.setItem(
+      LEGACY_OWNER_KEY,
+      currentUser.id
+    );
+
+  }
+
+
+  if (
+    legacy.length &&
+    !legacyOwnerId
+  ) {
+
+    legacyOwnerId =
+      currentUser.id;
+
+
+    localStorage.setItem(
+      LEGACY_OWNER_KEY,
+      currentUser.id
+    );
+
+  }
+
+
+  if (
+    legacyOwnerId !==
+    currentUser.id
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    !legacy.length
+  ) {
+
+    return;
+
+  }
+
+
+  const db =
+    await openDatabase();
+
+
+  await new Promise(
+    (
+      resolve,
+      reject
+    ) => {
+
+      const transaction =
+        db.transaction(
+          STORE_NAME,
+          'readwrite'
+        );
+
+
+      const store =
+        transaction.objectStore(
+          STORE_NAME
+        );
+
+
+      legacy.forEach(
+        item => {
+
+          store.put(
+            {
+              ...item,
+              userId:
+                currentUser.id
+            }
+          );
+
+        }
+      );
+
+
+      transaction.oncomplete =
+        () =>
+          resolve();
+
+
+      transaction.onerror =
+        () =>
+          reject(
+            transaction.error
+          );
+
+    }
+  );
+
+}
+
+
+function isLegacyOwner() {
+
+  if (
+    !currentUser
+  ) {
+
+    return false;
+
+  }
+
+
+  return (
+    localStorage.getItem(
+      LEGACY_OWNER_KEY
+    ) ===
+    currentUser.id
+  );
+
+}
+
+
+async function saveGPXToDevice(
+  name,
+  text
+) {
+
+  const db =
+    await openDatabase();
+
+
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
+
+      const request =
+        db
+          .transaction(
+            STORE_NAME,
+            'readwrite'
+          )
+          .objectStore(
+            STORE_NAME
+          )
+          .add(
+            {
+              name,
+              text,
+
+              userId:
+                currentUser
+                  ?.id ||
+                null,
+
+              importedAt:
+                new Date()
+                  .toISOString()
+            }
+          );
+
+
+      request.onsuccess =
+        () =>
+          resolve(
+            request.result
+          );
+
+
+      request.onerror =
+        () =>
+          reject(
+            request.error
+          );
+
+    }
+  );
+
+}
+
+
+async function getSavedGPX() {
+
+  const all =
+    await getAllSavedGPXRaw();
+
+
+  if (
+    !currentUser
+  ) {
+
+    return [];
+
+  }
+
+
+  return all.filter(
+    item =>
+      item.userId ===
+      currentUser.id
   );
 
 }
@@ -858,13 +1675,15 @@ function setStatus(
 
 async function updateStorageInfo() {
 
-  let localCount = 0;
+  let localCount =
+    0;
 
 
   try {
 
     const saved =
       await getSavedGPX();
+
 
     localCount =
       saved.length;
@@ -913,7 +1732,7 @@ async function updateStorageInfo() {
           )
 
         : (
-            '⚠️ クラウド未設定 ・ 端末 ' +
+            '⚠️ クラウド未接続 ・ 端末 ' +
             localCount +
             ' RUNS'
           );
@@ -941,11 +1760,13 @@ function distanceKm(
       Math.PI /
       180;
 
+
   const dLat =
     toRad(
       lat2 -
       lat1
     );
+
 
   const dLon =
     toRad(
@@ -1145,13 +1966,15 @@ function pointInFeature(
     'MultiPolygon'
   ) {
 
-    return geometry.coordinates.some(
-      polygon =>
-        pointInPolygon(
-          point,
-          polygon
-        )
-    );
+    return geometry
+      .coordinates
+      .some(
+        polygon =>
+          pointInPolygon(
+            point,
+            polygon
+          )
+      );
 
   }
 
@@ -1472,10 +2295,6 @@ function getCellBounds(
 }
 
 
-/* =====================================
-   セル濃度
-===================================== */
-
 function getRingOpacity(
   count
 ) {
@@ -1490,10 +2309,6 @@ function getRingOpacity(
 
 }
 
-
-/* =====================================
-   ルート → セル
-===================================== */
 
 function buildCellsFromRoute(
   latlngs
@@ -1659,21 +2474,24 @@ async function loadMunicipalities() {
     0;
 
 
-  geojsonData.features.forEach(
-    feature => {
+  geojsonData
+    .features
+    .forEach(
+      feature => {
 
-      municipalityFeatures.push(
-        {
-          feature,
-          bbox:
-            getFeatureBBox(
-              feature
-            )
-        }
-      );
+        municipalityFeatures.push(
+          {
+            feature,
 
-    }
-  );
+            bbox:
+              getFeatureBBox(
+                feature
+              )
+          }
+        );
+
+      }
+    );
 
 }
 
@@ -1753,6 +2571,7 @@ function analyseRoute(
           feature
         );
 
+
       const prefecture =
         getPrefecture(
           feature
@@ -1774,6 +2593,7 @@ function analyseRoute(
       cities.add(
         cityKey
       );
+
 
       prefectures.add(
         prefecture
@@ -1797,7 +2617,8 @@ function analyseRoute(
 
     Object.keys(
       cityDistances
-    ).forEach(
+    )
+    .forEach(
       key => {
 
         cityDistances[
@@ -1852,7 +2673,8 @@ function createActivitySignature(
     value =>
       Number(
         value
-      ).toFixed(
+      )
+      .toFixed(
         4
       );
 
@@ -1864,26 +2686,26 @@ function createActivitySignature(
     )
 
       ? [
-          activity.date
-            .getFullYear(),
+          activity.date.getFullYear(),
 
           String(
-            activity.date
-              .getMonth() +
+            activity.date.getMonth() +
             1
-          ).padStart(
+          )
+          .padStart(
             2,
             '0'
           ),
 
           String(
-            activity.date
-              .getDate()
-          ).padStart(
+            activity.date.getDate()
+          )
+          .padStart(
             2,
             '0'
           )
-        ].join(
+        ]
+        .join(
           '-'
         )
 
@@ -1915,7 +2737,8 @@ function createActivitySignature(
     round4(
       last[1]
     )
-  ].join(
+  ]
+  .join(
     '|'
   );
 
@@ -2067,8 +2890,11 @@ function routeSimilarity(
   }
 
 
-  let total = 0;
-  let max = 0;
+  let total =
+    0;
+
+  let max =
+    0;
 
 
   for (
@@ -2086,7 +2912,9 @@ function routeSimilarity(
       );
 
 
-    total += d;
+    total +=
+      d;
+
 
     max =
       Math.max(
@@ -2305,7 +3133,8 @@ function buildActivityFromGPXText(
       )
     ) {
 
-      date = d;
+      date =
+        d;
 
     }
 
@@ -2398,7 +3227,7 @@ function buildActivityFromGPXText(
 
 
 /* =====================================
-   Supabase
+   Supabase RUNS
 ===================================== */
 
 function formatDateForCloud(
@@ -2423,18 +3252,21 @@ function formatDateForCloud(
     String(
       date.getMonth() +
       1
-    ).padStart(
+    )
+    .padStart(
       2,
       '0'
     ),
 
     String(
       date.getDate()
-    ).padStart(
+    )
+    .padStart(
       2,
       '0'
     )
-  ].join(
+  ]
+  .join(
     '-'
   );
 
@@ -2452,15 +3284,25 @@ async function fetchCloudRuns() {
   }
 
 
+  const headers =
+    await getCloudHeaders();
+
+
+  const url =
+    SUPABASE_RUNS_URL +
+    '?select=id,created_at,activity_date,name,distance_km,route,user_id' +
+    '&user_id=eq.' +
+    encodeURIComponent(
+      currentUser.id
+    ) +
+    '&order=activity_date.asc';
+
+
   const response =
     await fetch(
-      SUPABASE_RUNS_URL +
-      '?select=id,created_at,activity_date,name,distance_km,route&order=activity_date.asc',
+      url,
       {
-        headers:{
-          apikey:
-            SUPABASE_KEY
-        }
+        headers
       }
     );
 
@@ -2471,6 +3313,7 @@ async function fetchCloudRuns() {
 
     const message =
       await response.text();
+
 
     throw new Error(
       'クラウド読込失敗 HTTP ' +
@@ -2546,6 +3389,7 @@ function buildActivityFromCloudRow(
   const analysis =
     analyseRoute(
       latlngs,
+
       Number.isFinite(
         distance
       )
@@ -2566,7 +3410,8 @@ function buildActivityFromCloudRow(
 
 
   return {
-    source:'cloud',
+    source:
+      'cloud',
 
     cloudId:
       row.id,
@@ -2582,14 +3427,18 @@ function buildActivityFromCloudRow(
       !Number.isNaN(
         date.getTime()
       )
+
         ? date.getFullYear()
+
         : null,
 
     distance:
       Number.isFinite(
         distance
       )
+
         ? distance
+
         : analysis.calculatedKm,
 
     latlngs,
@@ -2620,8 +3469,11 @@ async function loadCloudActivities() {
     !cloudEnabled()
   ) {
 
-    cloudRunCount = 0;
-    cloudRows = [];
+    cloudRunCount =
+      0;
+
+    cloudRows =
+      [];
 
     return 0;
 
@@ -2728,7 +3580,7 @@ async function saveActivityToCloud(
   ) {
 
     throw new Error(
-      'Publishable keyが未設定です'
+      'ログインしていません'
     );
 
   }
@@ -2736,6 +3588,9 @@ async function saveActivityToCloud(
 
   const payload =
     {
+      user_id:
+        currentUser.id,
+
       activity_date:
         formatDateForCloud(
           activity.date
@@ -2743,10 +3598,12 @@ async function saveActivityToCloud(
 
       name:
         activity.name
+
           ? activity.name.replace(
               /\.gpx$/i,
               ''
             )
+
           : 'ラン',
 
       distance_km:
@@ -2762,22 +3619,25 @@ async function saveActivityToCloud(
     };
 
 
+  const headers =
+    await getCloudHeaders(
+      {
+        'Content-Type':
+          'application/json',
+
+        Prefer:
+          'return=representation'
+      }
+    );
+
+
   const response =
     await fetch(
       SUPABASE_RUNS_URL,
       {
         method:'POST',
 
-        headers:{
-          apikey:
-            SUPABASE_KEY,
-
-          'Content-Type':
-            'application/json',
-
-          Prefer:
-            'return=representation'
-        },
+        headers,
 
         body:
           JSON.stringify(
@@ -2836,7 +3696,9 @@ async function saveActivityToCloud(
     rows &&
     rows[0]
   )
+
     ? rows[0]
+
     : null;
 
 }
@@ -2947,7 +3809,8 @@ function renderCloudRowsList() {
     );
 
 
-  list.innerHTML = '';
+  list.innerHTML =
+    '';
 
 
   if (
@@ -2965,42 +3828,44 @@ function renderCloudRowsList() {
 
 
   const sorted =
-    [...cloudRows]
-      .sort(
-        (
-          a,
-          b
-        ) => {
+    [
+      ...cloudRows
+    ]
+    .sort(
+      (
+        a,
+        b
+      ) => {
 
-          const aDate =
-            String(
-              a.activity_date ||
-              ''
-            );
-
-
-          const bDate =
-            String(
-              b.activity_date ||
-              ''
-            );
-
-
-          return (
-            historySortOrder ===
-            'asc'
-
-              ? aDate.localeCompare(
-                  bDate
-                )
-
-              : bDate.localeCompare(
-                  aDate
-                )
+        const aDate =
+          String(
+            a.activity_date ||
+            ''
           );
 
-        }
-      );
+
+        const bDate =
+          String(
+            b.activity_date ||
+            ''
+          );
+
+
+        return (
+          historySortOrder ===
+          'asc'
+
+            ? aDate.localeCompare(
+                bDate
+              )
+
+            : bDate.localeCompare(
+                aDate
+              )
+        );
+
+      }
+    );
 
 
   sorted.forEach(
@@ -3129,10 +3994,6 @@ function renderCloudRowsList() {
 }
 
 
-/* =====================================
-   クラウド保存ラン一覧
-===================================== */
-
 async function renderCloudRuns() {
 
   const list =
@@ -3143,20 +4004,6 @@ async function renderCloudRuns() {
 
   list.innerHTML =
     '<div class="savedEmpty">読み込み中…</div>';
-
-
-  if (
-    !cloudEnabled()
-  ) {
-
-    list.innerHTML =
-      '<div class="savedEmpty">' +
-      'クラウドが設定されていません' +
-      '</div>';
-
-    return;
-
-  }
 
 
   try {
@@ -3202,6 +4049,15 @@ async function renderCloudRuns() {
 
 function loadArchiveActivities() {
 
+  if (
+    !isLegacyOwner()
+  ) {
+
+    return 0;
+
+  }
+
+
   const archive =
     window.RUNNERS_RINGS_ARCHIVE;
 
@@ -3212,16 +4068,13 @@ function loadArchiveActivities() {
     )
   ) {
 
-    console.warn(
-      '過去ランデータなし'
-    );
-
     return 0;
 
   }
 
 
-  let loaded = 0;
+  let loaded =
+    0;
 
 
   archive.forEach(
@@ -3304,7 +4157,8 @@ function loadArchiveActivities() {
 
       const activity =
         {
-          source:'archive',
+          source:
+            'archive',
 
           id:
             run.id,
@@ -3383,6 +4237,15 @@ function loadArchiveActivities() {
 ===================================== */
 
 async function getGPXFiles() {
+
+  if (
+    !isLegacyOwner()
+  ) {
+
+    return [];
+
+  }
+
 
   setStatus(
     '現在のGPXを探しています…'
@@ -3482,7 +4345,8 @@ async function loadAllGPX(
   files
 ) {
 
-  let loaded = 0;
+  let loaded =
+    0;
 
 
   for (
@@ -3520,7 +4384,6 @@ async function loadAllGPX(
 
 /* =====================================
    端末保存GPX
-   ＋ 未同期分をクラウドへ移行
 ===================================== */
 
 async function loadSavedActivities() {
@@ -3540,6 +4403,7 @@ async function loadSavedActivities() {
       error
     );
 
+
     return {
       loaded:0,
       synced:0
@@ -3548,8 +4412,11 @@ async function loadSavedActivities() {
   }
 
 
-  let loaded = 0;
-  let synced = 0;
+  let loaded =
+    0;
+
+  let synced =
+    0;
 
 
   for (
@@ -3602,7 +4469,6 @@ async function loadSavedActivities() {
 
       if (
         cloudEnabled() &&
-        !alreadyKnown &&
         !cloudSignatures.has(
           signature
         )
@@ -3613,6 +4479,7 @@ async function loadSavedActivities() {
           await saveActivityToCloud(
             activity
           );
+
 
           synced++;
 
@@ -3677,14 +4544,16 @@ function formatRunDate(
     String(
       date.getMonth() +
       1
-    ).padStart(
+    )
+    .padStart(
       2,
       '0'
     ) +
     '/' +
     String(
       date.getDate()
-    ).padStart(
+    )
+    .padStart(
       2,
       '0'
     )
@@ -3701,7 +4570,8 @@ async function renderSavedRuns() {
     );
 
 
-  list.innerHTML = '';
+  list.innerHTML =
+    '';
 
 
   let saved;
@@ -3928,6 +4798,7 @@ async function renderSavedRuns() {
 
             await updateStorageInfo();
 
+
             await renderSavedRuns();
 
 
@@ -3969,7 +4840,7 @@ async function renderSavedRuns() {
 
 
 /* =====================================
-   ＋ランを追加
+   ボタン
 ===================================== */
 
 const savedRunsButton =
@@ -4151,11 +5022,6 @@ async function importSelectedGPXFiles(
 
       invalidFormat++;
 
-      console.warn(
-        'GPX以外をスキップ:',
-        file.name
-      );
-
       continue;
 
     }
@@ -4295,41 +5161,35 @@ async function importSelectedGPXFiles(
         activity;
 
 
-      if (
-        cloudEnabled()
-      ) {
+      try {
 
-        try {
-
-          setStatus(
-            '☁️ ' +
-            (i + 1) +
-            '/' +
-            files.length +
-            ' クラウド保存中…'
-          );
+        setStatus(
+          '☁️ ' +
+          (i + 1) +
+          '/' +
+          files.length +
+          ' クラウド保存中…'
+        );
 
 
-          await saveActivityToCloud(
-            activity
-          );
+        await saveActivityToCloud(
+          activity
+        );
 
 
-          cloudSaved++;
+        cloudSaved++;
 
-        }
-        catch(error) {
+      }
+      catch(error) {
 
-          console.error(
-            'クラウド保存失敗:',
-            file.name,
-            error
-          );
+        console.error(
+          'クラウド保存失敗:',
+          file.name,
+          error
+        );
 
 
-          cloudFailed++;
-
-        }
+        cloudFailed++;
 
       }
 
@@ -4356,7 +5216,9 @@ async function importSelectedGPXFiles(
 
   createYearFilters();
 
+
   renderSelectedData();
+
 
   await updateStorageInfo();
 
@@ -4454,27 +5316,21 @@ async function importSelectedGPXFiles(
     }
 
 
+    message +=
+      '☁️ クラウド保存 ' +
+      cloudSaved +
+      '件';
+
+
     if (
-      cloudEnabled()
+      cloudFailed >
+      0
     ) {
 
       message +=
-        '☁️ クラウド保存 ' +
-        cloudSaved +
+        '\n⚠️ クラウド未同期 ' +
+        cloudFailed +
         '件';
-
-
-      if (
-        cloudFailed >
-        0
-      ) {
-
-        message +=
-          '\n⚠️ クラウド未同期 ' +
-          cloudFailed +
-          '件';
-
-      }
 
     }
 
@@ -4589,10 +5445,6 @@ async function importSelectedGPXFiles(
 
 }
 
-
-/* =====================================
-   ファイル選択
-===================================== */
 
 gpxInput.onchange =
   async event => {
@@ -4884,58 +5736,61 @@ function buildSelectedStats() {
       );
 
 
-      activity.cities.forEach(
-        cityKey => {
+      activity.cities
+        .forEach(
+          cityKey => {
 
-          municipalityRunCount[
-            cityKey
-          ] =
-            (
-              municipalityRunCount[
-                cityKey
-              ] ||
-              0
-            ) +
-            1;
+            municipalityRunCount[
+              cityKey
+            ] =
+              (
+                municipalityRunCount[
+                  cityKey
+                ] ||
+                0
+              ) +
+              1;
 
-        }
-      );
-
-
-      prefecturesInRun.forEach(
-        prefecture => {
-
-          prefectureRunCount[
-            prefecture
-          ] =
-            (
-              prefectureRunCount[
-                prefecture
-              ] ||
-              0
-            ) +
-            1;
-
-        }
-      );
+          }
+        );
 
 
-      activity.cells.forEach(
-        key => {
+      prefecturesInRun
+        .forEach(
+          prefecture => {
 
-          ringCells[
-            key
-          ] =
-            (
-              ringCells[
-                key
-              ] ||
-              0
-            ) +
-            1;
+            prefectureRunCount[
+              prefecture
+            ] =
+              (
+                prefectureRunCount[
+                  prefecture
+                ] ||
+                0
+              ) +
+              1;
 
-        }
-      );
+          }
+        );
+
+
+      activity.cells
+        .forEach(
+          key => {
+
+            ringCells[
+              key
+            ] =
+              (
+                ringCells[
+                  key
+                ] ||
+                0
+              ) +
+              1;
+
+          }
+        );
 
     }
   );
@@ -5024,104 +5879,105 @@ function drawRoutes(
       10000;
 
 
-  selectedActivities.forEach(
-    activity => {
+  selectedActivities
+    .forEach(
+      activity => {
 
-      for (
-        let i = 1;
-        i < activity.latlngs.length;
-        i++
-      ) {
-
-        const a =
-          activity.latlngs[
-            i - 1
-          ];
-
-        const b =
-          activity.latlngs[i];
-
-
-        const aKey =
-          round(
-            a[0]
-          ) +
-          ',' +
-          round(
-            a[1]
-          );
-
-
-        const bKey =
-          round(
-            b[0]
-          ) +
-          ',' +
-          round(
-            b[1]
-          );
-
-
-        const key =
-          aKey < bKey
-
-            ? aKey +
-              '|' +
-              bKey
-
-            : bKey +
-              '|' +
-              aKey;
-
-
-        if (
-          drawn.has(
-            key
-          )
+        for (
+          let i = 1;
+          i < activity.latlngs.length;
+          i++
         ) {
 
-          continue;
+          const a =
+            activity.latlngs[
+              i - 1
+            ];
+
+          const b =
+            activity.latlngs[i];
+
+
+          const aKey =
+            round(
+              a[0]
+            ) +
+            ',' +
+            round(
+              a[1]
+            );
+
+
+          const bKey =
+            round(
+              b[0]
+            ) +
+            ',' +
+            round(
+              b[1]
+            );
+
+
+          const key =
+            aKey < bKey
+
+              ? aKey +
+                '|' +
+                bKey
+
+              : bKey +
+                '|' +
+                aKey;
+
+
+          if (
+            drawn.has(
+              key
+            )
+          ) {
+
+            continue;
+
+          }
+
+
+          drawn.add(
+            key
+          );
+
+
+          routeGroup.addLayer(
+            L.polyline(
+              [
+                a,
+                b
+              ],
+              {
+                color:
+                  ROUTE_COLOR,
+
+                weight:
+                  1.5,
+
+                opacity:
+                  0.30,
+
+                lineCap:
+                  'round',
+
+                lineJoin:
+                  'round',
+
+                interactive:
+                  false
+              }
+            )
+          );
 
         }
 
-
-        drawn.add(
-          key
-        );
-
-
-        routeGroup.addLayer(
-          L.polyline(
-            [
-              a,
-              b
-            ],
-            {
-              color:
-                ROUTE_COLOR,
-
-              weight:
-                1.5,
-
-              opacity:
-                0.30,
-
-              lineCap:
-                'round',
-
-              lineJoin:
-                'round',
-
-              interactive:
-                false
-            }
-          )
-        );
-
       }
-
-    }
-  );
+    );
 
 }
 
@@ -5429,35 +6285,36 @@ function getPrefectureBounds(
     );
 
 
-  municipalityFeatures.forEach(
-    item => {
+  municipalityFeatures
+    .forEach(
+      item => {
 
-      if (
-        getPrefecture(
-          item.feature
-        ) ===
-        prefecture
-      ) {
+        if (
+          getPrefecture(
+            item.feature
+          ) ===
+          prefecture
+        ) {
 
-        bounds.extend(
-          [
-            item.bbox.minLat,
-            item.bbox.minLon
-          ]
-        );
+          bounds.extend(
+            [
+              item.bbox.minLat,
+              item.bbox.minLon
+            ]
+          );
 
 
-        bounds.extend(
-          [
-            item.bbox.maxLat,
-            item.bbox.maxLon
-          ]
-        );
+          bounds.extend(
+            [
+              item.bbox.maxLat,
+              item.bbox.maxLon
+            ]
+          );
+
+        }
 
       }
-
-    }
-  );
+    );
 
 
   return bounds.isValid()
@@ -5596,7 +6453,8 @@ function updatePrefectureDashboard(
           km
         ]
       ) =>
-        km > 0.01
+        km >
+        0.01
     )
     .sort(
       (
@@ -5724,7 +6582,8 @@ function updateDashboard(
           km
         ]
       ) =>
-        km > 0.01
+        km >
+        0.01
     )
     .sort(
       (
@@ -5907,7 +6766,8 @@ function updateDisplay() {
 
 
   if (
-    zoom >= 14
+    zoom >=
+    14
   ) {
 
     if (
@@ -5961,10 +6821,9 @@ function updateDisplay() {
     );
 
   }
-
-
   else if (
-    zoom >= 12
+    zoom >=
+    12
   ) {
 
     if (
@@ -6018,8 +6877,6 @@ function updateDisplay() {
     );
 
   }
-
-
   else {
 
     if (
@@ -6172,33 +7029,49 @@ function getHomePrefectureBounds() {
 
 
 /* =====================================
-   起動
+   アプリ起動
 ===================================== */
 
 async function start() {
 
   try {
 
+    await claimLegacyLocalGPX();
+
+
     await loadMunicipalities();
 
 
-    setStatus(
-      '過去ランを復元中…'
-    );
+    let archiveCount =
+      0;
+
+    let githubCount =
+      0;
 
 
-    const archiveCount =
-      loadArchiveActivities();
+    if (
+      isLegacyOwner()
+    ) {
 
-
-    const gpxFiles =
-      await getGPXFiles();
-
-
-    const githubCount =
-      await loadAllGPX(
-        gpxFiles
+      setStatus(
+        '過去ランを復元中…'
       );
+
+
+      archiveCount =
+        loadArchiveActivities();
+
+
+      const gpxFiles =
+        await getGPXFiles();
+
+
+      githubCount =
+        await loadAllGPX(
+          gpxFiles
+        );
+
+    }
 
 
     const cloudCount =
@@ -6257,16 +7130,10 @@ async function start() {
     }
 
 
-    map.on(
-      'zoomend',
-      updateDisplay
-    );
-
-
     setTimeout(
       () =>
         map.invalidateSize(),
-      300
+      200
     );
 
 
@@ -6275,25 +7142,30 @@ async function start() {
       archiveCount
     );
 
+
     console.log(
       'GitHub:',
       githubCount
     );
+
 
     console.log(
       'クラウド:',
       cloudCount
     );
 
+
     console.log(
       '端末追加:',
       localResult.loaded
     );
 
+
     console.log(
       '今回クラウド同期:',
       localResult.synced
     );
+
 
     console.log(
       '合計:',
@@ -6332,7 +7204,109 @@ async function start() {
 }
 
 
-start();
+map.on(
+  'zoomend',
+  updateDisplay
+);
+
+
+/* =====================================
+   認証状態 → 起動
+===================================== */
+
+async function init() {
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .getSession();
+
+
+    if (
+      error
+    ) {
+
+      throw error;
+
+    }
+
+
+    currentSession =
+      data.session;
+
+    currentUser =
+      data.session
+        ?.user ||
+      null;
+
+
+    if (
+      !currentSession ||
+      !currentUser
+    ) {
+
+      authArea.style.display =
+        'flex';
+
+      appRoot.style.display =
+        'none';
+
+      return;
+
+    }
+
+
+    accountEmail.textContent =
+      currentUser.email ||
+      'ログイン中';
+
+
+    authArea.style.display =
+      'none';
+
+    appRoot.style.display =
+      'block';
+
+
+    setTimeout(
+      () =>
+        map.invalidateSize(),
+      100
+    );
+
+
+    await start();
+
+  }
+  catch(error) {
+
+    console.error(
+      error
+    );
+
+
+    authArea.style.display =
+      'flex';
+
+    appRoot.style.display =
+      'none';
+
+
+    setAuthMessage(
+      '認証情報を確認できませんでした。'
+    );
+
+  }
+
+}
+
+
+init();
 
 </script>
 
