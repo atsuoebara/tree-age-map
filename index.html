@@ -470,6 +470,31 @@
       margin-top:4px;
       font-size:13px;
     }
+#siteFooter{
+  border-top:1px solid rgba(255,255,255,.08);
+  background:#0f1d2f;
+  padding:22px 14px 28px;
+  text-align:center;
+  font-size:12px;
+  color:#8f9bac;
+}
+
+#siteFooter .footerLinks{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px 16px;
+  margin-bottom:10px;
+}
+
+#siteFooter a{
+  color:#cbd5e1;
+  text-decoration:none;
+}
+
+#siteFooter a:hover{
+  color:#ff2bd6;
+}
   </style>
 </head>
 
@@ -653,6 +678,18 @@
   </section>
 
 </main>
+  <footer id="siteFooter">
+  <div class="footerLinks">
+    <a href="./about.html">Runner's Ringsについて</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+
+  <div>
+    © 2026 Runner's Rings
+  </div>
+</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
