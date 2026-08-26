@@ -550,15 +550,16 @@
 <main id="appRoot">
 
   <div id="accountBar">
-    <div id="accountEmail"></div>
-    <button id="logoutButton">
-      ログアウト
-    </button>
-  </div>
+  <div id="accountEmail"></div>
 
-  <div id="status">
-    データを読み込み中…
-  </div>
+  <button id="logoutButton">
+    ログアウト
+  </button>
+
+  <button id="stravaConnectButton" type="button">
+    Stravaと連携
+  </button>
+</div>
 
   <div id="importArea">
 
@@ -788,7 +789,10 @@ const logoutButton =
   document.getElementById(
     'logoutButton'
   );
-
+const stravaConnectButton =
+  document.getElementById(
+    'stravaConnectButton'
+  );
 const authMessage =
   document.getElementById(
     'authMessage'
@@ -1070,7 +1074,39 @@ async function logout() {
   location.reload();
 
 }
+async function connectStrava() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
 
+  if (!session) {
+    alert('先にRunner’s Ringsへログインしてください。');
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      'strava-oauth',
+      {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      }
+    );
+
+  if (error) {
+    console.error(error);
+    alert('Strava連携の開始に失敗しました。');
+    return;
+  }
+
+  if (!data?.url) {
+    alert('Strava認証URLを取得できませんでした。');
+    return;
+  }
+
+  location.href = data.url;
+}
 
 loginButton.onclick =
   login;
@@ -1080,7 +1116,8 @@ signupButton.onclick =
 
 logoutButton.onclick =
   logout;
-
+stravaConnectButton.onclick =
+  connectStrava;
 
 passwordInput.addEventListener(
   'keydown',
