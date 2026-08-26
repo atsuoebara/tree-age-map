@@ -1348,7 +1348,10 @@ const activitySignatures =
 
 const cloudSignatures =
   new Set();
-
+  
+const cloudRouteSignatures =
+  new Set();
+  
 let selectedYear =
   'ALL';
 
@@ -3695,6 +3698,17 @@ async function loadCloudActivities() {
 
         }
 
+                const routeSignature =
+          createActivitySignature(
+            {
+              ...activity,
+              stravaId: null
+            }
+          );
+
+        cloudRouteSignatures.add(
+          routeSignature
+        );
 
         const signature =
           createActivitySignature(
@@ -4620,9 +4634,12 @@ async function loadSavedActivities() {
 
 
       const alreadyKnown =
-        activitySignatures.has(
-          signature
-        );
+  activitySignatures.has(
+    signature
+  ) ||
+  cloudRouteSignatures.has(
+    signature
+  );
 
 
       if (
@@ -4643,11 +4660,11 @@ async function loadSavedActivities() {
 
 
       if (
-        cloudEnabled() &&
-        !cloudSignatures.has(
-          signature
-        )
-      ) {
+  cloudEnabled() &&
+  !cloudRouteSignatures.has(
+    signature
+  )
+) {
 
         try {
 
