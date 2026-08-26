@@ -1184,6 +1184,48 @@ logoutButton.onclick =
 stravaConnectButton.onclick =
   connectStrava;
 
+async function updateStravaConnectionStatus() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      'strava-status',
+      {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      }
+    );
+
+  if (error) {
+    console.error(
+      'Strava status error:',
+      error
+    );
+    return;
+  }
+
+  if (data?.connected) {
+    stravaConnectButton.textContent =
+      '✓ Strava連携済み';
+
+    stravaConnectButton.disabled =
+      true;
+  } else {
+    stravaConnectButton.textContent =
+      'Stravaと連携';
+
+    stravaConnectButton.disabled =
+      false;
+  }
+}
+  
 passwordInput.addEventListener(
   'keydown',
   event => {
@@ -7268,7 +7310,7 @@ async function start() {
 
     const cloudCount =
       await loadCloudActivities();
-
+await updateStravaConnectionStatus();
 
     setStatus(
       '端末保存ランを復元中…'
