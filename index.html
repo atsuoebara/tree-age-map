@@ -3421,55 +3421,71 @@ async function fetchCloudRuns() {
   if (
     !cloudEnabled()
   ) {
-
     return [];
-
   }
-
 
   const headers =
     await getCloudHeaders();
 
+  const allRuns = [];
+  const pageSize = 1000;
+  let offset = 0;
 
-  const url =
-    SUPABASE_RUNS_URL +
-    '?select=id,created_at,activity_date,name,distance_km,route,user_id' +
-    '&user_id=eq.' +
-    encodeURIComponent(
-      currentUser.id
-    ) +
-    '&order=activity_date.asc';
+  while (true) {
 
+    const url =
+      SUPABASE_RUNS_URL +
+      '?select=id,created_at,activity_date,name,distance_km,route,user_id,strava_id,source' +
+      '&user_id=eq.' +
+      encodeURIComponent(
+        currentUser.id
+      ) +
+      '&order=activity_date.asc' +
+      '&limit=' +
+      pageSize +
+      '&offset=' +
+      offset;
 
-  const response =
-    await fetch(
-      url,
-      {
-        headers
-      }
+    const response =
+      await fetch(
+        url,
+        {
+          headers
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      const message =
+        await response.text();
+
+      throw new Error(
+        'クラウド読込失敗 HTTP ' +
+        response.status +
+        ' ' +
+        message
+      );
+    }
+
+    const pageRuns =
+      await response.json();
+
+    allRuns.push(
+      ...pageRuns
     );
 
+    if (
+      pageRuns.length < pageSize
+    ) {
+      break;
+    }
 
-  if (
-    !response.ok
-  ) {
-
-    const message =
-      await response.text();
-
-
-    throw new Error(
-      'クラウド読込失敗 HTTP ' +
-      response.status +
-      ' ' +
-      message
-    );
-
+    offset += pageSize;
   }
 
-
-  return await response.json();
-
+  return allRuns;
 }
 
 
