@@ -1109,7 +1109,43 @@ async function connectStrava() {
 
   location.href = data.url;
 }
+async function syncStrava() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
 
+  if (!session) {
+    alert('先にRunner’s Ringsへログインしてください。');
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      'strava-sync',
+      {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      }
+    );
+
+  if (error) {
+    console.error(error);
+    alert('Stravaのラン取得に失敗しました。');
+    return;
+  }
+
+  console.log('Strava activities:', data);
+
+  alert(
+    'Stravaから ' +
+    (data?.count ?? 0) +
+    ' 件取得しました。'
+  );
+}
+
+window.syncStrava = syncStrava;
+  
 loginButton.onclick =
   login;
 
