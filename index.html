@@ -2802,6 +2802,19 @@ function createActivitySignature(
   activity
 ) {
 
+  // Strava由来はStrava固有IDを最優先
+  if (
+    activity.stravaId
+  ) {
+    return (
+      'strava|' +
+      String(
+        activity.stravaId
+      )
+    );
+  }
+
+  // Strava IDがないランは従来方式で重複判定
   const first =
     activity.latlngs[0];
 
@@ -2811,7 +2824,6 @@ function createActivitySignature(
       1
     ];
 
-
   const round4 =
     value =>
       Number(
@@ -2820,7 +2832,6 @@ function createActivitySignature(
       .toFixed(
         4
       );
-
 
   const datePart =
     activity.date &&
@@ -2853,7 +2864,6 @@ function createActivitySignature(
         )
 
       : 'nodate';
-
 
   return [
     datePart,
@@ -3574,7 +3584,13 @@ function buildActivityFromCloudRow(
 
     cloudId:
       row.id,
+    stravaId:
+      row.strava_id
+        ? String(row.strava_id)
+        : null,
 
+    originalSource:
+      row.source || null,
     name:
       row.name ||
       'クラウドラン',
