@@ -7472,15 +7472,6 @@ if (
 
     const localResult =
       await loadSavedActivities();
-alert(
-  '診断結果\n\n' +
-  '過去: ' + archiveCount + '\n' +
-  'GitHub: ' + githubCount + '\n' +
-  'クラウド: ' + cloudCount + '\n' +
-  '端末追加: ' + localResult.loaded + '\n' +
-  '今回クラウド同期: ' + localResult.synced + '\n' +
-  '合計: ' + activities.length
-);
 
     createYearFilters();
 
