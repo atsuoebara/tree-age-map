@@ -1,3 +1,37 @@
+<!--
+============================================================
+Runner's Rings 開発メモ / 2026-08-27
+
+【現在の状態】
+・Strava OAuth連携：成功
+・Strava → Supabase runs 保存：成功
+・起動時のStrava自動同期：実装済み
+・Run / TrailRun / VirtualRun のみ対象
+・ルートがあるActivityのみ保存
+・Strava同士の重複保存を防止済み
+
+【Supabase runs の重要設定】
+UNIQUE INDEX:
+runs_user_strava_unique
+(user_id, strava_id)
+
+※ strava-sync の
+onConflict: "user_id,strava_id"
+とセットなので削除・変更しない。
+
+【2026-08-27 動作確認】
+起動時同期：
+Strava取得 6件
+対象ラン 6件
+saved 0件
+→ 既存データなので0件で正常。
+
+【次回作業】
+Garmin等の既存データとStravaデータの
+「同一ラン重複判定」を実装する。
+Strava同士の重複防止とは別問題。
+============================================================
+-->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
