@@ -664,7 +664,13 @@
       ALL
     </button>
   </div>
-
+<button
+  id="backToRunListButton"
+  type="button"
+  style="display:none;"
+>
+  ← ラン一覧へ戻る
+</button>
   <div id="map"></div>
 
   <section id="dashboard">
@@ -1405,7 +1411,8 @@ let cloudRows =
 
 let historySortOrder =
   'desc';
-
+let lastCloudRowsView =
+  null;
 
 /* =====================================
    Layer
@@ -3944,7 +3951,7 @@ async function saveActivityToCloud(
 function focusCloudRun(
   row
 ) {
-
+backToRunListButton.style.display = 'block';
   const activity =
     buildActivityFromCloudRow(
       row
@@ -4057,7 +4064,10 @@ selectedRunLine.bringToFront();
 function renderCloudRowsList(
   rowsToShow = cloudRows
 ) {
-
+  lastCloudRowsView =
+    [
+      ...rowsToShow
+    ];
   const list =
     document.getElementById(
       'cloudRunsList'
@@ -5120,7 +5130,10 @@ const cloudRunsPanel =
   document.getElementById(
     'cloudRunsPanel'
   );
-
+const backToRunListButton =
+  document.getElementById(
+    'backToRunListButton'
+  );
 const gpxInput =
   document.getElementById(
     'gpxInput'
@@ -5150,7 +5163,42 @@ savedRunsButton.onclick =
     }
 
   };
+backToRunListButton.onclick =
+  () => {
 
+    if (
+      lastCloudRowsView
+    ) {
+      renderCloudRowsList(
+        lastCloudRowsView
+      );
+    }
+
+    savedRunsPanel
+      .classList
+      .remove(
+        'open'
+      );
+
+    cloudRunsPanel
+      .classList
+      .add(
+        'open'
+      );
+
+    backToRunListButton
+      .style
+      .display =
+        'none';
+
+    cloudRunsPanel
+      .scrollIntoView(
+        {
+          behavior:'smooth',
+          block:'start'
+        }
+      );
+  };
 
 cloudRunsButton.onclick =
   async () => {
