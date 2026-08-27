@@ -6439,7 +6439,41 @@ function drawMunicipalities(
 function focusMunicipality(
   cityKey
 ) {
+  const municipalityRows =
+    cloudRows.filter(
+      row => {
+        const activity =
+          buildActivityFromCloudRow(
+            row
+          );
 
+        return (
+          activity &&
+          Array.isArray(
+            activity.cities
+          ) &&
+          activity.cities.includes(
+            cityKey
+          )
+        );
+      }
+    );
+
+  renderCloudRowsList(
+    municipalityRows
+  );
+
+  savedRunsPanel
+    .classList
+    .remove(
+      'open'
+    );
+
+  cloudRunsPanel
+    .classList
+    .add(
+      'open'
+    );
   const layer =
     municipalityLayers[
       cityKey
@@ -6508,16 +6542,13 @@ function focusMunicipality(
   );
 
 
-  document
-    .getElementById(
-      'map'
-    )
-    .scrollIntoView(
-      {
-        behavior:'smooth',
-        block:'start'
-      }
-    );
+  cloudRunsPanel
+  .scrollIntoView(
+    {
+      behavior:'smooth',
+      block:'start'
+    }
+  );
 
 
   setTimeout(
