@@ -4054,7 +4054,9 @@ selectedRunLine.bringToFront();
    クラウド一覧描画
 ===================================== */
 
-function renderCloudRowsList() {
+function renderCloudRowsList(
+  rowsToShow = cloudRows
+) {
 
   const list =
     document.getElementById(
@@ -4067,7 +4069,7 @@ function renderCloudRowsList() {
 
 
   if (
-    !cloudRows.length
+    !rowsToShow.length
   ) {
 
     list.innerHTML =
@@ -4082,7 +4084,7 @@ function renderCloudRowsList() {
 
   const sorted =
     [
-      ...cloudRows
+      ...rowsToShow
     ]
     .sort(
       (
@@ -6583,7 +6585,17 @@ function getPrefectureBounds(
 function focusPrefecture(
   prefecture
 ) {
-
+  const prefectureRuns =
+    activities.filter(
+      activity =>
+        Array.isArray(
+          activity.prefectures
+        ) &&
+        activity.prefectures.includes(
+          prefecture
+        )
+    );
+  
   const bounds =
     getPrefectureBounds(
       prefecture
