@@ -1159,14 +1159,16 @@ async function connectStrava() {
 
   location.href = data.url;
 }
-async function syncStrava() {
+async function syncStrava(silent = false) {
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
 
   if (!session) {
-    alert('先にRunner’s Ringsへログインしてください。');
-    return;
+    if (!silent) {
+      alert('先にRunner’s Ringsへログインしてください。');
+    }
+    return null;
   }
 
   const { data, error } =
@@ -1181,17 +1183,25 @@ async function syncStrava() {
 
   if (error) {
     console.error(error);
-    alert('Stravaのラン取得に失敗しました。');
-    return;
+
+    if (!silent) {
+      alert('Stravaのラン取得に失敗しました。');
+    }
+
+    return null;
   }
 
   console.log('Strava activities:', data);
 
-  alert(
-    'Stravaから ' +
-    (data?.count ?? 0) +
-    ' 件取得しました。'
-  );
+  if (!silent) {
+    alert(
+      'Stravaから ' +
+      (data?.count ?? 0) +
+      ' 件取得しました。'
+    );
+  }
+
+  return data;
 }
 
 window.syncStrava = syncStrava;
@@ -7422,7 +7432,7 @@ function getHomePrefectureBounds() {
 ===================================== */
 
 async function start() {
-
+await syncStrava(true);
   try {
 
     await claimLegacyLocalGPX();
