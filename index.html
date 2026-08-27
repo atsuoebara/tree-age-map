@@ -7431,42 +7431,40 @@ async function start() {
     await loadMunicipalities();
 
 
-    let archiveCount =
-      0;
+    await updateStravaConnectionStatus();
+// =====================================
+// 起動時データ読込
+// クラウドを正本とする。
+// 過去データとGitHub GPXは、クラウドが空の時だけ復旧用に読む。
+// PC・スマホで件数が変わるのを防ぐ。
+// =====================================
 
-    let githubCount =
-      0;
+let archiveCount = 0;
+let githubCount = 0;
 
+const cloudCount =
+  await loadCloudActivities();
 
-    if (
-      isLegacyOwner()
-    ) {
+if (
+  cloudCount === 0 &&
+  isLegacyOwner()
+) {
 
-      setStatus(
-        '過去ランを復元中…'
-      );
+  setStatus(
+    '過去ランを復元中…'
+  );
 
+  archiveCount =
+    loadArchiveActivities();
 
-      archiveCount =
-        loadArchiveActivities();
+  const gpxFiles =
+    await getGPXFiles();
 
-
-      const gpxFiles =
-        await getGPXFiles();
-
-
-      githubCount =
-        await loadAllGPX(
-          gpxFiles
-        );
-
-    }
-
-
-    const cloudCount =
-      await loadCloudActivities();
-await updateStravaConnectionStatus();
-
+  githubCount =
+    await loadAllGPX(
+      gpxFiles
+    );
+}
     setStatus(
       '端末保存ランを復元中…'
     );
