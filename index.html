@@ -5165,7 +5165,10 @@ savedRunsButton.onclick =
   };
 backToRunListButton.onclick =
   () => {
-
+    if (selectedRunLine) {
+      map.removeLayer(selectedRunLine);
+      selectedRunLine = null;
+    }
     if (
       lastCloudRowsView
     ) {
