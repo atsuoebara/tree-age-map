@@ -1413,7 +1413,9 @@ let historySortOrder =
 
 let municipalityLayer =
   null;
-
+let selectedRunLine =
+  null;
+  
 const routeGroup =
   L.layerGroup();
 
@@ -3968,7 +3970,15 @@ function focusCloudRun(
       activity.latlngs
     );
 
-const selectedRunLine =
+if (
+  selectedRunLine
+) {
+  map.removeLayer(
+    selectedRunLine
+  );
+}
+
+selectedRunLine =
   L.polyline(
     activity.latlngs,
     {
@@ -3978,7 +3988,8 @@ const selectedRunLine =
     }
   ).addTo(map);
 
-selectedRunLine.bringToFront();
+selectedRunLine.bringToFront(); 
+  
   
   cloudRunsPanel
     .classList
