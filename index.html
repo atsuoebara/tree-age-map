@@ -6585,16 +6585,40 @@ function getPrefectureBounds(
 function focusPrefecture(
   prefecture
 ) {
-  const prefectureRuns =
-    activities.filter(
-      activity =>
+  const prefectureRows =
+  cloudRows.filter(
+    row => {
+      const activity =
+        buildActivityFromCloudRow(
+          row
+        );
+
+      return (
+        activity &&
         Array.isArray(
           activity.prefectures
         ) &&
         activity.prefectures.includes(
           prefecture
         )
-    );
+      );
+    }
+  );
+renderCloudRowsList(
+  prefectureRows
+);
+
+savedRunsPanel
+  .classList
+  .remove(
+    'open'
+  );
+
+cloudRunsPanel
+  .classList
+  .add(
+    'open'
+  );
   
   const bounds =
     getPrefectureBounds(
