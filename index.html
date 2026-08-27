@@ -5199,25 +5199,22 @@ backToRunListButton.onclick =
         'open'
       );
 
-    cloudRunsPanel
-      .classList
-      .add(
-        'open'
-      );
+    const panelTop =
+  cloudRunsPanel.getBoundingClientRect().top +
+  window.scrollY -
+  12;
+
+window.scrollTo({
+  top: panelTop,
+  behavior: 'smooth'
+});
 
     backToRunListButton
       .style
       .display =
         'none';
 
-    cloudRunsPanel
-      .scrollIntoView(
-        {
-          behavior:'smooth',
-          block:'start'
-        }
-      );
-  };
+    
 
 cloudRunsButton.onclick =
   async () => {
