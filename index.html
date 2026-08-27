@@ -3968,7 +3968,18 @@ function focusCloudRun(
       activity.latlngs
     );
 
+const selectedRunLine =
+  L.polyline(
+    activity.latlngs,
+    {
+      color: '#0057ff',
+      weight: 6,
+      opacity: 1
+    }
+  ).addTo(map);
 
+selectedRunLine.bringToFront();
+  
   cloudRunsPanel
     .classList
     .remove(
