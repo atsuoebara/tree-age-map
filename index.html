@@ -582,7 +582,183 @@ Strava同士の重複防止とは別問題。
   cursor: pointer;
   text-align: center;
 }
-    
+
+ /* =====================================
+   Runner's Rings ログイン前トップ
+   2026-08-28
+   紹介ページ＋ログイン画面を一体化。
+   スマホを基本に、本体と同じ濃紺＋ピンクで統一。
+===================================== */
+
+#authArea{
+  display:block;
+  min-height:calc(100vh - 74px);
+  padding:0;
+  background:
+    radial-gradient(
+      circle at 85% 5%,
+      rgba(255,43,214,.16),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 10% 28%,
+      rgba(49,132,255,.10),
+      transparent 30%
+    ),
+    #0b1422;
+}
+
+#authLanding{
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+  padding:32px 16px 40px;
+}
+
+#authHero{
+  padding:18px 4px 28px;
+}
+
+.authHeroEyebrow{
+  color:#ff2bd6;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2px;
+  margin-bottom:12px;
+}
+
+#authHero h2{
+  margin:0;
+  font-size:32px;
+  line-height:1.28;
+  letter-spacing:-1px;
+}
+
+.authHeroText{
+  margin:16px 0 0;
+  max-width:560px;
+  font-size:14px;
+  line-height:1.85;
+  color:#b9c6d6;
+}
+
+#authPreview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:24px;
+}
+
+.authPreviewCard{
+  min-width:0;
+  padding:14px 8px;
+  background:rgba(19,34,55,.88);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  text-align:center;
+}
+
+.authPreviewLabel{
+  margin-bottom:6px;
+  font-size:9px;
+  letter-spacing:1.2px;
+  color:#8494a8;
+}
+
+.authPreviewValue{
+  font-size:20px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.authPreviewValue span{
+  font-size:10px;
+  color:#8494a8;
+}
+
+.authConcept{
+  margin-top:14px;
+  padding:15px 16px;
+  border-left:3px solid #ff2bd6;
+  background:rgba(255,255,255,.035);
+  border-radius:0 12px 12px 0;
+}
+
+.authConcept strong{
+  display:block;
+  font-size:14px;
+  margin-bottom:5px;
+}
+
+.authConcept span{
+  display:block;
+  color:#91a0b3;
+  font-size:12px;
+  line-height:1.6;
+}
+
+#authCard{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:20px 18px;
+  background:#132237;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.22);
+}
+
+#authCard h2{
+  margin:0 0 7px;
+  font-size:18px;
+}
+
+#authCard p{
+  margin:0 0 18px;
+  color:#9cabbd;
+  opacity:1;
+}
+
+#authAdArea{
+  min-height:82px;
+  margin-top:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px dashed rgba(255,255,255,.10);
+  border-radius:14px;
+  background:rgba(255,255,255,.025);
+}
+
+.authAdLabel{
+  font-size:9px;
+  letter-spacing:1.5px;
+  color:#526176;
+}
+
+@media (min-width:700px){
+
+  #authLanding{
+    padding-top:48px;
+  }
+
+  #authHero h2{
+    font-size:42px;
+  }
+
+  #authPreview{
+    gap:12px;
+  }
+
+  .authPreviewCard{
+    padding:18px 10px;
+  }
+
+  .authPreviewValue{
+    font-size:25px;
+  }
+
+}   
   </style>
 </head>
 
@@ -594,43 +770,121 @@ Strava同士の重複防止とは別問題。
 </header>
 
 <section id="authArea">
-  <div id="authCard">
-    <h2>Runner's Rings</h2>
-    <p>
-      メールアドレスとパスワードでログインしてください。
-      初めて使う場合は「新規登録」です。
-    </p>
 
-    <input
-      id="emailInput"
-      class="authInput"
-      type="email"
-      autocomplete="email"
-      placeholder="メールアドレス"
-    >
+  <div id="authLanding">
 
-    <input
-      id="passwordInput"
-      class="authInput"
-      type="password"
-      autocomplete="current-password"
-      placeholder="パスワード"
-    >
+    <!--
+      Runner's Rings ログイン前トップ
+      初めて来た人にもアプリの内容が伝わるよう、
+      紹介ページとログイン画面を一体化している。
+    -->
 
-    <div id="authButtons">
-      <button id="loginButton" class="authButton">
-        ログイン
-      </button>
+    <div id="authHero">
 
-      <button id="signupButton" class="authButton">
-        新規登録
-      </button>
+      <div class="authHeroEyebrow">
+        RUNNING × LIFE MAP
+      </div>
+
+      <h2>
+        走った記録ではなく、<br>
+        走った人生を残す。
+      </h2>
+
+      <p class="authHeroText">
+        Runner's Ringsは、
+        あなたが走った道や街を地図に積み重ねていく
+        ランニング記録アプリです。
+      </p>
+
+      <div id="authPreview">
+
+        <div class="authPreviewCard">
+          <div class="authPreviewLabel">TOTAL</div>
+          <div class="authPreviewValue">9,500<span> km</span></div>
+        </div>
+
+        <div class="authPreviewCard">
+          <div class="authPreviewLabel">RUNS</div>
+          <div class="authPreviewValue">1,300+</div>
+        </div>
+
+        <div class="authPreviewCard">
+          <div class="authPreviewLabel">CITIES</div>
+          <div class="authPreviewValue">43</div>
+        </div>
+
+      </div>
+
+      <div class="authConcept">
+        <strong>走るほど、地図が育つ。</strong>
+        <span>
+          Stravaと連携して、走った軌跡をRunner's Ringsへ。
+        </span>
+      </div>
+
     </div>
 
-    <div id="authMessage"></div>
-  </div>
-</section>
 
+    <div id="authCard">
+
+      <h2>Runner's Ringsをはじめる</h2>
+
+      <p>
+        ログインすると、あなたのランニングマップを表示します。<br>
+        初めて使う場合は「新規登録」から。
+      </p>
+
+      <input
+        id="emailInput"
+        class="authInput"
+        type="email"
+        autocomplete="email"
+        placeholder="メールアドレス"
+      >
+
+      <input
+        id="passwordInput"
+        class="authInput"
+        type="password"
+        autocomplete="current-password"
+        placeholder="パスワード"
+      >
+
+      <div id="authButtons">
+
+        <button
+          id="loginButton"
+          class="authButton"
+        >
+          ログイン
+        </button>
+
+        <button
+          id="signupButton"
+          class="authButton"
+        >
+          新規登録
+        </button>
+
+      </div>
+
+      <div id="authMessage"></div>
+
+    </div>
+
+
+    <!--
+      広告枠
+      ログイン済みユーザーはこの画面を見る機会が少ないため、
+      将来はアプリ本体側にも広告を配置する。
+    -->
+    <div id="authAdArea">
+      <div class="authAdLabel">ADVERTISEMENT</div>
+    </div>
+
+  </div>
+
+</section>
 <main id="appRoot">
 
   <div id="accountBar">
