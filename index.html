@@ -38,6 +38,9 @@ Strava同士の重複防止とは別問題。
   未対応。
 ・ラン選択時の初期ズーム最適化：
   maxZoom を 13 → 16 に変更し、短いランでも見やすい大きさで表示されるよう修正済み。
+【2026-08-28】
+・Strava起動時自動同期を30分間隔に変更。
+・前回同期から30分以内は再同期をスキップ。
 ============================================================
 -->
 <!DOCTYPE html>
@@ -7491,7 +7494,45 @@ function getHomePrefectureBounds() {
 ===================================== */
 
 async function start() {
-await syncStrava(true);
+// =====================================
+// Strava起動時自動同期
+// 前回同期から30分以内は再同期しない。
+// アプリを開くたびにStrava APIを呼ぶのを防ぐ。
+// =====================================
+
+const STRAVA_SYNC_INTERVAL =
+  30 * 60 * 1000;
+
+const lastStravaSync =
+  Number(
+    localStorage.getItem(
+      'RunnerRingsLastStravaSync'
+    ) || 0
+  );
+
+const now =
+  Date.now();
+
+if (
+  now - lastStravaSync >=
+  STRAVA_SYNC_INTERVAL
+) {
+
+  const syncResult =
+    await syncStrava(true);
+
+  if (
+    syncResult
+  ) {
+
+    localStorage.setItem(
+      'RunnerRingsLastStravaSync',
+      String(now)
+    );
+
+  }
+
+}
   try {
 
     await claimLegacyLocalGPX();
