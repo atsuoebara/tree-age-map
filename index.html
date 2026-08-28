@@ -3941,7 +3941,7 @@ async function fetchCloudRuns() {
 
     const url =
       SUPABASE_RUNS_URL +
-      '?select=id,created_at,activity_date,name,distance_km,route,user_id,strava_id,source' +
+      '?select=id,created_at,activity_date,name,distance_km,route,user_id,strava_id,source,started_at' +
       '&user_id=eq.' +
       encodeURIComponent(
         currentUser.id
@@ -4087,6 +4087,8 @@ function buildActivityFromCloudRow(
 
     originalSource:
       row.source || null,
+    startedAt:
+  row.started_at || null,
     name:
       row.name ||
       'クラウドラン',
