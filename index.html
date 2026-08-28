@@ -3658,17 +3658,56 @@ function findPossibleDuplicate(
     }
 
 
-    if (
-      !routeSimilarity(
-        newActivity,
-        oldActivity
-      )
-    ) {
+    // =====================================
+// Garmin GPX と Strava は
+// ルート点数や配置が異なることがある。
+// そのため、ルート類似に加えて
+// 距離・開始地点・終了地点が非常に近い場合も
+// 同一ランとして扱う。
+// =====================================
 
-      continue;
+const startDistance =
+  distanceKm(
+    newStart[0],
+    newStart[1],
+    oldStart[0],
+    oldStart[1]
+  );
 
-    }
+const endDistance =
+  distanceKm(
+    newEnd[0],
+    newEnd[1],
+    oldEnd[0],
+    oldEnd[1]
+  );
 
+const routeIsSimilar =
+  routeSimilarity(
+    newActivity,
+    oldActivity
+  );
+
+const veryLikelySameRun =
+  difference <=
+    Math.max(
+      0.20,
+      oldActivity.distance *
+      0.03
+    ) &&
+  startDistance <=
+    0.15 &&
+  endDistance <=
+    0.20;
+
+if (
+  !routeIsSimilar &&
+  !veryLikelySameRun
+) {
+
+  continue;
+
+}
 
     return oldActivity;
 
@@ -5135,11 +5174,17 @@ async function loadSavedActivities() {
       }
 
 
-      if (
+      const possibleDuplicate =
+  findPossibleDuplicate(
+    activity
+  );
+
+if (
   cloudEnabled() &&
   !cloudRouteSignatures.has(
     signature
-  )
+  ) &&
+  !possibleDuplicate
 ) {
 
         try {
@@ -5808,67 +5853,12 @@ async function importSelectedGPXFiles(
         }
 
 
-        const source =
-          duplicate.source ===
-            'archive'
+        // 重複候補は安全のため自動スキップ。
+// 同一ランを端末・クラウドへ二重保存しない。
+duplicates++;
 
-            ? '過去データ'
-
-            : duplicate.source ===
-              'github'
-
-              ? 'GitHubデータ'
-
-              : duplicate.source ===
-                'cloud'
-
-                ? 'クラウド'
-
-                : '端末保存';
-
-
-        const ok =
-          confirm(
-            '⚠️ 登録済みの可能性が高いランがあります。\n\n' +
-            '登録済み\n' +
-            formatRunDate(
-              duplicate.date
-            ) +
-            '\n' +
-            duplicate.distance
-              .toFixed(
-                2
-              ) +
-            ' km\n' +
-            source +
-            '\n\n' +
-            '今回\n' +
-            formatRunDate(
-              activity.date
-            ) +
-            '\n' +
-            activity.distance
-              .toFixed(
-                2
-              ) +
-            ' km\n\n' +
-            '［OK］それでも追加\n' +
-            '［キャンセル］追加しない'
-          );
-
-
-        if (
-          !ok
-        ) {
-
-          duplicates++;
-
-          continue;
-
+continue;
         }
-
-      }
-
 
       activity.localId =
         await saveGPXToDevice(
