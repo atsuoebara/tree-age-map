@@ -772,8 +772,22 @@ Strava同士の重複防止とは別問題。
    ログイン前画面に既存アプリアイコンを表示。
 ===================================== */
 
-.authBrandIcon{
+/* =====================================
+   Runner's Rings ブランド表示
+   2026-08-28
+   アイコンと地図プレビューを横並び表示。
+   スマホでも崩れないサイズに調整。
+===================================== */
+
+.authBrandRow{
+  display:flex;
+  align-items:center;
+  gap:14px;
   margin-bottom:18px;
+}
+
+.authBrandIcon{
+  flex:0 0 auto;
 }
 
 .authBrandIcon img{
@@ -783,7 +797,23 @@ Strava同士の重複防止とは別問題。
   object-fit:cover;
   border-radius:20px;
   box-shadow:0 10px 28px rgba(0,0,0,.28);
-}    
+}
+
+.authMapPreview{
+  flex:1;
+  min-width:0;
+}
+
+.authMapPreview img{
+  display:block;
+  width:100%;
+  max-width:180px;
+  aspect-ratio:16 / 9;
+  object-fit:cover;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 10px 28px rgba(0,0,0,.20);
+}
   </style>
 </head>
 
@@ -803,15 +833,26 @@ Strava同士の重複防止とは別問題。
       初めて来た人にもアプリの内容が伝わるよう、
       紹介ページとログイン画面を一体化している。
     -->
+<!-- Runner's Rings ブランド表示 -->
+<div class="authBrandRow">
 
+  <div class="authBrandIcon">
+    <img
+      src="icon.PNG"
+      alt="Runner's Rings"
+    >
+  </div>
+
+  <div class="authMapPreview">
+    <img
+      src="runners-rings-map-preview.jpg"
+      alt="Runner's Rings 地図プレビュー"
+    >
+  </div>
+
+</div>
     <div id="authHero">
       <!-- Runner's Rings ブランドアイコン -->
-<div class="authBrandIcon">
-  <img
-    src="icon.PNG"
-    alt="Runner's Rings"
-  >
-</div>
 
       <div class="authHeroEyebrow">
         RUNNING × LIFE MAP
