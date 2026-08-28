@@ -4294,7 +4294,10 @@ async function saveActivityToCloud(
         ),
 
       route:
-        activity.latlngs
+  activity.latlngs,
+
+started_at:
+  activity.startedAt || null
     };
 
 
