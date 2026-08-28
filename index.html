@@ -762,7 +762,25 @@ Strava同士の重複防止とは別問題。
     font-size:25px;
   }
 
-}   
+}  
+/* =====================================
+   Runner's Rings ブランドアイコン
+   2026-08-28
+   ログイン前画面に既存アプリアイコンを表示。
+===================================== */
+
+.authBrandIcon{
+  margin-bottom:18px;
+}
+
+.authBrandIcon img{
+  display:block;
+  width:82px;
+  height:82px;
+  object-fit:cover;
+  border-radius:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.28);
+}    
   </style>
 </head>
 
@@ -784,6 +802,13 @@ Strava同士の重複防止とは別問題。
     -->
 
     <div id="authHero">
+      <!-- Runner's Rings ブランドアイコン -->
+<div class="authBrandIcon">
+  <img
+    src="icon.PNG"
+    alt="Runner's Rings"
+  >
+</div>
 
       <div class="authHeroEyebrow">
         RUNNING × LIFE MAP
