@@ -5265,6 +5265,13 @@ window.scrollTo({
 
       };
 
+// =====================================
+// クラウド保存ラン一覧を開く
+// 一覧を開いた時は、地図ではなく
+// クラウド一覧の先頭まで自動スクロールする。
+// 端末保存ラン側の動作は変更しない。
+// =====================================
+
 cloudRunsButton.onclick =
   async () => {
 
@@ -5273,7 +5280,6 @@ cloudRunsButton.onclick =
       .remove(
         'open'
       );
-
 
     if (
       cloudRunsPanel
@@ -5285,10 +5291,21 @@ cloudRunsButton.onclick =
 
       await renderCloudRuns();
 
+      const panelTop =
+        cloudRunsPanel
+          .getBoundingClientRect()
+          .top +
+        window.scrollY -
+        12;
+
+      window.scrollTo({
+        top: panelTop,
+        behavior: 'smooth'
+      });
+
     }
 
   };
-
 
 document
   .querySelectorAll(
