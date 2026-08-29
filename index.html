@@ -3434,19 +3434,51 @@ function getRouteSamples(
   count = 7
 ) {
 
-  const result =
-    [];
-
+  const result = [];
 
   if (
-    latlngs.length <
-    2
+    !Array.isArray(latlngs) ||
+    latlngs.length < 2
   ) {
 
     return result;
 
   }
 
+  // 各点までの累積走行距離を作る。
+  // GarminとStravaで記録点数が違っても、
+  // 「走行距離の何％地点か」で比較できるようにする。
+  const cumulative = [0];
+
+  let totalDistance = 0;
+
+  for (
+    let i = 1;
+    i < latlngs.length;
+    i++
+  ) {
+
+    totalDistance +=
+      distanceKm(
+        latlngs[i - 1][0],
+        latlngs[i - 1][1],
+        latlngs[i][0],
+        latlngs[i][1]
+      );
+
+    cumulative.push(
+      totalDistance
+    );
+
+  }
+
+  if (
+    totalDistance <= 0
+  ) {
+
+    return result;
+
+  }
 
   for (
     let i = 0;
@@ -3454,29 +3486,54 @@ function getRouteSamples(
     i++
   ) {
 
+    const targetDistance =
+      totalDistance *
+      (
+        i /
+        (count - 1)
+      );
+
+    let nearestIndex = 0;
+    let nearestDifference = Infinity;
+
+    for (
+      let j = 0;
+      j < cumulative.length;
+      j++
+    ) {
+
+      const difference =
+        Math.abs(
+          cumulative[j] -
+          targetDistance
+        );
+
+      if (
+        difference <
+        nearestDifference
+      ) {
+
+        nearestDifference =
+          difference;
+
+        nearestIndex =
+          j;
+
+      }
+
+    }
+
     result.push(
       latlngs[
-        Math.round(
-          i /
-          (
-            count -
-            1
-          ) *
-          (
-            latlngs.length -
-            1
-          )
-        )
+        nearestIndex
       ]
     );
 
   }
 
-
   return result;
 
 }
-
 
 function routeSimilarity(
   a,
@@ -5164,36 +5221,31 @@ async function loadSavedActivities() {
         );
 
 
-      const alreadyKnown =
+   
+
+const possibleDuplicate =
+  findPossibleDuplicate(
+    activity
+  );
+
+const alreadyKnown =
   activitySignatures.has(
     signature
   ) ||
   cloudRouteSignatures.has(
     signature
-  );
+  ) ||
+  !!possibleDuplicate;
 
-
-      if (
-        !alreadyKnown
-      ) {
-
-        if (
-          registerActivity(
-            activity
-          )
-        ) {
-
-          loaded++;
-
-        }
-
-      }
-
-
-      const possibleDuplicate =
-  findPossibleDuplicate(
-    activity
-  );
+if (!alreadyKnown) {
+  if (
+    registerActivity(
+      activity
+    )
+  ) {
+    loaded++;
+  }
+}      
 
 if (
   cloudEnabled() &&
