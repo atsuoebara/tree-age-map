@@ -57,6 +57,18 @@ Strava同士の重複防止とは別問題。
 ・既存GPXラン ID 2499 へのStrava情報統合をDBで確認。
 ・Strava同期＋既存データ重複統合の基本動作確認完了。
 <!--
+<!--
+【2026-08-29】
+・syncStrava に fullSync 引数を追加。
+・通常同期は syncStrava(false)、開発用全期間同期は syncStrava(false, true) で実行可能にした。
+・Edge Function へ full_sync を body で送信する処理を追加。
+・全期間同期で Strava 1452件、Runner's Rings対象1368件を取得。
+・古いStravaランの started_at 補完を実施。
+・自分のStravaランについて started_at NULL 0件を確認。
+・4/29のID90でも started_at 補完を確認。
+・4/29の同一GPXをスマホ実機から追加し、重複として正常に拒否されることを確認。
+・テストで作成された重複行 ID2530 を削除。
+-->
 【2026-08-29 開発メモ】
 ・syncStrava に fullSync 引数を追加。
 ・通常同期は syncStrava(false)、
