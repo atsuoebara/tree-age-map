@@ -3698,6 +3698,53 @@ function findPossibleDuplicate(
       continue;
 
     }
+    // =====================================
+// 開始時刻が双方にある場合は、
+// 5分以内なら同一ランとして扱う。
+// 同日・距離許容内を通過した後に判定する。
+// =====================================
+
+const newStartedAt =
+  newActivity.startedAt
+    ? new Date(
+        newActivity.startedAt
+      )
+    : null;
+
+const oldStartedAt =
+  oldActivity.startedAt
+    ? new Date(
+        oldActivity.startedAt
+      )
+    : null;
+
+if (
+  newStartedAt &&
+  oldStartedAt &&
+  !Number.isNaN(
+    newStartedAt.getTime()
+  ) &&
+  !Number.isNaN(
+    oldStartedAt.getTime()
+  )
+) {
+
+  const startTimeDifference =
+    Math.abs(
+      newStartedAt.getTime() -
+      oldStartedAt.getTime()
+    );
+
+  if (
+    startTimeDifference <=
+    5 * 60 * 1000
+  ) {
+
+    return oldActivity;
+
+  }
+
+}
 
 
     const oldStart =
