@@ -1540,8 +1540,10 @@ async function connectStrava() {
 
   location.href = data.url;
 }
-async function syncStrava(silent = false) {
-  const {
+async function syncStrava(
+  silent = false,
+  fullSync = false
+) {  const {
     data: { session }
   } = await supabaseClient.auth.getSession();
 
@@ -1554,13 +1556,16 @@ async function syncStrava(silent = false) {
 
   const { data, error } =
     await supabaseClient.functions.invoke(
-      'strava-sync',
-      {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      }
-    );
+  'strava-sync',
+  {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    },
+    body: {
+      full_sync: fullSync
+    }
+  }
+);
 
   if (error) {
     console.error(error);
