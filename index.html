@@ -4688,45 +4688,45 @@ function renderCloudRowsList(
   }
 
 
-  const sorted =
-    [
-      ...rowsToShow
-    ]
-    .sort(
-      (
-        a,
-        b
-      ) => {
+const sorted =
+  [
+    ...rowsToShow
+  ]
+  .sort(
+    (
+      a,
+      b
+    ) => {
 
-        const aDate =
-          String(
-            a.activity_date ||
-            ''
-          );
-
-
-        const bDate =
-          String(
-            b.activity_date ||
-            ''
-          );
-
-
-        return (
-          historySortOrder ===
-          'asc'
-
-            ? aDate.localeCompare(
-                bDate
-              )
-
-            : bDate.localeCompare(
-                aDate
-              )
+      const aDateTime =
+        String(
+          a.started_at ||
+          a.activity_date ||
+          ''
         );
 
-      }
-    );
+      const bDateTime =
+        String(
+          b.started_at ||
+          b.activity_date ||
+          ''
+        );
+
+      return (
+        historySortOrder ===
+        'asc'
+
+          ? aDateTime.localeCompare(
+              bDateTime
+            )
+
+          : bDateTime.localeCompare(
+              aDateTime
+            )
+      );
+
+    }
+  );
 
 
   sorted.forEach(
