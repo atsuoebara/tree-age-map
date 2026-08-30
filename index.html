@@ -88,7 +88,28 @@ Strava同士の重複防止とは別問題。
 ・修正後、8/23の日中ランGPX・朝ランGPXとも既存Stravaランとの重複を正常に拒否。
 ・同日の別ラン同士では開始時刻差190.45分、routeSimilarity=false を確認し、誤重複判定されないことを確認。
 ・GPX / Strava間の双方向重複判定について、主要実データQA完了。
+【2026-08-30 開発メモ】
+・クラウド保存ラン一覧の並び順を修正。
+・従来は activity_date のみで並び替えていたため、
+  同日複数ランでは時刻順にならない問題があった。
+・started_at を優先して並び替えるよう変更。
+・2026/08/30の朝ラン／午後ランで実機確認し、
+  新しい順で午後ランが上に表示されることを確認。
 
+・Strava Webhook の delete 対応を実装。
+・Strava側でActivityが削除されても、
+  Runner’s Ringsのラン本体は削除しない仕様に決定。
+・delete受信時は該当ランの strava_id のみ null にして、
+  Stravaとの紐付けだけ解除する。
+・約0.84kmのテストラン
+  strava_id=19943456461 で実データQA実施。
+・Webhookで aspect_type:"delete" を受信。
+・Webhook Strava link removed のログを確認。
+・Runner’s Rings側ではラン本体が残ることを実機確認。
+・delete対応の主要QA完了。
+
+【次回】
+・Strava deauthorization（連携解除）の扱いを整理する。
 ============================================================
 --><!DOCTYPE html>
 <html lang="ja">
