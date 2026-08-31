@@ -124,6 +124,50 @@ Strava同士の重複防止とは別問題。
 【次回】
 ・Strava Webhookまわりの残課題を整理し、
   次の実装フェーズへ進む。
+## 2026-08-31 開発メモ
+
+### Strava連携
+- Strava OAuth連携：完了
+- 初回同期：完了
+- Garmin / GPX既存ランとの重複判定・統合：完了
+- Strava Webhook主要QA：完了
+  - create：確認済み
+  - update：確認済み
+  - delete：確認済み
+  - deauthorization：確認済み
+- deauthorization QAでは、
+  Strava側でアクセス取消
+  → Webhook受信
+  → strava_connections削除
+  まで正常動作を確認
+- QA後、Strava再連携済み
+
+### UI
+- 個別ラン選択時のハイライト表示：完了
+  - 選択ランを濃い青
+  - 他ランより太い線
+  - 最前面表示
+
+### URL / ドメイン
+- 現在は以下の開発URLを継続使用
+  https://atsuoebara.github.io/tree-age-map/
+- 開発途中では変更しない
+- 正式公開前・AdSense申請前を目安に独自ドメインへ移行予定
+- 移行時はSupabase Auth / Strava OAuth等のURL設定も合わせて変更する
+
+### Version
+- 次工程でVersion表示を実装
+- Version番号は1か所の定数で管理する
+- 現在の候補：Version 0.9 Beta
+
+### 次にやること
+1. Version管理・画面表示の実装
+2. 広告枠の仕上げ
+3. PWA / スマホQA
+4. 軽量化・動作改善
+5. 独自ドメイン取得・移行
+6. 公開前総合QA
+7. Version 1.0
 ============================================================
 --><!DOCTYPE html>
 <html lang="ja">
