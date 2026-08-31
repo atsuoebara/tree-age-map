@@ -8067,8 +8067,21 @@ if (
   STRAVA_SYNC_INTERVAL
 ) {
 
-  const syncResult =
-    null;
+  syncStrava(true)
+  .then(syncResult => {
+    if (syncResult) {
+      localStorage.setItem(
+        'RunnerRingsLastStravaSync',
+        String(now)
+      );
+    }
+  })
+  .catch(error => {
+    console.error(
+      'Strava background sync error:',
+      error
+    );
+  });
 
   if (
     syncResult
