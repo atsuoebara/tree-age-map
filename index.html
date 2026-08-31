@@ -237,6 +237,108 @@ Strava同士の重複防止とは別問題。
 【次回】
 ・#appAdArea に実際のAdSense広告ユニットを実装する。
 ・スマホ表示でサイズ、余白、はみ出しがないか確認する。
+【2026-08-31 開発メモ追記：独自ドメイン・AdSense申請】
+
+### 独自ドメイン
+・Cloudflare Registrarで `runnersrings.com` を取得。
+・取得費用：$10.46 / 年。
+・更新料も $10.46 / 年。
+・自動更新ON。
+
+### Cloudflare DNS
+GitHub Pages向けに以下を設定。
+
+A
+・185.199.108.153
+・185.199.109.153
+・185.199.110.153
+・185.199.111.153
+
+CNAME
+・www → atsuoebara.github.io
+
+・各レコードは「DNSのみ」で設定。
+
+### GitHub Pages
+・Custom domain に `runnersrings.com` を設定。
+・DNS check successful を確認。
+・HTTPS証明書発行後、Enforce HTTPSを有効化。
+・`https://runnersrings.com` でRunner’s Rings表示確認。
+
+### Supabase Auth
+・Site URLを
+  `https://atsuoebara.github.io/tree-age-map/`
+  から
+  `https://runnersrings.com`
+  へ変更。
+
+・Redirect URLsに
+  `https://runnersrings.com`
+  を追加。
+・旧GitHub Pages URLは移行安全確保のため現時点では残す。
+
+### 起動不具合修正
+・独自ドメイン移行後、
+  `ReferenceError: syncResult is not defined`
+  が発生。
+・起動時Strava同期をバックグラウンド化した際に残っていた
+  古い `if (syncResult)` ブロックが原因。
+・不要ブロックを削除し修正。
+・強制再読み込み後、エラー解消。
+
+### Strava / CORS
+・新ドメインからEdge Functionsを呼ぶとCORSエラーが発生。
+・原因：
+  `Access-Control-Allow-Origin`
+  が旧URL
+  `https://atsuoebara.github.io`
+  のままだった。
+
+・以下のEdge Functionを新ドメインへ変更しDeploy。
+  - strava-sync
+  - strava-status
+
+変更後：
+`Access-Control-Allow-Origin: https://runnersrings.com`
+
+### 独自ドメイン移行QA
+・`https://runnersrings.com` でログイン成功。
+・クラウド 1371 RUNS 読込確認。
+・TOTAL 9491.7 km確認。
+・CITIES 43確認。
+・Strava同期成功。
+・strava-status成功。
+・Consoleの主要エラー解消。
+
+### 残URL修正
+・`backToMapButton` の遷移先を
+  旧GitHub Pages URLから
+  `https://runnersrings.com`
+  へ変更。
+・Commit済み。
+
+### AdSense
+・AdSenseへ `runnersrings.com` を新しいサイトとして追加。
+・既存のAdSenseコードスニペットを使用。
+・サイト所有権確認成功。
+・Google CMPは3択
+  「同意する / 同意しない / オプションを管理する」
+  を選択。
+・AdSenseサイト審査をリクエスト済み。
+・現在ステータス：準備中 / 審査待ち。
+
+### 広告方針
+・自動広告で画面全体へ自動配置するのではなく、
+  Runner’s Rings本体の地図直下に設置済みの
+  `#appAdArea`
+  をメイン広告枠として使用する方針。
+・審査通過後、実際のAdSense広告ユニットをこの枠へ実装する。
+
+【次回】
+1. AdSense審査結果確認
+2. 通過後、地図直下 `#appAdArea` に実広告ユニットを実装
+3. スマホ表示・サイズ・余白確認
+4. 独自ドメイン移行後の最終QA
 ============================================================
 --><!DOCTYPE html>
 <html lang="ja">
