@@ -108,30 +108,22 @@ Strava同士の重複防止とは別問題。
 ・Runner’s Rings側ではラン本体が残ることを実機確認。
 ・delete対応の主要QA完了。
 
-【次回】
-・Strava deauthorization（連携解除）の扱いを整理する。
-【2026-08-30 開発メモ】
-・クラウド保存ラン一覧の並び順を修正。
-・従来は activity_date のみで並び替えていたため、
-  同日複数ランでは時刻順にならない問題があった。
-・started_at を優先して並び替えるよう変更。
-・2026/08/30の朝ラン／午後ランで実機確認し、
-  新しい順で午後ランが上に表示されることを確認。
-
-・Strava Webhook の delete 対応を実装。
-・Strava側でActivityが削除されても、
-  Runner’s Ringsのラン本体は削除しない仕様に決定。
-・delete受信時は該当ランの strava_id のみ null にして、
-  Stravaとの紐付けだけ解除する。
-・約0.84kmのテストラン
-  strava_id=19943456461 で実データQA実施。
-・Webhookで aspect_type:"delete" を受信。
-・Webhook Strava link removed のログを確認。
-・Runner’s Rings側ではラン本体が残ることを実機確認。
-・delete対応の主要QA完了。
+【2026-08-31 開発メモ】
+・Strava deauthorization（連携解除）対応を実装。
+・Strava側でRunner’s Ringsの「アクセスを取り消す」を実行し、
+  Webhookで athlete / update イベントを実受信。
+・連携解除時はRunner’s Ringsのラン本体を削除せず、
+  strava_connections の接続情報のみ削除する仕様に決定。
+・初回テストでは strava_connections のDELETE権限不足を確認。
+・service_role にDELETE権限を付与して修正。
+・Stravaを再連携後、再度アクセス取り消しを実施。
+・Webhook Strava deauthorized のログを確認。
+・Strava連携解除 → Webhook受信 → 接続情報削除まで実データQA完了。
+・deauthorization対応の主要QA完了。
 
 【次回】
-・Strava deauthorization（連携解除）の扱いを整理する。
+・Strava Webhookまわりの残課題を整理し、
+  次の実装フェーズへ進む。
 ============================================================
 --><!DOCTYPE html>
 <html lang="ja">
