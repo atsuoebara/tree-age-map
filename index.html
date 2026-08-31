@@ -206,7 +206,11 @@ Strava同士の重複防止とは別問題。
       font-size:13px;
       opacity:.75;
     }
-
+#appVersion{
+  margin-top:4px;
+  font-size:10px;
+  opacity:.45;
+}
     #authArea{
       min-height:calc(100vh - 74px);
       display:flex;
@@ -933,6 +937,7 @@ Strava同士の重複防止とは別問題。
 <header>
   <h1>Runner's Rings</h1>
   <p>走った記録ではなく、走った人生を残す。</p>
+  <div id="appVersion"></div>
 </header>
 
 <section id="authArea">
@@ -1244,6 +1249,10 @@ Strava同士の重複防止とは別問題。
 const OWNER = 'atsuoebara';
 const REPO = 'tree-age-map';
 const BRANCH = 'main';
+
+const APP_VERSION = '0.9 Beta';
+  document.getElementById('appVersion').textContent =
+  `Version ${APP_VERSION}`;
 
 const CELL_SIZE = 0.0009;
 
