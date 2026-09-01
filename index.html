@@ -1232,6 +1232,17 @@ Commit済み。
   font-weight: 700;
   cursor: default;
 }
+
+#stravaDisconnectButton {
+  border: 1px solid rgba(255,255,255,.18);
+  background: #17283d;
+  color: #dce8f5;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
     
 /* 地図に戻るボタン */
 #backToMapButton {
@@ -1659,6 +1670,11 @@ Commit済み。
   <button id="stravaConnectButton" type="button">
   <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
 </button>
+
+<button id="stravaDisconnectButton" type="button" style="display:none;">
+  連携を解除
+</button>
+    
 </div>
 <div id="status">
   データを読み込み中…
@@ -1915,6 +1931,12 @@ const stravaConnectButton =
   document.getElementById(
     'stravaConnectButton'
   );
+
+const stravaDisconnectButton =
+  document.getElementById(
+    'stravaDisconnectButton'
+  );
+  
 const authMessage =
   document.getElementById(
     'authMessage'
@@ -2229,6 +2251,61 @@ async function connectStrava() {
 
   location.href = data.url;
 }
+async function disconnectStrava() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    alert('先にRunner’s Ringsへログインしてください。');
+    return;
+  }
+
+  const ok = confirm(
+    'Stravaとの連携を解除しますか？\nRunner’s Ringsに保存済みのランは削除されません。'
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  stravaDisconnectButton.disabled = true;
+  stravaDisconnectButton.textContent = '解除中…';
+
+  try {
+    const { data, error } =
+      await supabaseClient.functions.invoke(
+        'strava-disconnect',
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.success) {
+      throw new Error(
+        data?.error || 'Strava連携解除に失敗しました。'
+      );
+    }
+
+    await updateStravaConnectionStatus();
+
+  } catch (error) {
+    console.error(error);
+    alert('Strava連携解除に失敗しました。');
+
+  } finally {
+    stravaDisconnectButton.disabled = false;
+    stravaDisconnectButton.textContent = '連携を解除';
+  }
+}
+
+  
 async function syncStrava(
   silent = false,
   fullSync = false
@@ -2292,6 +2369,9 @@ logoutButton.onclick =
 stravaConnectButton.onclick =
   connectStrava;
 
+stravaDisconnectButton.onclick =
+  disconnectStrava;
+  
 async function updateStravaConnectionStatus() {
   const {
     data: { session }
@@ -2325,12 +2405,20 @@ async function updateStravaConnectionStatus() {
 
     stravaConnectButton.disabled =
       true;
+
+stravaDisconnectButton.style.display =
+  'inline-block';
+    
   } else {
     stravaConnectButton.innerHTML =
   '<img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">';
 
     stravaConnectButton.disabled =
       false;
+
+stravaDisconnectButton.style.display =
+  'none';
+    
   }
 }
   
