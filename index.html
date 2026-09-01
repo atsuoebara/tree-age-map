@@ -522,6 +522,189 @@ CNAME
 【重要】
 ・このページはAdSense審査対策だけではなく、
   Runner’s Ringsのブランド思想を伝える正式コンテンツとして今後も継続利用する。
+もちろん。今日の分をそのまま追記できる形でまとめるね。
+
+---
+
+## 2026-09-01 開発メモ追記：Strava 11人目以降の準備
+
+### Strava API現在値確認
+
+Strava API管理画面で以下を確認。
+
+* 接続可能なアスリート数：**10**
+* 現在接続しているアスリート数：**2**
+* 総合レート制限：
+
+  * 400 / 15分
+  * 4,000 / 日
+* 読み取りレート制限：
+
+  * 200 / 15分
+  * 2,000 / 日
+
+現在はあと8人まで接続可能。
+
+11人目以降を利用可能にするため、Strava Developer Programの審査準備を開始。
+
+---
+
+### Strava公式Brand Guidelines確認
+
+Strava DevelopersのBrand Guidelinesを確認。
+
+OAuth連携用の「Connect with Strava」は、Strava公式配布素材を使用する方針とした。
+
+公式素材をダウンロード。
+
+使用ファイル：
+
+`btn_strava_connect_with_orange.svg`
+
+GitHubリポジトリへアップロード済み。
+
+---
+
+### Strava連携ボタン修正
+
+従来：
+
+`Stravaと連携`
+
+という自作オレンジボタンを使用していた。
+
+今回、未接続時はStrava公式SVGボタンを使用する形へ変更。
+
+HTML側：
+
+```html
+<button id="stravaConnectButton" type="button">
+  <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
+</button>
+```
+
+Strava接続状態更新処理の未接続側も、
+
+```js
+stravaConnectButton.innerHTML =
+  '<img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">';
+```
+
+へ変更。
+
+CSSも公式SVG表示向けに変更。
+
+```css
+#stravaConnectButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#stravaConnectButton img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+
+#stravaConnectButton:disabled {
+  color: #dce8f5;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: default;
+}
+```
+
+Commit済み。
+
+本番 `https://runnersrings.com` で表示確認実施。
+
+---
+
+### 今回判明した課題
+
+現在、Strava連携済みの場合は、
+
+`✓ Strava連携済み`
+
+へ表示変更し、
+
+`disabled = true`
+
+としているため、Runner’s Rings側からStrava連携を解除できない。
+
+現在の仕様：
+
+* 未接続
+
+  * Strava公式「Connect with Strava」ボタン
+* 接続済み
+
+  * `✓ Strava連携済み`
+  * 操作不可
+
+次回、この仕様を改善する。
+
+---
+
+### 次回最優先
+
+**Runner’s Rings側からStrava連携解除できる機能を実装する。**
+
+想定仕様：
+
+* 未接続
+
+  * Strava公式「Connect with Strava」
+* 接続済み
+
+  * `✓ Strava連携済み`
+  * 「連携を解除」操作を用意
+
+解除時は画面表示だけでなく、
+
+* Strava側の認可解除
+* `strava_connections` の削除
+* Runner’s Ringsのラン本体は残す
+
+という既存のdeauthorization方針と整合させる。
+
+※ Client Secret等をブラウザへ出さず、Supabase Edge Function側で安全に処理する。
+
+---
+
+### Strava 11人目以降の審査準備
+
+今後の審査準備項目：
+
+* Strava公式Connectボタン対応
+* Stravaブランド表記確認
+* Stravaデータ表示画面のスクリーンショット準備
+* API利用方法・Webhook構成確認
+* Runner’s Ringsの公開URL確認
+* Developer Program申請準備
+* 必要に応じてAthlete Capacity拡大申請
+
+---
+
+### 現在地
+
+* Version：**0.9 Beta**
+* Strava主要機能：完了
+* Strava Webhook主要QA：完了
+* 独自ドメイン：移行済み
+* AdSense：審査待ち
+* Strava Athlete Capacity：**10**
+* 現在接続数：**2**
+* 11人目以降のStrava審査準備：**開始**
+* Strava公式Connectボタン対応：**実装済み**
+* Runner’s Rings側からのStrava連携解除：**未実装・次回対応**
+
+---
+
+これを今の開発メモの末尾にそのまま追加すればOK。
+
 
 ============================================================
 --><!DOCTYPE html>
