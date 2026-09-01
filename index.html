@@ -1031,14 +1031,25 @@ CNAME
 }
     /* Strava連携ボタン */
 #stravaConnectButton {
-  background: #fc4c02;
-  color: #ffffff;
+  background: transparent;
   border: none;
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
 }
 
+#stravaConnectButton img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+
+#stravaConnectButton:disabled {
+  color: #dce8f5;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: default;
+}
+    
 /* 地図に戻るボタン */
 #backToMapButton {
   display: block;
@@ -1463,7 +1474,7 @@ CNAME
   </button>
 
   <button id="stravaConnectButton" type="button">
-  Connect with Strava
+  <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
 </button>
 </div>
 <div id="status">
@@ -2132,8 +2143,8 @@ async function updateStravaConnectionStatus() {
     stravaConnectButton.disabled =
       true;
   } else {
-    stravaConnectButton.textContent =
-      'Stravaと連携';
+    stravaConnectButton.innerHTML =
+  '<img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">';
 
     stravaConnectButton.disabled =
       false;
