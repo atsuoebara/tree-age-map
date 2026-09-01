@@ -1667,7 +1667,7 @@ Commit済み。
     ログアウト
   </button>
 
-  <button id="stravaConnectButton" type="button">
+  <button id="stravaConnectButton" type="button" style="display:none;">
   <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
 </button>
 
@@ -2405,6 +2405,8 @@ async function updateStravaConnectionStatus() {
 
     stravaConnectButton.disabled =
       true;
+    stravaConnectButton.style.display =
+  'inline-block';
 
 stravaDisconnectButton.style.display =
   'inline-block';
@@ -2415,6 +2417,8 @@ stravaDisconnectButton.style.display =
 
     stravaConnectButton.disabled =
       false;
+stravaConnectButton.style.display =
+  'inline-block';    
 
 stravaDisconnectButton.style.display =
   'none';
