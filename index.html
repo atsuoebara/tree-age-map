@@ -2436,6 +2436,15 @@ const accountSaveButton =
   document.getElementById(
     'accountSaveButton'
   );  
+const accountNewEmailInput =
+  document.getElementById(
+    'accountNewEmailInput'
+  );
+
+const accountNewPasswordInput =
+  document.getElementById(
+    'accountNewPasswordInput'
+  );  
  const accountAvatar =
   document.getElementById(
     'accountAvatar'
@@ -2508,17 +2517,36 @@ if (avatarFile) {
   }
 }    
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.updateUser({
-      data: {
-        display_name: displayName,
-  avatar_path: avatarPath
-      }
-    });
+  const newEmail =
+  accountNewEmailInput.value.trim();
 
+const newPassword =
+  accountNewPasswordInput.value;
+
+const updateData = {
+  data: {
+    display_name: displayName,
+    avatar_path: avatarPath
+  }
+};
+
+if (newEmail) {
+  updateData.email =
+    newEmail;
+}
+
+if (newPassword) {
+  updateData.password =
+    newPassword;
+}
+
+const {
+  data,
+  error
+} =
+  await supabaseClient.auth.updateUser(
+    updateData
+  );
   if (error) {
     alert('表示名の保存に失敗しました。');
     console.error(error);
@@ -2532,7 +2560,20 @@ if (avatarFile) {
   ).textContent =
     displayName || 'アカウント';
 
-  alert('表示名を保存しました。');
+  let saveMessage =
+  'アカウント情報を保存しました。';
+
+if (newEmail) {
+  saveMessage +=
+    '\n新しいメールアドレスの確認メールをご確認ください。';
+}
+
+if (newPassword) {
+  saveMessage +=
+    '\nパスワードを変更しました。';
+}
+
+alert(saveMessage);
 });  
   const stravaConnectButton =
   document.getElementById(
