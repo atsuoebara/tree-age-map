@@ -2436,6 +2436,20 @@ const accountSaveButton =
   document.getElementById(
     'accountSaveButton'
   );  
+ const accountAvatar =
+  document.getElementById(
+    'accountAvatar'
+  );
+
+const accountAvatarLarge =
+  document.getElementById(
+    'accountAvatarLarge'
+  );
+
+const accountAvatarInput =
+  document.getElementById(
+    'accountAvatarInput'
+  ); 
  accountProfile.addEventListener('click', () => {
   accountPanel.style.display = 'block';
 });
@@ -2443,7 +2457,22 @@ const accountSaveButton =
 accountCloseButton.addEventListener('click', () => {
   accountPanel.style.display = 'none';
 }); 
-accountSaveButton.addEventListener('click', async () => {
+accountAvatarInput.addEventListener('change', () => {
+  const file =
+    accountAvatarInput.files?.[0];
+
+  if (!file) return;
+
+  const previewUrl =
+    URL.createObjectURL(file);
+
+  accountAvatar.src =
+    previewUrl;
+
+  accountAvatarLarge.src =
+    previewUrl;
+});
+  accountSaveButton.addEventListener('click', async () => {
   const displayName =
     accountDisplayNameInput.value.trim();
 
