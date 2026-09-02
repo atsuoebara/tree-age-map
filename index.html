@@ -880,7 +880,142 @@ Strava 11人目以降の申請準備を続行。
 4. Privacy PolicyのStravaデータ取扱い確認
 5. 公開URL・OAuth・Webhook構成確認
 6. Developer Program / Athlete Capacity拡大申請
+【2026-09-02 開発メモ追記：使い方ページ・新規登録案内・テスター準備】
 
+### 新規登録画面
+・新規登録時の案内不足を改善。
+・Supabase Authenticationの現在設定を確認。
+・Minimum password length は 6 characters。
+・認証設定自体は変更せず、現行設定をそのまま利用。
+
+・index.html の新規登録画面に以下の案内を追加。
+  - パスワードは6文字以上で設定してください。
+  - 新規登録後、Supabase Authから確認メールが届きます。
+  - メール内の「Confirm email address」をタップすると登録が完了します。
+
+・本番 runnersrings.com で表示確認済み。
+
+### 確認メール
+・Supabase標準メール送信を継続使用。
+・Custom SMTPは現在使用しない。
+・確認メールは英語だが、使い方ページと新規登録画面で操作方法を案内する方針。
+・確認メール画像は公開ページには掲載せず、文章説明のみで対応する。
+
+### 使い方ページ
+・how-to.html を継続整備。
+
+・以下の案内画像を掲載。
+  - 新規登録
+    howto-signup.jpeg
+  - Strava未連携
+    howto-strava-connect.jpeg
+  - Strava連携済み
+    howto-strava-connected.jpeg
+  - 地図の見方
+    howto-map.jpeg
+  - iPhone ホーム画面追加
+    howto-iphone-home.png
+  - Android ホーム画面追加
+    howto-android-home.png
+  - GPXインポート
+    howto-gpx-import.png
+
+・Strava連携説明は、
+  ① 未連携状態
+  ② 連携完了状態
+  の2画像構成で掲載。
+
+・iPhone / Androidともホーム画面追加方法を画像付きで案内。
+
+・how-to.html 最下部に
+  「Runner's Ringsを開く」
+  ボタンを追加。
+・Webアプリとして開いた場合でも、Runner's Rings本体へ戻れる導線を確保。
+
+### 各公開ページの戻る導線確認
+以下のページを確認。
+
+・how-to.html
+  → Runner's Ringsを開く ボタン追加済み
+
+・privacy.html
+  → Runner's Ringsを開く ボタンあり
+
+・terms.html
+  → Runner's Ringsを開く ボタンあり
+
+・contact.html
+  → Runner's Ringsを開く ボタンあり
+
+・about-runners-rings.html
+  → Runner's Ringsへ戻る ボタンあり
+
+WEBアプリ表示でも各ページから本体へ戻れる状態を確認。
+
+### GPXインポート案内
+・Runner's Rings側では、
+  「＋ランを追加」
+  → GPXファイルを選択
+  → 「開く」
+  → 取り込み完了
+  の流れを説明する。
+
+・GPXファイルの書き出し方法は、
+  Garmin / COROS等の各サービス公式ヘルプを案内する方針。
+
+・Garmin公式ヘルプで、
+  Garmin Connectから個別アクティビティを
+  「GPXにエクスポート」
+  できることを確認。
+
+・Runner's Rings側で各メーカーの書き出し手順を細かく管理しない。
+・各サービス側のUI変更によるメンテナンス負荷を避ける。
+
+### テスター募集
+・正式公開前のテストユーザー募集を開始。
+・知人等へ直接テスト協力を依頼中。
+
+・テスターには主に以下を確認してもらう。
+  - 新規登録で迷わないか
+  - 確認メールで止まらないか
+  - Strava連携まで進めるか
+  - 分かりにくい画面や操作がないか
+  - iPhone / Androidの違い
+
+### Strava Athlete Capacity
+・Standard tier の接続上限は10アスリート。
+・Developer Program / Athlete Capacity拡大申請は、
+  10人到達後に進める。
+
+・現在はテスターを集めて10人到達を優先する。
+
+### 現在地
+Version：0.9 Beta
+
+✅ 新規登録案内改善
+✅ パスワード6文字以上表示
+✅ 確認メール案内表示
+✅ 使い方ページ公開
+✅ 新規登録画像掲載
+✅ Strava未連携画像掲載
+✅ Strava連携済み画像掲載
+✅ 地図説明画像掲載
+✅ iPhoneホーム画面追加画像掲載
+✅ Androidホーム画面追加画像掲載
+✅ GPXインポート画像掲載
+✅ WEBアプリ用戻る導線確認
+✅ Garmin GPX案内方針整理
+⏳ テスター募集・実機QA進行中
+⏳ Strava接続10人到達待ち
+⏳ AdSense審査待ち
+
+### 次回
+1. Strava API Dashboardで現在の接続アスリート数を確認
+2. テスターからのフィードバック確認
+3. 新規登録 → メール確認 → ログイン → Strava連携の実機QA
+4. 不具合・分かりにくい箇所を優先修正
+5. Strava接続10人到達後、Developer Program申請準備
+6. Version 1.0までの残工程へ戻る
 
 ============================================================
 --><!DOCTYPE html>
