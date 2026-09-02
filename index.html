@@ -2427,6 +2427,15 @@ const accountCloseButton =
   document.getElementById(
     'accountCloseButton'
   );
+const accountDisplayNameInput =
+  document.getElementById(
+    'accountDisplayNameInput'
+  );
+
+const accountSaveButton =
+  document.getElementById(
+    'accountSaveButton'
+  );  
  accountProfile.addEventListener('click', () => {
   accountPanel.style.display = 'block';
 });
@@ -2434,6 +2443,35 @@ const accountCloseButton =
 accountCloseButton.addEventListener('click', () => {
   accountPanel.style.display = 'none';
 }); 
+accountSaveButton.addEventListener('click', async () => {
+  const displayName =
+    accountDisplayNameInput.value.trim();
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.updateUser({
+      data: {
+        display_name: displayName
+      }
+    });
+
+  if (error) {
+    alert('表示名の保存に失敗しました。');
+    console.error(error);
+    return;
+  }
+
+  currentUser = data.user;
+
+  document.getElementById(
+    'accountDisplayName'
+  ).textContent =
+    displayName || 'アカウント';
+
+  alert('表示名を保存しました。');
+});  
   const stravaConnectButton =
   document.getElementById(
     'stravaConnectButton'
@@ -9487,10 +9525,21 @@ async function init() {
     }
 
 
-    accountEmail.textContent =
   accountEmail.textContent = '';
-   accountCurrentEmail.textContent =
-  currentUser.email || ''; 
+
+accountCurrentEmail.textContent =
+  currentUser.email || '';
+
+const savedDisplayName =
+  currentUser.user_metadata?.display_name || '';
+
+document.getElementById(
+  'accountDisplayName'
+).textContent =
+  savedDisplayName || 'アカウント';
+
+accountDisplayNameInput.value =
+  savedDisplayName;
 
     authArea.style.display =
       'none';
