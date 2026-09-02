@@ -1167,6 +1167,32 @@ Version：0.9 Beta
       gap:10px;
       border-top:1px solid rgba(255,255,255,.06);
     }
+#accountProfile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  cursor:pointer;
+}
+
+#accountAvatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+}
+
+#accountProfileText{
+  min-width:0;
+}
+
+#accountDisplayName{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+}
 
     #accountEmail{
       min-width:0;
@@ -1176,7 +1202,80 @@ Version：0.9 Beta
       text-overflow:ellipsis;
       white-space:nowrap;
     }
+#accountPanel{
+  margin:12px;
+  padding:18px;
+  background:#132237;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.08);
+}
 
+#accountPanel h2{
+  margin:0 0 18px;
+  font-size:18px;
+}
+
+#accountAvatarArea{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:20px;
+}
+
+#accountAvatarLarge{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+}
+
+#accountPanel label{
+  display:block;
+  margin:14px 0 6px;
+  font-size:12px;
+  color:#b8c5d4;
+}
+
+#accountPanel input{
+  width:100%;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#0f1d2f;
+  color:#ffffff;
+  font-size:14px;
+}
+
+#accountCurrentEmail{
+  padding:11px 12px;
+  border-radius:10px;
+  background:#0f1d2f;
+  color:#dce8f5;
+  font-size:14px;
+}
+
+#accountSaveButton,
+#accountCloseButton{
+  width:100%;
+  margin-top:14px;
+  padding:12px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#accountSaveButton{
+  border:0;
+  background:#ff2bd6;
+  color:#ffffff;
+}
+
+#accountCloseButton{
+  border:1px solid rgba(255,255,255,.15);
+  background:#17283d;
+  color:#dce8f5;
+}
     #logoutButton{
       flex:0 0 auto;
       border:1px solid rgba(255,255,255,.15);
@@ -1982,7 +2081,18 @@ Version：0.9 Beta
 <main id="appRoot">
 
   <div id="accountBar">
-  <div id="accountEmail"></div>
+  <div id="accountProfile" role="button" tabindex="0" aria-label="アカウント設定を開く">
+  <img
+    id="accountAvatar"
+    src="icon.PNG"
+    alt="プロフィール画像"
+  >
+
+  <div id="accountProfileText">
+    <div id="accountDisplayName">アカウント</div>
+    <div id="accountEmail"></div>
+  </div>
+</div>
 
   <button id="logoutButton">
     ログアウト
@@ -1997,6 +2107,56 @@ Version：0.9 Beta
 </button>
     
 </div>
+<section id="accountPanel" style="display:none;">
+
+  <h2>アカウント設定</h2>
+
+  <div id="accountAvatarArea">
+    <img
+      id="accountAvatarLarge"
+      src="icon.PNG"
+      alt="プロフィール画像"
+    >
+    <input
+      id="accountAvatarInput"
+      type="file"
+      accept="image/*"
+    >
+  </div>
+
+  <label for="accountDisplayNameInput">表示名</label>
+  <input
+    id="accountDisplayNameInput"
+    type="text"
+    placeholder="表示名"
+  >
+
+  <label>現在のメールアドレス</label>
+  <div id="accountCurrentEmail"></div>
+
+  <label for="accountNewEmailInput">メールアドレスを変更</label>
+  <input
+    id="accountNewEmailInput"
+    type="email"
+    placeholder="新しいメールアドレス"
+  >
+
+  <label for="accountNewPasswordInput">パスワードを変更</label>
+  <input
+    id="accountNewPasswordInput"
+    type="password"
+    placeholder="新しいパスワード"
+  >
+
+  <button id="accountSaveButton" type="button">
+    変更を保存
+  </button>
+
+  <button id="accountCloseButton" type="button">
+    閉じる
+  </button>
+
+</section>  
 <div id="status">
   データを読み込み中…
 </div>
@@ -2249,7 +2409,21 @@ const logoutButton =
   document.getElementById(
     'logoutButton'
   );
-const stravaConnectButton =
+const accountProfile =
+  document.getElementById(
+    'accountProfile'
+  );
+
+const accountPanel =
+  document.getElementById(
+    'accountPanel'
+  );
+
+const accountCloseButton =
+  document.getElementById(
+    'accountCloseButton'
+  );
+  const stravaConnectButton =
   document.getElementById(
     'stravaConnectButton'
   );
