@@ -2473,8 +2473,40 @@ accountAvatarInput.addEventListener('change', () => {
     previewUrl;
 });
   accountSaveButton.addEventListener('click', async () => {
+const avatarFile =
+  accountAvatarInput.files?.[0];    
   const displayName =
     accountDisplayNameInput.value.trim();
+let avatarPath =
+  currentUser.user_metadata?.avatar_path || '';
+
+if (avatarFile) {
+  const fileExt =
+    avatarFile.name.split('.').pop();
+
+  avatarPath =
+    `${currentUser.id}/avatar.${fileExt}`;
+
+  const {
+    error: avatarUploadError
+  } =
+    await supabaseClient
+      .storage
+      .from('avatars')
+      .upload(
+        avatarPath,
+        avatarFile,
+        {
+          upsert: true
+        }
+      );
+
+  if (avatarUploadError) {
+    alert('プロフィール画像の保存に失敗しました。');
+    console.error(avatarUploadError);
+    return;
+  }
+}    
 
   const {
     data,
@@ -2482,7 +2514,8 @@ accountAvatarInput.addEventListener('change', () => {
   } =
     await supabaseClient.auth.updateUser({
       data: {
-        display_name: displayName
+        display_name: displayName,
+  avatar_path: avatarPath
       }
     });
 
@@ -9569,6 +9602,30 @@ document.getElementById(
 
 accountDisplayNameInput.value =
   savedDisplayName;
+
+const savedAvatarPath =
+  currentUser.user_metadata?.avatar_path || '';
+
+if (savedAvatarPath) {
+  const {
+    data: avatarData
+  } =
+    await supabaseClient
+      .storage
+      .from('avatars')
+      .createSignedUrl(
+        savedAvatarPath,
+        60 * 60 * 24
+      );
+
+  if (avatarData?.signedUrl) {
+    accountAvatar.src =
+      avatarData.signedUrl;
+
+    accountAvatarLarge.src =
+      avatarData.signedUrl;
+  }
+}    
 
     authArea.style.display =
       'none';
