@@ -2423,6 +2423,13 @@ const accountCloseButton =
   document.getElementById(
     'accountCloseButton'
   );
+ accountProfile.addEventListener('click', () => {
+  accountPanel.style.display = 'block';
+});
+
+accountCloseButton.addEventListener('click', () => {
+  accountPanel.style.display = 'none';
+}); 
   const stravaConnectButton =
   document.getElementById(
     'stravaConnectButton'
