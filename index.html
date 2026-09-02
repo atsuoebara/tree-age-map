@@ -1005,7 +1005,12 @@ Strava 11人目以降の申請準備を続行。
       color:white;
       border:1px solid rgba(255,255,255,.15);
     }
-
+.signupHelp{
+  margin: 2px 0 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #9cabbd;
+}
     #authMessage{
       min-height:20px;
       margin-top:13px;
@@ -1799,7 +1804,11 @@ Strava 11人目以降の申請準備を続行。
         autocomplete="current-password"
         placeholder="パスワード"
       >
-
+<div class="signupHelp">
+  <div>パスワードは6文字以上で設定してください。</div>
+  <div>新規登録後、Supabase Authから確認メールが届きます。</div>
+  <div>メール内の「Confirm email address」をタップすると登録が完了します。</div>
+</div>
       <div id="authButtons">
 
         <button
