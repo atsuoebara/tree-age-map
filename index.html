@@ -2418,6 +2418,10 @@ const accountPanel =
   document.getElementById(
     'accountPanel'
   );
+const accountCurrentEmail =
+  document.getElementById(
+    'accountCurrentEmail'
+  );  
 
 const accountCloseButton =
   document.getElementById(
@@ -9484,7 +9488,9 @@ async function init() {
 
 
     accountEmail.textContent =
-  'アカウント';
+  currentUser.email || '';
+   accountCurrentEmail.textContent =
+  currentUser.email || ''; 
 
     authArea.style.display =
       'none';
