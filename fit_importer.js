@@ -1,3 +1,3 @@
-import * as FitSDK from './fit-sdk/index.js';
+import * as FitSDK from './fit-sdk/src/index.js';
 
 console.log('FIT SDK loaded:', FitSDK);
