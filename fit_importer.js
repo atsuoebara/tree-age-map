@@ -3,7 +3,6 @@ import { Decoder, Stream } from './fit-sdk/src/index.js';
 console.log('FIT SDK loaded');
 
 const fitInput = document.createElement('input');
-
 fitInput.type = 'file';
 fitInput.accept = '.fit';
 fitInput.style.display = 'none';
@@ -11,10 +10,8 @@ fitInput.style.display = 'none';
 document.body.appendChild(fitInput);
 
 const fitTestButton = document.createElement('button');
-
 fitTestButton.textContent = 'FITテスト';
 fitTestButton.type = 'button';
-
 fitTestButton.style.margin = '8px';
 fitTestButton.style.padding = '10px 14px';
 
@@ -40,13 +37,6 @@ fitInput.onchange = async event => {
 
   try {
 
-    console.log(
-      'FIT file:',
-      file.name,
-      file.size,
-      'bytes'
-    );
-
     const arrayBuffer =
       await file.arrayBuffer();
 
@@ -54,13 +44,6 @@ fitInput.onchange = async event => {
       Stream.fromArrayBuffer(
         arrayBuffer
       );
-
-    console.log(
-      'isFIT:',
-      Decoder.isFIT(
-        stream
-      )
-    );
 
     const decoder =
       new Decoder(
@@ -78,9 +61,51 @@ fitInput.onchange = async event => {
       errors
     );
 
+    const session =
+      messages.sessionMesgs?.[0];
+
+    const records =
+      messages.recordMesgs || [];
+
+    const gpsRecords =
+      records.filter(
+        record =>
+          Number.isFinite(
+            record.positionLat
+          ) &&
+          Number.isFinite(
+            record.positionLong
+          )
+      );
+
     console.log(
-      'FIT messages:',
-      messages
+      '開始日時:',
+      session?.startTime
+    );
+
+    console.log(
+      'sport:',
+      session?.sport
+    );
+
+    console.log(
+      'subSport:',
+      session?.subSport
+    );
+
+    console.log(
+      '距離:',
+      session?.totalDistance
+    );
+
+    console.log(
+      'GPS座標数:',
+      gpsRecords.length
+    );
+
+    console.log(
+      'session:',
+      session
     );
 
   }
