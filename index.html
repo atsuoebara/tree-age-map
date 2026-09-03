@@ -1087,7 +1087,348 @@ Version：0.9 Beta
 ✅ メイン画面でメールアドレスを非表示
 
 アカウント / プロフィール機能の主要実装完了。
+<!--
+============================================================
+Runner's Rings 開発メモ / 2026-09-03
 
+【現在のVersion】
+・Version 0.9 Beta
+・APP_VERSION は1か所管理を継続
+・リリースや節目ごとに APP_VERSION のみ更新する
+
+【本番環境】
+・本番URL：https://runnersrings.com
+・GitHub Pages：atsuoebara/tree-age-map
+・独自ドメイン接続済み
+・HTTPS有効
+・Cloudflare利用
+・CNAME「www → atsuoebara.github.io」は正常設定のため削除しない
+
+【現在の主要機能】
+・Supabase Auth ログイン
+・プロフィール設定
+・表示名
+・プロフィール画像
+・メールアドレス変更
+・パスワード変更
+・ログアウト
+・Strava連携解除
+・アカウント画面閉じる
+・Supabase Storage の private avatars 利用
+・signed URL によるプロフィール画像復元
+
+【Strava連携】
+・Strava OAuth連携：完成
+・Strava起動時自動同期：実装済み
+・30分以内の再同期はスキップ
+・対象：
+  - Run
+  - TrailRun
+  - VirtualRun
+・ルート付きランのみ保存
+・Strava Webhook対応：
+  - create
+  - update
+  - delete
+  - deauthorization
+・Runner's Rings 側からStrava連携解除可能
+・再連携可能
+・Connect with Strava 公式ボタン使用
+・ボタンちらつき対策済み
+
+【Stravaデータ削除仕様】
+・Strava側Activity削除時：
+  Runner's Rings側のラン自体は残す
+  strava_id のみ null にする
+・Strava deauthorization時：
+  runs は残す
+  strava_connections のみ削除
+
+【重複判定】
+・Garmin/GPX既存ランとStravaランの重複判定・統合：実装済み
+・同日＋距離許容内
+・started_at が双方にある場合：
+  開始時刻5分以内で同一ラン判定
+・started_at不足の旧データ：
+  ルート判定へフォールバック
+
+【重要：DB制約】
+・runs_user_strava_unique
+  (user_id, strava_id)
+・strava-sync 側：
+  onConflict: "user_id,strava_id"
+
+※ 上記2つはセットで動作しているため、
+   勝手に削除・変更しないこと
+
+【地図・ラン表示】
+・選択した1ランを濃い青＋太線で最前面表示
+・短距離ラン選択時のズーム改善済み
+・クラウド保存
+・同日複数ランの時刻順表示
+・GPXインポート
+・複数GPX一括インポート
+・重複判定
+・走行ルートから市町村等を解析
+・cells生成
+
+【既存GPX一括インポート】
+・「＋ランを追加」は複数GPX選択対応済み
+・multiple 指定済み
+・一括処理で以下を管理：
+  - added
+  - duplicates
+  - invalidFormat
+  - failed
+  - cloudSaved
+  - cloudFailed
+・「一括インポート完了」表示あり
+・既存の findPossibleDuplicate() を利用
+・saveGPXToDevice()
+・registerActivity()
+・saveActivityToCloud()
+  の既存フローを利用
+
+【GPXパーサー】
+・buildActivityFromGPXText() 実装済み
+・DOMParser使用
+・metadata > time または trkpt > time から日時取得
+・trkpt の lat/lon から latlngs 作成
+・GPS点2点未満は除外
+・analyseRoute(latlngs) 利用
+・buildCellsFromRoute(latlngs) 利用
+
+【広告】
+・AdSenseサイト追加済み
+・所有権確認済み
+・現在審査待ち
+・ログイン後メイン広告枠は地図直下の1枠
+・現在は ADVERTISEMENT プレースホルダー表示
+
+【公開ページ】
+・about-runners-rings.html
+・how-to.html
+・privacy.html
+・terms.html
+・contact.html
+・about.html は削除済み
+・今後復活させない
+・ハウトゥー表記に統一
+・Strava連携理由、公開範囲に関する説明掲載済み
+
+【メール】
+・Custom SMTP：OFF
+・Supabase標準メールを使用
+・過去にSMTP設定で不具合があったため、
+  安易にCustom SMTPへ戻さない
+・パスワード最小6文字
+・確認メールは英語
+
+============================================================
+【過去データ一括取り込み計画】
+
+目的：
+Garmin / COROS / Polar / Suunto / HUAWEI 等の
+過去ランニング履歴を Runner's Rings にまとめて取り込めるようにする
+
+基本方針：
+・メーカー別の巨大な専用処理は作らない
+・FIT / GPX / TCX の共通インポーターを中心にする
+・将来的にZIP直接選択対応
+・ユーザーがZIPを手動解凍しなくても済む形を目標
+・ブラウザ内で解析を行う
+・Garmin等のID・パスワードは取得しない
+・必要なランデータのみSupabaseへ保存
+・生ZIPをサーバーへ送らない構成を優先
+
+対応優先順位：
+1. Garmin
+2. COROS
+3. Polar
+4. Suunto
+5. HUAWEI
+6. Apple Watch は後回し
+
+想定対応形式：
+・GPX
+・FIT
+・TCX
+・ZIP直接選択（将来）
+
+大量データ対策：
+・ZIP全展開を一度にメモリへ載せない方向
+・順次処理
+・バッチ保存
+・将来的にWeb Worker検討
+・進捗表示
+・取り込み前件数表示
+・取り込み完了サマリー
+
+============================================================
+【Garmin FIT対応 / 2026-09-03進捗】
+
+・Garmin公式 JavaScript FIT SDK を採用
+・@garmin/fitsdk
+・公式GitHubの fit-javascript-sdk を使用
+
+現在の配置：
+fit-sdk/
+  src/
+    accumulator.js
+    bit-stream.js
+    crc-calculator.js
+    decoder.js
+    encoder.js
+    fit.js
+    index.js
+    mesg-definition.js
+    output-stream.js
+    profile.js
+    stream.js
+    utils.js
+    utils-hr-mesg.js
+    utils-internal.js
+    utils-memo-glob.js
+
+・fit_importer.js を新規追加
+・index.html から以下で読み込み：
+  <script type="module" src="./fit_importer.js"></script>
+
+※ SDK内部importの都合で
+   fit-sdk/src/ 構成が必要
+※ fit-sdk直下配置では 404 が発生したため、
+   src構成へ修正済み
+
+【実FITテスト】
+Garmin Connectから実際のActivityを
+「ファイルのエクスポート」でFIT取得
+
+テストファイル：
+24207656561_ACTIVITY.fit
+
+ファイルサイズ：
+151667 bytes
+
+テスト元ラン：
+・高崎市 ラン
+・5.01 km
+・30:59
+・平均 6:11/km
+
+【FIT SDK解析結果】
+・isFIT：true
+・FIT errors：[]
+・実FIT読み込み成功
+
+取得確認済み：
+・開始日時
+  2026-09-02 18:23:31 JST
+・sport
+  running
+・subSport
+  generic
+・距離
+  5010.1 m
+・GPS座標数
+  1861点
+
+【GPS座標変換】
+FITの positionLat / positionLong は
+semicircles形式のため度数へ変換
+
+変換式：
+degrees =
+semicircles * (180 / 2^31)
+
+・latlngs生成成功
+・latlngs件数：1861
+・FIT → 通常の緯度経度配列変換まで成功
+
+【現在のFIT到達点】
+Garmin FIT
+↓
+ブラウザで読込
+↓
+FIT SDK解析
+↓
+running判定
+↓
+開始日時取得
+↓
+距離取得
+↓
+GPSレコード取得
+↓
+semicircles → 緯度経度変換
+↓
+latlngs生成
+
+ここまで完成・動作確認済み
+
+【次回作業】
+1. latlngs を既存 analyseRoute() へ接続
+2. 市町村・都道府県・計算距離の確認
+3. buildActivityFromFIT() 作成
+4. GPXと同じactivity形式へ変換
+5. findPossibleDuplicate() へ接続
+6. registerActivity()
+7. saveActivityToCloud()
+8. FITテストボタンから実際の「＋ランを追加」へ統合
+
+※ fit_importer.js は ES Module
+※ index.html本体は通常script
+※ analyseRoute等との接続方法は慎重に行う
+※ 部分追加で順番ミスが起きたため、
+   次回は fit_importer.js 丸ごと差し替え方式を基本にする
+
+============================================================
+【Garmin ZIPについて】
+
+・新しいGarminフルエクスポートを申請済み
+・2026-09-03現在：到着待ち
+・手元の古いGarmin ZIPを確認したところ、
+  .fit ファイルが含まれていなかった
+
+重要：
+・GarminフルエクスポートZIPに
+  必ずFITが入っている前提では設計しない
+・ZIP内のファイル形式を自動判定する
+・FIT / GPX / TCX 等を探索する
+・対応ファイルが無い場合は
+  分かりやすく案内する
+
+============================================================
+【今後の構想】
+
+・共通インポーター化
+・メーカー問わず過去ランを取り込める仕組み
+・スマホ完結を最優先
+・「走った記録ではなく、走った人生を残す。」
+・機能を増やしすぎずシンプルを維持
+
+将来：
+・RUNNERS
+・TOTAL RUNS
+・TOTAL DISTANCE
+  などのコミュニティ集計を検討
+
+※ ユーザー数が十分増えてから実装
+※ テストアカウントは将来の公開集計から除外する
+
+============================================================
+【次回再開地点】
+
+FIT → latlngs 1861点まで成功済み。
+
+次は：
+「既存 analyseRoute() とFITを接続する」
+
+最初からSDK導入をやり直さないこと。
+複数GPX対応も既に完成済みなので、
+未実装として扱わないこと。
+
+============================================================
+-->
 ============================================================
 --><!DOCTYPE html>
 <html lang="ja">
