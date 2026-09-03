@@ -308,3 +308,5 @@ fitInput.onchange =
     }
 
   };
+window.buildActivityFromFIT =
+  buildActivityFromFIT;
