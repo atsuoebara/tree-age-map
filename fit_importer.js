@@ -116,6 +116,15 @@ async function buildActivityFromFIT(file) {
     );
   }
 
+  if (
+    typeof window.buildCellsFromRoute !==
+    'function'
+  ) {
+    throw new Error(
+      'buildCellsFromRoute が見つかりません'
+    );
+  }
+
   const analysis =
     window.analyseRoute(
       latlngs
@@ -135,43 +144,22 @@ async function buildActivityFromFIT(file) {
       ? session.totalDistance / 1000
       : analysis.calculatedKm;
 
-  let cells = [];
-
-  if (
-    typeof window.buildCellsFromRoute ===
-    'function'
-  ) {
-
-    cells =
-      Array.from(
-        window.buildCellsFromRoute(
-          latlngs
-        )
-      );
-
-    console.log(
-      'buildCellsFromRoute 接続成功'
+  const cells =
+    Array.from(
+      window.buildCellsFromRoute(
+        latlngs
+      )
     );
-
-  }
-  else {
-
-    console.log(
-      'buildCellsFromRoute はまだFIT側から参照できません'
-    );
-
-  }
 
   return {
 
     source: 'fit',
 
     name:
-      file.name
-        .replace(
-          /\.fit$/i,
-          ''
-        ),
+      file.name.replace(
+        /\.fit$/i,
+        ''
+      ),
 
     date,
 
@@ -221,51 +209,101 @@ fitInput.onchange =
         );
 
       console.log(
-        'FIT activity 作成成功'
-      );
-
-      console.log(
-        'activity:',
+        'FIT activity 作成成功:',
         activity
       );
 
+      if (
+        typeof window.findPossibleDuplicate !==
+        'function'
+      ) {
+        throw new Error(
+          'findPossibleDuplicate が見つかりません'
+        );
+      }
+
+      if (
+        typeof window.registerActivity !==
+        'function'
+      ) {
+        throw new Error(
+          'registerActivity が見つかりません'
+        );
+      }
+
+      if (
+        typeof window.saveActivityToCloud !==
+        'function'
+      ) {
+        throw new Error(
+          'saveActivityToCloud が見つかりません'
+        );
+      }
+
+      const duplicate =
+        window.findPossibleDuplicate(
+          activity
+        );
+
+      if (duplicate) {
+
+        console.log(
+          '✅ 重複判定成功：既存ランのため保存しません'
+        );
+
+        console.log(
+          '重複対象:',
+          duplicate
+        );
+
+        return;
+      }
+
+      const registered =
+        window.registerActivity(
+          activity
+        );
+
+      if (!registered) {
+
+        console.log(
+          '✅ 完全一致：既に登録済みのため保存しません'
+        );
+
+        return;
+      }
+
       console.log(
-        '日時:',
-        activity.date
+        '新規FITとして登録しました'
+      );
+
+      const savedRow =
+        await window.saveActivityToCloud(
+          activity
+        );
+
+      console.log(
+        '☁️ FITクラウド保存成功'
       );
 
       console.log(
-        '距離km:',
-        activity.distance
-      );
-
-      console.log(
-        'GPS座標数:',
-        activity.latlngs.length
-      );
-
-      console.log(
-        '都道府県:',
-        activity.prefectures
-      );
-
-      console.log(
-        '市町村:',
-        activity.cities
-      );
-
-      console.log(
-        'cells数:',
-        activity.cells.length
+        '保存結果:',
+        savedRow
       );
 
     }
     catch(error) {
 
       console.error(
-        'FIT読み込み失敗:',
+        'FIT処理失敗:',
         error
       );
+
+    }
+    finally {
+
+      fitInput.value =
+        '';
 
     }
 
