@@ -7749,34 +7749,66 @@ async function importSelectedGPXFiles(
     );
 
 
-    if (
-      !file.name
-        .toLowerCase()
-        .endsWith(
-          '.gpx'
-        )
-    ) {
+    const lowerName =
+  file.name.toLowerCase();
 
-      invalidFormat++;
+const isGPX =
+  lowerName.endsWith(
+    '.gpx'
+  );
 
-      continue;
+const isFIT =
+  lowerName.endsWith(
+    '.fit'
+  );
 
-    }
+if (
+  !isGPX &&
+  !isFIT
+) {
 
+  invalidFormat++;
+
+  continue;
+}
 
     try {
 
-      const text =
-        await file.text();
+      let text =
+  null;
 
+let activity;
 
-      const activity =
-        buildActivityFromGPXText(
-          text,
-          file.name,
-          'local'
-        );
+if (isFIT) {
 
+  if (
+    typeof window.buildActivityFromFIT !==
+    'function'
+  ) {
+    throw new Error(
+      'FIT読込機能が準備できていません'
+    );
+  }
+
+  activity =
+    await window.buildActivityFromFIT(
+      file
+    );
+
+}
+else {
+
+  text =
+    await file.text();
+
+  activity =
+    buildActivityFromGPXText(
+      text,
+      file.name,
+      'local'
+    );
+
+}
 
       const exact =
         createActivitySignature(
@@ -7825,12 +7857,15 @@ duplicates++;
 continue;
         }
 
-      activity.localId =
-        await saveGPXToDevice(
-          file.name,
-          text
-        );
+      if (isGPX) {
 
+  activity.localId =
+    await saveGPXToDevice(
+      file.name,
+      text
+    );
+
+}
 
       registerActivity(
         activity
