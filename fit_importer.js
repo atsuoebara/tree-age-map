@@ -26,165 +26,247 @@ fitTestButton.onclick = () => {
   fitInput.click();
 };
 
-fitInput.onchange = async event => {
+const semicirclesToDegrees =
+  value =>
+    value * (180 / Math.pow(2, 31));
 
-  const file =
-    event.target.files?.[0];
+async function buildActivityFromFIT(file) {
 
-  if (!file) {
-    return;
+  const arrayBuffer =
+    await file.arrayBuffer();
+
+  const stream =
+    Stream.fromArrayBuffer(
+      arrayBuffer
+    );
+
+  const decoder =
+    new Decoder(
+      stream
+    );
+
+  const {
+    messages,
+    errors
+  } =
+    decoder.read();
+
+  console.log(
+    'FIT errors:',
+    errors
+  );
+
+  const session =
+    messages.sessionMesgs?.[0];
+
+  if (!session) {
+    throw new Error(
+      'FITにsession情報がありません'
+    );
   }
 
-  try {
+  if (
+    session.sport !== 'running'
+  ) {
+    throw new Error(
+      `ランニング以外のFITです: ${session.sport}`
+    );
+  }
 
-    const arrayBuffer =
-      await file.arrayBuffer();
+  const records =
+    messages.recordMesgs || [];
 
-    const stream =
-      Stream.fromArrayBuffer(
-        arrayBuffer
-      );
-
-    const decoder =
-      new Decoder(
-        stream
-      );
-
-    const {
-      messages,
-      errors
-    } =
-      decoder.read();
-
-    console.log(
-      'FIT errors:',
-      errors
+  const gpsRecords =
+    records.filter(
+      record =>
+        Number.isFinite(
+          record.positionLat
+        ) &&
+        Number.isFinite(
+          record.positionLong
+        )
     );
 
-    const session =
-      messages.sessionMesgs?.[0];
-
-    const records =
-      messages.recordMesgs || [];
-
-    const gpsRecords =
-      records.filter(
-        record =>
-          Number.isFinite(
-            record.positionLat
-          ) &&
-          Number.isFinite(
-            record.positionLong
-          )
-      );
-
-    const semicirclesToDegrees =
-      value =>
-        value * (180 / Math.pow(2, 31));
-
-    const latlngs =
-      gpsRecords.map(
-        record => [
-          semicirclesToDegrees(
-            record.positionLat
-          ),
-          semicirclesToDegrees(
-            record.positionLong
-          )
-        ]
-      );
-
-    console.log(
-      'latlngs先頭:',
-      latlngs.slice(0, 5)
+  const latlngs =
+    gpsRecords.map(
+      record => [
+        semicirclesToDegrees(
+          record.positionLat
+        ),
+        semicirclesToDegrees(
+          record.positionLong
+        )
+      ]
     );
 
-    console.log(
-      'latlngs件数:',
-      latlngs.length
+  if (
+    latlngs.length < 2
+  ) {
+    throw new Error(
+      'GPS座標が不足しています'
+    );
+  }
+
+  if (
+    typeof window.analyseRoute !==
+    'function'
+  ) {
+    throw new Error(
+      'analyseRoute が見つかりません'
+    );
+  }
+
+  const analysis =
+    window.analyseRoute(
+      latlngs
     );
 
-    console.log(
-      '開始日時:',
-      session?.startTime
-    );
+  const date =
+    session.startTime
+      ? new Date(
+          session.startTime
+        )
+      : null;
 
-    console.log(
-      'sport:',
-      session?.sport
-    );
+  const distanceKm =
+    Number.isFinite(
+      session.totalDistance
+    )
+      ? session.totalDistance / 1000
+      : analysis.calculatedKm;
 
-    console.log(
-      'subSport:',
-      session?.subSport
-    );
+  let cells = [];
 
-    console.log(
-      '距離:',
-      session?.totalDistance
-    );
+  if (
+    typeof window.buildCellsFromRoute ===
+    'function'
+  ) {
 
-    console.log(
-      'GPS座標数:',
-      gpsRecords.length
-    );
-
-    if (
-      typeof window.analyseRoute ===
-      'function'
-    ) {
-
-      const analysis =
-        window.analyseRoute(
+    cells =
+      Array.from(
+        window.buildCellsFromRoute(
           latlngs
+        )
+      );
+
+    console.log(
+      'buildCellsFromRoute 接続成功'
+    );
+
+  }
+  else {
+
+    console.log(
+      'buildCellsFromRoute はまだFIT側から参照できません'
+    );
+
+  }
+
+  return {
+
+    source: 'fit',
+
+    name:
+      file.name
+        .replace(
+          /\.fit$/i,
+          ''
+        ),
+
+    date,
+
+    startedAt:
+      date,
+
+    year:
+      date
+        ? date.getFullYear()
+        : null,
+
+    distance:
+      distanceKm,
+
+    latlngs,
+
+    cityDistances:
+      analysis.cityDistances,
+
+    cities:
+      analysis.cities,
+
+    prefectures:
+      analysis.prefectures,
+
+    cells
+
+  };
+
+}
+
+fitInput.onchange =
+  async event => {
+
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+
+      const activity =
+        await buildActivityFromFIT(
+          file
         );
 
       console.log(
-        'analyseRoute 接続成功'
+        'FIT activity 作成成功'
       );
 
       console.log(
-        '解析距離km:',
-        analysis.calculatedKm
+        'activity:',
+        activity
+      );
+
+      console.log(
+        '日時:',
+        activity.date
+      );
+
+      console.log(
+        '距離km:',
+        activity.distance
+      );
+
+      console.log(
+        'GPS座標数:',
+        activity.latlngs.length
       );
 
       console.log(
         '都道府県:',
-        analysis.prefectures
+        activity.prefectures
       );
 
       console.log(
         '市町村:',
-        analysis.cities
+        activity.cities
       );
 
       console.log(
-        'analysis:',
-        analysis
+        'cells数:',
+        activity.cells.length
       );
 
     }
-    else {
+    catch(error) {
 
-      console.log(
-        'analyseRoute はまだFIT側から参照できません'
+      console.error(
+        'FIT読み込み失敗:',
+        error
       );
 
     }
 
-    console.log(
-      'session:',
-      session
-    );
-
-  }
-  catch(error) {
-
-    console.error(
-      'FIT読み込み失敗:',
-      error
-    );
-
-  }
-
-};
+  };
