@@ -78,6 +78,32 @@ fitInput.onchange = async event => {
           )
       );
 
+const semicirclesToDegrees =
+  value =>
+    value * (180 / Math.pow(2, 31));
+
+const latlngs =
+  gpsRecords.map(
+    record => [
+      semicirclesToDegrees(
+        record.positionLat
+      ),
+      semicirclesToDegrees(
+        record.positionLong
+      )
+    ]
+  );
+
+console.log(
+  'latlngs先頭:',
+  latlngs.slice(0, 5)
+);
+
+console.log(
+  'latlngs件数:',
+  latlngs.length
+);
+    
     console.log(
       '開始日時:',
       session?.startTime
