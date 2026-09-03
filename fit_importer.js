@@ -129,6 +129,49 @@ fitInput.onchange = async event => {
       gpsRecords.length
     );
 
+    if (
+      typeof window.analyseRoute ===
+      'function'
+    ) {
+
+      const analysis =
+        window.analyseRoute(
+          latlngs
+        );
+
+      console.log(
+        'analyseRoute 接続成功'
+      );
+
+      console.log(
+        '解析距離km:',
+        analysis.calculatedKm
+      );
+
+      console.log(
+        '都道府県:',
+        analysis.prefectures
+      );
+
+      console.log(
+        '市町村:',
+        analysis.cities
+      );
+
+      console.log(
+        'analysis:',
+        analysis
+      );
+
+    }
+    else {
+
+      console.log(
+        'analyseRoute はまだFIT側から参照できません'
+      );
+
+    }
+
     console.log(
       'session:',
       session
