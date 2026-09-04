@@ -6785,6 +6785,9 @@ async function inspectSelectedZIPFiles(
   let newFITCandidateCount =
     0;
 
+    const newFITCandidates =
+    [];
+  
     let uncheckableFITCount =
     0;
 
@@ -6959,6 +6962,9 @@ async function inspectSelectedZIPFiles(
                   else {
 
                     newFITCandidateCount++;
+                       newFITCandidates.push(
+                      candidateActivity
+                    );                 
 
                   }
 
@@ -7075,7 +7081,42 @@ async function inspectSelectedZIPFiles(
 
   }
 
-
+  const newFITCandidateDetails =
+    [
+      ...newFITCandidates
+    ]
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        a.date.getTime() -
+        b.date.getTime()
+    )
+    .map(
+      (
+        activity,
+        index
+      ) =>
+        (
+          index +
+          1
+        ) +
+        '. ' +
+        formatRunDate(
+          activity.date
+        ) +
+        ' ・ ' +
+        activity.distance.toFixed(
+          2
+        ) +
+        ' km ・ ' +
+        activity.name
+    )
+    .join(
+      '\n'
+    );
+  
   setStatus(
     '✅ ZIP内のランデータ候補を確認しました'
   );
@@ -7117,6 +7158,15 @@ async function inspectSelectedZIPFiles(
     'GPX ' +
     gpxCount +
     '件\n\n' +
+        (
+      newFITCandidateDetails
+        ? (
+            '【未登録候補一覧】\n' +
+            newFITCandidateDetails +
+            '\n\n'
+          )
+        : ''
+    ) +
     'この段階では保存していません。'
   );
 
