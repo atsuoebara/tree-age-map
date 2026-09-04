@@ -6754,7 +6754,16 @@ async function inspectSelectedZIPFiles(
     );
 
   }
+  if (
+    typeof window.inspectFITFile !==
+    'function'
+  ) {
 
+    throw new Error(
+      'FIT確認機能が準備できていません'
+    );
+
+  }
 
   let fitCount =
     0;
@@ -6762,6 +6771,15 @@ async function inspectSelectedZIPFiles(
     0;
 
   let fitOver50KBCount =
+    0;
+
+    let inspectedFITCount =
+    0;
+
+  let runningGPSCount =
+    0;
+
+  let fitInspectFailedCount =
     0;
 
   let gpxCount =
@@ -6835,6 +6853,60 @@ async function inspectSelectedZIPFiles(
           ) {
 
             fitOver10KBCount++;
+
+                        try {
+
+              const fitData =
+                await entry.async(
+                  'uint8array'
+                );
+
+              const fitFile =
+                new File(
+                  [
+                    fitData
+                  ],
+                  entry.name
+                );
+
+              const fitResult =
+                await window.inspectFITFile(
+                  fitFile
+                );
+
+
+              inspectedFITCount++;
+
+
+              if (
+                fitResult.isRunning &&
+                fitResult.hasGPS
+              ) {
+
+                runningGPSCount++;
+
+              }
+
+
+              if (
+                inspectedFITCount %
+                100 ===
+                0
+              ) {
+
+                setStatus(
+                  'FIT内容を確認中… ' +
+                  inspectedFITCount
+                );
+
+              }
+
+            }
+            catch(error) {
+
+              fitInspectFailedCount++;
+
+            }
 
           }
 
@@ -6944,6 +7016,15 @@ async function inspectSelectedZIPFiles(
     '件\n' +
     'FIT（50KB以上） ' +
     fitOver50KBCount +
+    '件\n' +
+        'FIT内容確認成功 ' +
+    inspectedFITCount +
+    '件\n' +
+    'ラン＋GPS候補 ' +
+    runningGPSCount +
+    '件\n' +
+    'FIT内容確認失敗 ' +
+    fitInspectFailedCount +
     '件\n' +
     'GPX ' +
     gpxCount +
