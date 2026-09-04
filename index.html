@@ -6762,6 +6762,115 @@ async function inspectSelectedZIPFiles(
   let gpxCount =
     0;
 
+  let innerZipCount =
+    0;
+
+
+  async function inspectZIP(
+    zipData,
+    depth = 0
+  ) {
+
+    if (
+      depth >
+      3
+    ) {
+
+      throw new Error(
+        'ZIPの階層が深すぎます'
+      );
+
+    }
+
+
+    const zip =
+      await window.JSZip.loadAsync(
+        zipData
+      );
+
+
+    for (
+      const entry of
+      Object.values(
+        zip.files
+      )
+    ) {
+
+      if (
+        entry.dir
+      ) {
+
+        continue;
+
+      }
+
+
+      const lowerName =
+        entry.name.toLowerCase();
+
+
+      if (
+        lowerName.endsWith(
+          '.fit'
+        )
+      ) {
+
+        fitCount++;
+
+      }
+      else if (
+        lowerName.endsWith(
+          '.gpx'
+        )
+      ) {
+
+        gpxCount++;
+
+      }
+      else if (
+        lowerName.endsWith(
+          '.zip'
+        )
+      ) {
+
+        innerZipCount++;
+
+
+        if (
+          innerZipCount >
+          20
+        ) {
+
+          throw new Error(
+            'ZIP内のZIPが多すぎます'
+          );
+
+        }
+
+
+        setStatus(
+          'ZIP内のZIPを確認中… ' +
+          innerZipCount
+        );
+
+
+        const innerZipData =
+          await entry.async(
+            'uint8array'
+          );
+
+
+        await inspectZIP(
+          innerZipData,
+          depth + 1
+        );
+
+      }
+
+    }
+
+  }
+
 
   for (
     let i = 0;
@@ -6778,51 +6887,8 @@ async function inspectSelectedZIPFiles(
     );
 
 
-    const zip =
-      await window.JSZip.loadAsync(
-        files[i]
-      );
-
-
-    Object.values(
-      zip.files
-    )
-    .forEach(
-      entry => {
-
-        if (
-          entry.dir
-        ) {
-
-          return;
-
-        }
-
-
-        const lowerName =
-          entry.name.toLowerCase();
-
-
-        if (
-          lowerName.endsWith(
-            '.fit'
-          )
-        ) {
-
-          fitCount++;
-
-        }
-        else if (
-          lowerName.endsWith(
-            '.gpx'
-          )
-        ) {
-
-          gpxCount++;
-
-        }
-
-      }
+    await inspectZIP(
+      files[i]
     );
 
   }
@@ -6836,6 +6902,9 @@ async function inspectSelectedZIPFiles(
   alert(
     files.length +
     '個のZIPを確認しました。\n\n' +
+    '内側のZIP ' +
+    innerZipCount +
+    '件\n' +
     'FIT ' +
     fitCount +
     '件\n' +
