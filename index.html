@@ -6779,6 +6779,15 @@ async function inspectSelectedZIPFiles(
   let runningGPSCount =
     0;
 
+    let duplicateFITCount =
+    0;
+
+  let newFITCandidateCount =
+    0;
+
+    let uncheckableFITCount =
+    0;
+
   let fitInspectFailedCount =
     0;
 
@@ -6884,6 +6893,76 @@ async function inspectSelectedZIPFiles(
               ) {
 
                 runningGPSCount++;
+
+                                if (
+                  !Number.isFinite(
+                    fitResult.distance
+                  ) ||
+                  !fitResult.date ||
+                  Number.isNaN(
+                    fitResult.date.getTime()
+                  )
+                ) {
+
+                  uncheckableFITCount++;
+
+                }
+                else {
+
+                  const candidateActivity =
+                    {
+                      source:
+                        'fit',
+
+                      name:
+                        fitResult.name,
+
+                      date:
+                        fitResult.date,
+
+                      startedAt:
+                        fitResult.startedAt,
+
+                      distance:
+                        fitResult.distance,
+
+                      latlngs:
+                        fitResult.latlngs
+                    };
+
+
+                  const exactSignature =
+                    createActivitySignature(
+                      candidateActivity
+                    );
+
+
+                  const duplicate =
+                    activitySignatures.has(
+                      exactSignature
+                    ) ||
+                    cloudRouteSignatures.has(
+                      exactSignature
+                    ) ||
+                    findPossibleDuplicate(
+                      candidateActivity
+                    );
+
+
+                  if (
+                    duplicate
+                  ) {
+
+                    duplicateFITCount++;
+
+                  }
+                  else {
+
+                    newFITCandidateCount++;
+
+                  }
+
+                }
 
               }
 
@@ -7022,6 +7101,15 @@ async function inspectSelectedZIPFiles(
     '件\n' +
     'ラン＋GPS候補 ' +
     runningGPSCount +
+    '件\n' +
+    '既存ランと重複 ' +
+    duplicateFITCount +
+    '件\n' +
+    '未登録候補 ' +
+    newFITCandidateCount +
+    '件\n' +
+    '重複確認不可 ' +
+    uncheckableFITCount +
     '件\n' +
     'FIT内容確認失敗 ' +
     fitInspectFailedCount +
