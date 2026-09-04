@@ -166,6 +166,76 @@ async function buildActivityFromFIT(file) {
   };
 
 }
+async function inspectFITFile(
+  file
+) {
 
+  const arrayBuffer =
+    await file.arrayBuffer();
+
+  const stream =
+    Stream.fromArrayBuffer(
+      arrayBuffer
+    );
+
+  const decoder =
+    new Decoder(
+      stream
+    );
+
+  const {
+    messages
+  } =
+    decoder.read();
+
+  const session =
+    messages.sessionMesgs?.[0];
+
+  if (
+    !session
+  ) {
+
+    return {
+      isRunning: false,
+      hasGPS: false
+    };
+
+  }
+
+
+  const records =
+    messages.recordMesgs ||
+    [];
+
+  const gpsRecordCount =
+    records.filter(
+      record =>
+        Number.isFinite(
+          record.positionLat
+        ) &&
+        Number.isFinite(
+          record.positionLong
+        )
+    )
+    .length;
+
+
+  return {
+    isRunning:
+      session.sport ===
+      'running',
+
+    hasGPS:
+      gpsRecordCount >=
+      2,
+
+    gpsRecordCount
+  };
+
+}
+
+
+window.inspectFITFile =
+  inspectFITFile;
 window.buildActivityFromFIT =
   buildActivityFromFIT;
