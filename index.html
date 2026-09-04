@@ -6310,7 +6310,7 @@ async function importSelectedGPXFiles(
 
 
     setStatus(
-      'GPX ' +
+      'ランデータ ' +
       (i + 1) +
       '/' +
       files.length +
@@ -6483,7 +6483,7 @@ continue;
     catch(error) {
 
       console.error(
-        'GPX処理失敗:',
+        'ランデータ処理失敗:'
         file.name,
         error
       );
@@ -6582,7 +6582,7 @@ continue;
     ) {
 
       message +=
-        '⚠️ GPX以外 ' +
+        '⚠️ 未対応形式 ' +
         invalidFormat +
         '件\n';
 
@@ -6652,9 +6652,11 @@ continue;
         0
       ) {
 
-        setStatus(
-          '✅ クラウド＋端末に保存しました'
-        );
+          setStatus(
+  lastAddedActivity.source === 'fit'
+    ? '✅ クラウドに保存しました'
+    : '✅ クラウド＋端末に保存しました'
+);
 
 
         alert(
@@ -6665,16 +6667,27 @@ continue;
       else {
 
         setStatus(
-          '⚠️ 端末には保存済み・クラウド同期は次回再試行'
-        );
+  lastAddedActivity.source === 'fit'
+    ? '⚠️ FITのクラウド保存に失敗しました'
+    : '⚠️ 端末には保存済み・クラウド同期は次回再試行'
+);
 
 
         alert(
-          'ランを追加しました。\n\n' +
-          '端末には保存できましたが、' +
-          'クラウド保存は完了していません。\n' +
-          '次回起動時に再同期します。'
-        );
+  lastAddedActivity.source === 'fit'
+    ? (
+        'ランデータを読み込みましたが、\n' +
+        'クラウド保存は完了していません。\n\n' +
+        'FITは端末には保存されません。\n' +
+        'ページを再読み込みしてから、もう一度選択してください。'
+      )
+    : (
+        'ランを追加しました。\n\n' +
+        '端末には保存できましたが、' +
+        'クラウド保存は完了していません。\n' +
+        '次回起動時に再同期します。'
+      )
+);
 
       }
 
