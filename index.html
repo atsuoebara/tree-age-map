@@ -1165,8 +1165,7 @@
     <input
       id="gpxInput"
       type="file"
-      accept=".gpx,.fit,application/gpx+xml,application/xml,text/xml"
-      multiple
+      accept=".gpx,.fit,.zip,application/gpx+xml,application/xml,text/xml"      multiple
     >
 
   </div>
@@ -1298,6 +1297,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>  
 <script src="./runner_rings_archive.js"></script>
 <script type="module" src="./fit_importer.js"></script>  
 
@@ -6740,7 +6740,112 @@ alert(
 
 }
 
+async function inspectSelectedZIPFiles(
+  files
+) {
 
+  if (
+    typeof window.JSZip !==
+    'function'
+  ) {
+
+    throw new Error(
+      'ZIP読込機能が準備できていません'
+    );
+
+  }
+
+
+  let fitCount =
+    0;
+
+  let gpxCount =
+    0;
+
+
+  for (
+    let i = 0;
+    i < files.length;
+    i++
+  ) {
+
+    setStatus(
+      'ZIP ' +
+      (i + 1) +
+      '/' +
+      files.length +
+      ' を確認中…'
+    );
+
+
+    const zip =
+      await window.JSZip.loadAsync(
+        files[i]
+      );
+
+
+    Object.values(
+      zip.files
+    )
+    .forEach(
+      entry => {
+
+        if (
+          entry.dir
+        ) {
+
+          return;
+
+        }
+
+
+        const lowerName =
+          entry.name.toLowerCase();
+
+
+        if (
+          lowerName.endsWith(
+            '.fit'
+          )
+        ) {
+
+          fitCount++;
+
+        }
+        else if (
+          lowerName.endsWith(
+            '.gpx'
+          )
+        ) {
+
+          gpxCount++;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  setStatus(
+    '✅ ZIP内のランデータ候補を確認しました'
+  );
+
+
+  alert(
+    files.length +
+    '個のZIPを確認しました。\n\n' +
+    'FIT ' +
+    fitCount +
+    '件\n' +
+    'GPX ' +
+    gpxCount +
+    '件\n\n' +
+    'この段階では保存していません。'
+  );
+
+}
 gpxInput.onchange =
   async event => {
 
@@ -6761,7 +6866,46 @@ gpxInput.onchange =
 
 
     try {
+const zipFiles =
+  files.filter(
+    file =>
+      file.name
+        .toLowerCase()
+        .endsWith(
+          '.zip'
+        )
+  );
 
+
+if (
+  zipFiles.length
+) {
+
+  if (
+    zipFiles.length !==
+    files.length
+  ) {
+
+    setStatus(
+      '⚠️ ZIPと他形式は分けて選択してください'
+    );
+
+    alert(
+      '第1段階ではZIPだけを選択してください。'
+    );
+
+    return;
+
+  }
+
+
+  await inspectSelectedZIPFiles(
+    zipFiles
+  );
+
+  return;
+
+}
       await importSelectedGPXFiles(
         files
       );
