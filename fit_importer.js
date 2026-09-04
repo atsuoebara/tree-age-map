@@ -207,7 +207,7 @@ async function inspectFITFile(
     messages.recordMesgs ||
     [];
 
-  const gpsRecordCount =
+    const gpsRecords =
     records.filter(
       record =>
         Number.isFinite(
@@ -216,9 +216,36 @@ async function inspectFITFile(
         Number.isFinite(
           record.positionLong
         )
-    )
-    .length;
+    );
 
+  const gpsRecordCount =
+    gpsRecords.length;
+
+  const latlngs =
+    gpsRecords.map(
+      record => [
+        semicirclesToDegrees(
+          record.positionLat
+        ),
+        semicirclesToDegrees(
+          record.positionLong
+        )
+      ]
+    );
+
+  const date =
+    session.startTime
+      ? new Date(
+          session.startTime
+        )
+      : null;
+
+  const distance =
+    Number.isFinite(
+      session.totalDistance
+    )
+      ? session.totalDistance / 1000
+      : null;
 
   return {
     isRunning:
@@ -229,7 +256,22 @@ async function inspectFITFile(
       gpsRecordCount >=
       2,
 
-    gpsRecordCount
+        gpsRecordCount,
+
+    date,
+
+    startedAt:
+      date,
+
+    distance,
+
+    latlngs,
+
+    name:
+      file.name.replace(
+        /\.fit$/i,
+        ''
+      )
   };
 
 }
