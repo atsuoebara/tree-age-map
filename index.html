@@ -6758,6 +6758,11 @@ async function inspectSelectedZIPFiles(
 
   let fitCount =
     0;
+    let fitOver10KBCount =
+    0;
+
+  let fitOver50KBCount =
+    0;
 
   let gpxCount =
     0;
@@ -6816,6 +6821,32 @@ async function inspectSelectedZIPFiles(
       ) {
 
         fitCount++;
+              const fitSize =
+            Number(
+              entry._data
+                ?.uncompressedSize ||
+              0
+            );
+
+
+          if (
+            fitSize >=
+            10 * 1024
+          ) {
+
+            fitOver10KBCount++;
+
+          }
+
+
+          if (
+            fitSize >=
+            50 * 1024
+          ) {
+
+            fitOver50KBCount++;
+
+          }    
 
       }
       else if (
@@ -6907,6 +6938,12 @@ async function inspectSelectedZIPFiles(
     '件\n' +
     'FIT ' +
     fitCount +
+    '件\n' +
+    'FIT（10KB以上） ' +
+    fitOver10KBCount +
+    '件\n' +
+    'FIT（50KB以上） ' +
+    fitOver50KBCount +
     '件\n' +
     'GPX ' +
     gpxCount +
