@@ -1962,6 +1962,177 @@ async function connectCoros() {
       'COROSと連携';
   }
 }  
+
+async function importFromCoros() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  corosConnectButton.disabled =
+    true;
+
+  corosConnectButton.textContent =
+    'COROSを確認中…';
+
+  let saved = 0;
+  let duplicates = 0;
+  let failed = 0;
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'coros-sync',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    const urls =
+      Array.isArray(data?.urls)
+        ? data.urls
+        : [];
+
+    if (urls.length === 0) {
+      alert(
+        'COROSに取り込めるランはありませんでした。'
+      );
+      return;
+    }
+
+    for (
+      let i = 0;
+      i < urls.length;
+      i++
+    ) {
+      corosConnectButton.textContent =
+        'COROS取込み中 ' +
+        (i + 1) +
+        '/' +
+        urls.length;
+
+      try {
+        const response =
+          await fetch(urls[i]);
+
+        if (!response.ok) {
+          throw new Error(
+            'FIT取得エラー: ' +
+            response.status
+          );
+        }
+
+        const file =
+          new File(
+            [await response.blob()],
+            'coros-' +
+              (i + 1) +
+              '.fit',
+            {
+              type:
+                'application/octet-stream'
+            }
+          );
+
+        const activity =
+          await window
+            .buildActivityFromFIT(
+              file
+            );
+
+        const exact =
+          createActivitySignature(
+            activity
+          );
+
+        if (
+          activitySignatures.has(
+            exact
+          ) ||
+          findPossibleDuplicate(
+            activity
+          )
+        ) {
+          duplicates++;
+          continue;
+        }
+
+        await saveActivityToCloud(
+          activity
+        );
+
+        registerActivity(
+          activity
+        );
+
+        saved++;
+
+      } catch (error) {
+        console.error(
+          'COROS FIT取込み失敗:',
+          error
+        );
+
+        failed++;
+      }
+    }
+
+    alert(
+      'COROS取込み結果\n' +
+      '保存: ' +
+      saved +
+      '件\n' +
+      '重複: ' +
+      duplicates +
+      '件\n' +
+      '失敗: ' +
+      failed +
+      '件'
+    );
+
+    if (saved > 0) {
+      location.reload();
+    }
+
+  } catch (error) {
+    console.error(
+      'COROS import error:',
+      error
+    );
+
+    alert(
+      'COROSからの取込みに失敗しました。'
+    );
+
+  } finally {
+    corosConnectButton.disabled =
+      false;
+
+    corosConnectButton.textContent =
+      'COROSから取り込む';
+  }
+}
   
 async function disconnectStrava() {
   const {
@@ -2136,6 +2307,80 @@ stravaConnectButton.style.display =
 stravaDisconnectButton.style.display =
   'none';
     
+  }
+}
+
+async function updateCorosConnectionStatus() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+  if (!session) {
+    corosConnectButton.textContent =
+      'COROSと連携';
+
+    corosConnectButton.disabled =
+      false;
+
+    corosConnectButton.onclick =
+      connectCoros;
+
+    return;
+  }
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .functions
+      .invoke(
+        'coros-status',
+        {
+          headers: {
+            Authorization:
+              `Bearer ${session.access_token}`
+          }
+        }
+      );
+
+  if (error) {
+    console.error(
+      'COROS status error:',
+      error
+    );
+
+    corosConnectButton.textContent =
+      'COROSと連携';
+
+    corosConnectButton.disabled =
+      false;
+
+    corosConnectButton.onclick =
+      connectCoros;
+
+    return;
+  }
+
+  corosConnectButton.disabled =
+    false;
+
+  if (data?.connected) {
+    corosConnectButton.textContent =
+      'COROSから取り込む';
+
+    corosConnectButton.onclick =
+      importFromCoros;
+
+  } else {
+    corosConnectButton.textContent =
+      'COROSと連携';
+
+    corosConnectButton.onclick =
+      connectCoros;
   }
 }
   
@@ -9275,6 +9520,7 @@ if (
 
 
     await updateStravaConnectionStatus();
+    await updateCorosConnectionStatus();
 // =====================================
 // 起動時データ読込
 // クラウドを正本とする。
