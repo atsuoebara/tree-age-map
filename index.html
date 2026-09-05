@@ -7256,6 +7256,204 @@ async function inspectSelectedZIPFiles(
     'この段階では保存していません。'
   );
 
+  if (
+    !saveableFITCandidates.length
+  ) {
+
+    return;
+
+  }
+
+  if (
+    !cloudEnabled()
+  ) {
+
+    setStatus(
+      '⚠️ クラウド保存にはログインが必要です'
+    );
+
+    alert(
+      'クラウド保存にはログインが必要です。'
+    );
+
+    return;
+
+  }
+
+  const expectedConfirmation =
+    saveableFITCandidates.length +
+    '件保存';
+
+  const wantsToSave =
+    window.confirm(
+      'Garminの未登録候補 ' +
+      saveableFITCandidates.length +
+      '件をクラウドへ保存します。\n\n' +
+      '500m未満 ' +
+      heldShortFITCount +
+      '件は保存しません。\n' +
+      '表示名は「Garminラン」に統一します。\n\n' +
+      '保存処理へ進みますか？'
+    );
+
+  if (
+    !wantsToSave
+  ) {
+
+    setStatus(
+      'ZIP候補の保存をキャンセルしました'
+    );
+
+    return;
+
+  }
+
+  const confirmationText =
+    window.prompt(
+      '誤操作防止のため「' +
+      expectedConfirmation +
+      '」と入力してください。',
+      ''
+    );
+
+  if (
+    confirmationText !==
+    expectedConfirmation
+  ) {
+
+    setStatus(
+      'ZIP候補の保存をキャンセルしました'
+    );
+
+    alert(
+      '確認文字が一致しないため保存しませんでした。'
+    );
+
+    return;
+
+  }
+
+  let zipCloudSavedCount =
+    0;
+
+  let zipCloudSkippedCount =
+    0;
+
+  let zipCloudFailedCount =
+    0;
+
+  for (
+    let i = 0;
+    i <
+    saveableFITCandidates.length;
+    i++
+  ) {
+
+    const activity =
+      saveableFITCandidates[i];
+
+    const signature =
+      createActivitySignature(
+        activity
+      );
+
+    const duplicate =
+      activitySignatures.has(
+        signature
+      ) ||
+      cloudRouteSignatures.has(
+        signature
+      ) ||
+      cloudSignatures.has(
+        signature
+      ) ||
+      !!findPossibleDuplicate(
+        activity
+      );
+
+    if (
+      duplicate
+    ) {
+
+      zipCloudSkippedCount++;
+
+      continue;
+
+    }
+
+    try {
+
+      setStatus(
+        'Garminランをクラウド保存中… ' +
+        (i + 1) +
+        '/' +
+        saveableFITCandidates.length
+      );
+
+      await saveActivityToCloud(
+        activity
+      );
+
+      cloudRouteSignatures.add(
+        signature
+      );
+
+      zipCloudSavedCount++;
+
+    }
+    catch(error) {
+
+      console.error(
+        'Garmin ZIP保存失敗:',
+        activity.date,
+        error
+      );
+
+      zipCloudFailedCount++;
+
+    }
+
+  }
+
+  await updateStorageInfo();
+
+  if (
+    zipCloudFailedCount
+  ) {
+
+    setStatus(
+      '⚠️ Garminランの一部を保存できませんでした'
+    );
+
+  }
+  else {
+
+    setStatus(
+      '✅ Garminランのクラウド保存が完了しました'
+    );
+
+  }
+
+  alert(
+    'Garmin ZIP保存結果\n\n' +
+    '保存成功 ' +
+    zipCloudSavedCount +
+    '件\n' +
+    '再確認でスキップ ' +
+    zipCloudSkippedCount +
+    '件\n' +
+    '保存失敗 ' +
+    zipCloudFailedCount +
+    '件\n' +
+    '500m未満保留 ' +
+    heldShortFITCount +
+    '件\n\n' +
+    'クラウド表示件数 ' +
+    cloudRunCount +
+    '件'
+  );
+
+  
 }
 gpxInput.onchange =
   async event => {
