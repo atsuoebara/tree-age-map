@@ -1086,6 +1086,14 @@
   COROSと連携
 </button>
 
+<button
+  id="corosDisconnectButton"
+  type="button"
+  style="display:none;"
+>
+  COROS連携解除
+</button>
+
     
 </div>
 <section id="accountPanel" style="display:none;">
@@ -1572,7 +1580,12 @@ alert(saveMessage);
 const corosConnectButton =
   document.getElementById(
     'corosConnectButton'
-  );  
+  );
+
+const corosDisconnectButton =
+  document.getElementById(
+    'corosDisconnectButton'
+  );
 
 const stravaDisconnectButton =
   document.getElementById(
@@ -2133,6 +2146,88 @@ async function importFromCoros() {
       'COROSから取り込む';
   }
 }
+
+async function disconnectCoros() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  const ok = confirm(
+    'COROSとの連携を解除しますか？\nRunner’s Ringsに保存済みのランは削除されません。'
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  corosDisconnectButton.disabled =
+    true;
+
+  corosDisconnectButton.textContent =
+    '解除中…';
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'coros-disconnect',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.success) {
+      throw new Error(
+        data?.error ||
+        'COROS連携解除に失敗しました。'
+      );
+    }
+
+    await updateCorosConnectionStatus();
+
+    alert(
+      'COROSとの連携を解除しました。\n保存済みのランは削除されません。'
+    );
+
+  } catch (error) {
+    console.error(
+      'COROS disconnect error:',
+      error
+    );
+
+    alert(
+      'COROS連携解除に失敗しました。'
+    );
+
+  } finally {
+    corosDisconnectButton.disabled =
+      false;
+
+    corosDisconnectButton.textContent =
+      'COROS連携解除';
+  }
+}
   
 async function disconnectStrava() {
   const {
@@ -2255,6 +2350,8 @@ corosConnectButton.onclick =
   connectCoros;
 stravaDisconnectButton.onclick =
   disconnectStrava;
+corosDisconnectButton.onclick =
+  disconnectCoros;
   
 async function updateStravaConnectionStatus() {
   const {
@@ -2328,6 +2425,9 @@ async function updateCorosConnectionStatus() {
     corosConnectButton.onclick =
       connectCoros;
 
+    corosDisconnectButton.style.display =
+      'none';
+
     return;
   }
 
@@ -2362,6 +2462,9 @@ async function updateCorosConnectionStatus() {
     corosConnectButton.onclick =
       connectCoros;
 
+    corosDisconnectButton.style.display =
+      'none';
+
     return;
   }
 
@@ -2375,12 +2478,18 @@ async function updateCorosConnectionStatus() {
     corosConnectButton.onclick =
       importFromCoros;
 
+    corosDisconnectButton.style.display =
+      'inline-block';
+
   } else {
     corosConnectButton.textContent =
       'COROSと連携';
 
     corosConnectButton.onclick =
       connectCoros;
+
+    corosDisconnectButton.style.display =
+      'none';
   }
 }
   
