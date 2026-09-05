@@ -1081,6 +1081,10 @@
   <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
 </button>
 
+    
+<button id="corosConnectButton" type="button">
+  COROSと連携
+</button>
 
     
 </div>
@@ -1565,6 +1569,11 @@ alert(saveMessage);
     'stravaConnectButton'
   );
 
+const corosConnectButton =
+  document.getElementById(
+    'corosConnectButton'
+  );  
+
 const stravaDisconnectButton =
   document.getElementById(
     'stravaDisconnectButton'
@@ -1884,6 +1893,76 @@ async function connectStrava() {
 
   location.href = data.url;
 }
+
+async function connectCoros() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  corosConnectButton.disabled =
+    true;
+
+  corosConnectButton.textContent =
+    'COROSへ接続中…';
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'coros-oauth',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.url) {
+      throw new Error(
+        'COROS認証URLを取得できませんでした。'
+      );
+    }
+
+    location.href =
+      data.url;
+
+  } catch (error) {
+    console.error(
+      'COROS connect error:',
+      error
+    );
+
+    alert(
+      'COROS連携の開始に失敗しました。'
+    );
+
+    corosConnectButton.disabled =
+      false;
+
+    corosConnectButton.textContent =
+      'COROSと連携';
+  }
+}  
+  
 async function disconnectStrava() {
   const {
     data: { session }
@@ -2001,7 +2080,8 @@ logoutButton.onclick =
   logout;
 stravaConnectButton.onclick =
   connectStrava;
-
+corosConnectButton.onclick =
+  connectCoros;
 stravaDisconnectButton.onclick =
   disconnectStrava;
   
