@@ -7080,6 +7080,27 @@ async function inspectSelectedZIPFiles(
     );
 
   }
+  const saveableFITCandidates =
+    newFITCandidates
+      .filter(
+        activity =>
+          Number.isFinite(
+            activity.distance
+          ) &&
+          activity.distance >=
+          0.5
+      )
+      .map(
+        activity => ({
+          ...activity,
+          name:
+            'Garminラン'
+        })
+      );
+
+  const heldShortFITCount =
+    newFITCandidates.length -
+    saveableFITCandidates.length;
 
   const newFITCandidateDetails =
     [
@@ -7209,6 +7230,12 @@ async function inspectSelectedZIPFiles(
     '件\n' +
     '未登録候補 ' +
     newFITCandidateCount +
+    '件\n' +
+        '保存予定（500m以上） ' +
+    saveableFITCandidates.length +
+    '件\n' +
+    '保留（500m未満） ' +
+    heldShortFITCount +
     '件\n' +
     '重複確認不可 ' +
     uncheckableFITCount +
