@@ -966,20 +966,25 @@
         ランニング記録アプリです。
       </p>
 
+      <p class="authHeroText">
+        🔒 距離・ラン数・地図は、登録した本人だけに表示されます。<br>
+        シェアするかどうかは、自分で選べます。
+      </p>
+
       <div id="authPreview">
 
         <div class="authPreviewCard">
-          <div class="authPreviewLabel">TOTAL</div>
+          <div class="authPreviewLabel">総距離</div>
           <div class="authPreviewValue">9,500<span> km</span></div>
         </div>
 
         <div class="authPreviewCard">
-          <div class="authPreviewLabel">RUNS</div>
+          <div class="authPreviewLabel">ラン数</div>
           <div class="authPreviewValue">1,300+</div>
         </div>
 
         <div class="authPreviewCard">
-          <div class="authPreviewLabel">CITIES</div>
+          <div class="authPreviewLabel">地域数</div>
           <div class="authPreviewValue">43</div>
         </div>
 
@@ -988,7 +993,7 @@
       <div class="authConcept">
         <strong>走るほど、地図が育つ。</strong>
         <span>
-          Stravaと連携して、走った軌跡をRunner's Ringsへ。
+          Stravaを使っていなくても、COROS連携やFIT／GPXファイルから利用できます。
         </span>
       </div>
 
@@ -1086,14 +1091,6 @@
   COROSと連携
 </button>
 
-<button
-  id="corosDisconnectButton"
-  type="button"
-  style="display:none;"
->
-  COROS連携解除
-</button>
-
     
 </div>
 <section id="accountPanel" style="display:none;">
@@ -1144,6 +1141,10 @@
 <button id="stravaDisconnectButton" type="button" style="display:none;">
   Strava連携を解除
 </button>
+
+<button id="corosDisconnectButton" type="button" style="display:none;">
+  COROS連携を解除
+</button>
   
 <button id="logoutButton">
   ログアウト
@@ -1167,7 +1168,7 @@
     </button>
 
     <button id="cloudRunsButton">
-      クラウド 0
+      自分のラン 0
     </button>
 
     <div id="syncInfo">
@@ -1250,21 +1251,26 @@
   </div>
   <section id="dashboard">
 
+    <h2>あなたの記録</h2>
+    <p>
+      総距離・ラン数・地域数・地図は、あなた本人だけに表示されています。
+    </p>
+
     <div class="summary">
 
       <div class="card">
-        <div class="label">TOTAL</div>
+        <div class="label">総距離</div>
         <span id="totalDistance" class="value">--</span>
         <span class="unit">km</span>
       </div>
 
       <div class="card">
-        <div class="label">RUNS</div>
+        <div class="label">ラン数</div>
         <div id="runCount" class="value">--</div>
       </div>
 
       <div class="card">
-        <div class="label">CITIES</div>
+        <div class="label">地域数</div>
         <div id="cityCount" class="value">--</div>
       </div>
 
@@ -2225,7 +2231,7 @@ async function disconnectCoros() {
       false;
 
     corosDisconnectButton.textContent =
-      'COROS連携解除';
+      'COROS連携を解除';
   }
 }
   
@@ -3170,7 +3176,7 @@ async function updateStorageInfo() {
       'cloudRunsButton'
     )
     .textContent =
-      'クラウド ' +
+      '自分のラン ' +
       cloudRunCount;
 
 
@@ -3182,17 +3188,17 @@ async function updateStorageInfo() {
       cloudEnabled()
 
         ? (
-            '☁️ クラウド ' +
+            '🔒 自分のラン ' +
             cloudRunCount +
-            ' RUNS ・ 端末 ' +
+            '件 ・ 端末保存 ' +
             localCount +
-            ' RUNS'
+            '件'
           )
 
         : (
-            '⚠️ クラウド未接続 ・ 端末 ' +
+            '⚠️ クラウド未接続 ・ 端末保存 ' +
             localCount +
-            ' RUNS'
+            '件'
           );
 
 }
