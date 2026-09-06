@@ -1283,18 +1283,18 @@
     <div class="summary">
 
       <div class="card">
-        <div class="label">総距離</div>
+        <div id="distanceLabel" class="label">総距離</div>
         <span id="totalDistance" class="value">--</span>
         <span class="unit">km</span>
       </div>
 
       <div class="card">
-        <div class="label">ラン数</div>
+        <div id="runCountLabel" class="label">ラン数</div>
         <div id="runCount" class="value">--</div>
       </div>
 
       <div class="card">
-        <div class="label">地域数</div>
+        <div id="cityCountLabel" class="label">地域数</div>
         <div id="cityCount" class="value">--</div>
       </div>
 
@@ -9209,7 +9209,19 @@ function updatePrefectureDashboard(
 function updateDashboard(
   stats
 ) {
+  const periodLabel =
+    selectedYear === 'ALL'
+      ? '全期間の'
+      : selectedYear + '年の';
 
+  document.getElementById('distanceLabel').textContent =
+    periodLabel + '総距離';
+
+  document.getElementById('runCountLabel').textContent =
+    periodLabel + 'ラン数';
+
+  document.getElementById('cityCountLabel').textContent =
+    periodLabel + '地域数';
   const entries =
     Object.entries(
       stats.municipalityDistance
