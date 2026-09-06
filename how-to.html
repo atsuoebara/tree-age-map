@@ -28,280 +28,316 @@
     color: #aab7c8;
     margin-bottom: 32px;
   }
-section {
-  margin-top: 24px;
-  padding: 20px;
-  background: #132238;
-  border-radius: 16px;
-}
 
-h2 {
-  margin-top: 0;
-  font-size: 22px;
-  padding-left: 12px;
-  border-left: 4px solid #ff2bb5;
-}
-h3 {
-  margin-top: 20px;
-  font-size: 18px;
-  color: #f4b8d8;
-}
+  section {
+    margin-top: 24px;
+    padding: 20px;
+    background: #132238;
+    border-radius: 16px;
+  }
 
-section p {
-  margin: 10px 0 0;
-  color: #d9e2ee;
-}   
-.image-placeholder {
-  margin-top: 14px;
-  padding: 28px 16px;
-  border: 1px dashed #ff2bb5;
-  border-radius: 12px;
-  color: #f4b8d8;
-  text-align: center;
-  font-size: 14px;
-  background: rgba(255, 43, 181, 0.06);
-}    
-.buttonArea {
-  text-align: center;
-  margin-top: 34px;
-}
+  h2 {
+    margin-top: 0;
+    font-size: 22px;
+    padding-left: 12px;
+    border-left: 4px solid #ff2bb5;
+  }
 
-.mainButton {
-  display: inline-block;
-  background: #ff20c7;
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: 700;
-  padding: 12px 24px;
-  border-radius: 12px;
-}   
-.howtoImage {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 14px;
-  border-radius: 12px;
-}
-footer {
-  margin-top: 40px;
-  padding-top: 22px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  color: #8290a3;
-  font-size: 12px;
-  text-align: center;
-}
+  h3 {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #f4b8d8;
+  }
 
-footer a {
-  color: #cbd3de;
-  text-decoration: none;
-  margin: 0 8px;
-}
+  section p {
+    margin: 10px 0 0;
+    color: #d9e2ee;
+  }
 
-footer a:hover {
-  text-decoration: underline;
-}    
-</style>
+  .notice {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-left: 3px solid #ff2bb5;
+    border-radius: 0 10px 10px 0;
+    background: rgba(255, 43, 181, 0.08);
+    color: #f2d7e8;
+  }
+
+  .steps {
+    margin: 14px 0 0;
+    padding-left: 24px;
+    color: #d9e2ee;
+  }
+
+  .steps li {
+    margin-top: 8px;
+  }
+
+  .buttonArea {
+    text-align: center;
+    margin-top: 34px;
+  }
+
+  .mainButton {
+    display: inline-block;
+    background: #ff20c7;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 12px;
+  }
+
+  .howtoImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 14px;
+    border-radius: 12px;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    color: #8290a3;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  footer a {
+    color: #cbd3de;
+    text-decoration: none;
+    margin: 0 8px;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+  </style>
 </head>
 <body>
 
   <main class="container">
-  <h1>Runner's Rings 使い方</h1>
-  <p class="lead">
-    Runner's Ringsをはじめるところから、Strava連携、地図の見方、過去データの追加まで順番に案内します。
-  </p>
+    <h1>Runner's Rings 使い方</h1>
+    <p class="lead">
+      Runner's Ringsをはじめるところから、Strava連携、地図の見方、過去データの追加まで順番に案内します。
+    </p>
+
     <section>
-  <h2>1. Runner's Ringsをはじめる</h2>
-  <p>
-    Runner's Ringsは、走った道や街を地図に積み重ねていくランニングWEBアプリです。
-  </p>
-  <p>
-    現在は日本国内のランニングデータ表示に対応しています。
-  </p>
-</section>
-<section>
-  <h2>2. 新規登録する</h2>
-  <p>
-    はじめて利用する場合は、メールアドレスとパスワードを入力して新規登録します。
-  </p>
-  <img
-  src="./howto-signup.jpeg"
-  alt="Runner's Rings 新規登録方法"
-  class="howtoImage"
->
-  <p>
-  パスワードは6文字以上で設定してください。
-</p>
+      <h2>1. Runner's Ringsをはじめる</h2>
+      <p>
+        Runner's Ringsは、走った道や街を地図に積み重ねていくランニングWEBアプリです。
+      </p>
+      <p>
+        現在は日本国内のランニングデータ表示に対応しています。
+      </p>
+      <p class="notice">
+        距離・ラン数・地図は、登録した本人だけに表示されます。シェアするかどうかは自分で選べます。
+      </p>
+    </section>
 
-<p>
-  新規登録後、Supabase Authから確認メールが届きます。
-  メール内の「Confirm email address」をタップすると登録が完了します。
-</p>
-  <p>
-    登録が完了したら、Runner's Ringsに戻ってログインします。
-  </p>
-</section>  
-<section>
-  <h2>3. Stravaと連携する</h2>
-  <p>
-  Runner's Ringsは、Stravaに保存されているランニングデータを読み込み、これまで走った道を地図に残します。
-</p>
+    <section>
+      <h2>2. 新規登録する</h2>
+      <p>
+        はじめて利用する場合は、メールアドレスとパスワードを入力して新規登録します。
+      </p>
+      <img
+        src="./howto-signup.jpeg"
+        alt="Runner's Rings 新規登録方法"
+        class="howtoImage"
+      >
+      <p>パスワードは6文字以上で設定してください。</p>
+      <p>
+        新規登録後、Supabase Authから確認メールが届きます。メール内の「Confirm email address」をタップすると登録が完了します。
+      </p>
+      <p>
+        登録が完了したら、Runner's Ringsに戻ってログインします。
+      </p>
+    </section>
 
-<p>
-  一度Stravaと連携すると、過去のランニングデータを取り込めるほか、その後のランも自動でRunner's Ringsに反映されます。
-</p>
+    <section>
+      <h2>3. Stravaと連携する</h2>
+      <p>
+        Runner's Ringsは、Stravaに保存されているランニングデータを読み込み、これまで走った道を地図に残します。
+      </p>
+      <p>
+        一度Stravaと連携すると、過去のランニングデータを取り込めるほか、その後のランも自動でRunner's Ringsに反映されます。
+      </p>
+      <p>
+        Stravaを利用していない場合でも、COROS連携やGPX／FITファイルからランニングデータを追加できます。
+      </p>
+      <p>
+        ログイン後、「Connect with Strava」ボタンからStravaと連携します。
+      </p>
+      <img
+        src="./howto-strava-connect.jpeg"
+        alt="Runner's Rings Strava連携方法"
+        class="howtoImage"
+      >
+      <img
+        src="./howto-strava-connected.jpeg"
+        alt="Runner's Rings Strava連携完了画面"
+        class="howtoImage"
+      >
+      <p>
+        連携が完了すると、Runner's RingsがStravaのランニングデータを読み込みます。
+      </p>
+      <p>対象は Run / Trail Run / Virtual Run です。</p>
+      <p>
+        Stravaでスタート地点やゴール地点を非表示にしている場合、Runner's Ringsに取り込まれるルートも一部省略されることがあります。
+      </p>
+      <p>
+        そのため、実際に走った道とRunner's Rings上の地図が完全には一致しない場合があります。
+      </p>
+      <p>
+        走ったルートをできるだけ正確に残したい場合は、Strava側の地図表示・プライバシー設定をご確認ください。
+      </p>
+    </section>
 
-<p>
-  Stravaを利用していない場合でも、GPXファイルからランニングデータを追加できます。
-</p>
-  <p>
-    ログイン後、「Connect with Strava」ボタンからStravaと連携します。
-  </p>
-  <img
-  src="./howto-strava-connect.jpeg"
-  alt="Runner's Rings Strava連携方法"
-  class="howtoImage"
->
+    <section>
+      <h2>4. 地図を見る</h2>
+      <p>
+        走ったルートやエリアが、Runner's Ringsの地図に表示されます。
+      </p>
+      <img
+        src="./howto-map.jpeg"
+        alt="Runner's Rings 地図の見方"
+        class="howtoImage"
+      >
+      <p>
+        地図を拡大すると実際に走ったルートを確認でき、縮小すると市町村ごとの走行状況を確認できます。
+      </p>
+      <p>
+        年を選択すると、その年に走ったデータだけを表示できます。
+      </p>
+    </section>
 
-<img
-  src="./howto-strava-connected.jpeg"
-  alt="Runner's Rings Strava連携完了画面"
-  class="howtoImage"
->
-  <p>
-    連携が完了すると、Runner's RingsがStravaのランニングデータを読み込みます。
-  </p>
-  <p>
-    対象は Run / Trail Run / Virtual Run です。
-  </p>
-<p>
-  Stravaでスタート地点やゴール地点を非表示にしている場合、Runner's Ringsに取り込まれるルートも一部省略されることがあります。
-</p>
+    <section>
+      <h2>5. ホーム画面に追加する</h2>
 
-<p>
-  そのため、実際に走った道とRunner's Rings上の地図が完全には一致しない場合があります。
-</p>
+      <h3>iPhone</h3>
+      <p>
+        SafariでRunner's Ringsを開き、共有ボタンから「ホーム画面に追加」を選びます。
+      </p>
+      <p>
+        「Webアプリとして開く」は、URL確認や共有をよく使う場合はOFFがおすすめです。
+      </p>
+      <img
+        src="./howto-iphone-home.png"
+        alt="Runner's Rings iPhoneホーム画面追加方法"
+        class="howtoImage"
+      >
 
-<p>
-  走ったルートをできるだけ正確に残したい場合は、Strava側の地図表示・プライバシー設定をご確認ください。
-</p>  
-</section>   
-<section>
-  <h2>4. 地図を見る</h2>
-  <p>
-    走ったルートやエリアが、Runner's Ringsの地図に表示されます。
-  </p>
-  <img
-  src="./howto-map.jpeg"
-  alt="Runner's Rings 地図の見方"
-  class="howtoImage"
->
-  <p>
-    地図を拡大すると実際に走ったルートを確認でき、縮小すると市町村ごとの走行状況を確認できます。
-  </p>
-  <p>
-    年を選択すると、その年に走ったデータだけを表示できます。
-  </p>
-</section>    
-<section>
-  <h2>5. ホーム画面に追加する</h2>
+      <h3>Android</h3>
+      <p>
+        ChromeでRunner's Ringsを開き、右上のメニューから「ホーム画面に追加」または「アプリをインストール」を選びます。
+      </p>
+      <img
+        src="./howto-android-home.png"
+        alt="Runner's Rings Androidホーム画面追加方法"
+        class="howtoImage"
+      >
+    </section>
 
-  <h3>iPhone</h3>
-  <p>
-    SafariでRunner's Ringsを開き、共有ボタンから「ホーム画面に追加」を選びます。
-  </p>
-  <p>
-    「Webアプリとして開く」は、URL確認や共有をよく使う場合はOFFがおすすめです。
-  </p>
-<img
-  src="./howto-iphone-home.png"
-  alt="Runner's Rings iPhoneホーム画面追加方法"
-  class="howtoImage"
->
-  
-  <h3>Android</h3>
-  <p>
-    ChromeでRunner's Ringsを開き、右上のメニューから「ホーム画面に追加」または「アプリをインストール」を選びます。
-  </p>
-<img
-  src="./howto-android-home.png"
-  alt="Runner's Rings Androidホーム画面追加方法"
-  class="howtoImage"
->
-  
-</section> 
-<section>
-  <h2>6. Stravaにない過去データを追加する</h2>
+    <section>
+      <h2>6. パソコンからGarmin ZIPをまとめて追加する</h2>
+      <p>
+        Garminから書き出した過去のランニングデータは、ZIPファイルを解凍せず、そのままRunner's Ringsで確認・保存できます。
+      </p>
+      <p class="notice">
+        この機能はデータ量が多いため、パソコンでの操作をおすすめします。ZIPとGPX／FITは同時に選択せず、分けて追加してください。
+      </p>
 
-  <p>
-    Stravaに残っていない過去のランニングデータは、GPXファイルを使ってRunner's Ringsに追加できます。
-  </p>
-<img
-  src="./howto-gpx-import.png"
-  alt="Runner's Rings GPXファイル取り込み方法"
-  class="howtoImage"
->
-  
-  <p>
-    Garminなどのサービスから過去のランニングデータをGPX形式で書き出し、Runner's Ringsから読み込んでください。
-  </p>
+      <h3>Runner's Ringsへ追加する</h3>
+      <ol class="steps">
+        <li>パソコンでRunner's Ringsを開き、ログインします。</li>
+        <li>「＋ランを追加」を押します。</li>
+        <li>Garminから取得したZIPファイルを、解凍せずに選択します。</li>
+        <li>ZIP内の確認が終わるまで、画面を閉じずに待ちます。</li>
+        <li>ラン＋GPS候補、既存ランとの重複、未登録候補、保存予定件数を確認します。</li>
+        <li>確認画面で「保存処理へ進みますか？」を選びます。</li>
+        <li>誤操作防止のため、画面に表示された「○件保存」を入力します。</li>
+        <li>保存成功・スキップ・失敗の件数を確認します。</li>
+      </ol>
+      <img
+        src="./howto-gpx-import.png"
+        alt="Runner's Rings ラン追加ボタン"
+        class="howtoImage"
+      >
+      <p>
+        ZIPの中にさらにZIPがある場合も、Runner's Ringsが内側まで自動で確認します。
+      </p>
+      <p>
+        既存のクラウドランと同じ記録は重複として除外され、新しいランだけが保存対象になります。
+      </p>
+      <p>
+        誤操作などによる短い記録を避けるため、500m未満の候補は自動保存されません。
+      </p>
+      <p>
+        保存前に未登録候補一覧のテキストファイルが作成された場合は、内容確認のため保管してください。
+      </p>
+    </section>
 
-  <p>
-    取り込んだランはクラウドに保存され、次回以降もRunner's Ringsの地図に表示されます。
-  </p>
+    <section>
+      <h2>7. GPX／FITファイルを個別に追加する</h2>
+      <p>
+        Stravaに残っていないランニングデータは、GPX／FITファイルを使ってRunner's Ringsに追加できます。
+      </p>
+      <p>
+        「＋ランを追加」を押し、サービスや端末から書き出したGPX／FITファイルを選択してください。複数ファイルもまとめて選択できます。
+      </p>
+      <p>
+        取り込んだランはクラウドに保存され、次回以降もRunner's Ringsの地図に表示されます。
+      </p>
+      <p>
+        すでに同じランが存在する場合は、重複しないように同一ランとして判定します。
+      </p>
+    </section>
 
-  <p>
-    Stravaにも同じランが存在する場合は、重複しないように同一ランとして判定します。
-  </p>
-</section> 
-<section>
-  <h2>7. Strava連携を解除する</h2>
+    <section>
+      <h2>8. Strava連携を解除する</h2>
+      <p>
+        Stravaとの連携を解除したい場合は、アカウント設定を開き、「Strava連携を解除」ボタンから解除できます。
+      </p>
+      <p>
+        連携を解除しても、これまでRunner's Ringsに保存されたランニングデータは削除されません。
+      </p>
+      <p>
+        再びStravaと連携したい場合は、「Connect with Strava」ボタンから再連携できます。
+      </p>
+    </section>
 
-  <p>
-    Stravaとの連携を解除したい場合は、「Strava連携を解除」ボタンから解除できます。
-  </p>
+    <section>
+      <h2>9. 困ったとき</h2>
+      <p>
+        最新のデータが表示されない場合は、ブラウザでRunner's Ringsを開き直してから、もう一度確認してください。
+      </p>
+      <p>
+        Strava連携後すぐに反映されない場合は、少し時間をおいてから再度確認してください。
+      </p>
+      <p>
+        それでも解決しない場合は、お問い合わせページからご連絡ください。
+      </p>
+    </section>
 
-  <p>
-    連携を解除しても、これまでRunner's Ringsに保存されたランニングデータは削除されません。
-  </p>
+    <div class="buttonArea">
+      <a class="mainButton" href="./index.html">Runner's Ringsを開く</a>
+    </div>
+  </main>
 
-  <p>
-    再びStravaと連携したい場合は、「Connect with Strava」ボタンから再連携できます。
-  </p>
-</section>    
-<section>
-  <h2>8. 困ったとき</h2>
-
-  <p>
-    最新のデータが表示されない場合は、ブラウザでRunner's Ringsを開き直してから、もう一度確認してください。
-  </p>
-
-  <p>
-    Strava連携後すぐに反映されない場合は、少し時間をおいてから再度確認してください。
-  </p>
-
-  <p>
-    それでも解決しない場合は、お問い合わせページからご連絡ください。
-  </p>
-</section>    
-
-<div class="buttonArea">
-  <a class="mainButton" href="./index.html">Runner's Ringsを開く</a>
-</div>    
-    
-</main>
-<footer>
-  <div>
-    <a href="./index.html">Runner's Rings</a>
-    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
-    <a href="./how-to.html">使い方</a>
-    <a href="./terms.html">利用規約</a>
-    <a href="./privacy.html">プライバシーポリシー</a>
-    <a href="./contact.html">お問い合わせ</a>
-  </div>
-
-  <div style="margin-top:12px;">
-    &copy; 2026 Runner's Rings
-  </div>
-</footer>
+  <footer>
+    <div>
+      <a href="./index.html">Runner's Rings</a>
+      <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+      <a href="./how-to.html">使い方</a>
+      <a href="./terms.html">利用規約</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+      <a href="./contact.html">お問い合わせ</a>
+    </div>
+    <div style="margin-top:12px;">
+      &copy; 2026 Runner's Rings
+    </div>
+  </footer>
 </body>
 </html>
