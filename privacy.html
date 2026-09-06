@@ -174,7 +174,9 @@
     <ul>
       <li>メールアドレスなどのアカウント情報</li>
       <li>利用者が登録したランニング記録</li>
-      <li>GPXファイルに含まれる走行日時、距離、位置情報など</li>
+      <li>StravaまたはCOROSとの連携により取得するランニング記録、走行日時、距離、位置情報など</li>
+      <li>利用者が追加したGPX／FITファイルやZIPファイルに含まれるランニング記録</li>
+      <li>外部サービスとの連携を維持するために必要な認証情報</li>
       <li>サービスの利用状況に関する情報</li>
       <li>端末、ブラウザ等に関する情報</li>
     </ul>
@@ -194,12 +196,13 @@
     </ul>
   </section>
 
-  <section class="card">
+
+
+    <section class="card">
     <h3>3. 位置情報・ランニングデータ</h3>
 
     <p>
-      Runner's Ringsでは、利用者が登録したGPXファイル等から、
-      ランニングの走行ルートや位置情報を取り扱います。
+      Runner's Ringsでは、StravaまたはCOROSとの連携、ならびに利用者が追加したGPX／FITファイルやZIPファイルから、ランニングの走行ルートや位置情報を取り扱います。
     </p>
 
     <p>
@@ -207,22 +210,26 @@
       <span class="accent">利用者自身のランニング記録を地図として可視化する目的</span>
       で使用します。
     </p>
-  </section>
-
-  <section class="card">
-    <h3>4. アカウント情報の管理</h3>
 
     <p>
-      Runner's Ringsでは、アカウント認証および利用者ごとのデータ管理のため、
-      外部のクラウドサービスを利用する場合があります。
+      保存された距離、ラン数、走行ルートおよび地図は、Runner's Rings上ではログインした利用者本人にのみ表示されます。
+    </p>
+  </section>
+    <section class="card">
+    <h3>4. アカウント情報・認証情報の管理</h3>
+
+    <p>
+      Runner's Ringsでは、アカウント認証および利用者ごとのデータ管理のため、外部のクラウドサービスを利用しています。
     </p>
 
     <p>
-      パスワードについては、Runner's Ringsの画面上で
-      パスワードそのものを閲覧・取得することを目的としていません。
+      StravaまたはCOROSとの連携に必要な認証情報は、連携機能を提供する目的で安全に保管し、Runner's Ringsの画面上には表示しません。
+    </p>
+
+    <p>
+      パスワードについては、Runner's Ringsの画面上でパスワードそのものを閲覧・取得することを目的としていません。
     </p>
   </section>
-
   <section class="card">
     <h3>5. 第三者への情報提供</h3>
 
@@ -237,25 +244,37 @@
     </p>
   </section>
 
-  <section class="card">
+    <section class="card">
     <h3>6. 広告について</h3>
 
     <p>
-      Runner's Ringsでは、サービスの運営・維持のため、
-      将来的に第三者配信の広告サービスを利用する場合があります。
+      Runner's Ringsでは、サービスの運営・維持のため、Google AdSenseを利用する場合があります。
     </p>
 
     <p>
-      広告配信事業者が、広告の配信や効果測定等のために
-      Cookie等の技術を使用する場合があります。
+      Googleなどの第三者配信事業者は、広告の配信、効果測定、不正利用防止などのため、Cookie、ウェブビーコン、IPアドレス等を使用する場合があります。
     </p>
 
     <p>
-      広告サービスを導入した場合は、必要に応じて本ポリシーに
-      利用するサービス等の情報を追記します。
+      Googleは、利用者による本サイトや他のサイトへのアクセス情報に基づいて、適切な広告を表示する場合があります。
+    </p>
+
+    <p>
+      利用者は、
+      <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">
+        Googleの広告設定
+      </a>
+      から、パーソナライズ広告を管理できます。
+    </p>
+
+    <p>
+      Googleによる情報の取り扱いについては、
+      <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer">
+        Googleの「サービスを使用するサイトやアプリから収集した情報の使用」
+      </a>
+      をご確認ください。
     </p>
   </section>
-
   <section class="card">
     <h3>7. Cookie等について</h3>
 
@@ -271,20 +290,26 @@
     </p>
   </section>
 
-  <section class="card">
+    <section class="card">
     <h3>8. 外部サービスについて</h3>
 
     <p>
-      Runner's Ringsでは、サービスを提供するために、
-      地図、認証、データ保存などの外部サービスを利用する場合があります。
+      Runner's Ringsでは、サービス提供のため、主に以下の外部サービスを利用しています。
     </p>
+
+    <ul>
+      <li>Supabase：アカウント認証およびランニングデータ等の保存</li>
+      <li>Strava：利用者が許可したランニング記録の取得</li>
+      <li>COROS：利用者が許可したランニング記録の取得</li>
+      <li>OpenStreetMap／Leaflet：地図の表示</li>
+      <li>GitHub Pages：ウェブサイトの公開</li>
+      <li>Google AdSense：広告の配信および効果測定</li>
+    </ul>
 
     <p>
-      各外部サービスにおける情報の取り扱いについては、
-     それぞれのサービスが定めるプライバシーポリシー等が適用される場合があります。
+      各外部サービスにおける情報の取り扱いについては、それぞれのサービスが定める利用規約やプライバシーポリシーが適用される場合があります。
     </p>
   </section>
-
   <section class="card">
     <h3>9. 情報の安全管理</h3>
 
@@ -295,8 +320,24 @@
     </p>
   </section>
 
+    <section class="card">
+    <h3>10. 情報の保存・削除</h3>
+
+    <p>
+      Runner's Ringsでは、サービス提供に必要な期間、アカウント情報、ランニング記録および外部サービスとの連携情報を保存します。
+    </p>
+
+    <p>
+      StravaまたはCOROSとの連携を解除しても、すでにRunner's Ringsへ保存されたランニング記録は自動では削除されません。
+    </p>
+
+    <p>
+      アカウントおよび保存データの削除を希望する場合は、お問い合わせページからご連絡ください。法令等により保存が必要な情報を除き、合理的な範囲で対応します。
+    </p>
+  </section>
+
   <section class="card">
-    <h3>10. プライバシーポリシーの変更</h3>
+    <h3>11. プライバシーポリシーの変更</h3>
 
     <p>
       サービス内容の変更、利用する外部サービスの変更、
@@ -311,7 +352,7 @@
   </section>
 
   <section class="card">
-    <h3>11. お問い合わせ</h3>
+    <h3>12. お問い合わせ</h3>
 
     <p>
       本プライバシーポリシーや個人情報の取り扱いに関する
@@ -320,11 +361,12 @@
     </p>
   </section>
 
-  <section class="card">
-    <h3>制定日</h3>
-    <p>2026年8月24日</p>
+    <section class="card">
+    <h3>制定日・最終改定日</h3>
+    <p>制定日：2026年8月24日</p>
+    <p>最終改定日：2026年9月6日</p>
   </section>
-
+  
   <div class="buttonArea">
     <a class="mainButton" href="./index.html">Runner's Ringsを開く</a>
   </div>
