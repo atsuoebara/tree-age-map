@@ -121,6 +121,18 @@
       color:white;
       border:1px solid rgba(255,255,255,.15);
     }
+
+    #forgotPasswordButton{
+      display:block;
+      margin:12px auto 0;
+      padding:4px 8px;
+      border:0;
+      background:transparent;
+      color:#aab7c8;
+      font-size:12px;
+      text-decoration:underline;
+      cursor:pointer;
+    }
 .signupHelp{
   margin: 2px 0 12px;
   font-size: 11px;
@@ -994,6 +1006,7 @@
         </div>
 
       </div>
+      </div>
 
       <div class="authConcept">
         <strong>走るほど、地図が育つ。</strong>
@@ -1051,6 +1064,13 @@
         </button>
 
       </div>
+
+      <button
+        id="forgotPasswordButton"
+        type="button"
+      >
+        パスワードを忘れた方
+      </button>
 
       <div id="authMessage"></div>
 
@@ -1338,6 +1358,10 @@ const APP_VERSION = '0.9 Beta';
   document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION}`;
 
+const isPasswordRecovery =
+  location.hash.includes('type=recovery') ||
+  location.search.includes('type=recovery');
+
 const CELL_SIZE = 0.0009;
 
 const AREA_COLOR = '#ff2bd6';
@@ -1411,6 +1435,11 @@ const loginButton =
 const signupButton =
   document.getElementById(
     'signupButton'
+  );
+
+const forgotPasswordButton =
+  document.getElementById(
+    'forgotPasswordButton'
   );
 
 const logoutButton =
@@ -1734,6 +1763,59 @@ async function login() {
 
   }
 
+}
+
+
+async function sendPasswordReset() {
+
+  const email =
+    emailInput.value.trim();
+
+  if (!email) {
+    setAuthMessage(
+      'メールアドレスを入力してから押してください。'
+    );
+    emailInput.focus();
+    return;
+  }
+
+  forgotPasswordButton.disabled =
+    true;
+
+  setAuthMessage(
+    '再設定メールを送信中…'
+  );
+
+  try {
+    const { error } =
+      await supabaseClient
+        .auth
+        .resetPasswordForEmail(
+          email,
+          {
+            redirectTo:
+              location.origin +
+              location.pathname
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    setAuthMessage(
+      'パスワード再設定メールを送りました。メール内のリンクを開いてください。'
+    );
+
+  } catch (error) {
+    console.error(error);
+    setAuthMessage(
+      '再設定メールを送信できませんでした。時間をおいて、もう一度お試しください。'
+    );
+  } finally {
+    forgotPasswordButton.disabled =
+      false;
+  }
 }
 
 
@@ -2352,6 +2434,9 @@ loginButton.onclick =
 
 signupButton.onclick =
   signup;
+
+forgotPasswordButton.onclick =
+  sendPasswordReset;
 
 logoutButton.onclick =
   logout;
@@ -9901,6 +9986,32 @@ if (savedAvatarPath) {
 
     appRoot.style.display =
       'block';
+
+    if (isPasswordRecovery) {
+      accountPanel.style.display =
+        'block';
+
+      accountNewPasswordInput.focus();
+
+      setTimeout(
+        () =>
+          accountPanel.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          }),
+        100
+      );
+
+      history.replaceState(
+        null,
+        '',
+        location.pathname
+      );
+
+      alert(
+        '「パスワードを変更」に新しいパスワードを入力し、「変更を保存」を押してください。'
+      );
+    }
 
 
     setTimeout(
