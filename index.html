@@ -2142,6 +2142,7 @@ async function importFromCoros() {
   let saved = 0;
   let duplicates = 0;
   let failed = 0;
+  const acknowledgedLabelIds = [];
 
   try {
     const {
@@ -2164,32 +2165,51 @@ async function importFromCoros() {
       throw error;
     }
 
-    const urls =
-      Array.isArray(data?.urls)
-        ? data.urls
+    const files = Array.isArray(data?.files)
+      ? data.files
+          .filter(
+            item =>
+              item &&
+              typeof item.url === 'string'
+          )
+          .map(item => ({
+            labelId:
+              item.labelId == null
+                ? null
+                : String(item.labelId),
+            url: item.url
+          }))
+      : Array.isArray(data?.urls)
+        ? data.urls.map(url => ({
+            labelId: null,
+            url
+          }))
         : [];
 
-    if (urls.length === 0) {
+    if (files.length === 0) {
       alert(
-        'COROSに取り込めるランはありませんでした。'
+        data?.dailyLimitReached
+          ? 'COROSの本日の取得上限に達しました。\n時間を空けて、もう一度お試しください。'
+          : 'COROSに取り込めるランはありませんでした。'
       );
       return;
     }
 
     for (
       let i = 0;
-      i < urls.length;
+      i < files.length;
       i++
     ) {
       corosConnectButton.textContent =
         'COROS取込み中 ' +
         (i + 1) +
         '/' +
-        urls.length;
+        files.length;
 
       try {
+        const corosFile = files[i];
         const response =
-          await fetch(urls[i]);
+          await fetch(corosFile.url);
 
         if (!response.ok) {
           throw new Error(
@@ -2230,6 +2250,13 @@ async function importFromCoros() {
           )
         ) {
           duplicates++;
+
+          if (corosFile.labelId) {
+            acknowledgedLabelIds.push(
+              corosFile.labelId
+            );
+          }
+
           continue;
         }
 
@@ -2243,6 +2270,12 @@ async function importFromCoros() {
 
         saved++;
 
+        if (corosFile.labelId) {
+          acknowledgedLabelIds.push(
+            corosFile.labelId
+          );
+        }
+
       } catch (error) {
         console.error(
           'COROS FIT取込み失敗:',
@@ -2251,6 +2284,50 @@ async function importFromCoros() {
 
         failed++;
       }
+    }
+
+    let acknowledgementFailed = false;
+
+    try {
+      const {
+        error: acknowledgementError
+      } =
+        await supabaseClient
+          .functions
+          .invoke(
+            'coros-sync',
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${session.access_token}`
+              },
+              body: {
+                action: 'ack',
+                acknowledgedLabelIds,
+                historyRunLabelIds:
+                  Array.isArray(
+                    data?.historyRunLabelIds
+                  )
+                    ? data.historyRunLabelIds
+                    : [],
+                historyOldestRecordDate:
+                  data?.historyOldestRecordDate ||
+                  null
+              }
+            }
+          );
+
+      if (acknowledgementError) {
+        throw acknowledgementError;
+      }
+
+    } catch (error) {
+      acknowledgementFailed = true;
+
+      console.error(
+        'COROS acknowledgement error:',
+        error
+      );
     }
 
     alert(
@@ -2263,7 +2340,12 @@ async function importFromCoros() {
       '件\n' +
       '失敗: ' +
       failed +
-      '件'
+      '件' +
+      (
+        acknowledgementFailed
+          ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
+          : ''
+      )
     );
 
     if (saved > 0) {
