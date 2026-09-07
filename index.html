@@ -453,7 +453,31 @@
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
     }
+    #monthFilterArea{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      padding:0 10px 9px;
+      background:#0f1d2f;
+      color:#dce8f5;
+      font-size:13px;
+    }
 
+    #monthFilter{
+      min-width:100px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:9px;
+      padding:7px 10px;
+      background:#17283d;
+      color:#dce8f5;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    #monthFilter:disabled{
+      opacity:.45;
+    }
     .yearButton{
       flex:0 0 auto;
       border:1px solid rgba(255,255,255,.14);
@@ -1226,7 +1250,33 @@
       ALL
     </button>
   </div>
+  <div id="monthFilterArea">
+    <label for="monthFilter">
+      月別表示
+    </label>
 
+    <select
+      id="monthFilter"
+      disabled
+    >
+      <option value="ALL">
+        年間
+      </option>
+
+      <option value="1">1月</option>
+      <option value="2">2月</option>
+      <option value="3">3月</option>
+      <option value="4">4月</option>
+      <option value="5">5月</option>
+      <option value="6">6月</option>
+      <option value="7">7月</option>
+      <option value="8">8月</option>
+      <option value="9">9月</option>
+      <option value="10">10月</option>
+      <option value="11">11月</option>
+      <option value="12">12月</option>
+    </select>
+  </div>
   <div id="map"></div>
   
   <div id="appAdArea">
@@ -2758,7 +2808,8 @@ const cloudRouteSignatures =
   
 let selectedYear =
   'ALL';
-
+let selectedMonth =
+  'ALL';
 let cloudRunCount =
   0;
 
@@ -5568,8 +5619,50 @@ selectedRunLine.bringToFront();
    クラウド一覧描画
 ===================================== */
 
-function renderCloudRowsList(
-  rowsToShow = cloudRows
+function getSelectedCloudRows() {
+
+  return cloudRows.filter(
+    row => {
+
+      const [
+        rowYear,
+        rowMonth
+      ] =
+        String(
+          row.activity_date ||
+          ''
+        )
+          .split('-')
+          .map(Number);
+
+      const matchesYear =
+        selectedYear ===
+          'ALL' ||
+        rowYear ===
+          Number(
+            selectedYear
+          );
+
+      const matchesMonth =
+        selectedMonth ===
+          'ALL' ||
+        rowMonth ===
+          Number(
+            selectedMonth
+          );
+
+      return (
+        matchesYear &&
+        matchesMonth
+      );
+
+    }
+  );
+
+}
+  function renderCloudRowsList(
+  rowsToShow =
+    getSelectedCloudRows()
 ) {
   lastCloudRowsView =
     [
@@ -8204,7 +8297,20 @@ function createYearFilters() {
 
           selectedYear =
             option;
+          selectedMonth =
+            'ALL';
 
+          const monthFilter =
+            document.getElementById(
+              'monthFilter'
+            );
+
+          monthFilter.value =
+            'ALL';
+
+          monthFilter.disabled =
+            selectedYear ===
+            'ALL';
 
           document
             .querySelectorAll(
@@ -8236,6 +8342,18 @@ function createYearFilters() {
   );
 
 }
+  const monthFilter =
+  document.getElementById(
+    'monthFilter'
+  );
+
+monthFilter.onchange =
+  () => {
+    selectedMonth =
+      monthFilter.value;
+
+    renderSelectedData();
+  };
 
 
 /* =====================================
@@ -8244,23 +8362,70 @@ function createYearFilters() {
 
 function getSelectedActivities() {
 
-  return (
-    selectedYear ===
-    'ALL'
+  return activities.filter(
+    activity => {
 
-      ? activities
+      const matchesYear =
+        selectedYear ===
+          'ALL' ||
+        activity.year ===
+          Number(
+            selectedYear
+          );
 
-      : activities.filter(
-          activity =>
-            activity.year ===
+      const activityDate =
+        activity.date instanceof Date
+          ? activity.date
+          : new Date(
+              activity.date
+            );
+
+      const matchesMonth =
+        selectedMonth ===
+          'ALL' ||
+        (
+          !Number.isNaN(
+            activityDate.getTime()
+          ) &&
+          activityDate.getMonth() + 1 ===
             Number(
-              selectedYear
+              selectedMonth
             )
-        )
+        );
+
+      return (
+        matchesYear &&
+        matchesMonth
+      );
+
+    }
   );
 
 }
 
+function getSelectedPeriodText() {
+
+  if (
+    selectedYear ===
+    'ALL'
+  ) {
+    return '全期間';
+  }
+
+  if (
+    selectedMonth ===
+    'ALL'
+  ) {
+    return selectedYear +
+      '年';
+  }
+
+  return selectedYear +
+    '年' +
+    selectedMonth +
+    '月';
+
+}
 
 /* =====================================
    集計
@@ -9112,14 +9277,9 @@ function updatePrefectureDashboard(
     .getElementById(
       'prefectureHeading'
     )
-    .textContent =
-      selectedYear ===
-      'ALL'
-
-        ? '都道府県別'
-
-        : selectedYear +
-          '年 都道府県別';
+        .textContent =
+      getSelectedPeriodText() +
+      ' 都道府県別';
 
 
   const list =
@@ -9256,11 +9416,8 @@ function updatePrefectureDashboard(
 function updateDashboard(
   stats
 ) {
-  const periodLabel =
-    selectedYear === 'ALL'
-      ? '全期間の'
-      : selectedYear + '年の';
-
+    const periodLabel =
+    getSelectedPeriodText() + 'の';
   document.getElementById('distanceLabel').textContent =
     periodLabel + '総距離';
 
@@ -9330,15 +9487,9 @@ function updateDashboard(
     .getElementById(
       'cityHeading'
     )
-    .textContent =
-      selectedYear ===
-      'ALL'
-
-        ? '市町村別'
-
-        : selectedYear +
-          '年 市町村別';
-
+        .textContent =
+      getSelectedPeriodText() +
+      ' 市町村別';
 
   const cityList =
     document.getElementById(
@@ -9665,6 +9816,7 @@ function renderSelectedData() {
     stats
   );
 
+    renderCloudRowsList();
 
   updateDisplay();
 
