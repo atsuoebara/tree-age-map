@@ -4,7 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Runner's Ringsとは？</title>
+  <title>Runner's Rings（ランナーズリングス）とは？</title>
+  <meta
+    name="description"
+    content="Runner's Rings（ランナーズリングス）は、走った道を地図に積み重ね、累計距離や地域別・年月別の記録を振り返るランニング記録アプリです。"
+  >
 
   <style>
     *{
@@ -46,12 +50,105 @@
     h2{
       margin:38px 0 14px;
       font-size:21px;
+      line-height:1.5;
     }
 
     p{
       margin:0 0 18px;
       color:#d5deea;
       font-size:15px;
+    }
+
+    .origin{
+      margin:28px 0;
+      padding:18px 20px;
+      background:#132237;
+      border-radius:16px;
+      border-left:4px solid #ff2bd6;
+    }
+
+    .origin p{
+      margin:0;
+    }
+
+    .features{
+      margin:48px 0 0;
+      padding-top:38px;
+      border-top:1px solid rgba(255,255,255,.1);
+    }
+
+    .features-title{
+      margin:0 0 8px;
+      font-size:27px;
+      line-height:1.4;
+    }
+
+    .features-intro{
+      margin-bottom:30px;
+    }
+
+    .feature-card{
+      margin:0 0 30px;
+      overflow:hidden;
+      background:#132237;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+    }
+
+    .feature-card img{
+      display:block;
+      width:100%;
+      height:auto;
+      background:#0f1d2f;
+    }
+
+    .feature-copy{
+      padding:20px;
+    }
+
+    .feature-copy h3{
+      margin:0 0 10px;
+      font-size:20px;
+      line-height:1.5;
+    }
+
+    .feature-copy p{
+      margin:0;
+    }
+
+    .map-legend{
+      margin:16px 0 0;
+      padding:0;
+      list-style:none;
+    }
+
+    .map-legend li{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      margin:10px 0;
+      color:#d5deea;
+      font-size:15px;
+    }
+
+    .color-dot{
+      flex:0 0 auto;
+      width:12px;
+      height:12px;
+      margin-top:9px;
+      border-radius:50%;
+    }
+
+    .red{
+      background:#ff3b30;
+    }
+
+    .blue{
+      background:#168cff;
+    }
+
+    .pink{
+      background:#ff2bd6;
     }
 
     .memory{
@@ -99,15 +196,38 @@
       font-size:12px;
       text-align:center;
     }
-    footer a{
-  color:#cbd3de;
-  text-decoration:none;
-  margin:0 8px;
-}
 
-footer a:hover{
-  text-decoration:underline;
-}
+    footer a{
+      display:inline-block;
+      color:#cbd3de;
+      text-decoration:none;
+      margin:3px 8px;
+    }
+
+    footer a:hover{
+      text-decoration:underline;
+    }
+
+    @media (min-width:680px){
+      main{
+        padding-top:52px;
+      }
+
+      .feature-card{
+        display:grid;
+        grid-template-columns:minmax(0, 44%) minmax(0, 56%);
+        align-items:center;
+      }
+
+      .feature-card img{
+        height:100%;
+        object-fit:cover;
+      }
+
+      .feature-copy{
+        padding:26px;
+      }
+    }
   </style>
 </head>
 
@@ -115,7 +235,7 @@ footer a:hover{
 
 <main>
 
-  <h1>Runner's Ringsとは？</h1>
+  <h1>Runner's Rings（ランナーズリングス）とは？</h1>
 
   <p class="lead">
     走った記録ではなく、走った人生を残す。
@@ -129,6 +249,87 @@ footer a:hover{
     走った道を地図に積み重ねながら、
     その時、その場所で走っていた自分の時間まで残していくためのアプリです。
   </p>
+
+  <div class="origin">
+    <p>
+      Runner's Rings（ランナーズリングス）は、群馬を走る一人のランナーから生まれた個人開発のWebアプリです。
+    </p>
+  </div>
+
+  <section class="features">
+    <h2 class="features-title">ランリングでできること</h2>
+
+    <p class="features-intro">
+      これまでのランニングを、地図と数字で自分だけの歴史として振り返れます。
+    </p>
+
+    <article class="feature-card">
+      <img
+        src="./01-running-history.png"
+        alt="累計距離、ラン数、訪れた地域と走行ルートを表示したRunner's Ringsの画面"
+        loading="lazy"
+      >
+      <div class="feature-copy">
+        <h3>走った歴史を、一枚の地図に。</h3>
+        <p>
+          これまで走ったコースを地図に積み重ね、累計距離・ラン数・訪れた地域をまとめて表示します。
+        </p>
+      </div>
+    </article>
+
+    <article class="feature-card">
+      <img
+        src="./02-region-stats.png"
+        alt="都道府県別と市町村別の走行距離とラン数を表示したRunner's Ringsの画面"
+        loading="lazy"
+      >
+      <div class="feature-copy">
+        <h3>都道府県・市町村ごとに振り返る</h3>
+        <p>
+          走行距離とラン数を都道府県別・市町村別に自動集計します。どの地域を多く走ってきたのか、自分のランニングの歴史を地域ごとに振り返れます。
+        </p>
+      </div>
+    </article>
+
+    <article class="feature-card">
+      <img
+        src="./03-year-month-stats.png"
+        alt="年と月を選択して走行記録を表示したRunner's Ringsの画面"
+        loading="lazy"
+      >
+      <div class="feature-copy">
+        <h3>年・月ごとに振り返る</h3>
+        <p>
+          全期間・年・月を切り替えて、その時期に走った地図と記録を表示できます。過去の自分が、いつ、どこを、どれだけ走ったのかを確認できます。
+        </p>
+      </div>
+    </article>
+
+    <article class="feature-card">
+      <img
+        src="./04-map-colors.png"
+        alt="赤、青、ピンクで走行記録を表現したRunner's Ringsの地図"
+        loading="lazy"
+      >
+      <div class="feature-copy">
+        <h3>地図の色で、走った軌跡がわかる</h3>
+        <ul class="map-legend">
+          <li>
+            <span class="color-dot red" aria-hidden="true"></span>
+            <span><strong>赤</strong>は、選択した期間内に走った全コース。</span>
+          </li>
+          <li>
+            <span class="color-dot blue" aria-hidden="true"></span>
+            <span><strong>青</strong>は、ラン一覧から選択した1回のコース。</span>
+          </li>
+          <li>
+            <span class="color-dot pink" aria-hidden="true"></span>
+            <span><strong>ピンク</strong>は、広域では走った市町村を走行距離に応じた濃さで表示し、詳細表示では走った場所を約100m四方のエリアで表します。繰り返し走った場所ほど色が濃くなります。</span>
+          </li>
+        </ul>
+      </div>
+    </article>
+  </section>
 
   <h2>走った道には、思い出が残っている</h2>
 
@@ -209,19 +410,19 @@ footer a:hover{
   </a>
 
   <footer>
-  <div>
-    <a href="./index.html">Runner's Rings</a>
-    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
-    <a href="./how-to.html">使い方</a>
-    <a href="./terms.html">利用規約</a>
-    <a href="./privacy.html">プライバシーポリシー</a>
-    <a href="./contact.html">お問い合わせ</a>
-  </div>
+    <div>
+      <a href="./index.html">Runner's Rings</a>
+      <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+      <a href="./how-to.html">使い方</a>
+      <a href="./terms.html">利用規約</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+      <a href="./contact.html">お問い合わせ</a>
+    </div>
 
-  <div style="margin-top:12px;">
-    &copy; 2026 Runner's Rings
-  </div>
-</footer>
+    <div style="margin-top:12px;">
+      &copy; 2026 Runner's Rings
+    </div>
+  </footer>
 
 </main>
 
