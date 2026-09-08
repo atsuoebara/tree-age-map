@@ -653,6 +653,40 @@
 #siteFooter a:hover{
   color:#ff2bd6;
 }
+
+#shareAppButton{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:2px 0 18px;
+  padding:12px 20px;
+  border:0;
+  border-radius:999px;
+  background:#ff2bd6;
+  color:#ffffff;
+  font:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(255,43,214,.22);
+}
+
+#shareAppButton:hover{
+  filter:brightness(1.08);
+}
+
+#shareAppButton:focus-visible{
+  outline:3px solid rgba(255,255,255,.9);
+  outline-offset:3px;
+}
+
+#shareAppMessage{
+  min-height:1.5em;
+  margin:-8px 0 14px;
+  color:#cbd5e1;
+  font-size:12px;
+}
     /* Strava連携ボタン */
 #stravaConnectButton {
   display: none;
@@ -1383,6 +1417,12 @@
 
 </main>
   <footer id="siteFooter">
+  <button id="shareAppButton" type="button">
+    ランリングをシェア
+  </button>
+
+  <div id="shareAppMessage" role="status" aria-live="polite"></div>
+
   <div class="footerLinks">
     <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
     <a href="./how-to.html">使い方</a>
@@ -10330,6 +10370,42 @@ const backToMapButton = document.getElementById("backToMapButton");
 backToMapButton.onclick = () => {
   location.href = "https://runnersrings.com";
 };
+
+const shareAppButton = document.getElementById('shareAppButton');
+const shareAppMessage = document.getElementById('shareAppMessage');
+
+const shareAppData = {
+  title: "Runner's Rings（ランナーズリングス）",
+  text: "走った道を、一枚の地図に。Runner's Rings（ランナーズリングス）は、これまでのランニングを地図と数字で振り返れるWebアプリです。",
+  url: 'https://runnersrings.com'
+};
+
+shareAppButton.addEventListener('click', async () => {
+  shareAppMessage.textContent = '';
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareAppData);
+      return;
+    }
+
+    await navigator.clipboard.writeText(
+      `${shareAppData.text}\n${shareAppData.url}`
+    );
+
+    shareAppMessage.textContent =
+      '紹介文とURLをコピーしました。';
+  }
+  catch(error) {
+    if (error && error.name === 'AbortError') {
+      return;
+    }
+
+    console.error(error);
+    shareAppMessage.textContent =
+      '共有できませんでした。もう一度お試しください。';
+  }
+});
 
 </script>
 
