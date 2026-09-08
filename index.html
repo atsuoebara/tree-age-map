@@ -2238,7 +2238,7 @@ async function importFromCoros() {
     if (files.length === 0) {
       alert(
         data?.dailyLimitReached
-          ? 'COROSの本日の取得上限に達しました。\n時間を空けて、もう一度お試しください。'
+          ? 'COROSの本日の取得上限に達しました。\n過去の履歴がまだある場合は、明日以降にもう一度「COROSから取り込む」を押してください。'
           : 'COROSに取り込めるランはありませんでした。'
       );
       return;
@@ -2389,7 +2389,9 @@ async function importFromCoros() {
       '件\n' +
       '失敗: ' +
       failed +
-      '件' +
+      '件\n\n' +
+      'COROSから1日に取得できる件数には上限があります。\n' +
+      '過去の履歴がまだある場合は、明日以降にもう一度「COROSから取り込む」を押してください。' +
       (
         acknowledgementFailed
           ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
