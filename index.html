@@ -549,6 +549,7 @@
       margin:22px 0 10px;
     }
 
+    #countryList,
     #prefectureList,
     #cityList{
       display:flex;
@@ -556,6 +557,7 @@
       gap:10px;
     }
 
+    .countryCard,
     .prefectureCard,
     .cityCard{
       background:#132237;
@@ -564,6 +566,7 @@
       cursor:pointer;
     }
 
+    .countryTop,
     .prefectureTop,
     .cityTop{
       display:flex;
@@ -572,18 +575,21 @@
       margin-bottom:9px;
     }
 
+    .countryName,
     .prefectureName,
     .cityName{
       font-size:14px;
       font-weight:700;
     }
 
+    .countryDistance,
     .prefectureDistance,
     .cityDistance{
       font-size:14px;
       opacity:.85;
     }
 
+    .countryRuns,
     .prefectureRuns,
     .cityRuns{
       margin-top:7px;
@@ -604,6 +610,10 @@
       background:#ff2bd6;
       border-radius:999px;
       min-width:3px;
+    }
+
+    .countryCard{
+      cursor:default;
     }
 
     .emptyMessage{
@@ -1391,6 +1401,16 @@
         <div id="cityCount" class="value">--</div>
       </div>
 
+    </div>
+
+    <h2 id="countryHeading">
+      国別
+    </h2>
+
+    <div id="countryList">
+      <div class="emptyMessage">
+        読み込み中…
+      </div>
     </div>
 
     <h2 id="prefectureHeading">
@@ -3959,6 +3979,29 @@ function getCountryName(
 }
 
 
+function getCountryNameByCode(
+  countryCode
+) {
+
+  const item =
+    countryFeatures.find(
+      candidate =>
+        getCountryCode(
+          candidate.feature
+        ) ===
+        countryCode
+    );
+
+
+  return item
+    ? getCountryName(
+        item.feature
+      )
+    : countryCode;
+
+}
+
+
 function findCountryFeature(
   lat,
   lon
@@ -4516,20 +4559,26 @@ function analyseRoute(
 
 
     const countryFeature =
-      findCountryFeature(
-        midpointLat,
-        midpointLon
-      );
+      feature
+        ? null
+        : findCountryFeature(
+            midpointLat,
+            midpointLon
+          );
+
+    const countryCode =
+      feature
+        ? 'JPN'
+        : countryFeature
+          ? getCountryCode(
+              countryFeature
+            )
+          : null;
 
 
     if (
-      countryFeature
+      countryCode
     ) {
-
-      const countryCode =
-        getCountryCode(
-          countryFeature
-        );
 
 
       countryDistances[
@@ -9690,6 +9739,145 @@ cloudRunsPanel
 
 
 /* =====================================
+   国 Dashboard
+===================================== */
+
+function updateCountryDashboard(
+  stats
+) {
+
+  document
+    .getElementById(
+      'countryHeading'
+    )
+    .textContent =
+      getSelectedPeriodText() +
+      ' 国別';
+
+
+  const list =
+    document.getElementById(
+      'countryList'
+    );
+
+
+  const entries =
+    Object.entries(
+      stats.countryDistance
+    )
+    .filter(
+      (
+        [
+          ,
+          km
+        ]
+      ) =>
+        km >
+        0.01
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
+    );
+
+
+  list.innerHTML =
+    '';
+
+
+  if (
+    !entries.length
+  ) {
+
+    list.innerHTML =
+      '<div class="emptyMessage">' +
+      'この期間の国別データがありません' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  const maxKm =
+    entries[0][1];
+
+
+  entries.forEach(
+    (
+      [
+        countryCode,
+        km
+      ]
+    ) => {
+
+      const percent =
+        Math.max(
+          3,
+          km /
+          maxKm *
+          100
+        );
+
+
+      const runs =
+        stats
+          .countryRunCount[
+            countryCode
+          ] ||
+        0;
+
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+
+      card.className =
+        'countryCard';
+
+
+      card.innerHTML =
+        '<div class="countryTop">' +
+          '<div class="countryName">' +
+            getCountryNameByCode(
+              countryCode
+            ) +
+          '</div>' +
+          '<div class="countryDistance">' +
+            km.toFixed(
+              2
+            ) +
+            ' km' +
+          '</div>' +
+        '</div>' +
+        '<div class="barTrack">' +
+          '<div class="barFill" style="width:' +
+            percent +
+            '%"></div>' +
+        '</div>' +
+        '<div class="countryRuns">' +
+          'RUNS ' +
+          runs +
+        '</div>';
+
+
+      list.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================
    都道府県 Dashboard
 ===================================== */
 
@@ -9900,6 +10088,11 @@ function updateDashboard(
     )
     .textContent =
       entries.length;
+
+
+  updateCountryDashboard(
+    stats
+  );
 
 
   updatePrefectureDashboard(
