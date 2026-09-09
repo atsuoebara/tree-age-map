@@ -148,6 +148,11 @@
 
 <body>
 
+<div class="languageSwitch" aria-label="Language">
+  <button class="languageButton" type="button" data-language="ja">日本語</button>
+  <button class="languageButton" type="button" data-language="en">EN</button>
+</div>
+
 <header>
   <h1>Runner's Rings</h1>
   <p>走った記録ではなく、走った人生を残す。</p>
@@ -387,6 +392,115 @@
     &copy; 2026 Runner's Rings
   </div>
 </footer>
+
+<style>
+  .languageSwitch{position:absolute;top:16px;right:16px;z-index:1000;display:flex;gap:4px;padding:4px;border:1px solid #34465d;border-radius:999px;background:rgba(11,22,38,.94)}
+  header{padding-right:160px}
+  .languageButton{border:0;border-radius:999px;padding:8px 13px;background:transparent;color:#b8c4d3;font-weight:700;cursor:pointer}
+  .languageButton.isActive{background:#ff20c7;color:#fff}
+</style>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'runners-rings-language';
+  const stored = localStorage.getItem(STORAGE_KEY);
+  const language = stored === 'ja' || stored === 'en' ? stored : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+  document.querySelectorAll('.languageButton').forEach((button) => {
+    button.classList.toggle('isActive', button.dataset.language === language);
+    button.addEventListener('click', () => {
+      localStorage.setItem(STORAGE_KEY, button.dataset.language);
+      location.reload();
+    });
+  });
+  if (language !== 'en') return;
+  const translations = {
+    "走った記録ではなく、走った人生を残す。": "Preserve the life you ran, not just the records.",
+    "プライバシーポリシー": "Privacy Policy",
+    "Runner's Ringsでは、利用者の情報を適切に取り扱い、 安心してサービスを利用できるよう努めます。": "Runner's Rings makes reasonable efforts to handle user information appropriately and provide a service users can use with confidence.",
+    "1. 取得する情報": "1. Information We Collect",
+    "Runner's Ringsでは、サービスの提供に必要な範囲で、 以下の情報を取得する場合があります。": "Runner's Rings may collect the following information to the extent necessary to provide the service.",
+    "メールアドレスなどのアカウント情報": "Account information such as an email address",
+    "利用者が登録したランニング記録": "Running records registered by the user",
+    "StravaまたはCOROSとの連携により取得するランニング記録、走行日時、距離、位置情報など": "Running records, activity dates and times, distances, location information, and similar data obtained through Strava or COROS",
+    "利用者が追加したGPX／FITファイルやZIPファイルに含まれるランニング記録": "Running records contained in GPX, FIT, or ZIP files added by the user",
+    "外部サービスとの連携を維持するために必要な認証情報": "Authentication information required to maintain connections with external services",
+    "サービスの利用状況に関する情報": "Information about use of the service",
+    "端末、ブラウザ等に関する情報": "Information about the user's device, browser, and similar environment",
+    "2. 情報の利用目的": "2. Purposes of Use",
+    "取得した情報は、主に以下の目的で利用します。": "Collected information is used primarily for the following purposes.",
+    "Runner's Ringsのサービスを提供するため": "To provide the Runner's Rings service",
+    "利用者ごとのランニング記録を保存・表示するため": "To store and display each user's running records",
+    "走行ルートや走行エリアを地図上に表示するため": "To display running routes and areas on a map",
+    "サービスの改善、不具合対応を行うため": "To improve the service and address defects",
+    "不正利用やセキュリティ上の問題を防止するため": "To prevent unauthorized use and security issues",
+    "3. 位置情報・ランニングデータ": "3. Location and Running Data",
+    "Runner's Ringsでは、StravaまたはCOROSとの連携、ならびに利用者が追加したGPX／FITファイルやZIPファイルから、ランニングの走行ルートや位置情報を取り扱います。": "Runner's Rings handles running routes and location information obtained through Strava or COROS and from GPX, FIT, or ZIP files added by users.",
+    "これらの情報は、": "This information is used",
+    "利用者自身のランニング記録を地図として可視化する目的": "to visualize the user's own running records as a map",
+    "で使用します。": ".",
+    "保存された距離、ラン数、走行ルートおよび地図は、Runner's Rings上ではログインした利用者本人にのみ表示されます。": "Saved distances, run counts, routes, and maps are visible in Runner's Rings only to the signed-in user.",
+    "4. アカウント情報・認証情報の管理": "4. Management of Account and Authentication Information",
+    "Runner's Ringsでは、アカウント認証および利用者ごとのデータ管理のため、外部のクラウドサービスを利用しています。": "Runner's Rings uses external cloud services for account authentication and management of user data.",
+    "StravaまたはCOROSとの連携に必要な認証情報は、連携機能を提供する目的で安全に保管し、Runner's Ringsの画面上には表示しません。": "Authentication information required to connect Strava or COROS is securely stored for the purpose of providing the connection and is not displayed in the Runner's Rings interface.",
+    "パスワードについては、Runner's Ringsの画面上でパスワードそのものを閲覧・取得することを目的としていません。": "Runner's Rings is not designed to view or retrieve a user's password through its interface.",
+    "5. 第三者への情報提供": "5. Disclosure to Third Parties",
+    "法令に基づく場合などを除き、利用者の個人情報を 本人の同意なく第三者へ提供することはありません。": "Except where required by law or similar circumstances, personal information will not be provided to third parties without the user's consent.",
+    "ただし、サービス提供に必要なクラウドサービス、 認証サービス等を利用する場合があります。": "However, cloud, authentication, and other services necessary to provide Runner's Rings may be used.",
+    "6. 広告について": "6. Advertising",
+    "Runner's Ringsでは、サービスの運営・維持のため、Google AdSenseを利用する場合があります。": "Runner's Rings may use Google AdSense to operate and maintain the service.",
+    "Googleなどの第三者配信事業者は、広告の配信、効果測定、不正利用防止などのため、Cookie、ウェブビーコン、IPアドレス等を使用する場合があります。": "Third-party vendors, including Google, may use cookies, web beacons, IP addresses, and similar technologies to serve ads, measure performance, and prevent misuse.",
+    "Googleは、利用者による本サイトや他のサイトへのアクセス情報に基づいて、適切な広告を表示する場合があります。": "Google may display relevant ads based on a user's visits to this and other websites.",
+    "利用者は、": "Users can manage personalized advertising through",
+    "Googleの広告設定": "Google Ads Settings",
+    "から、パーソナライズ広告を管理できます。": ".",
+    "Googleによる情報の取り扱いについては、": "For details on how Google handles information, see",
+    "Googleの「サービスを使用するサイトやアプリから収集した情報の使用」": "How Google uses information from sites or apps that use its services",
+    "をご確認ください。": ".",
+    "7. Cookie等について": "7. Cookies and Similar Technologies",
+    "Runner's Ringsおよび利用する外部サービスでは、 サービスの提供、利便性向上、利用状況の把握、 広告配信等のためCookieや類似の技術を利用する場合があります。": "Runner's Rings and its external service providers may use cookies and similar technologies to provide the service, improve convenience, understand usage, and serve advertising.",
+    "Cookieの利用は、利用者のブラウザ設定により 制限または無効化できる場合があります。": "Users may be able to restrict or disable cookies through their browser settings.",
+    "8. 外部サービスについて": "8. External Services",
+    "Runner's Ringsでは、サービス提供のため、主に以下の外部サービスを利用しています。": "Runner's Rings primarily uses the following external services.",
+    "Supabase：アカウント認証およびランニングデータ等の保存": "Supabase: account authentication and storage of running data",
+    "Strava：利用者が許可したランニング記録の取得": "Strava: retrieval of running records authorized by the user",
+    "COROS：利用者が許可したランニング記録の取得": "COROS: retrieval of running records authorized by the user",
+    "OpenStreetMap／Leaflet：地図の表示": "OpenStreetMap / Leaflet: map display",
+    "GitHub Pages：ウェブサイトの公開": "GitHub Pages: website hosting",
+    "Google AdSense：広告の配信および効果測定": "Google AdSense: ad delivery and performance measurement",
+    "各外部サービスにおける情報の取り扱いについては、それぞれのサービスが定める利用規約やプライバシーポリシーが適用される場合があります。": "Each external service's own terms of service and privacy policy may apply to its handling of information.",
+    "9. 情報の安全管理": "9. Information Security",
+    "Runner's Ringsでは、利用者の情報について、 不正アクセス、漏えい、紛失等を防止するため、 合理的な範囲で安全管理に努めます。": "Runner's Rings takes reasonable security measures to prevent unauthorized access, disclosure, loss, and similar risks involving user information.",
+    "10. 情報の保存・削除": "10. Retention and Deletion",
+    "Runner's Ringsでは、サービス提供に必要な期間、アカウント情報、ランニング記録および外部サービスとの連携情報を保存します。": "Runner's Rings retains account information, running records, and external-service connection information for as long as needed to provide the service.",
+    "StravaまたはCOROSとの連携を解除しても、すでにRunner's Ringsへ保存されたランニング記録は自動では削除されません。": "Disconnecting Strava or COROS does not automatically delete running records already saved in Runner's Rings.",
+    "アカウントおよび保存データの削除を希望する場合は、お問い合わせページからご連絡ください。法令等により保存が必要な情報を除き、合理的な範囲で対応します。": "To request deletion of an account and stored data, contact us through the Contact page. Requests will be handled within a reasonable scope, except for information that must be retained by law or similar requirements.",
+    "11. プライバシーポリシーの変更": "11. Changes to This Privacy Policy",
+    "サービス内容の変更、利用する外部サービスの変更、 法令等への対応により、本プライバシーポリシーを 必要に応じて変更する場合があります。": "This Privacy Policy may be changed as necessary due to changes in the service, external service providers, laws, or other requirements.",
+    "重要な変更がある場合は、本サービス上など 適切な方法でお知らせします。": "Material changes will be announced through the service or by another appropriate method.",
+    "12. お問い合わせ": "12. Contact",
+    "本プライバシーポリシーや個人情報の取り扱いに関する お問い合わせ方法については、 Runner's Rings内に設置するお問い合わせ窓口からご連絡ください。": "For inquiries about this Privacy Policy or the handling of personal information, please use the Contact page provided within Runner's Rings.",
+    "制定日・最終改定日": "Effective Date and Last Updated",
+    "制定日：2026年8月24日": "Effective date: August 24, 2026",
+    "最終改定日：2026年9月6日": "Last updated: September 6, 2026",
+    "Runner's Ringsを開く": "Open Runner's Rings",
+    "Runner's Ringsとは？": "About Runner's Rings",
+    "使い方": "How to Use",
+    "利用規約": "Terms of Service",
+    "お問い合わせ": "Contact"
+  };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => {
+    const key = node.nodeValue.replace(/\s+/g, ' ').trim();
+    if (!translations[key]) return;
+    node.nodeValue = node.nodeValue.match(/^\s*/)[0] + translations[key] + node.nodeValue.match(/\s*$/)[0];
+  });
+  document.querySelector('a[href*="partner-sites"]')?.setAttribute('href', 'https://policies.google.com/technologies/partner-sites?hl=en');
+  document.documentElement.lang = 'en';
+  document.title = "Privacy Policy | Runner's Rings";
+})();
+</script>
 
 </body>
 </html>
