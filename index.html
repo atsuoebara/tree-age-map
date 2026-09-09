@@ -2340,6 +2340,7 @@ async function importFromCoros() {
   let saved = 0;
   let duplicates = 0;
   let failed = 0;
+  const failedDetails = [];
   const acknowledgedLabelIds = [];
 
   try {
@@ -2404,8 +2405,13 @@ async function importFromCoros() {
         '/' +
         files.length;
 
+      let corosFile =
+        files[i];
+
+      let failureStage =
+        'FITファイル取得';
+
       try {
-        const corosFile = files[i];
         const response =
           await fetch(corosFile.url);
 
@@ -2428,11 +2434,17 @@ async function importFromCoros() {
             }
           );
 
+        failureStage =
+          'FIT解析';
+
         const activity =
           await window
             .buildActivityFromFIT(
               file
             );
+
+        failureStage =
+          '重複確認';
 
         const exact =
           createActivitySignature(
@@ -2458,6 +2470,9 @@ async function importFromCoros() {
           continue;
         }
 
+        failureStage =
+          'クラウドへの保存処理';
+
         await saveActivityToCloud(
           activity
         );
@@ -2481,6 +2496,25 @@ async function importFromCoros() {
         );
 
         failed++;
+
+        failedDetails.push(
+          {
+            itemNumber:
+              i + 1,
+
+            labelId:
+              corosFile.labelId ||
+              '不明',
+
+            stage:
+              failureStage,
+
+            message:
+              error instanceof Error
+                ? error.message
+                : String(error)
+          }
+        );
       }
     }
 
@@ -2539,6 +2573,25 @@ async function importFromCoros() {
       '失敗: ' +
       failed +
       '件\n\n' +
+      (
+        failedDetails.length >
+          0
+          ? '失敗の詳細：\n' +
+            failedDetails
+              .map(
+                detail =>
+                  detail.itemNumber +
+                  '件目／記録ID: ' +
+                  detail.labelId +
+                  '／段階: ' +
+                  detail.stage +
+                  '／理由: ' +
+                  detail.message
+              )
+              .join('\n') +
+            '\n\n'
+          : ''
+      ) +
       'COROSから一定期間内に取得できる件数には上限があります。\n' +
       '過去の履歴がまだある場合は、24時間程度あけてから、もう一度「COROSから取り込む」を押してください。' +
       (
@@ -13159,6 +13212,18 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['クラウド保存失敗','Account save failed'],
   ['このランの地図データを表示できません。','Map data is unavailable for this run.'],
   ['COROSラン','COROS run'],
+  ['失敗の詳細：','Failure details:'],
+  ['FITファイル取得','FIT file retrieval'],
+  ['FIT解析','FIT parsing'],
+  ['重複確認','Duplicate check'],
+  ['クラウドへの保存処理','Account save'],
+  ['記録ID:','Record ID:'],
+  ['／段階:',' / Stage:'],
+  ['／理由:',' / Reason:'],
+  ['段階:','Stage:'],
+  ['理由:','Reason:'],
+  ['件目／',' / '],
+  ['不明','Unknown'],
   ['クラウド保存ランを読み込めませんでした','Could not load saved account runs'],
   ['過去ラン','historical run'],
   ['現在のGPXを探しています…','Looking for current GPX files…'],
