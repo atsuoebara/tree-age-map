@@ -4627,6 +4627,43 @@ function analyseRoute(
       }
     );
 
+  }
+
+
+  const detectedCountryDistance =
+    Object.values(
+      countryDistances
+    )
+    .reduce(
+      (
+        total,
+        km
+      ) =>
+        total +
+        km,
+      0
+    );
+
+
+  const countryTargetDistance =
+    targetDistanceKm &&
+    targetDistanceKm >
+    0
+      ? targetDistanceKm
+      : calculatedKm;
+
+
+  if (
+    detectedCountryDistance >
+      0 &&
+    countryTargetDistance >
+      0
+  ) {
+
+    const countryScale =
+      countryTargetDistance /
+      detectedCountryDistance;
+
 
     Object.keys(
       countryDistances
@@ -4637,7 +4674,7 @@ function analyseRoute(
         countryDistances[
           key
         ] *=
-          scale;
+          countryScale;
 
       }
     );
