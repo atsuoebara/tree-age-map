@@ -114,9 +114,48 @@
   footer a:hover {
     text-decoration: underline;
   }
+
+  .languageSwitch {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid #34465d;
+    border-radius: 999px;
+    background: rgba(11, 22, 38, .94);
+  }
+
+  .languageButton {
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 13px;
+    background: transparent;
+    color: #b8c4d3;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .languageButton.isActive {
+    background: #ff20c7;
+    color: #fff;
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      padding-top: 88px;
+    }
+  }
   </style>
 </head>
 <body>
+
+  <div class="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
 
   <main class="container">
     <h1>Runner's Rings 使い方</h1>
@@ -342,5 +381,120 @@
       &copy; 2026 Runner's Rings
     </div>
   </footer>
+
+  <script>
+  (() => {
+    const STORAGE_KEY = 'runners-rings-language';
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const language = stored === 'ja' || stored === 'en'
+      ? stored
+      : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+
+    document.querySelectorAll('.languageButton').forEach((button) => {
+      button.classList.toggle('isActive', button.dataset.language === language);
+      button.addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, button.dataset.language);
+        location.reload();
+      });
+    });
+
+    if (language !== 'en') return;
+
+    const translations = {
+      "Runner's Rings 使い方": "How to Use Runner's Rings",
+      "Runner's Ringsをはじめるところから、Strava連携、地図の見方、過去データの追加まで順番に案内します。": "This guide walks you through getting started, connecting Strava, reading your map, and importing past activities.",
+      "1. Runner's Ringsをはじめる": "1. Get started with Runner's Rings",
+      "Runner's Ringsは、走った道や街を地図に積み重ねていくランニングWEBアプリです。": "Runner's Rings is a web app that builds a personal map from the roads and places you have run.",
+      "現在は日本国内のランニングデータ表示に対応しています。": "Runner's Rings currently supports country-level display worldwide, prefectures and municipalities in Japan, and state-level display in the United States.",
+      "距離・ラン数・地図は、登録した本人だけに表示されます。シェアするかどうかは自分で選べます。": "Your distance, run count, and maps are visible only to you while signed in. You decide whether to share them.",
+      "2. 新規登録する": "2. Create an account",
+      "はじめて利用する場合は、メールアドレスとパスワードを入力して新規登録します。": "If this is your first visit, enter your email address and a password to create an account.",
+      "パスワードは6文字以上で設定してください。": "Your password must be at least six characters long.",
+      "新規登録後、Supabase Authから確認メールが届きます。メール内の「Confirm email address」をタップすると登録が完了します。": "After signing up, you will receive a confirmation email from Supabase Auth. Tap “Confirm email address” in the email to complete registration.",
+      "登録が完了したら、Runner's Ringsに戻ってログインします。": "When registration is complete, return to Runner's Rings and log in.",
+      "3. Stravaと連携する": "3. Connect Strava",
+      "Runner's Ringsは、Stravaに保存されているランニングデータを読み込み、これまで走った道を地図に残します。": "Runner's Rings imports your running activities from Strava and adds the routes you have run to your map.",
+      "一度Stravaと連携すると、過去のランニングデータを取り込めるほか、その後のランも自動でRunner's Ringsに反映されます。": "Once connected, past activities are imported and future runs are automatically added to Runner's Rings.",
+      "Stravaを利用していない場合でも、COROS連携やGPX／FITファイルからランニングデータを追加できます。": "If you do not use Strava, you can add running data through COROS or by importing GPX or FIT files.",
+      "ログイン後、「Connect with Strava」ボタンからStravaと連携します。": "After logging in, select “Connect with Strava.”",
+      "連携が完了すると、Runner's RingsがStravaのランニングデータを読み込みます。": "When authorization is complete, Runner's Rings imports your running data from Strava.",
+      "対象は Run / Trail Run / Virtual Run です。": "Supported activity types are Run, Trail Run, and Virtual Run.",
+      "Stravaでスタート地点やゴール地点を非表示にしている場合、Runner's Ringsに取り込まれるルートも一部省略されることがあります。": "If you hide the start or finish of an activity in Strava, those parts may also be omitted from the route imported into Runner's Rings.",
+      "そのため、実際に走った道とRunner's Rings上の地図が完全には一致しない場合があります。": "As a result, the map in Runner's Rings may not exactly match the full route you ran.",
+      "走ったルートをできるだけ正確に残したい場合は、Strava側の地図表示・プライバシー設定をご確認ください。": "To preserve routes as accurately as possible, review your map visibility and privacy settings in Strava.",
+      "4. 地図を見る": "4. View your map",
+      "走ったルートやエリアが、Runner's Ringsの地図に表示されます。": "Your running routes and visited areas appear on the Runner's Rings map.",
+      "地図を拡大すると実際に走ったルートを確認でき、縮小すると市町村ごとの走行状況を確認できます。": "Zoom in to see your actual routes. Zoom out to view your running activity by municipality or supported region.",
+      "年を選択すると、その年に走ったデータだけを表示できます。": "Select a year to show only the activities from that year.",
+      "5. ホーム画面に追加する": "5. Add Runner's Rings to your Home Screen",
+      "SafariでRunner's Ringsを開き、共有ボタンから「ホーム画面に追加」を選びます。": "Open Runner's Rings in Safari, tap the Share button, and select “Add to Home Screen.”",
+      "「Webアプリとして開く」は、URL確認や共有をよく使う場合はOFFがおすすめです。": "If you often check or share the URL, we recommend turning off “Open as Web App.”",
+      "ChromeでRunner's Ringsを開き、右上のメニューから「ホーム画面に追加」または「アプリをインストール」を選びます。": "Open Runner's Rings in Chrome and select “Add to Home screen” or “Install app” from the menu.",
+      "6. パソコンからGarmin ZIPをまとめて追加する": "6. Import a Garmin ZIP file on a computer",
+      "Garminから書き出した過去のランニングデータは、ZIPファイルを解凍せず、そのままRunner's Ringsで確認・保存できます。": "You can review and save past running data exported from Garmin without extracting the ZIP file.",
+      "この機能はデータ量が多いため、パソコンでの操作をおすすめします。ZIPとGPX／FITは同時に選択せず、分けて追加してください。": "Because this process may handle a large amount of data, we recommend using a computer. Import ZIP files separately from GPX or FIT files.",
+      "Runner's Ringsへ追加する": "Import into Runner's Rings",
+      "パソコンでRunner's Ringsを開き、ログインします。": "Open Runner's Rings on a computer and log in.",
+      "「＋ランを追加」を押します。": "Select “+ Add runs.”",
+      "Garminから取得したZIPファイルを、解凍せずに選択します。": "Select the ZIP file exported from Garmin without extracting it.",
+      "ZIP内の確認が終わるまで、画面を閉じずに待ちます。": "Keep the page open while Runner's Rings scans the ZIP file.",
+      "ラン＋GPS候補、既存ランとの重複、未登録候補、保存予定件数を確認します。": "Review detected runs with GPS data, duplicates, unregistered candidates, and the number of activities to be saved.",
+      "確認画面で「保存処理へ進みますか？」を選びます。": "At the confirmation prompt, choose to continue with saving.",
+      "誤操作防止のため、画面に表示された「○件保存」を入力します。": "To prevent accidental imports, enter the confirmation phrase shown on screen.",
+      "保存成功・スキップ・失敗の件数を確認します。": "Review the numbers of successful, skipped, and failed activities.",
+      "ZIPの中にさらにZIPがある場合も、Runner's Ringsが内側まで自動で確認します。": "Runner's Rings also scans ZIP files contained inside the selected ZIP file.",
+      "既存のクラウドランと同じ記録は重複として除外され、新しいランだけが保存対象になります。": "Activities matching existing cloud records are excluded as duplicates, and only new runs are saved.",
+      "誤操作などによる短い記録を避けるため、500m未満の候補は自動保存されません。": "To avoid saving accidental short recordings, activities under 500 meters are not saved automatically.",
+      "保存前に未登録候補一覧のテキストファイルが作成された場合は、内容確認のため保管してください。": "If a text file listing unregistered candidates is generated before saving, keep it for review.",
+      "7. GPX／FITファイルを個別に追加する": "7. Import GPX or FIT files",
+      "Stravaに残っていないランニングデータは、GPX／FITファイルを使ってRunner's Ringsに追加できます。": "You can import running activities that are not in Strava using GPX or FIT files.",
+      "「＋ランを追加」を押し、サービスや端末から書き出したGPX／FITファイルを選択してください。複数ファイルもまとめて選択できます。": "Select “+ Add runs,” then choose GPX or FIT files exported from your service or device. You can select multiple files at once.",
+      "取り込んだランはクラウドに保存され、次回以降もRunner's Ringsの地図に表示されます。": "Imported runs are saved to the cloud and remain visible on your Runner's Rings map.",
+      "すでに同じランが存在する場合は、重複しないように同一ランとして判定します。": "If the same run already exists, Runner's Rings identifies it as a duplicate instead of creating another record.",
+      "8. Strava／COROS連携を解除する": "8. Disconnect Strava or COROS",
+      "StravaまたはCOROSとの連携を解除したい場合は、アカウント設定を開き、それぞれの「連携を解除」ボタンから解除できます。": "To disconnect Strava or COROS, open Account Settings and select the corresponding disconnect button.",
+      "連携を解除しても、これまでRunner's Ringsに保存されたランニングデータは削除されません。": "Disconnecting a service does not delete running data already saved in Runner's Rings.",
+      "再び連携したい場合は、画面上部のStravaまたはCOROSの連携ボタンから再連携できます。": "To reconnect, use the Strava or COROS connection button near the top of the app.",
+      "9. 困ったとき": "9. Troubleshooting",
+      "パスワードを忘れた場合": "If you forgot your password",
+      "ログイン画面にメールアドレスを入力し、「パスワードを忘れた方」を押してください。": "Enter your email address on the login screen and select “Forgot your password?”",
+      "届いたメール内のリンクを開くと、アカウント設定が表示されます。「パスワードを変更」に新しいパスワードを入力し、「変更を保存」を押してください。": "Open the link in the email, enter a new password in Account Settings, and save your changes.",
+      "最新のデータが表示されない場合は、ブラウザでRunner's Ringsを開き直してから、もう一度確認してください。": "If your latest data does not appear, reopen Runner's Rings in your browser and check again.",
+      "Strava連携後すぐに反映されない場合は、少し時間をおいてから再度確認してください。": "If a Strava activity does not appear immediately, wait a short time and check again.",
+      "それでも解決しない場合は、お問い合わせページからご連絡ください。": "If the issue continues, contact us through the Contact page.",
+      "Runner's Ringsを開く": "Open Runner's Rings",
+      "Runner's Ringsとは？": "About Runner's Rings",
+      "使い方": "How to Use",
+      "利用規約": "Terms of Service",
+      "プライバシーポリシー": "Privacy Policy",
+      "お問い合わせ": "Contact"
+    };
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      const normalized = node.nodeValue.replace(/\s+/g, ' ').trim();
+      if (!translations[normalized]) return;
+      const leading = node.nodeValue.match(/^\s*/)[0];
+      const trailing = node.nodeValue.match(/\s*$/)[0];
+      node.nodeValue = leading + translations[normalized] + trailing;
+    });
+
+    const altTranslations = {
+      "Runner's Rings 新規登録方法": "How to create a Runner's Rings account",
+      "Runner's Rings Strava連携方法": "How to connect Runner's Rings to Strava",
+      "Runner's Rings Strava連携完了画面": "Runner's Rings connected to Strava",
+      "Runner's Rings 地図の見方": "How to view the Runner's Rings map",
+      "Runner's Rings iPhoneホーム画面追加方法": "How to add Runner's Rings to the iPhone Home Screen",
+      "Runner's Rings Androidホーム画面追加方法": "How to add Runner's Rings to the Android Home Screen"
+    };
+    document.querySelectorAll('[alt]').forEach((element) => {
+      if (altTranslations[element.alt]) element.alt = altTranslations[element.alt];
+    });
+    document.documentElement.lang = 'en';
+    document.title = "How to Use | Runner's Rings";
+  })();
+  </script>
 </body>
 </html>
