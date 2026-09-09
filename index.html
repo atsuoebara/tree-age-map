@@ -720,7 +720,7 @@
   font-weight: 700;
   cursor: pointer;
 }
-    
+
 /* 地図に戻るボタン */
 #backToMapButton {
   display: block;
@@ -897,7 +897,7 @@
   background:rgba(255,255,255,.025);
 }
 
-  
+
 
 #appAdArea{
   min-height:82px;
@@ -914,8 +914,8 @@
   font-size:9px;
   letter-spacing:1.5px;
   color:#526176;
-}  
-    
+}
+
 
 
 @media (min-width:700px){
@@ -940,7 +940,7 @@
     font-size:25px;
   }
 
-}  
+}
 /* =====================================
    Runner's Rings ブランドアイコン
    2026-08-28
@@ -1177,12 +1177,12 @@
   <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
 </button>
 
-    
+
 <button id="corosConnectButton" type="button">
   COROSと連携
 </button>
 
-    
+
 </div>
 <section id="accountPanel" style="display:none;">
 
@@ -1236,7 +1236,7 @@
 <button id="corosDisconnectButton" type="button" style="display:none;">
   COROS連携を解除
 </button>
-  
+
 <button id="logoutButton">
   ログアウト
 </button>
@@ -1244,7 +1244,7 @@
     閉じる
   </button>
 
-</section>  
+</section>
 <div id="status">
   データを読み込み中…
 </div>
@@ -1286,7 +1286,7 @@
     </div>
   </div>
 
-  
+
 
   <div id="filters">
     <button class="yearButton active">
@@ -1321,11 +1321,11 @@
     </select>
   </div>
   <div id="map"></div>
-  
+
   <div id="appAdArea">
   <div class="authAdLabel">ADVERTISEMENT</div>
 </div>
-  
+
   <button
   id="backToRunListButton"
   type="button"
@@ -1342,7 +1342,7 @@
 <button id="backToMapButton" type="button">
   ← 地図に戻る
 </button>
-    
+
     <div id="historySortArea">
       <button
         class="historySortButton active"
@@ -1438,9 +1438,9 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="./runner_rings_archive.js"></script>
-<script type="module" src="./fit_importer.js"></script>  
+<script type="module" src="./fit_importer.js"></script>
 
 <script>
 
@@ -1556,7 +1556,7 @@ const accountPanel =
 const accountCurrentEmail =
   document.getElementById(
     'accountCurrentEmail'
-  );  
+  );
 
 const accountCloseButton =
   document.getElementById(
@@ -1570,7 +1570,7 @@ const accountDisplayNameInput =
 const accountSaveButton =
   document.getElementById(
     'accountSaveButton'
-  );  
+  );
 const accountNewEmailInput =
   document.getElementById(
     'accountNewEmailInput'
@@ -1579,7 +1579,7 @@ const accountNewEmailInput =
 const accountNewPasswordInput =
   document.getElementById(
     'accountNewPasswordInput'
-  );  
+  );
  const accountAvatar =
   document.getElementById(
     'accountAvatar'
@@ -1593,14 +1593,14 @@ const accountAvatarLarge =
 const accountAvatarInput =
   document.getElementById(
     'accountAvatarInput'
-  ); 
+  );
  accountProfile.addEventListener('click', () => {
   accountPanel.style.display = 'block';
 });
 
 accountCloseButton.addEventListener('click', () => {
   accountPanel.style.display = 'none';
-}); 
+});
 accountAvatarInput.addEventListener('change', () => {
   const file =
     accountAvatarInput.files?.[0];
@@ -1618,7 +1618,7 @@ accountAvatarInput.addEventListener('change', () => {
 });
   accountSaveButton.addEventListener('click', async () => {
 const avatarFile =
-  accountAvatarInput.files?.[0];    
+  accountAvatarInput.files?.[0];
   const displayName =
     accountDisplayNameInput.value.trim();
 let avatarPath =
@@ -1650,7 +1650,7 @@ if (avatarFile) {
     console.error(avatarUploadError);
     return;
   }
-}    
+}
 
   const newEmail =
   accountNewEmailInput.value.trim();
@@ -1709,7 +1709,7 @@ if (newPassword) {
 }
 
 alert(saveMessage);
-});  
+});
   const stravaConnectButton =
   document.getElementById(
     'stravaConnectButton'
@@ -1729,7 +1729,7 @@ const stravaDisconnectButton =
   document.getElementById(
     'stravaDisconnectButton'
   );
-  
+
 const authMessage =
   document.getElementById(
     'authMessage'
@@ -2165,7 +2165,7 @@ async function connectCoros() {
     corosConnectButton.textContent =
       'COROSと連携';
   }
-}  
+}
 
 async function importFromCoros() {
   const {
@@ -2503,7 +2503,7 @@ async function disconnectCoros() {
       'COROS連携を解除';
   }
 }
-  
+
 async function disconnectStrava() {
   const {
     data: { session }
@@ -2558,7 +2558,7 @@ async function disconnectStrava() {
   }
 }
 
-  
+
 async function syncStrava(
   silent = false,
   fullSync = false
@@ -2610,7 +2610,7 @@ async function syncStrava(
 }
 
 window.syncStrava = syncStrava;
-  
+
 loginButton.onclick =
   login;
 
@@ -2630,7 +2630,7 @@ stravaDisconnectButton.onclick =
   disconnectStrava;
 corosDisconnectButton.onclick =
   disconnectCoros;
-  
+
 async function updateStravaConnectionStatus() {
   const {
     data: { session }
@@ -2669,7 +2669,7 @@ async function updateStravaConnectionStatus() {
 
 stravaDisconnectButton.style.display =
   'inline-block';
-    
+
   } else {
     stravaConnectButton.innerHTML =
   '<img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">';
@@ -2677,11 +2677,11 @@ stravaDisconnectButton.style.display =
     stravaConnectButton.disabled =
       false;
 stravaConnectButton.style.display =
-  'inline-block';    
+  'inline-block';
 
 stravaDisconnectButton.style.display =
   'none';
-    
+
   }
 }
 
@@ -2770,7 +2770,7 @@ async function updateCorosConnectionStatus() {
       'none';
   }
 }
-  
+
 passwordInput.addEventListener(
   'keydown',
   event => {
@@ -2927,6 +2927,12 @@ let geojsonData =
 const municipalityFeatures =
   [];
 
+let worldGeojsonData =
+  null;
+
+const countryFeatures =
+  [];
+
 const activities =
   [];
 
@@ -2935,10 +2941,10 @@ const activitySignatures =
 
 const cloudSignatures =
   new Set();
-  
+
 const cloudRouteSignatures =
   new Set();
-  
+
 let selectedYear =
   'ALL';
 let selectedMonth =
@@ -2962,7 +2968,7 @@ let municipalityLayer =
   null;
 let selectedRunLine =
   null;
-  
+
 const routeGroup =
   L.layerGroup();
 
@@ -3916,6 +3922,95 @@ function splitCityKey(
 }
 
 
+function getCountryCode(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.iso3 ||
+    feature
+      ?.properties
+      ?.iso3_standard ||
+    'UNKNOWN'
+  );
+
+}
+
+
+function getCountryName(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.name_ja ||
+    feature
+      ?.properties
+      ?.name_en ||
+    feature
+      ?.properties
+      ?.name ||
+    '国名不明'
+  );
+
+}
+
+
+function findCountryFeature(
+  lat,
+  lon
+) {
+
+  const point =
+    [
+      lon,
+      lat
+    ];
+
+
+  for (
+    const item of
+    countryFeatures
+  ) {
+
+    const b =
+      item.bbox;
+
+
+    if (
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
+    ) {
+
+      continue;
+
+    }
+
+
+    if (
+      pointInFeature(
+        point,
+        item.feature
+      )
+    ) {
+
+      return item.feature;
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
 function findMunicipalityFeature(
   lat,
   lon
@@ -4233,6 +4328,75 @@ async function loadMunicipalities() {
 }
 
 
+async function loadWorldCountries() {
+
+  try {
+    const response =
+      await fetch(
+        './runners-rings-world-adm0.geojson'
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        '世界国境データ取得失敗'
+      );
+
+    }
+
+
+    worldGeojsonData =
+      await response.json();
+
+
+    countryFeatures.length =
+      0;
+
+
+    worldGeojsonData
+      .features
+      .forEach(
+        feature => {
+
+          countryFeatures.push(
+            {
+              feature,
+
+              bbox:
+                getFeatureBBox(
+                  feature
+                )
+            }
+          );
+
+        }
+      );
+
+
+    return true;
+  }
+  catch(error) {
+
+    console.warn(
+      'World country data unavailable:',
+      error
+    );
+
+    worldGeojsonData =
+      null;
+
+    countryFeatures.length =
+      0;
+
+    return false;
+  }
+
+}
+
+
 /* =====================================
    ルート解析
 ===================================== */
@@ -4245,10 +4409,16 @@ function analyseRoute(
   const cityDistances =
     {};
 
+  const countryDistances =
+    {};
+
   const cities =
     new Set();
 
   const prefectures =
+    new Set();
+
+  const countries =
     new Set();
 
   let calculatedKm =
@@ -4283,19 +4453,25 @@ function analyseRoute(
       segmentKm;
 
 
+    const midpointLat =
+      (
+        prev[0] +
+        current[0]
+      ) /
+      2;
+
+    const midpointLon =
+      (
+        prev[1] +
+        current[1]
+      ) /
+      2;
+
+
     const feature =
       findMunicipalityFeature(
-        (
-          prev[0] +
-          current[0]
-        ) /
-        2,
-
-        (
-          prev[1] +
-          current[1]
-        ) /
-        2
+        midpointLat,
+        midpointLon
       );
 
 
@@ -4338,6 +4514,42 @@ function analyseRoute(
 
     }
 
+
+    const countryFeature =
+      findCountryFeature(
+        midpointLat,
+        midpointLon
+      );
+
+
+    if (
+      countryFeature
+    ) {
+
+      const countryCode =
+        getCountryCode(
+          countryFeature
+        );
+
+
+      countryDistances[
+        countryCode
+      ] =
+        (
+          countryDistances[
+            countryCode
+          ] ||
+          0
+        ) +
+        segmentKm;
+
+
+      countries.add(
+        countryCode
+      );
+
+    }
+
   }
 
 
@@ -4366,11 +4578,28 @@ function analyseRoute(
       }
     );
 
+
+    Object.keys(
+      countryDistances
+    )
+    .forEach(
+      key => {
+
+        countryDistances[
+          key
+        ] *=
+          scale;
+
+      }
+    );
+
   }
 
 
   return {
     cityDistances,
+
+    countryDistances,
 
     cities:
       Array.from(
@@ -4380,6 +4609,11 @@ function analyseRoute(
     prefectures:
       Array.from(
         prefectures
+      ),
+
+    countries:
+      Array.from(
+        countries
       ),
 
     calculatedKm
@@ -5088,7 +5322,7 @@ function buildActivityFromGPXText(
 
     startedAt:
     date,
-    
+
     year:
       date
         ? date.getFullYear()
@@ -5102,11 +5336,17 @@ function buildActivityFromGPXText(
     cityDistances:
       analysis.cityDistances,
 
+    countryDistances:
+      analysis.countryDistances,
+
     cities:
       analysis.cities,
 
     prefectures:
       analysis.prefectures,
+
+    countries:
+      analysis.countries,
 
     cells:
       Array.from(
@@ -5363,11 +5603,17 @@ function buildActivityFromCloudRow(
     cityDistances:
       analysis.cityDistances,
 
+    countryDistances:
+      analysis.countryDistances,
+
     cities:
       analysis.cities,
 
     prefectures:
       analysis.prefectures,
+
+    countries:
+      analysis.countries,
 
     cells:
       Array.from(
@@ -5686,9 +5932,9 @@ selectedRunLine =
     }
   ).addTo(map);
 
-selectedRunLine.bringToFront(); 
-  
-  
+selectedRunLine.bringToFront();
+
+
   cloudRunsPanel
     .classList
     .remove(
@@ -6243,11 +6489,17 @@ function loadArchiveActivities() {
           cityDistances:
             analysis.cityDistances,
 
+          countryDistances:
+            analysis.countryDistances,
+
           cities:
             analysis.cities,
 
           prefectures:
             analysis.prefectures,
+
+          countries:
+            analysis.countries,
 
           cells:
             Array.from(
@@ -6489,7 +6741,7 @@ async function loadSavedActivities() {
         );
 
 
-   
+
 
 const possibleDuplicate =
   findPossibleDuplicate(
@@ -6513,7 +6765,7 @@ if (!alreadyKnown) {
   ) {
     loaded++;
   }
-}      
+}
 
 if (
   cloudEnabled() &&
@@ -7589,7 +7841,7 @@ async function inspectSelectedZIPFiles(
 
     const newFITCandidates =
     [];
-  
+
     let uncheckableFITCount =
     0;
 
@@ -7766,7 +8018,7 @@ async function inspectSelectedZIPFiles(
                     newFITCandidateCount++;
                        newFITCandidates.push(
                       candidateActivity
-                    );                 
+                    );
 
                   }
 
@@ -7805,7 +8057,7 @@ async function inspectSelectedZIPFiles(
 
             fitOver50KBCount++;
 
-          }    
+          }
 
       }
       else if (
@@ -8000,7 +8252,7 @@ async function inspectSelectedZIPFiles(
     );
 
   }
-        
+
   setStatus(
     '✅ ZIP内のランデータ候補を確認しました'
   );
@@ -8230,7 +8482,7 @@ async function inspectSelectedZIPFiles(
     '件'
   );
 
-  
+
 }
 gpxInput.onchange =
   async event => {
@@ -8557,6 +8809,12 @@ function buildSelectedStats() {
   const prefectureRunCount =
     {};
 
+  const countryDistance =
+    {};
+
+  const countryRunCount =
+    {};
+
   const ringCells =
     {};
 
@@ -8574,6 +8832,60 @@ function buildSelectedStats() {
 
       const prefecturesInRun =
         new Set();
+
+      const countriesInRun =
+        new Set();
+
+
+      Object.entries(
+        activity.countryDistances ||
+        {}
+      )
+      .forEach(
+        (
+          [
+            countryCode,
+            km
+          ]
+        ) => {
+
+          countryDistance[
+            countryCode
+          ] =
+            (
+              countryDistance[
+                countryCode
+              ] ||
+              0
+            ) +
+            km;
+
+
+          countriesInRun.add(
+            countryCode
+          );
+
+        }
+      );
+
+
+      countriesInRun
+        .forEach(
+          countryCode => {
+
+            countryRunCount[
+              countryCode
+            ] =
+              (
+                countryRunCount[
+                  countryCode
+                ] ||
+                0
+              ) +
+              1;
+
+          }
+        );
 
 
       Object.entries(
@@ -8704,6 +9016,10 @@ function buildSelectedStats() {
     prefectureDistance,
 
     prefectureRunCount,
+
+    countryDistance,
+
+    countryRunCount,
 
     ringCells,
 
@@ -9289,7 +9605,7 @@ cloudRunsPanel
   .add(
     'open'
   );
-  
+
   const bounds =
     getPrefectureBounds(
       prefecture
@@ -10031,7 +10347,7 @@ if (
     );
   });
 
- 
+
 
 }
   try {
@@ -10039,7 +10355,12 @@ if (
     await claimLegacyLocalGPX();
 
 
-    await loadMunicipalities();
+    await Promise.all(
+      [
+        loadMunicipalities(),
+        loadWorldCountries()
+      ]
+    );
 
 
     await updateStravaConnectionStatus();
@@ -10297,7 +10618,7 @@ if (savedAvatarPath) {
     accountAvatarLarge.src =
       avatarData.signedUrl;
   }
-}    
+}
 
     authArea.style.display =
       'none';
