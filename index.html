@@ -550,6 +550,7 @@
     }
 
     #countryList,
+    #regionList,
     #prefectureList,
     #cityList{
       display:flex;
@@ -558,6 +559,7 @@
     }
 
     .countryCard,
+    .regionCard,
     .prefectureCard,
     .cityCard{
       background:#132237;
@@ -567,6 +569,7 @@
     }
 
     .countryTop,
+    .regionTop,
     .prefectureTop,
     .cityTop{
       display:flex;
@@ -576,6 +579,7 @@
     }
 
     .countryName,
+    .regionName,
     .prefectureName,
     .cityName{
       font-size:14px;
@@ -583,6 +587,7 @@
     }
 
     .countryDistance,
+    .regionDistance,
     .prefectureDistance,
     .cityDistance{
       font-size:14px;
@@ -590,6 +595,7 @@
     }
 
     .countryRuns,
+    .regionRuns,
     .prefectureRuns,
     .cityRuns{
       margin-top:7px;
@@ -1413,23 +1419,35 @@
       </div>
     </div>
 
-    <h2 id="prefectureHeading">
-      都道府県別
-    </h2>
+    <div id="regionSection" hidden>
+      <h2 id="regionHeading">
+        州・地域別
+      </h2>
 
-    <div id="prefectureList">
-      <div class="emptyMessage">
-        読み込み中…
+      <div id="regionList"></div>
+    </div>
+
+    <div id="prefectureSection">
+      <h2 id="prefectureHeading">
+        都道府県別
+      </h2>
+
+      <div id="prefectureList">
+        <div class="emptyMessage">
+          読み込み中…
+        </div>
       </div>
     </div>
 
-    <h2 id="cityHeading">
-      市町村別
-    </h2>
+    <div id="citySection">
+      <h2 id="cityHeading">
+        市町村別
+      </h2>
 
-    <div id="cityList">
-      <div class="emptyMessage">
-        読み込み中…
+      <div id="cityList">
+        <div class="emptyMessage">
+          読み込み中…
+        </div>
       </div>
     </div>
 
@@ -2953,6 +2971,12 @@ let worldGeojsonData =
 const countryFeatures =
   [];
 
+let usaRegionGeojsonData =
+  null;
+
+const usaRegionFeatures =
+  [];
+
 const activities =
   [];
 
@@ -2988,6 +3012,8 @@ let municipalityLayer =
   null;
 let worldCountryLayer =
   null;
+let usaRegionLayer =
+  null;
 let selectedRunLine =
   null;
 
@@ -2998,6 +3024,9 @@ const ringGroup =
   L.layerGroup();
 
 const municipalityLayers =
+  {};
+
+const usaRegionLayers =
   {};
 
 
@@ -4056,6 +4085,114 @@ function findCountryFeature(
 }
 
 
+function getUsaRegionCode(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.region_code ||
+    'US-UNKNOWN'
+  );
+
+}
+
+
+function getUsaRegionName(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.name_ja ||
+    feature
+      ?.properties
+      ?.name_en ||
+    getUsaRegionCode(
+      feature
+    )
+  );
+
+}
+
+
+function getUsaRegionNameByCode(
+  regionCode
+) {
+
+  const item =
+    usaRegionFeatures.find(
+      candidate =>
+        getUsaRegionCode(
+          candidate.feature
+        ) ===
+        regionCode
+    );
+
+
+  return item
+    ? getUsaRegionName(
+        item.feature
+      )
+    : regionCode;
+
+}
+
+
+function findUsaRegionFeature(
+  lat,
+  lon
+) {
+
+  const point =
+    [
+      lon,
+      lat
+    ];
+
+
+  for (
+    const item of
+    usaRegionFeatures
+  ) {
+
+    const b =
+      item.bbox;
+
+
+    if (
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
+    ) {
+
+      continue;
+
+    }
+
+
+    if (
+      pointInFeature(
+        point,
+        item.feature
+      )
+    ) {
+
+      return item.feature;
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
 function findMunicipalityFeature(
   lat,
   lon
@@ -4442,6 +4579,75 @@ async function loadWorldCountries() {
 }
 
 
+async function loadUsaRegions() {
+
+  try {
+    const response =
+      await fetch(
+        './runners-rings-usa-adm1.geojson'
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        'アメリカ州境データ取得失敗'
+      );
+
+    }
+
+
+    usaRegionGeojsonData =
+      await response.json();
+
+
+    usaRegionFeatures.length =
+      0;
+
+
+    usaRegionGeojsonData
+      .features
+      .forEach(
+        feature => {
+
+          usaRegionFeatures.push(
+            {
+              feature,
+
+              bbox:
+                getFeatureBBox(
+                  feature
+                )
+            }
+          );
+
+        }
+      );
+
+
+    return true;
+  }
+  catch(error) {
+
+    console.warn(
+      'USA region data unavailable:',
+      error
+    );
+
+    usaRegionGeojsonData =
+      null;
+
+    usaRegionFeatures.length =
+      0;
+
+    return false;
+  }
+
+}
+
+
 /* =====================================
    ルート解析
 ===================================== */
@@ -4457,6 +4663,9 @@ function analyseRoute(
   const countryDistances =
     {};
 
+  const regionDistances =
+    {};
+
   const cities =
     new Set();
 
@@ -4464,6 +4673,9 @@ function analyseRoute(
     new Set();
 
   const countries =
+    new Set();
+
+  const regions =
     new Set();
 
   let calculatedKm =
@@ -4599,6 +4811,49 @@ function analyseRoute(
         countryCode
       );
 
+
+      if (
+        countryCode ===
+        'USA'
+      ) {
+
+        const regionFeature =
+          findUsaRegionFeature(
+            midpointLat,
+            midpointLon
+          );
+
+
+        if (
+          regionFeature
+        ) {
+
+          const regionCode =
+            getUsaRegionCode(
+              regionFeature
+            );
+
+
+          regionDistances[
+            regionCode
+          ] =
+            (
+              regionDistances[
+                regionCode
+              ] ||
+              0
+            ) +
+            segmentKm;
+
+
+          regions.add(
+            regionCode
+          );
+
+        }
+
+      }
+
     }
 
   }
@@ -4684,10 +4939,61 @@ function analyseRoute(
   }
 
 
+  const detectedRegionDistance =
+    Object.values(
+      regionDistances
+    )
+    .reduce(
+      (
+        total,
+        km
+      ) =>
+        total +
+        km,
+      0
+    );
+
+
+  const usaTargetDistance =
+    countryDistances.USA ||
+    0;
+
+
+  if (
+    detectedRegionDistance >
+      0 &&
+    usaTargetDistance >
+      0
+  ) {
+
+    const regionScale =
+      usaTargetDistance /
+      detectedRegionDistance;
+
+
+    Object.keys(
+      regionDistances
+    )
+    .forEach(
+      key => {
+
+        regionDistances[
+          key
+        ] *=
+          regionScale;
+
+      }
+    );
+
+  }
+
+
   return {
     cityDistances,
 
     countryDistances,
+
+    regionDistances,
 
     cities:
       Array.from(
@@ -4702,6 +5008,11 @@ function analyseRoute(
     countries:
       Array.from(
         countries
+      ),
+
+    regions:
+      Array.from(
+        regions
       ),
 
     calculatedKm
@@ -4817,6 +5128,46 @@ function createActivitySignature(
 function registerActivity(
   activity
 ) {
+
+  if (
+    !activity.regionDistances &&
+    Array.isArray(
+      activity.latlngs
+    ) &&
+    activity.latlngs.length >=
+      2
+  ) {
+
+    const analysis =
+      analyseRoute(
+        activity.latlngs,
+        Number.isFinite(
+          Number(
+            activity.distance
+          )
+        )
+          ? Number(
+              activity.distance
+            )
+          : null
+      );
+
+
+    activity.regionDistances =
+      analysis.regionDistances;
+
+    activity.regions =
+      analysis.regions;
+
+    activity.countryDistances =
+      activity.countryDistances ||
+      analysis.countryDistances;
+
+    activity.countries =
+      activity.countries ||
+      analysis.countries;
+
+  }
 
   const signature =
     createActivitySignature(
@@ -5427,6 +5778,9 @@ function buildActivityFromGPXText(
     countryDistances:
       analysis.countryDistances,
 
+    regionDistances:
+      analysis.regionDistances,
+
     cities:
       analysis.cities,
 
@@ -5435,6 +5789,9 @@ function buildActivityFromGPXText(
 
     countries:
       analysis.countries,
+
+    regions:
+      analysis.regions,
 
     cells:
       Array.from(
@@ -5694,6 +6051,9 @@ function buildActivityFromCloudRow(
     countryDistances:
       analysis.countryDistances,
 
+    regionDistances:
+      analysis.regionDistances,
+
     cities:
       analysis.cities,
 
@@ -5702,6 +6062,9 @@ function buildActivityFromCloudRow(
 
     countries:
       analysis.countries,
+
+    regions:
+      analysis.regions,
 
     cells:
       Array.from(
@@ -6580,6 +6943,9 @@ function loadArchiveActivities() {
           countryDistances:
             analysis.countryDistances,
 
+          regionDistances:
+            analysis.regionDistances,
+
           cities:
             analysis.cities,
 
@@ -6588,6 +6954,9 @@ function loadArchiveActivities() {
 
           countries:
             analysis.countries,
+
+          regions:
+            analysis.regions,
 
           cells:
             Array.from(
@@ -7698,6 +8067,30 @@ file.name,
           ]
         }
       );
+
+    }
+    else {
+
+      const activityBounds =
+        getSelectedActivityBounds();
+
+
+      if (
+        activityBounds
+      ) {
+
+        map.fitBounds(
+          activityBounds,
+          {
+            padding:[
+              20,
+              20
+            ],
+            maxZoom:8
+          }
+        );
+
+      }
 
     }
 
@@ -8903,6 +9296,12 @@ function buildSelectedStats() {
   const countryRunCount =
     {};
 
+  const regionDistance =
+    {};
+
+  const regionRunCount =
+    {};
+
   const ringCells =
     {};
 
@@ -8967,6 +9366,61 @@ function buildSelectedStats() {
               (
                 countryRunCount[
                   countryCode
+                ] ||
+                0
+              ) +
+              1;
+
+          }
+        );
+
+
+      const regionsInRun =
+        new Set();
+
+
+      Object.entries(
+        activity.regionDistances ||
+        {}
+      )
+      .forEach(
+        (
+          [
+            regionCode,
+            km
+          ]
+        ) => {
+
+          regionDistance[
+            regionCode
+          ] =
+            (
+              regionDistance[
+                regionCode
+              ] ||
+              0
+            ) +
+            km;
+
+
+          regionsInRun.add(
+            regionCode
+          );
+
+        }
+      );
+
+
+      regionsInRun
+        .forEach(
+          regionCode => {
+
+            regionRunCount[
+              regionCode
+            ] =
+              (
+                regionRunCount[
+                  regionCode
                 ] ||
                 0
               ) +
@@ -9109,6 +9563,10 @@ function buildSelectedStats() {
 
     countryRunCount,
 
+    regionDistance,
+
+    regionRunCount,
+
     ringCells,
 
     totalDistanceKm
@@ -9162,6 +9620,35 @@ function clearMapLayers() {
 
   worldCountryLayer =
     null;
+
+
+  if (
+    usaRegionLayer &&
+    map.hasLayer(
+      usaRegionLayer
+    )
+  ) {
+
+    map.removeLayer(
+      usaRegionLayer
+    );
+
+  }
+
+
+  usaRegionLayer =
+    null;
+
+
+  Object.keys(
+    usaRegionLayers
+  )
+  .forEach(
+    key =>
+      delete usaRegionLayers[
+        key
+      ]
+  );
 
 
   Object.keys(
@@ -9443,6 +9930,139 @@ function drawWorldCountries(
             layer.bindPopup(
               '<div class="popup-title">' +
               getCountryName(
+                feature
+              ) +
+              '</div>' +
+              '<div class="popup-row">' +
+              '累積走行距離：' +
+              '<strong>' +
+              km.toFixed(
+                2
+              ) +
+              ' km</strong>' +
+              '</div>' +
+              '<div class="popup-row">' +
+              '走ったラン：' +
+              '<strong>' +
+              runs +
+              ' 回</strong>' +
+              '</div>'
+            );
+
+          }
+      }
+    );
+
+}
+
+
+/* =====================================
+   アメリカ州表示
+===================================== */
+
+function drawUsaRegions(
+  regionDistance,
+  regionRunCount
+) {
+
+  if (
+    !usaRegionGeojsonData
+  ) {
+
+    usaRegionLayer =
+      null;
+
+    return;
+
+  }
+
+
+  usaRegionLayer =
+    L.geoJSON(
+      usaRegionGeojsonData,
+      {
+        filter:
+          feature => {
+
+            const regionCode =
+              getUsaRegionCode(
+                feature
+              );
+
+            return (
+              regionDistance[
+                regionCode
+              ] ||
+              0
+            ) >
+            0.01;
+
+          },
+
+        style:
+          feature => {
+
+            const regionCode =
+              getUsaRegionCode(
+                feature
+              );
+
+            const km =
+              regionDistance[
+                regionCode
+              ] ||
+              0;
+
+
+            return {
+              color:AREA_COLOR,
+              weight:1.5,
+              opacity:0.85,
+              fillColor:AREA_COLOR,
+              fillOpacity:
+                Math.max(
+                  0.18,
+                  getMunicipalityOpacity(
+                    km
+                  )
+                )
+            };
+
+          },
+
+        onEachFeature:
+          (
+            feature,
+            layer
+          ) => {
+
+            const regionCode =
+              getUsaRegionCode(
+                feature
+              );
+
+            const km =
+              regionDistance[
+                regionCode
+              ] ||
+              0;
+
+            const runs =
+              regionRunCount[
+                regionCode
+              ] ||
+              0;
+
+
+            usaRegionLayers[
+              regionCode
+            ] =
+              layer;
+
+
+            layer.bindPopup(
+              '<div class="popup-title">' +
+              getUsaRegionName(
                 feature
               ) +
               '</div>' +
@@ -9901,6 +10521,220 @@ cloudRunsPanel
 
 
 /* =====================================
+   州・地域 Dashboard
+===================================== */
+
+function focusUsaRegion(
+  regionCode
+) {
+
+  const layer =
+    usaRegionLayers[
+      regionCode
+    ];
+
+
+  if (
+    !layer
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    usaRegionLayer &&
+    !map.hasLayer(
+      usaRegionLayer
+    )
+  ) {
+
+    usaRegionLayer.addTo(
+      map
+    );
+
+  }
+
+
+  if (
+    worldCountryLayer &&
+    map.hasLayer(
+      worldCountryLayer
+    )
+  ) {
+
+    map.removeLayer(
+      worldCountryLayer
+    );
+
+  }
+
+
+  map.fitBounds(
+    layer.getBounds(),
+    {
+      padding:[
+        20,
+        20
+      ],
+      maxZoom:8
+    }
+  );
+
+
+  setStatus(
+    getUsaRegionNameByCode(
+      regionCode
+    ) +
+    'を表示'
+  );
+
+}
+
+
+function updateRegionDashboard(
+  stats
+) {
+
+  const section =
+    document.getElementById(
+      'regionSection'
+    );
+
+  const list =
+    document.getElementById(
+      'regionList'
+    );
+
+  const entries =
+    Object.entries(
+      stats.regionDistance
+    )
+    .filter(
+      (
+        [
+          ,
+          km
+        ]
+      ) =>
+        km >
+        0.01
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
+    );
+
+
+  section.hidden =
+    !entries.length;
+
+  list.innerHTML =
+    '';
+
+
+  if (
+    !entries.length
+  ) {
+
+    return;
+
+  }
+
+
+  document
+    .getElementById(
+      'regionHeading'
+    )
+    .textContent =
+      getSelectedPeriodText() +
+      ' 州・地域別';
+
+
+  const maxKm =
+    entries[0][1];
+
+
+  entries.forEach(
+    (
+      [
+        regionCode,
+        km
+      ]
+    ) => {
+
+      const percent =
+        Math.max(
+          3,
+          km /
+          maxKm *
+          100
+        );
+
+      const runs =
+        stats
+          .regionRunCount[
+            regionCode
+          ] ||
+        0;
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+
+      card.className =
+        'regionCard';
+
+      card.innerHTML =
+        '<div class="regionTop">' +
+          '<div class="regionName">' +
+            getUsaRegionNameByCode(
+              regionCode
+            ) +
+          '</div>' +
+          '<div class="regionDistance">' +
+            km.toFixed(
+              2
+            ) +
+            ' km' +
+          '</div>' +
+        '</div>' +
+        '<div class="barTrack">' +
+          '<div class="barFill" style="width:' +
+            percent +
+            '%"></div>' +
+        '</div>' +
+        '<div class="regionRuns">' +
+          'RUNS ' +
+          runs +
+        '</div>';
+
+
+      card.onclick =
+        () =>
+          focusUsaRegion(
+            regionCode
+          );
+
+
+      list.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================
    国 Dashboard
 ===================================== */
 
@@ -10047,6 +10881,11 @@ function updatePrefectureDashboard(
   stats
 ) {
 
+  const section =
+    document.getElementById(
+      'prefectureSection'
+    );
+
   document
     .getElementById(
       'prefectureHeading'
@@ -10084,6 +10923,10 @@ function updatePrefectureDashboard(
         b[1] -
         a[1]
     );
+
+
+  section.hidden =
+    !entries.length;
 
 
   list.innerHTML =
@@ -10223,6 +11066,24 @@ function updateDashboard(
         a[1]
     );
 
+  const regionCount =
+    Object.values(
+      stats.regionDistance
+    )
+    .filter(
+      km =>
+        km >
+        0.01
+    )
+    .length;
+
+  document
+    .getElementById(
+      'citySection'
+    )
+    .hidden =
+      !entries.length;
+
 
   document
     .getElementById(
@@ -10249,10 +11110,16 @@ function updateDashboard(
       'cityCount'
     )
     .textContent =
-      entries.length;
+      entries.length +
+      regionCount;
 
 
   updateCountryDashboard(
+    stats
+  );
+
+
+  updateRegionDashboard(
     stats
   );
 
@@ -10413,6 +11280,20 @@ function updateDisplay() {
 
 
     if (
+      usaRegionLayer &&
+      map.hasLayer(
+        usaRegionLayer
+      )
+    ) {
+
+      map.removeLayer(
+        usaRegionLayer
+      );
+
+    }
+
+
+    if (
       map.hasLayer(
         routeGroup
       )
@@ -10478,6 +11359,40 @@ function updateDisplay() {
     map.removeLayer(
       worldCountryLayer
     );
+
+  }
+
+
+  if (
+    usaRegionLayer
+  ) {
+
+    if (
+      zoom <
+      12 &&
+      !map.hasLayer(
+        usaRegionLayer
+      )
+    ) {
+
+      usaRegionLayer.addTo(
+        map
+      );
+
+    }
+    else if (
+      zoom >=
+      12 &&
+      map.hasLayer(
+        usaRegionLayer
+      )
+    ) {
+
+      map.removeLayer(
+        usaRegionLayer
+      );
+
+    }
 
   }
 
@@ -10636,14 +11551,38 @@ function updateDisplay() {
     }
 
 
+    const showingUsaRegions =
+      usaRegionLayer &&
+      Object.keys(
+        usaRegionLayers
+      ).length >
+        0 &&
+      map
+        .getBounds()
+        .intersects(
+          usaRegionLayer
+            .getBounds()
+        );
+
+
     setStatus(
-      selectedYear ===
-      'ALL'
+      showingUsaRegions
 
-        ? '広域表示：累積走行距離を市町村面で表示'
+        ? (
+            selectedYear ===
+            'ALL'
+              ? '州・地域表示：走った州を表示'
+              : selectedYear +
+                '年：走った州を表示'
+          )
 
-        : selectedYear +
-          '年：走行距離を市町村面で表示'
+        : (
+            selectedYear ===
+            'ALL'
+              ? '広域表示：累積走行距離を市町村面で表示'
+              : selectedYear +
+                '年：走行距離を市町村面で表示'
+          )
     );
 
   }
@@ -10677,6 +11616,12 @@ function renderSelectedData() {
   drawWorldCountries(
     stats.countryDistance,
     stats.countryRunCount
+  );
+
+
+  drawUsaRegions(
+    stats.regionDistance,
+    stats.regionRunCount
   );
 
 
@@ -10752,6 +11697,55 @@ function getHomePrefectureBounds() {
 }
 
 
+function getSelectedActivityBounds() {
+
+  const selected =
+    getSelectedActivities();
+
+
+  if (
+    !selected.length
+  ) {
+
+    return null;
+
+  }
+
+
+  const bounds =
+    L.latLngBounds([]);
+
+
+  selected.forEach(
+    activity => {
+
+      if (
+        Array.isArray(
+          activity.latlngs
+        )
+      ) {
+
+        activity.latlngs
+          .forEach(
+            point =>
+              bounds.extend(
+                point
+              )
+          );
+
+      }
+
+    }
+  );
+
+
+  return bounds.isValid()
+    ? bounds
+    : null;
+
+}
+
+
 /* =====================================
    アプリ起動
 ===================================== */
@@ -10808,7 +11802,8 @@ if (
     await Promise.all(
       [
         loadMunicipalities(),
-        loadWorldCountries()
+        loadWorldCountries(),
+        loadUsaRegions()
       ]
     );
 
@@ -10883,6 +11878,22 @@ if (
             20,
             20
           ]
+        }
+      );
+
+    }
+    else if (
+      getSelectedActivityBounds()
+    ) {
+
+      map.fitBounds(
+        getSelectedActivityBounds(),
+        {
+          padding:[
+            20,
+            20
+          ],
+          maxZoom:8
         }
       );
 
