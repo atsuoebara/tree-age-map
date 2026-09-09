@@ -54,6 +54,10 @@
       font-size: 28px;
     }
 
+    .lead {
+      color: #d4dae2;
+    }
+
     .accent {
       color: #ff25cf;
     }
@@ -76,19 +80,80 @@
       color: #d4dae2;
     }
 
+    .requestGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .requestItem {
+      display: flex;
+      flex-direction: column;
+      min-height: 190px;
+      padding: 18px;
+      border: 1px solid #30455f;
+      border-radius: 14px;
+      background: #101f32;
+    }
+
+    .requestItem.featured {
+      border-color: #ff25cf;
+      box-shadow: 0 0 0 1px rgba(255, 37, 207, 0.18);
+    }
+
+    .requestIcon {
+      font-size: 27px;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .requestItem h4 {
+      margin: 0 0 7px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .requestItem p {
+      margin: 0 0 14px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
     .contactButton {
       display: inline-block;
-      margin-top: 14px;
-      padding: 13px 24px;
-      border-radius: 12px;
+      align-self: flex-start;
+      margin-top: auto;
+      padding: 10px 17px;
+      border-radius: 10px;
       background: #ff25cf;
       color: #ffffff;
+      font-size: 14px;
       font-weight: 700;
       text-decoration: none;
     }
 
+    .contactButton.secondary {
+      background: #263d59;
+    }
+
     .contactButton:hover {
       opacity: 0.9;
+    }
+
+    .privacyNote {
+      margin-top: 20px;
+      padding: 15px 17px;
+      border-left: 4px solid #ff25cf;
+      border-radius: 8px;
+      background: rgba(255, 37, 207, 0.08);
+      color: #dbe1e9;
+      font-size: 13px;
+    }
+
+    .contactAddress {
+      overflow-wrap: anywhere;
+      color: #ff71df;
     }
 
     .note {
@@ -126,6 +191,28 @@
       text-decoration: none;
       margin: 0 7px;
     }
+
+    @media (max-width: 620px) {
+      main {
+        padding: 30px 16px 48px;
+      }
+
+      h2 {
+        font-size: 25px;
+      }
+
+      .card {
+        padding: 19px;
+      }
+
+      .requestGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .requestItem {
+        min-height: 0;
+      }
+    }
   </style>
 </head>
 
@@ -140,47 +227,90 @@
 
 <main>
 
-  <h2>
-    お問い合わせ
-  </h2>
+  <h2>お問い合わせ</h2>
 
-  <p>
+  <p class="lead">
     Runner's Ringsに関するご質問、不具合のご報告、
-    ご意見・ご要望などがございましたら、下記よりお問い合わせください。
+    ご意見・ご要望を受け付けています。
+    内容に合う項目を選ぶと、必要事項を入力したメールが開きます。
   </p>
 
   <div class="card">
-    <h3>お問い合わせについて</h3>
+    <h3><span class="accent">世界対応</span>にご協力ください</h3>
 
     <p>
-      サービスの利用方法、アカウント、ランニングデータ、
-      その他Runner's Ringsに関するお問い合わせを受け付けています。
+      Runner's Ringsでは、走った国や州・地域を地図に残せるよう、
+      世界地図への対応を進めています。
     </p>
 
-    <p>
-      お問い合わせの際は、できるだけ具体的な内容をご記載ください。
-    </p>
+    <div class="requestGrid">
 
-    <a
-      class="contactButton"
-      href="mailto:runnersrings.contact@gmail.com?subject=Runner%27s%20Rings%20お問い合わせ"
-    >
-      メールで問い合わせる
-    </a>
+      <div class="requestItem featured">
+        <div class="requestIcon">🇺🇸</div>
+        <h4>アメリカのランデータでテストに協力する</h4>
+        <p>
+          アメリカ在住でなくても大丈夫です。ホノルルマラソンなど、
+          過去にアメリカで走ったGPS記録をお持ちの方を募集しています。
+        </p>
+        <a class="contactButton" data-mail-template="usaTester">
+          協力を申し出る
+        </a>
+      </div>
+
+      <div class="requestItem featured">
+        <div class="requestIcon">🌏</div>
+        <h4>対応してほしい国・地域を送る</h4>
+        <p>
+          現在、未対応の州・県・地域表示について、
+          ご希望の国や地域をお知らせください。
+        </p>
+        <a class="contactButton" data-mail-template="countryRequest">
+          国・地域をリクエスト
+        </a>
+      </div>
+
+      <div class="requestItem">
+        <div class="requestIcon">🔧</div>
+        <h4>不具合を報告する</h4>
+        <p>
+          発生した状況、使用端末、ブラウザ、表示されたメッセージなどを
+          お知らせください。
+        </p>
+        <a class="contactButton secondary" data-mail-template="bugReport">
+          不具合を報告
+        </a>
+      </div>
+
+      <div class="requestItem">
+        <div class="requestIcon">💡</div>
+        <h4>機能の要望・その他のお問い合わせ</h4>
+        <p>
+          追加してほしい機能、使い方、アカウント、ランニングデータなど、
+          Runner's Ringsに関する内容をお送りください。
+        </p>
+        <a class="contactButton secondary" data-mail-template="general">
+          要望・質問を送る
+        </a>
+      </div>
+
+    </div>
+
+    <div class="privacyNote">
+      <strong>ランニングデータについて</strong><br>
+      最初のメールにはGPSファイルを添付せず、
+      「アメリカで走った記録を持っている」とだけお知らせください。
+      確認方法を返信でご案内します。
+      Runner's Ringsの地図や記録は、ログインしたご本人だけに表示されます。
+    </div>
 
     <p class="note">
+      メールアプリが開かない場合は、
+      <a class="contactAddress" href="mailto:runnersrings.contact@gmail.com">
+        runnersrings.contact@gmail.com
+      </a>
+      へ直接ご連絡ください。<br>
       ※内容によっては回答までにお時間をいただく場合があります。
       また、すべてのお問い合わせへの回答を保証するものではありません。
-    </p>
-  </div>
-
-  <div class="card">
-    <h3>不具合をご報告いただく場合</h3>
-
-    <p>
-      発生した状況、使用している端末やブラウザ、
-      表示されたメッセージなどをお知らせいただけると、
-      問題の確認に役立ちます。
     </p>
   </div>
 
@@ -208,6 +338,85 @@
   </div>
 
 </footer>
+
+<script>
+  const CONTACT_ADDRESS =
+    'runnersrings.contact@gmail.com';
+
+  const mailTemplates = {
+    usaTester: {
+      subject:
+        "Runner's Rings アメリカ実地テストへの協力",
+      body:
+        "Runner's Ringsのアメリカ実地テストに協力します。\n\n" +
+        "走った州・都市：\n" +
+        "記録したサービス・端末（Strava／COROS／Garminなど）：\n" +
+        "おおよその実施時期：\n" +
+        "その他：\n\n" +
+        "※このメールにはGPSファイルを添付せずにお送りください。"
+    },
+
+    countryRequest: {
+      subject:
+        "Runner's Rings 対応してほしい国・地域",
+      body:
+        "州・県・地域表示への対応を希望します。\n\n" +
+        "国名：\n" +
+        "州・県・地域名（分かる場合）：\n" +
+        "その国で走った記録：あり／なし\n" +
+        "記録したサービス・端末：\n" +
+        "その他："
+    },
+
+    bugReport: {
+      subject:
+        "Runner's Rings 不具合報告",
+      body:
+        "不具合の内容：\n\n" +
+        "発生した日時：\n" +
+        "使用端末：\n" +
+        "ブラウザ：\n" +
+        "表示されたメッセージ：\n" +
+        "不具合が起きるまでの操作：\n" +
+        "その他：\n\n" +
+        "※スクリーンショットがある場合は、このメールへ添付してください。"
+    },
+
+    general: {
+      subject:
+        "Runner's Rings お問い合わせ・ご要望",
+      body:
+        "お問い合わせ・ご要望の内容：\n\n" +
+        "使用端末（必要な場合）：\n" +
+        "その他："
+    }
+  };
+
+  document
+    .querySelectorAll(
+      '[data-mail-template]'
+    )
+    .forEach(
+      link => {
+        const template =
+          mailTemplates[
+            link.dataset.mailTemplate
+          ];
+
+        link.href =
+          'mailto:' +
+          CONTACT_ADDRESS +
+          '?subject=' +
+          encodeURIComponent(
+            template.subject
+          ) +
+          '&body=' +
+          encodeURIComponent(
+            template.body
+          );
+      }
+    );
+</script>
 
 </body>
 </html>
