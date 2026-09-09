@@ -2986,6 +2986,8 @@ let lastCloudRowsView =
 
 let municipalityLayer =
   null;
+let worldCountryLayer =
+  null;
 let selectedRunLine =
   null;
 
@@ -9144,6 +9146,24 @@ function clearMapLayers() {
     null;
 
 
+  if (
+    worldCountryLayer &&
+    map.hasLayer(
+      worldCountryLayer
+    )
+  ) {
+
+    map.removeLayer(
+      worldCountryLayer
+    );
+
+  }
+
+
+  worldCountryLayer =
+    null;
+
+
   Object.keys(
     municipalityLayers
   )
@@ -9340,6 +9360,111 @@ function drawRingCells(
 
     }
   );
+
+}
+
+
+/* =====================================
+   世界表示：走った国
+===================================== */
+
+function drawWorldCountries(
+  countryDistance,
+  countryRunCount
+) {
+
+  if (
+    !worldGeojsonData
+  ) {
+
+    worldCountryLayer =
+      null;
+
+    return;
+
+  }
+
+
+  worldCountryLayer =
+    L.geoJSON(
+      worldGeojsonData,
+      {
+        filter:
+          feature => {
+
+            const countryCode =
+              getCountryCode(
+                feature
+              );
+
+            return (
+              countryDistance[
+                countryCode
+              ] ||
+              0
+            ) >
+            0.01;
+
+          },
+
+        style:
+          {
+            color:AREA_COLOR,
+            weight:1.2,
+            opacity:0.80,
+            fillColor:AREA_COLOR,
+            fillOpacity:0.22
+          },
+
+        onEachFeature:
+          (
+            feature,
+            layer
+          ) => {
+
+            const countryCode =
+              getCountryCode(
+                feature
+              );
+
+            const km =
+              countryDistance[
+                countryCode
+              ] ||
+              0;
+
+            const runs =
+              countryRunCount[
+                countryCode
+              ] ||
+              0;
+
+
+            layer.bindPopup(
+              '<div class="popup-title">' +
+              getCountryName(
+                feature
+              ) +
+              '</div>' +
+              '<div class="popup-row">' +
+              '累積走行距離：' +
+              '<strong>' +
+              km.toFixed(
+                2
+              ) +
+              ' km</strong>' +
+              '</div>' +
+              '<div class="popup-row">' +
+              '走ったラン：' +
+              '<strong>' +
+              runs +
+              ' 回</strong>' +
+              '</div>'
+            );
+
+          }
+      }
+    );
 
 }
 
@@ -10269,6 +10394,95 @@ function updateDisplay() {
 
 
   if (
+    zoom <=
+    3
+  ) {
+
+    if (
+      municipalityLayer &&
+      map.hasLayer(
+        municipalityLayer
+      )
+    ) {
+
+      map.removeLayer(
+        municipalityLayer
+      );
+
+    }
+
+
+    if (
+      map.hasLayer(
+        routeGroup
+      )
+    ) {
+
+      map.removeLayer(
+        routeGroup
+      );
+
+    }
+
+
+    if (
+      map.hasLayer(
+        ringGroup
+      )
+    ) {
+
+      map.removeLayer(
+        ringGroup
+      );
+
+    }
+
+
+    if (
+      worldCountryLayer &&
+      !map.hasLayer(
+        worldCountryLayer
+      )
+    ) {
+
+      worldCountryLayer.addTo(
+        map
+      );
+
+    }
+
+
+    setStatus(
+      selectedYear ===
+      'ALL'
+
+        ? '世界表示：走った国を表示'
+
+        : selectedYear +
+          '年：走った国を表示'
+    );
+
+
+    return;
+
+  }
+
+
+  if (
+    worldCountryLayer &&
+    map.hasLayer(
+      worldCountryLayer
+    )
+  ) {
+
+    map.removeLayer(
+      worldCountryLayer
+    );
+
+  }
+
+
+  if (
     zoom >=
     14
   ) {
@@ -10457,6 +10671,12 @@ function renderSelectedData() {
 
   drawRingCells(
     stats.ringCells
+  );
+
+
+  drawWorldCountries(
+    stats.countryDistance,
+    stats.countryRunCount
   );
 
 
