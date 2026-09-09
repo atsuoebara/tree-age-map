@@ -148,6 +148,11 @@
 
 <body>
 
+<div class="languageSwitch" aria-label="Language">
+  <button class="languageButton" type="button" data-language="ja">日本語</button>
+  <button class="languageButton" type="button" data-language="en">EN</button>
+</div>
+
 <header>
   <h1>Runner's Rings</h1>
   <p>走った記録ではなく、走った人生を残す。</p>
@@ -390,6 +395,106 @@
     &copy; 2026 Runner's Rings
   </div>
 </footer>
+
+<style>
+  .languageSwitch{position:absolute;top:16px;right:16px;z-index:1000;display:flex;gap:4px;padding:4px;border:1px solid #34465d;border-radius:999px;background:rgba(11,22,38,.94)}
+  header{padding-right:160px}
+  .languageButton{border:0;border-radius:999px;padding:8px 13px;background:transparent;color:#b8c4d3;font-weight:700;cursor:pointer}
+  .languageButton.isActive{background:#ff20c7;color:#fff}
+</style>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'runners-rings-language';
+  const stored = localStorage.getItem(STORAGE_KEY);
+  const language = stored === 'ja' || stored === 'en' ? stored : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+  document.querySelectorAll('.languageButton').forEach((button) => {
+    button.classList.toggle('isActive', button.dataset.language === language);
+    button.addEventListener('click', () => {
+      localStorage.setItem(STORAGE_KEY, button.dataset.language);
+      location.reload();
+    });
+  });
+  if (language !== 'en') return;
+  const translations = {
+    "走った記録ではなく、走った人生を残す。": "Preserve the life you ran, not just the records.",
+    "利用規約": "Terms of Service",
+    "本利用規約は、Runner's Ringsを利用する際の条件を定めるものです。 サービスをご利用いただく場合、本規約に同意いただいたものとします。": "These Terms of Service set forth the conditions for using Runner's Rings. By using the service, you agree to these terms.",
+    "1. Runner's Ringsについて": "1. About Runner's Rings",
+    "Runner's Ringsは、ランニングの走行記録を地図上に蓄積し、 利用者が走ってきた道路や地域を可視化するサービスです。": "Runner's Rings is a service that stores running records on a map and visualizes the roads and regions through which users have run.",
+    "距離やタイムだけではなく、": "Its purpose is to preserve not only distance and time, but also",
+    "「どこを走ってきたのか」": "where you have run",
+    "というランニングの軌跡を残すことを目的としています。": "as part of your running history.",
+    "2. アカウント": "2. Accounts",
+    "本サービスの一部機能を利用するためには、 アカウント登録が必要となる場合があります。": "Account registration may be required to use certain features of the service.",
+    "利用者は、登録したメールアドレスやパスワード等の アカウント情報を適切に管理するものとします。": "Users are responsible for properly managing their registered email address, password, and other account information.",
+    "アカウントの不正利用が疑われる場合には、 サービスの利用を制限することがあります。": "Use of the service may be restricted if unauthorized account use is suspected.",
+    "3. ランニングデータの登録・連携": "3. Registration and Connection of Running Data",
+    "利用者は、自身が適法に利用できるランニングデータのみを、本サービスへ登録または連携するものとします。": "Users may register or connect only running data that they are legally entitled to use.",
+    "本サービスでは、StravaまたはCOROSとの連携、ならびにGPX／FITファイルやZIPファイルの追加により、ランニングデータを取得する場合があります。": "The service may obtain running data through connections with Strava or COROS, or through GPX, FIT, or ZIP file imports.",
+    "これらのデータには、走行日時、距離、走行ルートなどの位置情報が含まれる場合があります。": "This data may include the activity date and time, distance, route, and other location information.",
+    "利用者は、外部サービスの利用規約や公開範囲を確認し、自身の責任で連携またはデータ追加を行うものとします。": "Users must review the terms and visibility settings of external services and connect or import data at their own responsibility.",
+    "4. 禁止事項": "4. Prohibited Conduct",
+    "本サービスの利用にあたり、以下の行為を禁止します。": "The following conduct is prohibited when using the service.",
+    "法令または公序良俗に反する行為": "Conduct that violates laws, regulations, or public order and morals",
+    "他人になりすましてサービスを利用する行為": "Impersonating another person when using the service",
+    "他人のアカウントを不正に利用する行為": "Unauthorized use of another person's account",
+    "第三者の権利やプライバシーを侵害する行為": "Infringing the rights or privacy of a third party",
+    "不正アクセスやサービスへの攻撃を行う行為": "Unauthorized access or attacks against the service",
+    "サービスの運営を妨害する行為": "Interfering with operation of the service",
+    "大量のデータ送信等によりサービスへ過度な負荷をかける行為": "Placing an excessive load on the service, including by transmitting large amounts of data",
+    "その他、サービス運営上不適切と判断される行為": "Any other conduct deemed inappropriate for operation of the service",
+    "5. サービス内容の変更": "5. Changes to the Service",
+    "Runner's Ringsは、サービス改善や機能追加、 システム変更等のため、サービス内容を変更する場合があります。": "Runner's Rings may change the service to improve it, add features, or modify its systems.",
+    "また、保守、障害、外部サービスの停止等により、 一時的にサービスを利用できなくなる場合があります。": "The service may also become temporarily unavailable due to maintenance, failures, or interruption of external services.",
+    "6. 外部サービス": "6. External Services",
+    "Runner's Ringsでは、アカウント認証、データ保存、地図表示、ランニング記録の取得、広告配信などのため、Supabase、Strava、COROS、OpenStreetMap、Leaflet、GitHub Pages、Google AdSense等の外部サービスを利用します。": "Runner's Rings uses external services including Supabase, Strava, COROS, OpenStreetMap, Leaflet, GitHub Pages, and Google AdSense for account authentication, data storage, map display, retrieval of running records, and advertising.",
+    "利用者がStravaまたはCOROSとの連携を選択した場合、それぞれのサービスが定める利用規約やプライバシーポリシーが適用されます。": "When a user chooses to connect Strava or COROS, the terms of service and privacy policy of the respective service apply.",
+    "外部サービスの障害、利用制限、仕様変更または提供終了等により、Runner's Ringsの一部機能が利用できなくなる場合があります。": "Some Runner's Rings features may become unavailable due to failures, usage restrictions, specification changes, or discontinuation of an external service.",
+    "7. 広告について": "7. Advertising",
+    "Runner's Ringsでは、サービスの運営および維持のため、 広告を掲載する場合があります。": "Runner's Rings may display advertising to operate and maintain the service.",
+    "掲載される広告の内容や広告先の商品・サービスについては、 広告提供者が責任を負うものとします。": "The advertiser is responsible for the content of advertisements and the products or services they promote.",
+    "8. データの保存・取込み": "8. Data Storage and Import",
+    "Runner's Ringsでは、利用者が登録または連携したデータを適切に保存・管理するよう努めます。": "Runner's Rings makes reasonable efforts to properly store and manage data registered or connected by users.",
+    "同一と判断されたランニング記録、500m未満の短い記録、ランニング以外の種別、位置情報を含まない記録、対応していない形式などは、保存対象外となる場合があります。": "Records identified as duplicates, short records under 500 meters, non-running activities, records without location information, or unsupported formats may be excluded from storage.",
+    "システム障害、通信障害、外部サービスの障害や利用制限、ファイル内容等により、データを取得・保存できない場合があります。": "Data may not be obtained or saved due to system or communication failures, external-service failures or restrictions, or file contents.",
+    "重要な元データについては、利用者自身でも保管していただくことを推奨します。": "Users are encouraged to retain their own copies of important original data.",
+    "9. 位置情報と公開範囲": "9. Location Information and Visibility",
+    "本サービスで取り扱うランニングデータには、自宅、勤務先、日常的なランニングコースなどを推測できる位置情報が含まれる場合があります。": "Running data handled by the service may contain location information from which a home, workplace, or regular running route could be inferred.",
+    "Runner's Rings上の距離、ラン数、走行ルートおよび地図は、ログインした利用者本人にのみ表示されます。": "Distances, run counts, routes, and maps in Runner's Rings are visible only to the signed-in user.",
+    "利用者が画面の画像や情報をSNS等へ共有する場合は、位置情報や公開範囲を確認し、自身の判断と責任で行ってください。": "Before sharing screenshots or information on social media or elsewhere, users must review location information and visibility and share at their own discretion and responsibility.",
+    "10. 免責事項": "10. Disclaimers",
+    "Runner's Ringsは、サービス上に表示される距離、 位置、地図、行政区域、走行記録等について、 完全な正確性を保証するものではありません。": "Runner's Rings does not guarantee the complete accuracy of distances, locations, maps, administrative boundaries, running records, or other information displayed by the service.",
+    "本サービスはランニング記録を可視化するためのものであり、 道路の安全性、通行可能性、交通状況等を保証するものではありません。": "The service visualizes running records and does not guarantee road safety, accessibility, traffic conditions, or similar conditions.",
+    "ランニングを行う際は、実際の道路状況や交通ルールを確認し、 利用者自身の判断で安全を確保してください。": "When running, users must check actual road conditions and traffic rules and take responsibility for their own safety.",
+    "11. 利用停止": "11. Suspension of Use",
+    "本規約に違反する行為やサービス運営を妨害する行為が確認された場合、 必要に応じてアカウントまたはサービスの利用を 制限・停止することがあります。": "If a violation of these terms or interference with service operations is confirmed, access to an account or the service may be restricted or suspended as necessary.",
+    "12. 本規約の変更": "12. Changes to These Terms",
+    "サービス内容の変更、法令への対応等により、 本利用規約を必要に応じて変更する場合があります。": "These terms may be changed as necessary due to changes in the service, legal requirements, or other circumstances.",
+    "重要な変更がある場合は、本サービス上など 適切な方法でお知らせします。": "Material changes will be announced through the service or by another appropriate method.",
+    "13. お問い合わせ": "13. Contact",
+    "本サービスおよび本利用規約に関するお問い合わせは、 Runner's Rings内に設置するお問い合わせ窓口からご連絡ください。": "For inquiries about the service or these terms, please use the Contact page provided within Runner's Rings.",
+    "制定日・最終改定日": "Effective Date and Last Updated",
+    "制定日：2026年8月24日": "Effective date: August 24, 2026",
+    "最終改定日：2026年9月6日": "Last updated: September 6, 2026",
+    "Runner's Ringsを開く": "Open Runner's Rings",
+    "Runner's Ringsとは？": "About Runner's Rings",
+    "使い方": "How to Use",
+    "プライバシーポリシー": "Privacy Policy",
+    "お問い合わせ": "Contact"
+  };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => {
+    const key = node.nodeValue.replace(/\s+/g, ' ').trim();
+    if (!translations[key]) return;
+    node.nodeValue = node.nodeValue.match(/^\s*/)[0] + translations[key] + node.nodeValue.match(/\s*$/)[0];
+  });
+  document.documentElement.lang = 'en';
+  document.title = "Terms of Service | Runner's Rings";
+})();
+</script>
 
 </body>
 </html>
