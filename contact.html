@@ -25,6 +25,7 @@
       background: #101f32;
       border-bottom: 1px solid #26384d;
       padding: 22px 20px;
+      position: relative;
     }
 
     .headerInner {
@@ -41,6 +42,36 @@
       margin: 4px 0 0;
       color: #b8c1cc;
       font-size: 14px;
+    }
+
+    .languageSwitch {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: #14253b;
+    }
+
+    .languageButton {
+      min-width: 38px;
+      padding: 6px 9px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #aeb8c5;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .languageButton.isActive {
+      background: #ff25cf;
+      color: #ffffff;
     }
 
     main {
@@ -223,6 +254,10 @@
     <h1>Runner's Rings</h1>
     <p>走った記録ではなく、走った人生を残す。</p>
   </div>
+  <div class="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
 </header>
 
 <main>
@@ -340,10 +375,119 @@
 </footer>
 
 <script>
+  const LANGUAGE_STORAGE_KEY =
+    'runners-rings-language';
+
+  let uiLanguage =
+    (() => {
+      try {
+        return localStorage.getItem(
+          LANGUAGE_STORAGE_KEY
+        ) ||
+        (
+          navigator.language.toLowerCase().startsWith('ja')
+            ? 'ja'
+            : 'en'
+        );
+      }
+      catch(error) {
+        return navigator.language.toLowerCase().startsWith('ja')
+          ? 'ja'
+          : 'en';
+      }
+    })();
+
+  const contactEnglishReplacements = [
+    ['走った記録ではなく、走った人生を残す。','Preserve the life you ran, not just the records.'],
+    ['Runner\'s Ringsに関するご質問、不具合のご報告、\n    ご意見・ご要望を受け付けています。\n    内容に合う項目を選ぶと、必要事項を入力したメールが開きます。','Questions, bug reports, feedback, and requests are welcome. Choose a topic below to open a pre-filled email.'],
+    ['世界対応','Global support'],
+    ['にご協力ください','Help us expand'],
+    ['Runner\'s Ringsでは、走った国や州・地域を地図に残せるよう、\n      世界地図への対応を進めています。','Runner\'s Rings is expanding its map to show the countries, states, and regions where you have run.'],
+    ['アメリカのランデータでテストに協力する','Test with a U.S. running record'],
+    ['アメリカ在住でなくても大丈夫です。ホノルルマラソンなど、\n          過去にアメリカで走ったGPS記録をお持ちの方を募集しています。','You do not need to live in the United States. We welcome anyone with a past GPS running record from the U.S., including the Honolulu Marathon.'],
+    ['協力を申し出る','Volunteer to test'],
+    ['対応してほしい国・地域を送る','Request a country or region'],
+    ['現在、未対応の州・県・地域表示について、\n          ご希望の国や地域をお知らせください。','Tell us which country, state, province, or region you would like us to support next.'],
+    ['国・地域をリクエスト','Request a region'],
+    ['不具合を報告する','Report a problem'],
+    ['発生した状況、使用端末、ブラウザ、表示されたメッセージなどを\n          お知らせください。','Tell us what happened, your device and browser, and any message displayed.'],
+    ['不具合を報告','Report a bug'],
+    ['機能の要望・その他のお問い合わせ','Feature requests and other questions'],
+    ['追加してほしい機能、使い方、アカウント、ランニングデータなど、\n          Runner\'s Ringsに関する内容をお送りください。','Contact us about feature requests, how to use the app, your account, or running data.'],
+    ['要望・質問を送る','Send a request'],
+    ['ランニングデータについて','About your running data'],
+    ['最初のメールにはGPSファイルを添付せず、\n      「アメリカで走った記録を持っている」とだけお知らせください。\n      確認方法を返信でご案内します。\n      Runner\'s Ringsの地図や記録は、ログインしたご本人だけに表示されます。','Do not attach a GPS file to your first email. Simply tell us that you have a running record from the United States. We will reply with testing instructions. Your Runner\'s Rings map and records are visible only to you.'],
+    ['メールアプリが開かない場合は、','If your email app does not open, contact us directly at'],
+    ['へ直接ご連絡ください。',''],
+    ['※内容によっては回答までにお時間をいただく場合があります。\n      また、すべてのお問い合わせへの回答を保証するものではありません。','Replies may take some time, and we may not be able to answer every message.'],
+    ['Runner\'s Ringsを開く','Open Runner\'s Rings'],
+    ['Runner\'s Ringsとは？','About Runner\'s Rings (Japanese)'],
+    ['使い方','How to use (Japanese)'],
+    ['利用規約','Terms (Japanese)'],
+    ['プライバシーポリシー','Privacy (Japanese)'],
+    ['お問い合わせ','Contact']
+  ];
+
+  function translateContactText(value) {
+    if (
+      uiLanguage !== 'en' ||
+      typeof value !== 'string'
+    ) {
+      return value;
+    }
+    let translated = value;
+    contactEnglishReplacements.forEach(
+      ([source,target]) => {
+        translated = translated.split(source).join(target);
+      }
+    );
+    return translated;
+  }
+
+  document.querySelectorAll('.languageButton').forEach(
+    button => {
+      const active =
+        button.dataset.language === uiLanguage;
+      button.classList.toggle('isActive',active);
+      button.setAttribute('aria-pressed',String(active));
+      button.addEventListener('click',() => {
+        try {
+          localStorage.setItem(
+            LANGUAGE_STORAGE_KEY,
+            button.dataset.language
+          );
+        }
+        catch(error) {
+          console.warn(error);
+        }
+        location.reload();
+      });
+    }
+  );
+
+  if (uiLanguage === 'en') {
+    document.documentElement.lang = 'en';
+    document.title = "Contact | Runner's Rings";
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT
+    );
+    const nodes = [];
+    while (walker.nextNode()) {
+      const parentTag = walker.currentNode.parentElement?.tagName;
+      if (parentTag !== 'SCRIPT' && parentTag !== 'STYLE') {
+        nodes.push(walker.currentNode);
+      }
+    }
+    nodes.forEach(node => {
+      node.nodeValue = translateContactText(node.nodeValue);
+    });
+  }
+
   const CONTACT_ADDRESS =
     'runnersrings.contact@gmail.com';
 
-  const mailTemplates = {
+  const mailTemplatesJa = {
     usaTester: {
       subject:
         "Runner's Rings アメリカ実地テストへの協力",
@@ -391,6 +535,57 @@
         "その他："
     }
   };
+
+  const mailTemplatesEn = {
+    usaTester: {
+      subject:
+        "Runner's Rings U.S. field testing",
+      body:
+        "I would like to help test Runner's Rings with a U.S. running record.\n\n" +
+        "State and city where I ran:\n" +
+        "Service or device used (Strava / COROS / Garmin, etc.):\n" +
+        "Approximate date:\n" +
+        "Other information:\n\n" +
+        "Please do not attach a GPS file to this first email."
+    },
+    countryRequest: {
+      subject:
+        "Runner's Rings country or region request",
+      body:
+        "I would like Runner's Rings to support state, province, or regional display for the following location.\n\n" +
+        "Country:\n" +
+        "State, province, or region (if known):\n" +
+        "I have run in this country: Yes / No\n" +
+        "Service or device used:\n" +
+        "Other information:"
+    },
+    bugReport: {
+      subject:
+        "Runner's Rings bug report",
+      body:
+        "What happened:\n\n" +
+        "Date and time:\n" +
+        "Device:\n" +
+        "Browser:\n" +
+        "Message displayed:\n" +
+        "Steps before the problem occurred:\n" +
+        "Other information:\n\n" +
+        "If available, please attach a screenshot to this email."
+    },
+    general: {
+      subject:
+        "Runner's Rings question or request",
+      body:
+        "Question or request:\n\n" +
+        "Device (if relevant):\n" +
+        "Other information:"
+    }
+  };
+
+  const mailTemplates =
+    uiLanguage === 'en'
+      ? mailTemplatesEn
+      : mailTemplatesJa;
 
   document
     .querySelectorAll(
