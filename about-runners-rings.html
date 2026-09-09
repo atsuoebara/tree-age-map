@@ -233,6 +233,11 @@
 
 <body>
 
+<div class="languageSwitch" aria-label="Language">
+  <button class="languageButton" type="button" data-language="ja">日本語</button>
+  <button class="languageButton" type="button" data-language="en">EN</button>
+</div>
+
 <main>
 
   <h1>Runner's Rings（ランナーズリングス）とは？</h1>
@@ -425,6 +430,92 @@
   </footer>
 
 </main>
+
+<style>
+  .languageSwitch{position:absolute;top:16px;right:16px;z-index:1000;display:flex;gap:4px;padding:4px;border:1px solid #34465d;border-radius:999px;background:rgba(11,22,38,.94)}
+  .languageButton{border:0;border-radius:999px;padding:8px 13px;background:transparent;color:#b8c4d3;font-weight:700;cursor:pointer}
+  .languageButton.isActive{background:#ff20c7;color:#fff}
+  @media(max-width:600px){main{padding-top:88px}}
+</style>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'runners-rings-language';
+  const stored = localStorage.getItem(STORAGE_KEY);
+  const language = stored === 'ja' || stored === 'en' ? stored : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+  document.querySelectorAll('.languageButton').forEach((button) => {
+    button.classList.toggle('isActive', button.dataset.language === language);
+    button.addEventListener('click', () => {
+      localStorage.setItem(STORAGE_KEY, button.dataset.language);
+      location.reload();
+    });
+  });
+  if (language !== 'en') return;
+
+  const translations = {
+    "Runner's Rings（ランナーズリングス）とは？": "What is Runner's Rings?",
+    "走った記録ではなく、走った人生を残す。": "Preserve the life you ran, not just the records.",
+    "Runner's Ringsは、走った距離やタイムだけを記録するためのアプリではありません。": "Runner's Rings is more than an app for recording distance and time.",
+    "走った道を地図に積み重ねながら、 その時、その場所で走っていた自分の時間まで残していくためのアプリです。": "It builds a map from the roads you have run and preserves the moments of your life connected to those places.",
+    "Runner's Rings（ランナーズリングス）は、群馬を走る一人のランナーから生まれた個人開発のWebアプリです。": "Runner's Rings is an independently developed web app created by a runner in Gunma, Japan.",
+    "ランリングでできること": "What Runner's Rings can do",
+    "これまでのランニングを、地図と数字で自分だけの歴史として振り返れます。": "Look back on your running history through your own maps and statistics.",
+    "走った歴史を、一枚の地図に。": "Your running history on one map.",
+    "これまで走ったコースを地図に積み重ね、累計距離・ラン数・訪れた地域をまとめて表示します。": "Combine all your routes on one map and see your total distance, number of runs, and visited regions.",
+    "都道府県・市町村ごとに振り返る": "Explore your history by region",
+    "走行距離とラン数を都道府県別・市町村別に自動集計します。どの地域を多く走ってきたのか、自分のランニングの歴史を地域ごとに振り返れます。": "Distance and run counts are automatically summarized by supported administrative region, so you can see where you have run most.",
+    "年・月ごとに振り返る": "Explore by year and month",
+    "全期間・年・月を切り替えて、その時期に走った地図と記録を表示できます。過去の自分が、いつ、どこを、どれだけ走ったのかを確認できます。": "Switch between all time, year, and month to see when, where, and how far you ran.",
+    "地図の色で、走った軌跡がわかる": "See your running history through map colors",
+    "赤": "Red",
+    "は、選択した期間内に走った全コース。": "shows all routes in the selected period.",
+    "青": "Blue",
+    "は、ラン一覧から選択した1回のコース。": "shows one activity selected from your run list.",
+    "ピンク": "Pink",
+    "は、広域では走った市町村を走行距離に応じた濃さで表示し、詳細表示では走った場所を約100m四方のエリアで表します。繰り返し走った場所ほど色が濃くなります。": "shows visited municipalities with intensity based on distance at a wide view, and approximately 100-meter grid areas at a detailed view. Frequently visited places appear darker.",
+    "走った道には、思い出が残っている": "The roads you ran hold memories",
+    "昔のランニングルートを見返すと、 距離やペースだけでは思い出せなかった出来事が、 不思議とよみがえることがあります。": "Looking back at an old route can bring back moments that distance and pace alone could never recall.",
+    "「この頃は、子どもの部活の待ち時間によくここを走っていたな。」": "“I used to run here while waiting for my child's practice to finish.”",
+    "「転勤する前、この街を走るのもあと少しだと思いながら走っていたな。」": "“Before moving away for work, I ran here knowing I had only a few more days in this town.”",
+    "「2023年は、こんな理由でこの辺りを何度も走っていたな。」": "“This is why I ran through this area so many times in 2023.”",
+    "1回のランだけを見れば、それはひとつの運動記録かもしれません。": "A single run may look like just one workout record.",
+    "でも、何年も走り続け、その道が地図の上に積み重なっていくと、 そこにはその人の生活や時間、思い出まで残っていきます。": "But as years of routes accumulate on a map, they begin to preserve a runner's life, time, and memories.",
+    "走るほど、地図が育つ": "The more you run, the more your map grows",
+    "Runner's Ringsでは、Stravaなどに記録されたランニングデータを取り込み、 これまで走ってきたルートを1枚の地図に積み重ねていきます。": "Runner's Rings imports running data from services such as Strava and layers every route onto one map.",
+    "今日走った道も、数年前によく走った道も、 同じ地図の上に重なっていきます。": "The road you ran today and the roads you often ran years ago all become part of the same map.",
+    "走るほど地図が育ち、 時間が経つほど、その地図に新しい意味が加わっていきます。": "Your map grows with every run and gains new meaning over time.",
+    "Runner's Ringsが残したいもの": "What Runner's Rings is designed to preserve",
+    "Runner's Ringsが残したいのは、 「何km走ったか」だけではありません。": "Runner's Rings is designed to preserve more than how many kilometers you ran.",
+    "どこを走り、どんな時間を過ごしてきたのか。": "It preserves where you ran and the moments you spent there.",
+    "それを自分だけの地図として残し、 何年後でも振り返ることができる。": "Your personal map lets you look back on that story years from now.",
+    "Runner's Ringsへ戻る": "Return to Runner's Rings",
+    "Runner's Ringsとは？": "About Runner's Rings",
+    "使い方": "How to Use",
+    "利用規約": "Terms of Service",
+    "プライバシーポリシー": "Privacy Policy",
+    "お問い合わせ": "Contact"
+  };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => {
+    const key = node.nodeValue.replace(/\s+/g, ' ').trim();
+    if (!translations[key]) return;
+    node.nodeValue = node.nodeValue.match(/^\s*/)[0] + translations[key] + node.nodeValue.match(/\s*$/)[0];
+  });
+  const altTranslations = {
+    "累計距離、ラン数、訪れた地域と走行ルートを表示したRunner's Ringsの画面": "Runner's Rings showing total distance, runs, visited regions, and routes",
+    "都道府県別と市町村別の走行距離とラン数を表示したRunner's Ringsの画面": "Runner's Rings showing distance and runs by region",
+    "年と月を選択して走行記録を表示したRunner's Ringsの画面": "Runner's Rings showing records filtered by year and month",
+    "赤、青、ピンクで走行記録を表現したRunner's Ringsの地図": "Runner's Rings map displaying running history in red, blue, and pink"
+  };
+  document.querySelectorAll('[alt]').forEach((element) => { if (altTranslations[element.alt]) element.alt = altTranslations[element.alt]; });
+  document.documentElement.lang = 'en';
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.content = "Runner's Rings builds a personal map from your running routes and lets you explore your history by distance, region, year, and month.";
+  document.title = "About Runner's Rings";
+})();
+</script>
 
 </body>
 </html>
