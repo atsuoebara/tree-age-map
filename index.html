@@ -797,6 +797,29 @@
   cursor: default;
 }
 
+#stravaPauseNotice {
+  display: none;
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: #17283d;
+  color: #dce8f5;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+#stravaPauseNotice strong {
+  color: #eaff00;
+}
+
+#stravaPauseNotice .stravaPauseNoticeEn {
+  display: block;
+  margin-top: 4px;
+  color: #aebed0;
+  font-size: 11px;
+}
+
 #stravaDisconnectButton,
 #corosDisconnectButton {
   border: 1px solid rgba(255,255,255,.18);
@@ -1272,6 +1295,13 @@
 
 
 </div>
+<div id="stravaPauseNotice" role="status">
+  <strong>Strava新規連携を一時停止しています</strong><br>
+  接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。
+  <span class="stravaPauseNoticeEn" lang="en">
+    New Strava connections are temporarily paused while our request for additional athlete capacity is under review. Existing connected users can continue using the service.
+  </span>
+</div>
 <section id="accountPanel" style="display:none;">
 
   <h2>アカウント設定</h2>
@@ -1576,6 +1606,8 @@ const APP_VERSION = '0.9 Beta';
   document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION}`;
 
+const STRAVA_NEW_CONNECTIONS_PAUSED = true;
+
 const isPasswordRecovery =
   location.hash.includes('type=recovery') ||
   location.search.includes('type=recovery');
@@ -1848,6 +1880,11 @@ const corosDisconnectButton =
 const stravaDisconnectButton =
   document.getElementById(
     'stravaDisconnectButton'
+  );
+
+const stravaPauseNotice =
+  document.getElementById(
+    'stravaPauseNotice'
   );
 
 const authMessage =
@@ -2185,6 +2222,15 @@ async function logout() {
 
 }
 async function connectStrava() {
+  if (
+    STRAVA_NEW_CONNECTIONS_PAUSED
+  ) {
+    alert(
+      'Stravaの新規連携は現在一時停止しています。\n利用枠の拡大を申請し、審査中です。'
+    );
+    return;
+  }
+
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
@@ -2775,6 +2821,17 @@ async function updateStravaConnectionStatus() {
       'Strava status error:',
       error
     );
+
+    if (
+      STRAVA_NEW_CONNECTIONS_PAUSED &&
+      stravaPauseNotice
+    ) {
+      stravaConnectButton.style.display =
+        'none';
+      stravaPauseNotice.style.display =
+        'block';
+    }
+
     return;
   }
 
@@ -2790,7 +2847,28 @@ async function updateStravaConnectionStatus() {
 stravaDisconnectButton.style.display =
   'inline-block';
 
+if (stravaPauseNotice) {
+  stravaPauseNotice.style.display =
+    'none';
+}
+
   } else {
+    if (
+      STRAVA_NEW_CONNECTIONS_PAUSED
+    ) {
+      stravaConnectButton.style.display =
+        'none';
+      stravaDisconnectButton.style.display =
+        'none';
+
+      if (stravaPauseNotice) {
+        stravaPauseNotice.style.display =
+          'block';
+      }
+
+      return;
+    }
+
     stravaConnectButton.innerHTML =
   '<img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">';
 
@@ -2801,6 +2879,11 @@ stravaConnectButton.style.display =
 
 stravaDisconnectButton.style.display =
   'none';
+
+if (stravaPauseNotice) {
+  stravaPauseNotice.style.display =
+    'none';
+}
 
   }
 }
