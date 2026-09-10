@@ -299,6 +299,15 @@
       overflow-x:auto;
     }
 
+    #mapZoomHint{
+      display:none;
+      background:#0f1d2f;
+      color:#eaff00;
+      padding:7px 14px;
+      font-size:12px;
+      font-weight:700;
+    }
+
     #importArea{
       background:#0f1d2f;
       padding:10px 12px 5px;
@@ -1326,6 +1335,9 @@
 </section>
 <div id="status">
   データを読み込み中…
+</div>
+<div id="mapZoomHint">
+  👀 地図を拡大すると、実際に走ったルートが表示されます
 </div>
   <div id="importArea">
 
@@ -11472,6 +11484,24 @@ function updateDisplay() {
 
   const zoom =
     map.getZoom();
+
+
+  const mapZoomHint =
+    document.getElementById(
+      'mapZoomHint'
+    );
+
+
+  if (
+    mapZoomHint
+  ) {
+
+    mapZoomHint.style.display =
+      zoom < 12
+        ? 'block'
+        : 'none';
+
+  }
 
 
   if (
