@@ -820,6 +820,82 @@
   font-size: 11px;
 }
 
+.setupGuide {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  background: rgba(19,34,55,.88);
+}
+
+.setupGuideAuth {
+  margin-top: 18px;
+}
+
+.setupGuide h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+#dataSetupGuide {
+  margin: 12px;
+}
+
+#dataSetupGuide summary {
+  color: #eaff00;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#dataSetupGuide[open] summary {
+  margin-bottom: 12px;
+}
+
+.setupGuideOptions {
+  display: grid;
+  gap: 9px;
+}
+
+.setupGuideOption {
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #0f1d2f;
+}
+
+.setupGuideOption strong,
+.setupGuideOption span {
+  display: block;
+}
+
+.setupGuideOption strong {
+  margin-bottom: 3px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.setupGuideOption span {
+  color: #b9c6d6;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.setupGuideNote {
+  margin: 10px 0 0;
+  color: #ffcf33;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.setupGuideLink {
+  display: inline-block;
+  margin-top: 12px;
+  color: #ff2bd6;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 #stravaDisconnectButton,
 #corosDisconnectButton {
   border: 1px solid rgba(255,255,255,.18);
@@ -1192,6 +1268,30 @@
         </span>
       </div>
 
+      <div class="setupGuide setupGuideAuth">
+        <h3>データの取り込み方</h3>
+        <div class="setupGuideOptions">
+          <div class="setupGuideOption">
+            <strong>COROS（カロス）をお使いの方</strong>
+            <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
+          </div>
+          <div class="setupGuideOption">
+            <strong>COROS以外をお使いの方</strong>
+            <span>Garminなどの記録はStrava連携で自動同期</span>
+          </div>
+          <div class="setupGuideOption">
+            <strong>過去のデータをまとめて取り込みたい方</strong>
+            <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
+          </div>
+        </div>
+        <p class="setupGuideNote">
+          ※Stravaの新規連携は、現在利用枠の拡大審査中です。
+        </p>
+        <a class="setupGuideLink" href="./how-to.html">
+          詳しい手順を見る →
+        </a>
+      </div>
+
     </div>
 
 
@@ -1302,6 +1402,29 @@
     New Strava connections are temporarily paused while our request for additional athlete capacity is under review. Existing connected users can continue using the service.
   </span>
 </div>
+<details id="dataSetupGuide" class="setupGuide" open>
+  <summary>初期設定：データの取り込み方</summary>
+  <div class="setupGuideOptions">
+    <div class="setupGuideOption">
+      <strong>COROS（カロス）をお使いの方</strong>
+      <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
+    </div>
+    <div class="setupGuideOption">
+      <strong>COROS以外をお使いの方</strong>
+      <span>Garminなどの記録はStrava連携で自動同期</span>
+    </div>
+    <div class="setupGuideOption">
+      <strong>過去のデータをまとめて取り込みたい方</strong>
+      <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
+    </div>
+  </div>
+  <p class="setupGuideNote">
+    ※Stravaの新規連携は、現在利用枠の拡大審査中です。
+  </p>
+  <a class="setupGuideLink" href="./how-to.html">
+    詳しい手順を見る →
+  </a>
+</details>
 <section id="accountPanel" style="display:none;">
 
   <h2>アカウント設定</h2>
@@ -12364,6 +12487,46 @@ async function init() {
         'none';
 
       return;
+
+    }
+
+
+    const dataSetupGuide =
+      document.getElementById(
+        'dataSetupGuide'
+      );
+
+
+    if (
+      dataSetupGuide
+    ) {
+
+      const setupGuideSeenKey =
+        'RunnerRingsSetupGuideSeen:' +
+        currentUser.id;
+
+      dataSetupGuide.open =
+        localStorage.getItem(
+          setupGuideSeenKey
+        ) !== '1';
+
+      dataSetupGuide.addEventListener(
+        'toggle',
+        () => {
+
+          if (
+            !dataSetupGuide.open
+          ) {
+
+            localStorage.setItem(
+              setupGuideSeenKey,
+              '1'
+            );
+
+          }
+
+        }
+      );
 
     }
 
