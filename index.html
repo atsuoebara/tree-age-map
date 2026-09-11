@@ -2456,6 +2456,9 @@ async function connectCoros() {
   }
 }
 
+const COROS_IMPORT_RESULT_KEY =
+  'RunnerRingsPendingCorosResult';
+
 async function importFromCoros() {
   const {
     data: { session }
@@ -2527,7 +2530,7 @@ async function importFromCoros() {
     if (files.length === 0) {
       alert(
         data?.dailyLimitReached
-          ? 'COROSの本日の取得上限に達しました。\n過去の履歴がまだある場合は、明日以降にもう一度「COROSから取り込む」を押してください。'
+          ? 'COROSの取得上限に達しました。\n上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。'
           : 'COROSに取り込めるランはありませんでした。'
       );
       return;
@@ -2668,7 +2671,7 @@ async function importFromCoros() {
       );
     }
 
-    alert(
+    const corosResultMessage =
       'COROS取込み結果\n' +
       '保存: ' +
       saved +
@@ -2679,16 +2682,37 @@ async function importFromCoros() {
       '失敗: ' +
       failed +
       '件\n\n' +
-      'COROSから1日に取得できる件数には上限があります。\n' +
-      '過去の履歴がまだある場合は、明日以降にもう一度「COROSから取り込む」を押してください。' +
+      'COROSから取得できる件数には上限があります。\n' +
+      '過去の履歴がまだある場合は、上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。' +
       (
         acknowledgementFailed
           ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
           : ''
-      )
+      );
+
+    alert(
+      corosResultMessage
     );
 
     if (saved > 0) {
+      try {
+        sessionStorage.setItem(
+          COROS_IMPORT_RESULT_KEY,
+          '✅ COROS取込み完了：保存 ' +
+            saved +
+            '件・重複 ' +
+            duplicates +
+            '件・失敗 ' +
+            failed +
+            '件'
+        );
+      } catch (error) {
+        console.warn(
+          'COROS result storage error:',
+          error
+        );
+      }
+
       location.reload();
     }
 
@@ -12612,6 +12636,28 @@ if (savedAvatarPath) {
 
 
     await start();
+
+    try {
+      const pendingCorosResult =
+        sessionStorage.getItem(
+          COROS_IMPORT_RESULT_KEY
+        );
+
+      if (pendingCorosResult) {
+        sessionStorage.removeItem(
+          COROS_IMPORT_RESULT_KEY
+        );
+
+        setStatus(
+          pendingCorosResult
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'COROS result restore error:',
+        error
+      );
+    }
 
   }
   catch(error) {
