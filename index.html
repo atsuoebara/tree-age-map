@@ -1400,26 +1400,61 @@
 </div>
 
 <script>
+  window.RunnerRingsSplashSessionKey =
+    'runner-rings-splash-shown';
+
+  window.RunnerRingsShouldShowSplash =
+    true;
+
+  try {
+    window.RunnerRingsShouldShowSplash =
+      sessionStorage.getItem(
+        window.RunnerRingsSplashSessionKey
+      ) !== '1';
+
+    if (window.RunnerRingsShouldShowSplash) {
+      sessionStorage.setItem(
+        window.RunnerRingsSplashSessionKey,
+        '1'
+      );
+    }
+  } catch (error) {
+    console.warn(
+      'Splash session check error:',
+      error
+    );
+  }
+
   window.RunnerRingsSplashStartedAt =
     Date.now();
 
-  window.RunnerRingsSplashSafetyTimer =
-    setTimeout(() => {
-      const splash =
-        document.getElementById(
-          'launchSplash'
-        );
+  if (!window.RunnerRingsShouldShowSplash) {
+    document
+      .getElementById('launchSplash')
+      ?.remove();
 
-      if (splash) {
-        splash.classList.add(
-          'isHidden'
-        );
-      }
+    document.body.classList.remove(
+      'splashActive'
+    );
+  } else {
+    window.RunnerRingsSplashSafetyTimer =
+      setTimeout(() => {
+        const splash =
+          document.getElementById(
+            'launchSplash'
+          );
 
-      document.body.classList.remove(
-        'splashActive'
-      );
-    }, 6000);
+        if (splash) {
+          splash.classList.add(
+            'isHidden'
+          );
+        }
+
+        document.body.classList.remove(
+          'splashActive'
+        );
+      }, 6000);
+  }
 </script>
 
 <header>
