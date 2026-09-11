@@ -112,9 +112,10 @@ const checks = [
       /accountSettingsButton\.addEventListener\s*\(\s*['"]click['"]\s*,\s*openAccountPanel\s*\)/,
       /<details\s+id=['"]accountPanel['"]/,
       /<summary>アカウント設定<\/summary>/,
+      /<details\s+id=['"]accountPanel['"][\s\S]*?<\/details>\s*<details\s+id=['"]dataSetupGuide['"]/,
       /accountPanel\.open\s*=\s*true/,
       /id=['"]accountCloseButton['"]/,
-      /accountPanel\.style\.display\s*=\s*['"]none['"]/
+      /accountCloseButton\.addEventListener[\s\S]*?accountPanel\.open\s*=\s*false/
     ]
   }
 ];

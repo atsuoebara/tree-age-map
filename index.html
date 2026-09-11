@@ -1742,29 +1742,6 @@
     New Strava connections are temporarily paused while our request for additional athlete capacity is under review. Existing connected users can continue using the service.
   </span>
 </div>
-<details id="dataSetupGuide" class="setupGuide" open>
-  <summary>初期設定：データの取り込み方</summary>
-  <div class="setupGuideOptions">
-    <div class="setupGuideOption">
-      <strong>COROS（カロス）をお使いの方</strong>
-      <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>COROS以外をお使いの方</strong>
-      <span>Garminなどの記録はStrava連携で自動同期</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>過去のデータをまとめて取り込みたい方</strong>
-      <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
-    </div>
-  </div>
-  <p class="setupGuideNote">
-    ※Stravaの新規連携は、現在利用枠の拡大審査中です。
-  </p>
-  <a class="setupGuideLink" href="./how-to.html">
-    詳しい手順を見る →
-  </a>
-</details>
 <details id="accountPanel" style="display:none;">
 
   <summary>アカウント設定</summary>
@@ -1825,6 +1802,29 @@
     閉じる
   </button>
 
+</details>
+<details id="dataSetupGuide" class="setupGuide" open>
+  <summary>初期設定：データの取り込み方</summary>
+  <div class="setupGuideOptions">
+    <div class="setupGuideOption">
+      <strong>COROS（カロス）をお使いの方</strong>
+      <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
+    </div>
+    <div class="setupGuideOption">
+      <strong>COROS以外をお使いの方</strong>
+      <span>Garminなどの記録はStrava連携で自動同期</span>
+    </div>
+    <div class="setupGuideOption">
+      <strong>過去のデータをまとめて取り込みたい方</strong>
+      <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
+    </div>
+  </div>
+  <p class="setupGuideNote">
+    ※Stravaの新規連携は、現在利用枠の拡大審査中です。
+  </p>
+  <a class="setupGuideLink" href="./how-to.html">
+    詳しい手順を見る →
+  </a>
 </details>
 <div id="status">
   データを読み込み中…
@@ -2229,7 +2229,11 @@ accountProfile.addEventListener('keydown', event => {
 accountSettingsButton.addEventListener('click', openAccountPanel);
 
 accountCloseButton.addEventListener('click', () => {
-  accountPanel.style.display = 'none';
+  accountPanel.open = false;
+  accountPanel.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
 });
 accountAvatarInput.addEventListener('change', () => {
   const file =
