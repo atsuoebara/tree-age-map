@@ -407,9 +407,20 @@
   border:1px solid rgba(255,255,255,.08);
 }
 
-#accountPanel h2{
-  margin:0 0 18px;
+#accountPanel > summary{
+  margin:0;
   font-size:18px;
+  font-weight:800;
+  color:#ffffff;
+  cursor:pointer;
+}
+
+#accountPanel[open] > summary{
+  margin-bottom:18px;
+}
+
+#accountPanel > summary::marker{
+  color:#eaff00;
 }
 
 #accountAvatarArea{
@@ -1704,9 +1715,9 @@
     詳しい手順を見る →
   </a>
 </details>
-<section id="accountPanel" style="display:none;">
+<details id="accountPanel" style="display:none;">
 
-  <h2>アカウント設定</h2>
+  <summary>アカウント設定</summary>
 
   <div id="accountAvatarArea">
     <img
@@ -1764,7 +1775,7 @@
     閉じる
   </button>
 
-</section>
+</details>
 <div id="status">
   データを読み込み中…
 </div>
@@ -2148,8 +2159,9 @@ const accountAvatarInput =
   document.getElementById(
     'accountAvatarInput'
   );
- accountProfile.addEventListener('click', () => {
+accountProfile.addEventListener('click', () => {
   accountPanel.style.display = 'block';
+  accountPanel.open = true;
 });
 
 accountCloseButton.addEventListener('click', () => {
@@ -12883,6 +12895,8 @@ if (savedAvatarPath) {
     if (isPasswordRecovery) {
       accountPanel.style.display =
         'block';
+      accountPanel.open =
+        true;
 
       accountNewPasswordInput.focus();
 

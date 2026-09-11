@@ -103,6 +103,16 @@ const checks = [
       /\.auth\s*\.signInWithPassword\s*\(/,
       /\.auth\s*\.signUp\s*\(/
     ]
+  },
+  {
+    name: 'アカウント設定の折りたたみ',
+    patterns: [
+      /<details\s+id=['"]accountPanel['"]/,
+      /<summary>アカウント設定<\/summary>/,
+      /accountPanel\.open\s*=\s*true/,
+      /id=['"]accountCloseButton['"]/,
+      /accountPanel\.style\.display\s*=\s*['"]none['"]/
+    ]
   }
 ];
 
