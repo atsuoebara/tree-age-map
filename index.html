@@ -372,6 +372,50 @@
   cursor:pointer;
 }
 
+#accountProfileArea{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
+#accountSettingsButton{
+  flex-shrink:0;
+  padding:7px 9px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:#17283d;
+  color:#ffffff;
+  font:inherit;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#accountSettingsButton:hover{
+  border-color:#ff2bd6;
+}
+
+#accountSettingsButton:focus-visible{
+  outline:3px solid rgba(234,255,0,.8);
+  outline-offset:2px;
+}
+
+@media (max-width:520px){
+  #accountBar{
+    flex-wrap:wrap;
+  }
+
+  #accountProfileArea{
+    flex:1 1 auto;
+  }
+
+  #accountSettingsButton{
+    padding:6px 8px;
+    font-size:10px;
+  }
+}
+
 #accountAvatar{
   width:38px;
   height:38px;
@@ -1659,6 +1703,7 @@
 <main id="appRoot">
 
   <div id="accountBar">
+  <div id="accountProfileArea">
   <div id="accountProfile" role="button" tabindex="0" aria-label="アカウント設定を開く">
   <img
     id="accountAvatar"
@@ -1670,6 +1715,11 @@
     <div id="accountDisplayName">アカウント</div>
     <div id="accountEmail"></div>
   </div>
+</div>
+
+  <button id="accountSettingsButton" type="button" aria-label="アカウント設定を開く">
+    ⚙ アカウント設定
+  </button>
 </div>
 
 
@@ -2114,6 +2164,11 @@ const accountProfile =
     'accountProfile'
   );
 
+const accountSettingsButton =
+  document.getElementById(
+    'accountSettingsButton'
+  );
+
 const accountPanel =
   document.getElementById(
     'accountPanel'
@@ -2159,10 +2214,19 @@ const accountAvatarInput =
   document.getElementById(
     'accountAvatarInput'
   );
-accountProfile.addEventListener('click', () => {
+function openAccountPanel(){
   accountPanel.style.display = 'block';
   accountPanel.open = true;
+}
+
+accountProfile.addEventListener('click', openAccountPanel);
+accountProfile.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    openAccountPanel();
+  }
 });
+accountSettingsButton.addEventListener('click', openAccountPanel);
 
 accountCloseButton.addEventListener('click', () => {
   accountPanel.style.display = 'none';

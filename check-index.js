@@ -107,6 +107,9 @@ const checks = [
   {
     name: 'アカウント設定の折りたたみ',
     patterns: [
+      /id=['"]accountSettingsButton['"]/,
+      /⚙\s*アカウント設定/,
+      /accountSettingsButton\.addEventListener\s*\(\s*['"]click['"]\s*,\s*openAccountPanel\s*\)/,
       /<details\s+id=['"]accountPanel['"]/,
       /<summary>アカウント設定<\/summary>/,
       /accountPanel\.open\s*=\s*true/,
