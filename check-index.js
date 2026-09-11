@@ -36,6 +36,10 @@ const checks = [
     patterns: [
       /id=['"]launchSplash['"]/,
       /class=['"]launchSplashLogo['"]/,
+      /RunnerRingsSplashSessionKey/,
+      /sessionStorage\.getItem\(\s*window\.RunnerRingsSplashSessionKey/,
+      /sessionStorage\.setItem\(\s*window\.RunnerRingsSplashSessionKey/,
+      /if\s*\(\s*!window\.RunnerRingsShouldShowSplash\s*\)/,
       /function\s+finishLaunchSplash\s*\(/,
       /init\(\)\.finally\(\s*finishLaunchSplash\s*\)/
     ]
