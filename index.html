@@ -214,6 +214,46 @@
   font-size:10px;
   opacity:.45;
 }
+
+    #languageSwitch{
+      position:absolute;
+      top:12px;
+      right:12px;
+      display:flex;
+      gap:3px;
+      padding:3px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      background:#132237;
+    }
+
+    .languageButton{
+      min-width:38px;
+      padding:6px 9px;
+      border:0;
+      border-radius:999px;
+      background:transparent;
+      color:#aeb9c8;
+      font:inherit;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .languageButton.isActive{
+      background:#ff2bd6;
+      color:#ffffff;
+    }
+
+    html[lang="en"] .stravaPauseNoticeEn{
+      display:none;
+    }
+
+    @media (max-width:520px){
+      header h1{
+        padding-right:102px;
+      }
+    }
     #authArea{
       min-height:calc(100vh - 74px);
       display:flex;
@@ -1386,6 +1426,10 @@
   <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
   <p>走った記録ではなく、走った人生を残す。</p>
   <div id="appVersion"></div>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
 </header>
 
 <section id="authArea">
@@ -12883,6 +12927,606 @@ if (savedAvatarPath) {
 }
 
 
+const RR_LANGUAGE_STORAGE_KEY =
+  'runners-rings-language';
+
+let rrUiLanguage =
+  (() => {
+    try {
+      return localStorage.getItem(
+        RR_LANGUAGE_STORAGE_KEY
+      ) ||
+      (
+        navigator.language
+          .toLowerCase()
+          .startsWith('ja')
+          ? 'ja'
+          : 'en'
+      );
+    }
+    catch(error) {
+      return navigator.language
+        .toLowerCase()
+        .startsWith('ja')
+          ? 'ja'
+          : 'en';
+    }
+  })();
+
+const RR_ENGLISH_REPLACEMENTS = [
+  ['Runner\'s Rings（ランナーズリングス）','Runner\'s Rings'],
+  ['Runner\'s Ringsは、','Runner\'s Rings'],
+  ['（ランナーズリングス）',''],
+  ['走った記録ではなく、走った人生を残す。','Preserve the life you ran, not just the records.'],
+  ['走った道を、一枚の地図に。','Every road you ran, on one map.'],
+  ['あなたが走った道や街を地図に積み重ねていく','Build a personal map from every road and place you have run.'],
+  ['ランニング記録アプリです。','A running history app.'],
+  ['距離・ラン数・地図は、登録した本人だけに表示されます。','Your distance, runs, and map are visible only to you.'],
+  ['シェアするかどうかは、自分で選べます。','You decide whether to share anything.'],
+  ['ログイン後のあなたの記録例','A preview of your private history'],
+  ['あなたの総距離','Your total distance'],
+  ['あなたのラン数','Your runs'],
+  ['あなたが走った地域','Places you have run'],
+  ['走るほど、地図が育つ。','Your map grows with every run.'],
+  ['Stravaを使っていなくても、COROS連携やFIT／GPXファイルから利用できます。','Use COROS sync or import FIT/GPX files even without Strava.'],
+  ['データの取り込み方','How to import your data'],
+  ['初期設定：データの取り込み方','Getting started: how to import your data'],
+  ['COROS（カロス）をお使いの方','For COROS users'],
+  ['COROS連携（手動取り込み）またはStrava連携（自動同期）','Use COROS (manual import) or Strava (automatic sync).'],
+  ['COROS以外をお使いの方','For users of other devices'],
+  ['Garminなどの記録はStrava連携で自動同期','Sync Garmin and other activity records automatically through Strava.'],
+  ['過去のデータをまとめて取り込みたい方','To import your past data in bulk'],
+  ['PCからFIT・GPX・ZIPファイルを一括取り込み','Import FIT, GPX, or ZIP files in bulk from a computer.'],
+  ['※Stravaの新規連携は、現在利用枠の拡大審査中です。','* New Strava connections are currently paused while our capacity increase request is under review.'],
+  ['詳しい手順を見る →','View detailed instructions →'],
+  ['Strava新規連携を一時停止しています','New Strava connections are temporarily paused'],
+  ['接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。','We have reached the connected-athlete limit and our capacity increase request is under review. Existing connected users can continue using the service.'],
+  ['Runner\'s Ringsをはじめる','Get started with Runner\'s Rings'],
+  ['ログインすると、あなたのランニングマップを表示します。','Log in to view your private running map.'],
+  ['初めて使う場合は「新規登録」から。','New here? Create an account first.'],
+  ['パスワードは6文字以上で設定してください。','Use at least 6 characters for your password.'],
+  ['新規登録後、Supabase Authから確認メールが届きます。','After signing up, you will receive a confirmation email from Supabase Auth.'],
+  ['メール内の「Confirm email address」をタップすると登録が完了します。','Tap “Confirm email address” in that email to finish signing up.'],
+  ['メールアドレス','Email address'],
+  ['パスワードを忘れた方','Forgot your password?'],
+  ['パスワード','Password'],
+  ['新規登録','Sign up'],
+  ['ログイン','Log in'],
+  ['プロフィール画像','Profile image'],
+  ['アカウント設定を開く','Open account settings'],
+  ['アカウント設定','Account settings'],
+  ['アカウント','Account'],
+  ['表示名の保存に失敗しました。','Could not save your display name.'],
+  ['プロフィール画像の保存に失敗しました。','Could not save your profile image.'],
+  ['表示名','Display name'],
+  ['現在のメールアドレス','Current email address'],
+  ['メールアドレスを変更','Change email address'],
+  ['新しいメールアドレス','New email address'],
+  ['パスワードを変更','Change password'],
+  ['新しいパスワード','New password'],
+  ['変更を保存','Save changes'],
+  ['Strava連携を解除','Disconnect Strava'],
+  ['COROS連携を解除','Disconnect COROS'],
+  ['ログアウト','Log out'],
+  ['閉じる','Close'],
+  ['データを読み込み中…','Loading data…'],
+  ['＋ ランを追加','＋ Add runs'],
+  ['端末に保存したラン','Runs saved on this device'],
+  ['クラウドに保存したラン','Runs saved to your account'],
+  ['自分のラン','My runs'],
+  ['端末保存','On device'],
+  ['クラウド確認中…','Checking your account…'],
+  ['月別表示','Monthly view'],
+  ['年間','Full year'],
+  ['← ラン一覧へ戻る','← Back to runs'],
+  ['← 地図に戻る','← Back to map'],
+  ['新しい順','Newest first'],
+  ['古い順','Oldest first'],
+  ['あなたの記録','Your history'],
+  ['総距離・ラン数・地域数・地図は、あなた本人だけに表示されています。','Your distance, run count, visited places, and map are visible only to you.'],
+  ['全期間の総距離','All-time distance'],
+  ['全期間のラン数','All-time runs'],
+  ['全期間の地域数','All-time places'],
+  ['全期間 州・地域別','All-time by state / region'],
+  ['全期間 都道府県別','All-time by prefecture'],
+  ['全期間 市町村別','All-time by municipality'],
+  ['全期間 国別','All-time by country'],
+  ['総距離','Distance'],
+  ['ラン数','Runs'],
+  ['地域数','Places'],
+  ['州・地域別','By state / region'],
+  ['都道府県別','By prefecture'],
+  ['市町村別','By municipality'],
+  ['国別','By country'],
+  ['この期間の国別データがありません','No country data for this period'],
+  ['この期間の都道府県データがありません','No prefecture data for this period'],
+  ['この期間の市町村データがありません','No municipality data for this period'],
+  ['読み込み中…','Loading…'],
+  ['ページ上部へ戻る','Back to top'],
+  ['ランリングをシェア','Share Runner\'s Rings'],
+  ['Runner\'s Ringsとは？','About Runner\'s Rings'],
+  ['使い方','How to Use'],
+  ['利用規約','Terms of Service'],
+  ['プライバシーポリシー','Privacy Policy'],
+  ['お問い合わせ','Contact'],
+  ['残り','Show remaining '],
+  ['件を表示',' items'],
+  ['折りたたむ','Show less'],
+  ['全期間','All time'],
+  ['世界表示：走った国を表示','World view: countries you have run in'],
+  ['州・地域表示：走った州を表示','State view: states you have run in'],
+  ['広域表示：累積走行距離を市町村面で表示','Regional view: distance by municipality'],
+  ['詳細表示：実走コース＋100m Runner\'s Rings','Detail view: routes + 100 m Runner\'s Rings'],
+  ['路線表示：実際に走ったコース','Route view: your actual routes'],
+  ['累積走行距離：','Total distance: '],
+  ['走ったラン：','Runs here: '],
+  ['このエリアを走ったラン：','Runs in this area: '],
+  [' 回',' runs'],
+  ['メールアドレスとパスワードを入力してください。','Enter your email address and password.'],
+  ['ログイン中…','Logging in…'],
+  ['ログインできませんでした。メールアドレスまたはパスワードを確認してください。','Could not log in. Check your email address and password.'],
+  ['メールアドレスを入力してから押してください。','Enter your email address first.'],
+  ['再設定メールを送信中…','Sending reset email…'],
+  ['パスワード再設定メールを送りました。メール内のリンクを開いてください。','Password reset email sent. Open the link in the email.'],
+  ['再設定メールを送信できませんでした。時間をおいて、もう一度お試しください。','Could not send the reset email. Please try again later.'],
+  ['パスワードは6文字以上にしてください。','Your password must be at least 6 characters.'],
+  ['新規登録中…','Creating account…'],
+  ['登録メールを送信しました。メール内の確認リンクを開いてからログインしてください。','Confirmation email sent. Open its link, then log in.'],
+  ['新規登録できませんでした。入力内容を確認してください。','Could not create the account. Check the information you entered.'],
+  ['先にRunner’s Ringsへログインしてください。','Please log in to Runner’s Rings first.'],
+  ['Strava連携の開始に失敗しました。','Could not start Strava connection.'],
+  ['Strava認証URLを取得できませんでした。','Could not get the Strava authorization URL.'],
+  ['COROSへ接続中…','Connecting to COROS…'],
+  ['COROS認証URLを取得できませんでした。','Could not get the COROS authorization URL.'],
+  ['COROS連携の開始に失敗しました。','Could not start COROS connection.'],
+  ['COROSと連携','Connect COROS'],
+  ['COROSを確認中…','Checking COROS…'],
+  ['COROSから取り込む','Import from COROS'],
+  ['COROSに取り込めるランはありませんでした。','No new COROS runs were available to import.'],
+  ['保存: ','Saved: '],
+  ['重複: ','Duplicates: '],
+  ['失敗: ','Failed: '],
+  ['解除中…','Disconnecting…'],
+  ['COROSとの連携を解除しました。','COROS has been disconnected.'],
+  ['Strava連携済み','Strava connected'],
+  ['クラウドに保存したランはありません','No runs are saved to your account'],
+  ['端末に保存したランはありません','No runs are saved on this device'],
+  ['日付不明','Unknown date'],
+  ['距離不明','Unknown distance'],
+  ['ランを追加しました！','Run added!'],
+  ['ランを追加しました。','Run added.'],
+  ['登録済みのランです','This run is already saved'],
+  ['同じランのため追加しませんでした。','It was not added because the same run is already saved.'],
+  ['対応していないファイル形式です','Unsupported file type'],
+  ['「.gpx」または「.fit」のファイルを選択してください。','Select a .gpx or .fit file.'],
+  ['ランデータの読み込みに失敗しました。','Could not read the running data.'],
+  ['クラウド保存にはログインが必要です。','Log in to save runs to your account.'],
+  ['この内容でクラウドへ保存しますか？','Save these runs to your account?'],
+  ['保存処理へ進みますか？','Continue to save?'],
+  ['キャンセルしました','Cancelled'],
+  ['紹介文とURLをコピーしました。','The introduction and URL were copied.'],
+  ['共有できませんでした。もう一度お試しください。','Could not share. Please try again.'],
+  ['アカウント情報を保存しました。','Account information saved.'],
+  ['新しいメールアドレスの確認メールをご確認ください。','Check the confirmation email sent to your new address.'],
+  ['パスワードを変更しました。','Password changed.'],
+  ['COROSの本日の取得上限に達しました。','You have reached the current COROS retrieval limit.'],
+  ['COROSの取得上限に達しました。','You have reached the current COROS retrieval limit.'],
+  ['上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。','Wait about 24 hours after reaching the limit, then press “Import from COROS” again.'],
+  ['過去の履歴がまだある場合は、上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。','If older activities remain, wait about 24 hours after reaching the limit, then press “Import from COROS” again.'],
+  ['過去の履歴がまだある場合は、明日以降にもう一度「COROSから取り込む」を押してください。','If older activities remain, try “Import from COROS” again after the retrieval limit resets.'],
+  ['COROSから1日に取得できる件数には上限があります。','COROS limits how many activities can be retrieved within a period.'],
+  ['COROSから取得できる件数には上限があります。','COROS limits how many activities can be retrieved within a period.'],
+  ['✅ COROS取込み完了：保存 ','✅ COROS import complete: saved '],
+  ['COROS取込み中','Importing from COROS'],
+  ['FIT取得エラー','FIT retrieval error'],
+  ['COROS FIT取込み失敗','COROS FIT import failed'],
+  ['COROS取込み結果','COROS import results'],
+  ['処理済み記録の更新に失敗しました。','Could not update the processed activity list.'],
+  ['次回は重複として安全に確認されます。','It will be safely checked as a duplicate next time.'],
+  ['COROSからの取込みに失敗しました。','Could not import from COROS.'],
+  ['COROSとの連携を解除しますか？','Disconnect COROS?'],
+  ['Stravaとの連携を解除しますか？','Disconnect Strava?'],
+  ['Runner’s Ringsに保存済みのランは削除されません。','Runs already saved in Runner’s Rings will not be deleted.'],
+  ['保存済みのランは削除されません。','Saved runs will not be deleted.'],
+  ['COROS連携解除に失敗しました。','Could not disconnect COROS.'],
+  ['Strava連携解除に失敗しました。','Could not disconnect Strava.'],
+  ['連携を解除','Disconnect'],
+  ['Stravaのラン取得に失敗しました。','Could not retrieve runs from Strava.'],
+  ['Stravaから','Retrieved from Strava:'],
+  ['ログイン情報がありません','No login information is available'],
+  ['クラウド未接続','Account storage is unavailable'],
+  ['都道府県不明','Unknown prefecture'],
+  ['名称不明','Unknown name'],
+  ['国名不明','Unknown country'],
+  ['全国の行政境界を読み込み中…','Loading administrative boundaries…'],
+  ['全国行政境界データ取得失敗','Could not load administrative boundaries'],
+  ['世界国境データ取得失敗','Could not load world country boundaries'],
+  ['アメリカ州境データ取得失敗','Could not load U.S. state boundaries'],
+  ['GPXを読み込めません','Could not read the GPX file'],
+  ['GPS座標が不足しています','Not enough GPS coordinates'],
+  ['クラウド読込失敗','Could not load account data'],
+  ['クラウドラン','account run'],
+  ['クラウドRUNを読み込み中…','Loading account runs…'],
+  ['クラウド読込失敗・端末データで表示','Account data unavailable; showing device data'],
+  ['ログインしていません','Not logged in'],
+  ['クラウド保存失敗','Account save failed'],
+  ['このランの地図データを表示できません。','Map data is unavailable for this run.'],
+  ['COROSラン','COROS run'],
+  ['クラウド保存ランを読み込めませんでした','Could not load saved account runs'],
+  ['過去ラン','historical run'],
+  ['現在のGPXを探しています…','Looking for current GPX files…'],
+  ['GPX一覧取得失敗','Could not retrieve the GPX list'],
+  ['取得失敗','Retrieval failed'],
+  ['読み込み中','Loading'],
+  ['端末→クラウド同期失敗','Device-to-account sync failed'],
+  ['保存GPX復元失敗','Could not restore saved GPX data'],
+  ['保存済みランを読み込めませんでした','Could not load saved runs'],
+  ['GPX解析エラー','GPX parsing error'],
+  ['端末から削除','Delete from device'],
+  ['この端末に保存しているGPXを削除しますか？','Delete this GPX from this device?'],
+  ['クラウドに同期済みのRUNはクラウドには残ります。','Runs already synced to your account will remain there.'],
+  ['端末保存のみ削除しました','Deleted only from this device'],
+  ['削除に失敗しました。','Could not delete it.'],
+  ['ランデータ処理失敗','Running data processing failed'],
+  ['ランデータ','running data'],
+  ['を処理中…','Processing…'],
+  ['FIT読込機能が準備できていません','FIT import is not ready'],
+  ['クラウド保存中…','Saving to your account…'],
+  ['一括インポート完了','Batch import complete'],
+  ['件を処理しました。','items processed.'],
+  ['新規追加','New'],
+  ['重複スキップ','Duplicates skipped'],
+  ['未対応形式','Unsupported files'],
+  ['読み込み失敗','Read failures'],
+  ['クラウド未同期','Not synced to account'],
+  ['クラウド＋端末に保存しました','Saved to your account and device'],
+  ['クラウドに保存しました','Saved to your account'],
+  ['クラウド保存完了','Account save complete'],
+  ['FITのクラウド保存に失敗しました','Could not save the FIT activity to your account'],
+  ['端末には保存済み・クラウド同期は次回再試行','Saved on this device; account sync will retry next time'],
+  ['クラウド保存は完了していません。','The account save is not complete.'],
+  ['FITは端末には保存されません。','FIT files are not stored on this device.'],
+  ['ページを再読み込みしてから、もう一度選択してください。','Reload the page, then select the file again.'],
+  ['端末には保存できましたが、','It was saved on this device, but'],
+  ['次回起動時に再同期します。','It will sync again the next time the app opens.'],
+  ['このランはすでに登録されています。','This run is already saved.'],
+  ['このファイル形式には対応していません。','This file type is not supported.'],
+  ['ラン追加失敗','Could not add the run'],
+  ['ZIP読込機能が準備できていません','ZIP import is not ready'],
+  ['FIT確認機能が準備できていません','FIT inspection is not ready'],
+  ['ZIPの階層が深すぎます','The ZIP nesting is too deep'],
+  ['FIT内容を確認中…','Inspecting FIT data…'],
+  ['ZIP内のZIPが多すぎます','Too many nested ZIP files'],
+  ['ZIP内のZIPを確認中…','Inspecting nested ZIP files…'],
+  ['Garminラン','Garmin run'],
+  ['ZIP未登録候補一覧','ZIP unsaved activity candidates'],
+  ['未登録候補一覧をテキスト保存しました。','Saved the unsaved candidate list as a text file.'],
+  ['この段階では保存していません。','Nothing has been saved at this stage.'],
+  ['保存内容を確認してください。','Review what will be saved.'],
+  ['新規保存','New saves'],
+  ['新規候補の表示名は「Garminラン」に統一します。','New activities will be named “Garmin run”.'],
+  ['ZIP候補の保存をキャンセルしました','Cancelled saving ZIP candidates'],
+  ['Garmin ZIP保存失敗','Garmin ZIP save failed'],
+  ['Garminランの一部を保存できませんでした','Some Garmin runs could not be saved'],
+  ['Garminランのクラウド保存が完了しました','Garmin runs were saved to your account'],
+  ['Garmin ZIP保存結果','Garmin ZIP save results'],
+  ['保存成功','Saved successfully'],
+  ['再確認でスキップ','Skipped after duplicate check'],
+  ['保存失敗','Save failures'],
+  ['500m未満保留','Under 500 m — held'],
+  ['クラウド表示件数','Runs shown from your account'],
+  ['ZIPと他形式は分けて選択してください','Select ZIP files separately from other file types'],
+  ['第1段階ではZIPだけを選択してください。','Select only ZIP files for this step.'],
+  ['インポート失敗','Import failed'],
+  ['ランの取り込み中にエラーが発生しました。','An error occurred while importing runs.'],
+  ['取得しました。','retrieved.'],
+  ['現在GPX','Current GPX'],
+  ['クラウド保存','Saved to account'],
+  ['ランデータを読み込みましたが、','The running data was loaded, but'],
+  ['を確認中…','Inspecting…'],
+  ['未登録候補','Unsaved candidates'],
+  ['個のZIPを確認しました。','ZIP files inspected.'],
+  ['内側のZIP','Nested ZIP files'],
+  ['FIT内容確認成功','FIT inspections passed'],
+  ['ラン＋GPS候補','Run + GPS candidates'],
+  ['既存ランと重複','Existing duplicates'],
+  ['保存予定（500m以上）','To save (500 m or longer)'],
+  ['保留（500m未満）','Held (under 500 m)'],
+  ['重複確認不可','Duplicate check unavailable'],
+  ['FIT内容確認失敗','FIT inspection failures'],
+  ['クラウド保存にはログインが必要です','Log in to save to your account'],
+  ['過去ランを復元中…','Restoring historical runs…'],
+  ['端末保存ランを復元中…','Restoring runs saved on this device…'],
+  ['過去:','Historical:'],
+  ['クラウド:','Account:'],
+  ['端末追加:','Added from device:'],
+  ['今回クラウド同期:','Synced this time:'],
+  ['合計:','Total:'],
+  ['RUNSをクラウドへ同期しました','runs synced to your account'],
+  ['「パスワードを変更」に新しいパスワードを入力し、「変更を保存」を押してください。','Enter a new password under “Change password”, then press “Save changes”.'],
+  ['認証情報を確認できませんでした。','Could not verify your authentication information.'],
+  ['これまでのランニングを地図と数字で振り返れるWebアプリです。','A web app for revisiting your running history through maps and statistics.'],
+  ['年：走った国を表示',': countries you have run in'],
+  ['年：実走コース＋100m Runner\'s Rings',': routes + 100 m Runner\'s Rings'],
+  ['年：実際に走ったコース',': your actual routes'],
+  ['年：走った州を表示',': states you have run in'],
+  ['年：走行距離を市町村面で表示',': distance by municipality'],
+  ['件数','count'],
+  ['件',' items'],
+  ['アラバマ州','Alabama'],['アラスカ州','Alaska'],['アリゾナ州','Arizona'],
+  ['アーカンソー州','Arkansas'],['カリフォルニア州','California'],['コロラド州','Colorado'],
+  ['コネチカット州','Connecticut'],['デラウェア州','Delaware'],['フロリダ州','Florida'],
+  ['ジョージア州','Georgia'],['ハワイ州','Hawaii'],['アイダホ州','Idaho'],
+  ['イリノイ州','Illinois'],['インディアナ州','Indiana'],['アイオワ州','Iowa'],
+  ['カンザス州','Kansas'],['ケンタッキー州','Kentucky'],['ルイジアナ州','Louisiana'],
+  ['メイン州','Maine'],['メリーランド州','Maryland'],['マサチューセッツ州','Massachusetts'],
+  ['ミシガン州','Michigan'],['ミネソタ州','Minnesota'],['ミシシッピ州','Mississippi'],
+  ['ミズーリ州','Missouri'],['モンタナ州','Montana'],['ネブラスカ州','Nebraska'],
+  ['ネバダ州','Nevada'],['ニューハンプシャー州','New Hampshire'],['ニュージャージー州','New Jersey'],
+  ['ニューメキシコ州','New Mexico'],['ニューヨーク州','New York'],['ノースカロライナ州','North Carolina'],
+  ['ノースダコタ州','North Dakota'],['オハイオ州','Ohio'],['オクラホマ州','Oklahoma'],
+  ['オレゴン州','Oregon'],['ペンシルベニア州','Pennsylvania'],['ロードアイランド州','Rhode Island'],
+  ['サウスカロライナ州','South Carolina'],['サウスダコタ州','South Dakota'],['テネシー州','Tennessee'],
+  ['テキサス州','Texas'],['ユタ州','Utah'],['バーモント州','Vermont'],
+  ['バージニア州','Virginia'],['ワシントン州','Washington'],['ウェストバージニア州','West Virginia'],
+  ['ウィスコンシン州','Wisconsin'],['ワイオミング州','Wyoming'],['ワシントンD.C.','Washington, D.C.'],
+  ['日本','Japan'],['アメリカ','United States']
+].sort(
+  (a,b) =>
+    b[0].length -
+    a[0].length
+);
+
+function translateUiText(
+  value
+) {
+  if (
+    rrUiLanguage !== 'en' ||
+    typeof value !== 'string'
+  ) {
+    return value;
+  }
+
+  const exactTranslations = {
+    'ラン':'Run',
+    '年':'Year',
+    '月':'Month',
+    'の':' ',
+    'を表示':'Displayed'
+  };
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      exactTranslations,
+      value
+    )
+  ) {
+    return exactTranslations[value];
+  }
+
+  let translated =
+    value;
+
+  RR_ENGLISH_REPLACEMENTS.forEach(
+    ([source,target]) => {
+      translated =
+        translated.split(source).join(target);
+    }
+  );
+
+  translated = translated
+    .replace(/([0-9]{4})年([0-9]{1,2})月/g,'$1 · Month $2')
+    .replace(/([0-9]{4})年/g,'$1')
+    .replace(/([0-9]{1,2})月/g,'Month $1')
+    .replace(/^([A-Za-z0-9 .,'-]+)を表示$/,'Showing $1');
+
+  return translated;
+}
+
+function translateUiNode(
+  root
+) {
+  if (
+    rrUiLanguage !== 'en' ||
+    !root
+  ) {
+    return;
+  }
+
+  if (
+    root.nodeType === Node.TEXT_NODE
+  ) {
+    const translated =
+      translateUiText(
+        root.nodeValue
+      );
+    if (
+      translated !== root.nodeValue
+    ) {
+      root.nodeValue = translated;
+    }
+    return;
+  }
+
+  if (
+    root.nodeType !== Node.ELEMENT_NODE &&
+    root.nodeType !== Node.DOCUMENT_NODE
+  ) {
+    return;
+  }
+
+  if (
+    root.nodeType === Node.ELEMENT_NODE &&
+    ['SCRIPT','STYLE'].includes(root.tagName)
+  ) {
+    return;
+  }
+
+  const walker =
+    document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_TEXT
+    );
+
+  const textNodes = [];
+  while (walker.nextNode()) {
+    const parentTag =
+      walker.currentNode
+        .parentElement
+        ?.tagName;
+    if (
+      parentTag !== 'SCRIPT' &&
+      parentTag !== 'STYLE'
+    ) {
+      textNodes.push(
+        walker.currentNode
+      );
+    }
+  }
+
+  textNodes.forEach(
+    node => translateUiNode(node)
+  );
+
+  const elements =
+    root.nodeType === Node.ELEMENT_NODE
+      ? [root,...root.querySelectorAll('*')]
+      : [...document.querySelectorAll('*')];
+
+  elements.forEach(
+    element => {
+      ['placeholder','aria-label','title','alt'].forEach(
+        attribute => {
+          if (element.hasAttribute(attribute)) {
+            element.setAttribute(
+              attribute,
+              translateUiText(
+                element.getAttribute(attribute)
+              )
+            );
+          }
+        }
+      );
+    }
+  );
+}
+
+function setRunnerRingsLanguage(
+  language
+) {
+  try {
+    localStorage.setItem(
+      RR_LANGUAGE_STORAGE_KEY,
+      language
+    );
+  }
+  catch(error) {
+    console.warn(error);
+  }
+  location.reload();
+}
+
+document
+  .querySelectorAll(
+    '.languageButton'
+  )
+  .forEach(
+    button => {
+      button.classList.toggle(
+        'isActive',
+        button.dataset.language === rrUiLanguage
+      );
+      button.setAttribute(
+        'aria-pressed',
+        String(
+          button.dataset.language === rrUiLanguage
+        )
+      );
+      button.addEventListener(
+        'click',
+        () => setRunnerRingsLanguage(
+          button.dataset.language
+        )
+      );
+    }
+  );
+
+if (
+  rrUiLanguage === 'en'
+) {
+  document.documentElement.lang =
+    'en';
+  document.title =
+    'Runner\'s Rings | Map the life you ran';
+
+  const description =
+    document.querySelector(
+      'meta[name="description"]'
+    );
+  if (description) {
+    description.content =
+      'Runner\'s Rings maps your accumulated running routes, distance, and visited regions around the world.';
+  }
+
+  translateUiNode(
+    document.body
+  );
+
+  document.querySelector(
+    '[data-language="ja"]'
+  ).textContent = '日本語';
+  document.querySelector(
+    '[data-language="en"]'
+  ).textContent = 'EN';
+
+  const nativeAlert =
+    window.alert.bind(window);
+  const nativeConfirm =
+    window.confirm.bind(window);
+
+  window.alert =
+    message => nativeAlert(
+      translateUiText(
+        String(message)
+      )
+    );
+  window.confirm =
+    message => nativeConfirm(
+      translateUiText(
+        String(message)
+      )
+    );
+
+  const translationObserver =
+    new MutationObserver(
+      mutations => {
+        mutations.forEach(
+          mutation => {
+            if (
+              mutation.type === 'characterData'
+            ) {
+              translateUiNode(
+                mutation.target
+              );
+            }
+            mutation.addedNodes.forEach(
+              node => translateUiNode(node)
+            );
+          }
+        );
+      }
+    );
+
+  translationObserver.observe(
+    document.body,
+    {
+      childList:true,
+      characterData:true,
+      subtree:true
+    }
+  );
+}
+
 function finishLaunchSplash() {
   const splash =
     document.getElementById(
@@ -12954,8 +13598,8 @@ const shareAppButton = document.getElementById('shareAppButton');
 const shareAppMessage = document.getElementById('shareAppMessage');
 
 const shareAppData = {
-  title: "Runner's Rings（ランナーズリングス）",
-  text: "走った道を、一枚の地図に。Runner's Rings（ランナーズリングス）は、これまでのランニングを地図と数字で振り返れるWebアプリです。",
+  title: translateUiText("Runner's Rings（ランナーズリングス）"),
+  text: translateUiText("走った道を、一枚の地図に。Runner's Rings（ランナーズリングス）は、これまでのランニングを地図と数字で振り返れるWebアプリです。"),
   url: 'https://runnersrings.com'
 };
 
