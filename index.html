@@ -1757,7 +1757,7 @@
 </button>
 
 <button id="intervalsImportButton" type="button" style="display:none;">
-  Intervalsから取り込む
+  Intervalsと連携
 </button>
 
 
@@ -1821,6 +1821,10 @@
 <button id="corosDisconnectButton" type="button" style="display:none;">
   COROS連携を解除
 </button>
+
+<button id="intervalsDisconnectButton" type="button" style="display:none;">
+  Intervals連携を解除
+</button>  
 
 <button id="logoutButton">
   ログアウト
@@ -2386,6 +2390,11 @@ const intervalsImportButton =
     'intervalsImportButton'
   );
 
+const intervalsDisconnectButton =
+  document.getElementById(
+    'intervalsDisconnectButton'
+  );  
+
 const INTERVALS_OWNER_USER_ID =
   '386da875-298e-46b7-927d-0e02d02c409a';
 
@@ -2780,7 +2789,74 @@ async function connectStrava() {
 
   location.href = data.url;
 }
+async function connectIntervals() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
 
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  intervalsImportButton.disabled =
+    true;
+
+  intervalsImportButton.textContent =
+    'Intervalsへ接続中…';
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'intervals-oauth',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.url) {
+      throw new Error(
+        'Intervals認証URLを取得できませんでした。'
+      );
+    }
+
+    location.href =
+      data.url;
+
+  } catch (error) {
+    console.error(
+      'Intervals connect error:',
+      error
+    );
+
+    alert(
+      'Intervals連携の開始に失敗しました。'
+    );
+
+    intervalsImportButton.disabled =
+      false;
+
+    intervalsImportButton.textContent =
+      'Intervalsと連携';
+  }
+}
 async function connectCoros() {
   const {
     data: { session }
@@ -3322,7 +3398,87 @@ async function importFromIntervals() {
       'Intervalsから取り込む';
   }
 }
+async function disconnectIntervals() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
 
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  const ok = confirm(
+    'Intervalsとの連携を解除しますか？\nRunner’s Ringsに保存済みのランは削除されません。'
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  intervalsDisconnectButton.disabled =
+    true;
+
+  intervalsDisconnectButton.textContent =
+    '解除中…';
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'intervals-disconnect',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.success) {
+      throw new Error(
+        data?.error ||
+        'Intervals連携解除に失敗しました。'
+      );
+    }
+
+    await updateIntervalsConnectionStatus();
+
+    alert(
+      'Intervalsとの連携を解除しました。\n保存済みのランは削除されません。'
+    );
+
+  } catch (error) {
+    console.error(
+      'Intervals disconnect error:',
+      error
+    );
+
+    alert(
+      'Intervals連携解除に失敗しました。'
+    );
+
+  } finally {
+    intervalsDisconnectButton.disabled =
+      false;
+
+    intervalsDisconnectButton.textContent =
+      'Intervals連携を解除';
+  }
+}
 async function disconnectCoros() {
   const {
     data: { session }
@@ -3533,6 +3689,8 @@ stravaDisconnectButton.onclick =
   disconnectStrava;
 corosDisconnectButton.onclick =
   disconnectCoros;
+intervalsDisconnectButton.onclick =
+  disconnectIntervals;  
 
 async function updateStravaConnectionStatus() {
   const {
@@ -3710,7 +3868,85 @@ async function updateCorosConnectionStatus() {
       'none';
   }
 }
+async function updateIntervalsConnectionStatus() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
 
+  if (!session) {
+    intervalsImportButton.textContent =
+      'Intervalsと連携';
+
+    intervalsImportButton.onclick =
+      connectIntervals;
+
+    intervalsDisconnectButton.style.display =
+      'none';
+
+    return;
+  }
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'intervals-status',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (data?.connected) {
+      intervalsImportButton.textContent =
+        'Intervalsから取り込む';
+
+      intervalsImportButton.onclick =
+        importFromIntervals;
+
+      intervalsDisconnectButton.style.display =
+        'inline-block';
+
+    } else {
+      intervalsImportButton.textContent =
+        'Intervalsと連携';
+
+      intervalsImportButton.onclick =
+        connectIntervals;
+
+      intervalsDisconnectButton.style.display =
+        'none';
+    }
+
+  } catch (error) {
+    console.error(
+      'Intervals status error:',
+      error
+    );
+
+    intervalsImportButton.textContent =
+      'Intervalsと連携';
+
+    intervalsImportButton.onclick =
+      connectIntervals;
+
+    intervalsDisconnectButton.style.display =
+      'none';
+  }
+}
 passwordInput.addEventListener(
   'keydown',
   event => {
@@ -12921,6 +13157,7 @@ if (
 
     await updateStravaConnectionStatus();
     await updateCorosConnectionStatus();
+    await updateIntervalsConnectionStatus();
 // =====================================
 // 起動時データ読込
 // クラウドを正本とする。
