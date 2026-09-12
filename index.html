@@ -1651,7 +1651,7 @@
       <div class="authConcept">
         <strong>走るほど、地図が育つ。</strong>
         <span>
-          Stravaを使っていなくても、COROS連携やFIT／GPXファイルから利用できます。
+          StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／ZIPファイルから利用できます。
         </span>
       </div>
 
@@ -1659,20 +1659,24 @@
         <h3>データの取り込み方</h3>
         <div class="setupGuideOptions">
           <div class="setupGuideOption">
-            <strong>COROS（カロス）をお使いの方</strong>
-            <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
+            <strong>Strava経由</strong>
+            <span>自動連携（利用枠拡大審査中）</span>
           </div>
           <div class="setupGuideOption">
-            <strong>COROS以外をお使いの方</strong>
-            <span>Garminなどの記録はStrava連携で自動同期</span>
+            <strong>Intervals.icu経由</strong>
+            <span>自動連携（正式連携準備中）</span>
           </div>
           <div class="setupGuideOption">
-            <strong>過去のデータをまとめて取り込みたい方</strong>
-            <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
+            <strong>COROSから直接</strong>
+            <span>手動取り込み</span>
+          </div>
+          <div class="setupGuideOption">
+            <strong>FIT・GPX・ZIP</strong>
+            <span>ファイル取り込み</span>
           </div>
         </div>
         <p class="setupGuideNote">
-          ※Stravaの新規連携は、現在利用枠の拡大審査中です。
+          ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
         </p>
         <a class="setupGuideLink" href="./how-to.html">
           詳しい手順を見る →
@@ -1892,20 +1896,24 @@
   <summary>初期設定：データの取り込み方</summary>
   <div class="setupGuideOptions">
     <div class="setupGuideOption">
-      <strong>COROS（カロス）をお使いの方</strong>
-      <span>COROS連携（手動取り込み）またはStrava連携（自動同期）</span>
+      <strong>Strava経由</strong>
+      <span>自動連携（利用枠拡大審査中）</span>
     </div>
     <div class="setupGuideOption">
-      <strong>COROS以外をお使いの方</strong>
-      <span>Garminなどの記録はStrava連携で自動同期</span>
+      <strong>Intervals.icu経由</strong>
+      <span>自動連携（正式連携準備中）</span>
     </div>
     <div class="setupGuideOption">
-      <strong>過去のデータをまとめて取り込みたい方</strong>
-      <span>PCからFIT・GPX・ZIPファイルを一括取り込み</span>
+      <strong>COROSから直接</strong>
+      <span>手動取り込み</span>
+    </div>
+    <div class="setupGuideOption">
+      <strong>FIT・GPX・ZIP</strong>
+      <span>ファイル取り込み</span>
     </div>
   </div>
   <p class="setupGuideNote">
-    ※Stravaの新規連携は、現在利用枠の拡大審査中です。
+    ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
   </p>
   <a class="setupGuideLink" href="./how-to.html">
     詳しい手順を見る →
@@ -13718,16 +13726,18 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['あなたのラン数','Your runs'],
   ['あなたが走った地域','Places you have run'],
   ['走るほど、地図が育つ。','Your map grows with every run.'],
-  ['Stravaを使っていなくても、COROS連携やFIT／GPXファイルから利用できます。','Use COROS sync or import FIT/GPX files even without Strava.'],
+  ['StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／ZIPファイルから利用できます。','Use automatic sync through Strava or Intervals.icu, direct COROS import, or FIT/GPX/ZIP file import.'],
   ['データの取り込み方','How to import your data'],
   ['初期設定：データの取り込み方','Getting started: how to import your data'],
-  ['COROS（カロス）をお使いの方','For COROS users'],
-  ['COROS連携（手動取り込み）またはStrava連携（自動同期）','Use COROS (manual import) or Strava (automatic sync).'],
-  ['COROS以外をお使いの方','For users of other devices'],
-  ['Garminなどの記録はStrava連携で自動同期','Sync Garmin and other activity records automatically through Strava.'],
-  ['過去のデータをまとめて取り込みたい方','To import your past data in bulk'],
-  ['PCからFIT・GPX・ZIPファイルを一括取り込み','Import FIT, GPX, or ZIP files in bulk from a computer.'],
-  ['※Stravaの新規連携は、現在利用枠の拡大審査中です。','* New Strava connections are currently paused while our capacity increase request is under review.'],
+  ['Strava経由','Via Strava'],
+  ['自動連携（利用枠拡大審査中）','Automatic sync (capacity increase under review)'],
+  ['Intervals.icu経由','Via Intervals.icu'],
+  ['自動連携（正式連携準備中）','Automatic sync (official integration in preparation)'],
+  ['COROSから直接','Direct from COROS'],
+  ['手動取り込み','Manual import'],
+  ['FIT・GPX・ZIP','FIT / GPX / ZIP'],
+  ['ファイル取り込み','File import'],
+  ['※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。','* As a rule, choose either Strava or Intervals.icu for automatic sync.'],
   ['詳しい手順を見る →','View detailed instructions →'],
   ['Strava新規連携を一時停止しています','New Strava connections are temporarily paused'],
   ['接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。','We have reached the connected-athlete limit and our capacity increase request is under review. Existing connected users can continue using the service.'],
