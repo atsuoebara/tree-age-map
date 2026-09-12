@@ -3600,6 +3600,21 @@ const map =
   );
 
 
+map.createPane(
+  'selectedRunPane'
+);
+
+map.getPane(
+  'selectedRunPane'
+).style.zIndex =
+  '625';
+
+map.getPane(
+  'selectedRunPane'
+).style.pointerEvents =
+  'none';
+
+
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {
@@ -3687,6 +3702,9 @@ let usaRegionLayer =
   null;
 let selectedRunLine =
   null;
+
+const SELECTED_RUN_STORAGE_KEY =
+  'RunnerRingsSelectedRunId';
 
 const routeGroup =
   L.layerGroup();
@@ -7036,6 +7054,20 @@ backToRunListButton.style.display = 'block';
       activity.latlngs
     );
 
+try {
+  sessionStorage.setItem(
+    SELECTED_RUN_STORAGE_KEY,
+    String(
+      row.id
+    )
+  );
+} catch (error) {
+  console.warn(
+    'Selected run storage error:',
+    error
+  );
+}
+
 if (
   selectedRunLine
 ) {
@@ -7050,7 +7082,9 @@ selectedRunLine =
     {
       color: '#0057ff',
       weight: 6,
-      opacity: 1
+      opacity: 1,
+      pane: 'selectedRunPane',
+      interactive: false
     }
   ).addTo(map);
 
@@ -8329,6 +8363,16 @@ backToRunListButton.onclick =
     if (selectedRunLine) {
       map.removeLayer(selectedRunLine);
       selectedRunLine = null;
+    }
+    try {
+      sessionStorage.removeItem(
+        SELECTED_RUN_STORAGE_KEY
+      );
+    } catch (error) {
+      console.warn(
+        'Selected run storage clear error:',
+        error
+      );
     }
     if (
       lastCloudRowsView
@@ -12743,6 +12787,34 @@ if (
     }
 
 
+    try {
+      const selectedRunId =
+        sessionStorage.getItem(
+          SELECTED_RUN_STORAGE_KEY
+        );
+
+      const selectedRunRow =
+        selectedRunId
+          ? cloudRows.find(
+              row =>
+                String(row.id) ===
+                selectedRunId
+            )
+          : null;
+
+      if (selectedRunRow) {
+        focusCloudRun(
+          selectedRunRow
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'Selected run restore error:',
+        error
+      );
+    }
+
+
     setTimeout(
       () =>
         map.invalidateSize(),
@@ -13075,7 +13147,13 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['Runner\'s Ringsは、','Runner\'s Rings'],
   ['（ランナーズリングス）',''],
   ['走った記録ではなく、走った人生を残す。','Preserve the life you ran, not just the records.'],
+  ['走った人生を、地図に残す。','Map the life you ran.'],
+  ['走った記録ではなく、','Not just your running records—'],
+  ['走った人生を残す。','preserve the life you ran.'],
   ['走った道を、一枚の地図に。','Every road you ran, on one map.'],
+  ['👀 地図を拡大すると、実際に走ったルートが表示されます','👀 Zoom in to see the routes you actually ran.'],
+  ['Runner\'s Ringsを起動しています','Launching Runner\'s Rings'],
+  ['Runner\'s Rings 地図プレビュー','Runner\'s Rings map preview'],
   ['あなたが走った道や街を地図に積み重ねていく','Build a personal map from every road and place you have run.'],
   ['ランニング記録アプリです。','A running history app.'],
   ['距離・ラン数・地図は、登録した本人だけに表示されます。','Your distance, runs, and map are visible only to you.'],
