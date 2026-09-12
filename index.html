@@ -1158,6 +1158,29 @@
   cursor: pointer;
 }
 
+#corosConnectButton,
+#intervalsImportButton {
+  border: 1px solid rgba(255,255,255,.18);
+  background: #17283d;
+  color: #dce8f5;
+  border-radius: 999px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#intervalsImportButton {
+  border-color: rgba(234,255,0,.45);
+  color: #eaff00;
+}
+
+#corosConnectButton:disabled,
+#intervalsImportButton:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
 /* 地図に戻るボタン */
 #backToMapButton {
   display: block;
@@ -1731,6 +1754,10 @@
 
 <button id="corosConnectButton" type="button">
   COROSと連携
+</button>
+
+<button id="intervalsImportButton" type="button" style="display:none;">
+  Intervalsから取り込む
 </button>
 
 
@@ -2353,6 +2380,14 @@ const corosConnectButton =
   document.getElementById(
     'corosConnectButton'
   );
+
+const intervalsImportButton =
+  document.getElementById(
+    'intervalsImportButton'
+  );
+
+const INTERVALS_OWNER_USER_ID =
+  '386da875-298e-46b7-927d-0e02d02c409a';
 
 const corosDisconnectButton =
   document.getElementById(
@@ -3094,6 +3129,200 @@ async function importFromCoros() {
   }
 }
 
+async function importFromIntervals() {
+  const {
+    data: { session }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  intervalsImportButton.disabled =
+    true;
+
+  intervalsImportButton.textContent =
+    'Intervalsを確認中…';
+
+  let saved = 0;
+  let duplicates = 0;
+  let failed = 0;
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .functions
+        .invoke(
+          'intervals-sync',
+          {
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`
+            },
+            body: {
+              days: 14,
+              limit: 10
+            }
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.success) {
+      throw new Error(
+        data?.error ||
+        'Intervalsからランを取得できませんでした。'
+      );
+    }
+
+    const files =
+      Array.isArray(data.files)
+        ? data.files
+        : [];
+
+    for (
+      let i = 0;
+      i < files.length;
+      i++
+    ) {
+      intervalsImportButton.textContent =
+        'Intervals取込み中 ' +
+        (i + 1) +
+        '/' +
+        files.length;
+
+      try {
+        const item = files[i];
+
+        const activity =
+          buildActivityFromGPXText(
+            item.gpxText,
+            item.name ||
+              'Intervalsラン',
+            'intervals'
+          );
+
+        activity.intervalsId =
+          item.intervalsId ||
+          null;
+
+        if (
+          !activity.date &&
+          item.date
+        ) {
+          const fallbackDate =
+            new Date(item.date);
+
+          if (
+            !Number.isNaN(
+              fallbackDate.getTime()
+            )
+          ) {
+            activity.date =
+              fallbackDate;
+            activity.startedAt =
+              fallbackDate;
+            activity.year =
+              fallbackDate.getFullYear();
+          }
+        }
+
+        const signature =
+          createActivitySignature(
+            activity
+          );
+
+        const duplicate =
+          activitySignatures.has(
+            signature
+          ) ||
+          cloudRouteSignatures.has(
+            signature
+          ) ||
+          cloudSignatures.has(
+            signature
+          ) ||
+          !!findPossibleDuplicate(
+            activity
+          );
+
+        if (duplicate) {
+          duplicates++;
+          continue;
+        }
+
+        await saveActivityToCloud(
+          activity
+        );
+
+        cloudRouteSignatures.add(
+          signature
+        );
+
+        registerActivity(
+          activity
+        );
+
+        saved++;
+
+      } catch (itemError) {
+        console.error(
+          'Intervalsラン取込み失敗:',
+          itemError
+        );
+
+        failed++;
+      }
+    }
+
+    const unavailable =
+      Number(data.unavailable || 0);
+
+    alert(
+      'Intervals取込み結果\n' +
+      '保存: ' + saved + '件\n' +
+      '重複: ' + duplicates + '件\n' +
+      '取得不可: ' + unavailable + '件\n' +
+      '失敗: ' + failed + '件'
+    );
+
+    if (saved > 0) {
+      location.reload();
+      return;
+    }
+
+    await updateStorageInfo();
+
+  } catch (error) {
+    console.error(
+      'Intervals import error:',
+      error
+    );
+
+    alert(
+      'Intervalsからの取込みに失敗しました。'
+    );
+
+  } finally {
+    intervalsImportButton.disabled =
+      false;
+
+    intervalsImportButton.textContent =
+      'Intervalsから取り込む';
+  }
+}
+
 async function disconnectCoros() {
   const {
     data: { session }
@@ -3298,6 +3527,8 @@ stravaConnectButton.onclick =
   connectStrava;
 corosConnectButton.onclick =
   connectCoros;
+intervalsImportButton.onclick =
+  importFromIntervals;
 stravaDisconnectButton.onclick =
   disconnectStrava;
 corosDisconnectButton.onclick =
@@ -6930,6 +7161,9 @@ async function saveActivityToCloud(
 
       route:
   activity.latlngs,
+
+source:
+  activity.source || null,
 
 started_at:
   activity.startedAt || null
@@ -12929,6 +13163,12 @@ async function init() {
         ?.user ||
       null;
 
+    intervalsImportButton.style.display =
+      currentUser?.id ===
+        INTERVALS_OWNER_USER_ID
+        ? 'inline-block'
+        : 'none';
+
 
     if (
       !currentSession ||
@@ -13277,6 +13517,15 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['COROSと連携','Connect COROS'],
   ['COROSを確認中…','Checking COROS…'],
   ['COROSから取り込む','Import from COROS'],
+  ['Intervalsから取り込む','Import from Intervals'],
+  ['Intervalsを確認中…','Checking Intervals…'],
+  ['Intervals取込み中','Importing from Intervals'],
+  ['Intervals取込み結果','Intervals import results'],
+  ['Intervalsからランを取得できませんでした。','Could not retrieve runs from Intervals.'],
+  ['Intervalsからの取込みに失敗しました。','Could not import from Intervals.'],
+  ['Intervalsラン取込み失敗','Intervals run import failed'],
+  ['Intervalsラン','Intervals run'],
+  ['取得不可: ','Unavailable: '],
   ['COROSに取り込めるランはありませんでした。','No new COROS runs were available to import.'],
   ['保存: ','Saved: '],
   ['重複: ','Duplicates: '],
