@@ -25,6 +25,7 @@
     }
     a{color:inherit}
     header{
+      position:relative;
       background:#0f1d2f;
       padding:14px 16px 12px;
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -36,6 +37,7 @@
       align-items:center;
       justify-content:space-between;
       gap:16px;
+      padding-right:96px;
     }
     .brand h1{
       margin:0;
@@ -63,6 +65,33 @@
       color:#fff;
       font-size:12px;
       font-weight:700;
+    }
+    #languageSwitch{
+      position:absolute;
+      top:12px;
+      right:12px;
+      display:flex;
+      gap:3px;
+      padding:3px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      background:#132237;
+    }
+    .languageButton{
+      min-width:38px;
+      padding:6px 9px;
+      border:0;
+      border-radius:999px;
+      background:transparent;
+      color:#aeb9c8;
+      font:inherit;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .languageButton.isActive{
+      background:#ff2bd6;
+      color:#fff;
     }
     main{
       width:min(100% - 28px, 820px);
@@ -120,13 +149,8 @@
       font-size:14px;
       line-height:1.9;
     }
-    .messageCard p:last-child{
-      margin-bottom:0;
-    }
-    .emphasis{
-      color:#fff;
-      font-weight:800;
-    }
+    .messageCard p:last-child{margin-bottom:0}
+    .emphasis{color:#fff;font-weight:800}
     .quote{
       margin:20px 0;
       padding:16px 18px;
@@ -138,13 +162,8 @@
       font-weight:800;
       line-height:1.8;
     }
-    .aiCard{
-      border-color:rgba(234,255,0,.14);
-    }
-    .chappy{
-      color:#eaff00;
-      font-weight:800;
-    }
+    .aiCard{border-color:rgba(234,255,0,.14)}
+    .chappy{color:#eaff00;font-weight:800}
     .signature{
       margin-top:28px;
       padding:22px 20px;
@@ -159,15 +178,13 @@
       font-weight:700;
       letter-spacing:1px;
     }
-    .signatureName{
-      font-size:22px;
-      font-weight:800;
-    }
+    .signatureName{font-size:22px;font-weight:800}
     .signatureAi{
       margin-top:6px;
       color:#cbd5e1;
       font-size:13px;
     }
+    .languageContent[hidden]{display:none !important}
     footer{
       padding:22px 14px 28px;
       border-top:1px solid rgba(255,255,255,.08);
@@ -180,23 +197,23 @@
       color:#cbd5e1;
       text-decoration:none;
     }
-    @media(max-width:520px){
+    @media(max-width:620px){
       .headerInner{
         align-items:flex-start;
+        padding-right:0;
+        padding-top:42px;
       }
-      .brand h1{
-        font-size:18px;
+      #languageSwitch{
+        top:10px;
+        right:12px;
       }
+      .brand h1{font-size:18px}
       .backLink{
         padding:7px 10px;
         font-size:11px;
       }
-      .messageCard{
-        padding:20px 16px;
-      }
-      .messageCard h3{
-        font-size:19px;
-      }
+      .messageCard{padding:20px 16px}
+      .messageCard h3{font-size:19px}
     }
   </style>
 </head>
@@ -206,291 +223,339 @@
   <div class="headerInner">
     <div class="brand">
       <h1>Runner's Rings<span>（ランナーズリングス）</span></h1>
-      <p>走った記録ではなく、走った人生を残す。</p>
+      <p id="headerTagline">走った記録ではなく、走った人生を残す。</p>
     </div>
-    <a class="backLink" href="./index.html">← 戻る</a>
+    <a id="backLink" class="backLink" href="./index.html">← 戻る</a>
+  </div>
+
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton isActive" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
   </div>
 </header>
 
 <main>
-  <section class="hero">
-    <div class="eyebrow">DEVELOPER MESSAGE</div>
-    <h2>Runner’s Ringsを作った理由</h2>
-    <p class="heroLead">
-      記録も大事。でも、ランニングには数字だけでは残らない歴史や思い出があります。
-      Runner’s Ringsは、その積み重ねを地図に残したいという思いから始まりました。
-    </p>
-  </section>
+  <div id="contentJa" class="languageContent">
+    <section class="hero">
+      <div class="eyebrow">DEVELOPER MESSAGE</div>
+      <h2>Runner’s Ringsを作った理由</h2>
+      <p class="heroLead">
+        記録も大事。でも、ランニングには数字だけでは残らない歴史や思い出があります。
+        Runner’s Ringsは、その積み重ねを地図に残したいという思いから始まりました。
+      </p>
+    </section>
 
-  <section class="messageCard">
-    <h3>走った記録だけでは、残らないものがある。</h3>
+    <section class="messageCard">
+      <h3>走った記録だけでは、残らないものがある。</h3>
+      <p>ランニングを続けていると、タイムや距離、自己ベストなど、たくさんの数字が残ります。もちろん、それらは大切な記録です。</p>
+      <p>でも、自分が本当に残したいものは、それだけではありませんでした。</p>
+      <p>いつもの練習コース。<br>家族を待っている間に走った道。<br>旅行先で初めて走った街。<br>調子が良かった日の道。<br>苦しくても走り続けた日の道。</p>
+      <p>何年も走っていると、その一つひとつが、自分の生活や思い出と結びついていきます。</p>
+      <div class="quote">「自分は、これまでどんな場所を走ってきたんだろう。」</div>
+      <p>それを一枚の地図で見られたら、きっと面白い。そこからRunner’s Ringsは始まりました。</p>
+    </section>
 
-    <p>
-      ランニングを続けていると、タイムや距離、自己ベストなど、たくさんの数字が残ります。
-      もちろん、それらは大切な記録です。
-    </p>
+    <section class="messageCard">
+      <h3>きっかけの一つは、トップランナーの話でした。</h3>
+      <p>以前、高橋尚子さんと野口みずきさんの話を見ていたとき、<span class="emphasis">「走った場所を地図で残していく」</span>という楽しみ方がとても印象に残りました。</p>
+      <p>速く走ることだけではなく、走った場所そのものを楽しむ。「それ、自分でもやってみたい。」最初はそんな単純な気持ちでした。</p>
+      <p>でも、自分の過去のランニングデータを地図に重ねてみると、そこにあったのは単なる線ではありませんでした。</p>
+      <div class="quote">自分が走ってきた歴史そのもの。</div>
+    </section>
 
-    <p>
-      でも、自分が本当に残したいものは、それだけではありませんでした。
-    </p>
+    <section class="messageCard">
+      <h3>Runner’s Ringsという名前</h3>
+      <p>同じ道を何度も走る。毎年少しずつ走った場所が増えていく。それはまるで、木が一年ずつ年輪を重ねていくようにも見えます。</p>
+      <p>速かった年もある。走れなかった時期もある。遠くまで行った日も、家の近所を少しだけ走った日もある。</p>
+      <p>全部を重ねたものが、その人だけのランニング人生になる。そんな考えから、<span class="emphasis">Runner’s Rings ― ランナーの年輪</span>という名前になりました。</p>
+    </section>
 
-    <p>
-      いつもの練習コース。<br>
-      家族を待っている間に走った道。<br>
-      旅行先で初めて走った街。<br>
-      調子が良かった日の道。<br>
-      苦しくても走り続けた日の道。
-    </p>
+    <section class="messageCard">
+      <h3>記録から「次に走りたくなる地図」へ</h3>
+      <p>開発を始めた頃は、過去のランニングを地図に残すことが中心でした。でも作っているうちに、もう一つ面白いことに気づきました。</p>
+      <div class="quote">「ここ、まだ走ってないな。」</div>
+      <p>そこで、市町村の走破数や走破率、まだ走っていない地域も見えるようにしました。</p>
+      <p>昨日までの自分を見るためだけではなく、<span class="emphasis">「次はどこを走ろう。」</span>と思えるアプリへ。</p>
+      <p>Runner’s Ringsは、少しずつそんな方向へ育っています。</p>
+    </section>
 
-    <p>
-      何年も走っていると、その一つひとつが、自分の生活や思い出と結びついていきます。
-    </p>
+    <section class="messageCard aiCard">
+      <h3>AIチャッピーとの向き合い方</h3>
+      <p>Runner’s Ringsの開発では、ChatGPTをかなり使っています。私はChatGPTを<span class="chappy">「チャッピー」</span>と呼んでいます。</p>
+      <p>ただし、チャッピーに「こんなアプリを作って」と頼んで、完成したものが出てきたわけではありません。実際は、その正反対に近いです。</p>
+    </section>
 
-    <div class="quote">
-      「自分は、これまでどんな場所を走ってきたんだろう。」
-    </div>
+    <section class="messageCard aiCard">
+      <h3>とにかく壁打ちをしました。</h3>
+      <p>「こんなの面白くない？」<br>「それは違う。」<br>「こうしたら？」<br>「いや、それだとRunner’s Ringsじゃない。」</p>
+      <p>そんなやり取りを、本当に何度も繰り返してきました。</p>
+      <p>最初の頃、チャッピーはもっとゲーム的な方向も考えていました。エリアを制覇する。達成率を出す。バッジを集める。未踏の場所を埋めていく。それも面白い。</p>
+      <p>でも話していくうちに、Runner’s Ringsの中心に置きたいものが少しずつ見えてきました。</p>
+      <div class="quote">ゲームをするために走るのではなく、走った人生の積み重ねそのものを楽しみたい。</div>
+      <p>その考えを中心にしながら、ゲーム的な楽しさも少し加えていく。今のRunner’s Ringsは、そんなバランスで作っています。</p>
+    </section>
 
-    <p>
-      それを一枚の地図で見られたら、きっと面白い。
-      そこからRunner’s Ringsは始まりました。
-    </p>
-  </section>
+    <section class="messageCard aiCard">
+      <h3>チャッピーは万能ではありません。🐓</h3>
+      <p>AIと一緒に開発していると書くと、何でも一瞬でできるように聞こえるかもしれません。実際はそんなことはありません。</p>
+      <p>チャッピーは間違えます。こちらの意図を取り違えることもあります。長いやり取りの中で、さっき決めたことを忘れたようになることもあります。</p>
+      <p>そして時々、<span class="emphasis">「なんでそっちに行った？」</span>という方向へ元気よく走り出します。🐓</p>
+      <p>だから、AIに全部を任せることはしていません。違うと思ったら止める。もう一度説明する。実際に動かして確認する。最後は自分で決める。その繰り返しです。</p>
+    </section>
 
-  <section class="messageCard">
-    <h3>きっかけの一つは、トップランナーの話でした。</h3>
+    <section class="messageCard aiCard">
+      <h3>それでも、一人では出なかったアイデアが生まれる。</h3>
+      <p>AIとの壁打ちには、不思議な面白さがあります。自分の頭の中だけで考えていたものを言葉にする。</p>
+      <p>チャッピーから返ってきた案を見て、「違う。」と思う。でも、<span class="emphasis">なぜ違うのかを考えることで、自分が本当に作りたいものが分かってくる。</span></p>
+      <p>逆に、「それ面白い。」という一言から、一気に新しい機能が生まれることもあります。地域走破も、年間表示も、取り込み方法も、画面の見せ方も、そうした会話の積み重ねで形になってきました。</p>
+      <div class="quote">AIは答えを決める存在ではなく、考えるための相手。</div>
+      <p>今の私にとって、チャッピーはそんな存在です。</p>
+    </section>
 
-    <p>
-      以前、高橋尚子さんと野口みずきさんの話を見ていたとき、
-      <span class="emphasis">「走った場所を地図で残していく」</span>
-      という楽しみ方がとても印象に残りました。
-    </p>
+    <section class="messageCard">
+      <h3>完成品ではなく、育っていくアプリ。</h3>
+      <p>Runner’s Ringsは、大きな会社が大人数で作っているサービスではありません。一人のランナーが、「こんなものがあったら面白い。」と思ったところから始まったアプリです。</p>
+      <p>走って、使って、気づいて、チャッピーと話して、直す。また走って、また考える。その繰り返しで、少しずつ育っています。</p>
+      <p>だから、これからRunner’s Ringsを使ってくださる人から、「こんな表示だったよ。」「ここがおかしい。」「こんなのがあったら面白い。」そんな声をもらえたら、とても嬉しいです。</p>
+    </section>
 
-    <p>
-      速く走ることだけではなく、走った場所そのものを楽しむ。
-      「それ、自分でもやってみたい。」
-      最初はそんな単純な気持ちでした。
-    </p>
+    <section class="messageCard">
+      <h3>走った人生を、地図に残す。</h3>
+      <p>記録を残すだけなら、すでに素晴らしいサービスがたくさんあります。Runner’s Ringsが残したいのは、もう少し違うものです。</p>
+      <p class="emphasis">どこを走ったか。<br>どんな時間を過ごしたか。<br>どれだけ積み重ねてきたか。</p>
+      <p>10年後、20年後に地図を見たとき、<span class="emphasis">「自分、こんなに走ったんだな。」</span>と思えるものを作りたい。</p>
+      <p>それが、Runner’s Ringsを作っている理由です。</p>
+    </section>
 
-    <p>
-      でも、自分の過去のランニングデータを地図に重ねてみると、
-      そこにあったのは単なる線ではありませんでした。
-    </p>
+    <section class="signature">
+      <div class="signatureTitle">RUNNER'S RINGS DEVELOPER</div>
+      <div class="signatureName">Atsuo</div>
+      <div class="signatureAi">開発支援AI：ChatGPT “チャッピー”</div>
+    </section>
+  </div>
 
-    <div class="quote">
-      自分が走ってきた歴史そのもの。
-    </div>
-  </section>
+  <div id="contentEn" class="languageContent" hidden>
+    <section class="hero">
+      <div class="eyebrow">DEVELOPER MESSAGE</div>
+      <h2>Why I Created Runner’s Rings</h2>
+      <p class="heroLead">
+        Records matter. But running also leaves behind history, memories, and years of effort that numbers alone cannot capture.
+        Runner’s Rings began with the idea of preserving that accumulation on a map.
+      </p>
+    </section>
 
-  <section class="messageCard">
-    <h3>Runner’s Ringsという名前</h3>
+    <section class="messageCard">
+      <h3>Some things cannot be preserved by records alone.</h3>
+      <p>When you keep running, you collect plenty of numbers: times, distances, personal bests and more. Of course, those records matter.</p>
+      <p>But I realized that what I truly wanted to preserve was more than that.</p>
+      <p>Your usual training route.<br>The road you ran while waiting for your family.<br>A town you explored on a trip.<br>The route from a day when everything felt easy.<br>The road you kept running on even when it was hard.</p>
+      <p>After years of running, each route becomes connected to your life and your memories.</p>
+      <div class="quote">“Where have I actually run over all these years?”</div>
+      <p>I thought it would be fascinating to see all of that on one map. That is where Runner’s Rings began.</p>
+    </section>
 
-    <p>
-      同じ道を何度も走る。毎年少しずつ走った場所が増えていく。
-      それはまるで、木が一年ずつ年輪を重ねていくようにも見えます。
-    </p>
+    <section class="messageCard">
+      <h3>One spark came from elite runners.</h3>
+      <p>I once came across a conversation involving Naoko Takahashi and Mizuki Noguchi, and the idea of <span class="emphasis">keeping track of the places you have run on a map</span> stayed with me.</p>
+      <p>Running is not only about speed. The places themselves can become part of the fun. My first thought was simply, “I want to try that too.”</p>
+      <p>But when I started placing my own past running data on a map, what appeared was not just a collection of lines.</p>
+      <div class="quote">It was the history of where I had run.</div>
+    </section>
 
-    <p>
-      速かった年もある。走れなかった時期もある。
-      遠くまで行った日も、家の近所を少しだけ走った日もある。
-    </p>
+    <section class="messageCard">
+      <h3>The name Runner’s Rings</h3>
+      <p>You run the same roads again and again. Every year, the places you have covered slowly expand. It began to feel a little like a tree adding another growth ring each year.</p>
+      <p>There are fast years and difficult years. Long adventures and short runs close to home.</p>
+      <p>Layer them all together, and they become a running life that belongs only to you. That idea became <span class="emphasis">Runner’s Rings — the growth rings of a runner.</span></p>
+    </section>
 
-    <p>
-      全部を重ねたものが、その人だけのランニング人生になる。
-      そんな考えから、
-      <span class="emphasis">Runner’s Rings ― ランナーの年輪</span>
-      という名前になりました。
-    </p>
-  </section>
+    <section class="messageCard">
+      <h3>From a record of the past to a map that makes you want to run next.</h3>
+      <p>At first, the focus was simply to preserve past runs on a map. But while building the app, I noticed something else.</p>
+      <div class="quote">“I still haven’t run there.”</div>
+      <p>So Runner’s Rings began showing how many municipalities you have covered, your completion rate, and which places remain unexplored.</p>
+      <p>Not only a way to look back at yesterday, but an app that makes you think, <span class="emphasis">“Where should I run next?”</span></p>
+      <p>Runner’s Rings is gradually growing in that direction.</p>
+    </section>
 
-  <section class="messageCard">
-    <h3>記録から「次に走りたくなる地図」へ</h3>
+    <section class="messageCard aiCard">
+      <h3>How I work with AI “Chappy”</h3>
+      <p>I use ChatGPT a lot while developing Runner’s Rings. I call ChatGPT <span class="chappy">“Chappy.”</span></p>
+      <p>But I did not simply ask Chappy to “build this app” and receive a finished product. The reality has been almost the opposite.</p>
+    </section>
 
-    <p>
-      開発を始めた頃は、過去のランニングを地図に残すことが中心でした。
-      でも作っているうちに、もう一つ面白いことに気づきました。
-    </p>
+    <section class="messageCard aiCard">
+      <h3>We bounced ideas back and forth — constantly.</h3>
+      <p>“Wouldn’t this be interesting?”<br>“No, that’s not it.”<br>“What about this?”<br>“No, that doesn’t feel like Runner’s Rings.”</p>
+      <p>We repeated conversations like that over and over again.</p>
+      <p>Early on, Chappy imagined a more game-like direction: conquering areas, completion percentages, badges, filling in unexplored places. That was interesting too.</p>
+      <p>But through those conversations, the heart of Runner’s Rings gradually became clearer.</p>
+      <div class="quote">I do not want people to run for the sake of a game. I want the accumulation of a running life itself to be enjoyable.</div>
+      <p>That idea remains at the center, with just enough game-like fun added around it. That balance is what Runner’s Rings is becoming.</p>
+    </section>
 
-    <div class="quote">
-      「ここ、まだ走ってないな。」
-    </div>
+    <section class="messageCard aiCard">
+      <h3>Chappy is not perfect. 🐓</h3>
+      <p>When people hear that an app is being developed with AI, it can sound as if everything happens instantly. It does not.</p>
+      <p>Chappy makes mistakes. Sometimes it misunderstands what I mean. During long conversations, it can even seem to forget something we decided just moments earlier.</p>
+      <p>And sometimes it enthusiastically runs off in a direction that makes me ask, <span class="emphasis">“Why did you go that way?”</span> 🐓</p>
+      <p>That is why I never leave everything to AI. If something feels wrong, I stop it. I explain again. I test what actually works. And in the end, I make the decision.</p>
+    </section>
 
-    <p>
-      そこで、市町村の走破数や走破率、まだ走っていない地域も見えるようにしました。
-    </p>
+    <section class="messageCard aiCard">
+      <h3>And yet, ideas appear that I would not have reached alone.</h3>
+      <p>There is something fascinating about bouncing ideas off AI. It forces me to put thoughts that existed only in my head into words.</p>
+      <p>Sometimes Chappy suggests something and I immediately think, “No.” But by asking myself <span class="emphasis">why it feels wrong, I discover what I truly want to build.</span></p>
+      <p>Other times, one suggestion makes me say, “That’s interesting,” and a new feature suddenly takes shape. Regional conquest, yearly views, import methods and screen design all grew through conversations like these.</p>
+      <div class="quote">AI is not there to decide the answer. It is there to help me think.</div>
+      <p>That is what Chappy has become for me.</p>
+    </section>
 
-    <p>
-      昨日までの自分を見るためだけではなく、
-      <span class="emphasis">「次はどこを走ろう。」</span>
-      と思えるアプリへ。
-    </p>
+    <section class="messageCard">
+      <h3>Not a finished product, but an app that keeps growing.</h3>
+      <p>Runner’s Rings is not a service built by a large company with a large development team. It started with one runner thinking, “It would be fun if something like this existed.”</p>
+      <p>I run, use the app, notice something, talk with Chappy, and fix it. Then I run again and think again. That cycle is how Runner’s Rings continues to grow.</p>
+      <p>So if you use Runner’s Rings and think, “This is what I see,” “Something looks strange,” or “Wouldn’t this be fun?”, I would genuinely love to hear from you.</p>
+    </section>
 
-    <p>
-      Runner’s Ringsは、少しずつそんな方向へ育っています。
-    </p>
-  </section>
+    <section class="messageCard">
+      <h3>Map the life you run.</h3>
+      <p>There are already many excellent services for recording running data. Runner’s Rings is trying to preserve something slightly different.</p>
+      <p class="emphasis">Where you ran.<br>The time you spent there.<br>How much effort you accumulated.</p>
+      <p>Ten or twenty years from now, I want you to look at your map and think, <span class="emphasis">“I really ran all of that.”</span></p>
+      <p>That is why I am building Runner’s Rings.</p>
+    </section>
 
-  <section class="messageCard aiCard">
-    <h3>AIチャッピーとの向き合い方</h3>
-
-    <p>
-      Runner’s Ringsの開発では、ChatGPTをかなり使っています。
-      私はChatGPTを<span class="chappy">「チャッピー」</span>と呼んでいます。
-    </p>
-
-    <p>
-      ただし、チャッピーに「こんなアプリを作って」と頼んで、
-      完成したものが出てきたわけではありません。
-      実際は、その正反対に近いです。
-    </p>
-  </section>
-
-  <section class="messageCard aiCard">
-    <h3>とにかく壁打ちをしました。</h3>
-
-    <p>
-      「こんなの面白くない？」<br>
-      「それは違う。」<br>
-      「こうしたら？」<br>
-      「いや、それだとRunner’s Ringsじゃない。」
-    </p>
-
-    <p>
-      そんなやり取りを、本当に何度も繰り返してきました。
-    </p>
-
-    <p>
-      最初の頃、チャッピーはもっとゲーム的な方向も考えていました。
-      エリアを制覇する。達成率を出す。バッジを集める。未踏の場所を埋めていく。
-      それも面白い。
-    </p>
-
-    <p>
-      でも話していくうちに、Runner’s Ringsの中心に置きたいものが少しずつ見えてきました。
-    </p>
-
-    <div class="quote">
-      ゲームをするために走るのではなく、走った人生の積み重ねそのものを楽しみたい。
-    </div>
-
-    <p>
-      その考えを中心にしながら、ゲーム的な楽しさも少し加えていく。
-      今のRunner’s Ringsは、そんなバランスで作っています。
-    </p>
-  </section>
-
-  <section class="messageCard aiCard">
-    <h3>チャッピーは万能ではありません。🐓</h3>
-
-    <p>
-      AIと一緒に開発していると書くと、何でも一瞬でできるように聞こえるかもしれません。
-      実際はそんなことはありません。
-    </p>
-
-    <p>
-      チャッピーは間違えます。こちらの意図を取り違えることもあります。
-      長いやり取りの中で、さっき決めたことを忘れたようになることもあります。
-    </p>
-
-    <p>
-      そして時々、
-      <span class="emphasis">「なんでそっちに行った？」</span>
-      という方向へ元気よく走り出します。🐓
-    </p>
-
-    <p>
-      だから、AIに全部を任せることはしていません。
-      違うと思ったら止める。もう一度説明する。実際に動かして確認する。最後は自分で決める。
-      その繰り返しです。
-    </p>
-  </section>
-
-  <section class="messageCard aiCard">
-    <h3>それでも、一人では出なかったアイデアが生まれる。</h3>
-
-    <p>
-      AIとの壁打ちには、不思議な面白さがあります。
-      自分の頭の中だけで考えていたものを言葉にする。
-    </p>
-
-    <p>
-      チャッピーから返ってきた案を見て、「違う。」と思う。
-      でも、
-      <span class="emphasis">なぜ違うのかを考えることで、自分が本当に作りたいものが分かってくる。</span>
-    </p>
-
-    <p>
-      逆に、「それ面白い。」という一言から、一気に新しい機能が生まれることもあります。
-      地域走破も、年間表示も、取り込み方法も、画面の見せ方も、
-      そうした会話の積み重ねで形になってきました。
-    </p>
-
-    <div class="quote">
-      AIは答えを決める存在ではなく、考えるための相手。
-    </div>
-
-    <p>
-      今の私にとって、チャッピーはそんな存在です。
-    </p>
-  </section>
-
-  <section class="messageCard">
-    <h3>完成品ではなく、育っていくアプリ。</h3>
-
-    <p>
-      Runner’s Ringsは、大きな会社が大人数で作っているサービスではありません。
-      一人のランナーが、「こんなものがあったら面白い。」と思ったところから始まったアプリです。
-    </p>
-
-    <p>
-      走って、使って、気づいて、チャッピーと話して、直す。
-      また走って、また考える。
-      その繰り返しで、少しずつ育っています。
-    </p>
-
-    <p>
-      だから、これからRunner’s Ringsを使ってくださる人から、
-      「こんな表示だったよ。」
-      「ここがおかしい。」
-      「こんなのがあったら面白い。」
-      そんな声をもらえたら、とても嬉しいです。
-    </p>
-  </section>
-
-  <section class="messageCard">
-    <h3>走った人生を、地図に残す。</h3>
-
-    <p>
-      記録を残すだけなら、すでに素晴らしいサービスがたくさんあります。
-      Runner’s Ringsが残したいのは、もう少し違うものです。
-    </p>
-
-    <p class="emphasis">
-      どこを走ったか。<br>
-      どんな時間を過ごしたか。<br>
-      どれだけ積み重ねてきたか。
-    </p>
-
-    <p>
-      10年後、20年後に地図を見たとき、
-      <span class="emphasis">「自分、こんなに走ったんだな。」</span>
-      と思えるものを作りたい。
-    </p>
-
-    <p>
-      それが、Runner’s Ringsを作っている理由です。
-    </p>
-  </section>
-
-  <section class="signature">
-    <div class="signatureTitle">RUNNER'S RINGS DEVELOPER</div>
-    <div class="signatureName">Atsuo</div>
-    <div class="signatureAi">開発支援AI：ChatGPT “チャッピー”</div>
-  </section>
+    <section class="signature">
+      <div class="signatureTitle">RUNNER'S RINGS DEVELOPER</div>
+      <div class="signatureName">Atsuo</div>
+      <div class="signatureAi">Development support AI: ChatGPT “Chappy”</div>
+    </section>
+  </div>
 </main>
 
 <footer>
-  <a href="./index.html">Runner's Ringsへ戻る</a>
+  <a id="footerBackLink" href="./index.html">Runner's Ringsへ戻る</a>
   <div style="margin-top:10px;">© 2026 Runner's Rings</div>
 </footer>
+
+<script>
+  const LANGUAGE_KEY = 'runners-rings-language';
+
+  const languageButtons =
+    document.querySelectorAll(
+      '.languageButton'
+    );
+
+  const contentJa =
+    document.getElementById(
+      'contentJa'
+    );
+
+  const contentEn =
+    document.getElementById(
+      'contentEn'
+    );
+
+  const headerTagline =
+    document.getElementById(
+      'headerTagline'
+    );
+
+  const backLink =
+    document.getElementById(
+      'backLink'
+    );
+
+  const footerBackLink =
+    document.getElementById(
+      'footerBackLink'
+    );
+
+  function applyLanguage(language) {
+    const isEnglish =
+      language === 'en';
+
+    document.documentElement.lang =
+      isEnglish ? 'en' : 'ja';
+
+    contentJa.hidden =
+      isEnglish;
+
+    contentEn.hidden =
+      !isEnglish;
+
+    headerTagline.textContent =
+      isEnglish
+        ? 'Not just the run. Preserve the life you ran.'
+        : '走った記録ではなく、走った人生を残す。';
+
+    backLink.textContent =
+      isEnglish
+        ? '← Back'
+        : '← 戻る';
+
+    footerBackLink.textContent =
+      isEnglish
+        ? "Back to Runner's Rings"
+        : "Runner's Ringsへ戻る";
+
+    languageButtons.forEach(
+      button => {
+        button.classList.toggle(
+          'isActive',
+          button.dataset.language ===
+            language
+        );
+      }
+    );
+
+    try {
+      localStorage.setItem(
+        LANGUAGE_KEY,
+        language
+      );
+    } catch (error) {
+      console.warn(
+        'Language storage error:',
+        error
+      );
+    }
+  }
+
+  languageButtons.forEach(
+    button => {
+      button.addEventListener(
+        'click',
+        () => {
+          applyLanguage(
+            button.dataset.language
+          );
+        }
+      );
+    }
+  );
+
+  let initialLanguage =
+    'ja';
+
+  try {
+    initialLanguage =
+      localStorage.getItem(
+        LANGUAGE_KEY
+      ) === 'en'
+        ? 'en'
+        : 'ja';
+  } catch (error) {
+    console.warn(
+      'Language read error:',
+      error
+    );
+  }
+
+  applyLanguage(
+    initialLanguage
+  );
+</script>
 </body>
 </html>
