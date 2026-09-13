@@ -2481,9 +2481,6 @@ const intervalsDisconnectButton =
     'intervalsDisconnectButton'
   );  
 
-const INTERVALS_OWNER_USER_ID =
-  '386da875-298e-46b7-927d-0e02d02c409a';
-
 const corosDisconnectButton =
   document.getElementById(
     'corosDisconnectButton'
@@ -13487,8 +13484,7 @@ async function init() {
       null;
 
     intervalsImportButton.style.display =
-      currentUser?.id ===
-        INTERVALS_OWNER_USER_ID
+      currentUser
         ? 'inline-block'
         : 'none';
 
