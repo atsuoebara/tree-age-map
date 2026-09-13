@@ -1237,6 +1237,67 @@
   line-height: 1.55;
 }
 
+.importSharePanel {
+  margin-top: 14px;
+  padding: 13px 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  background: rgba(11,20,34,.72);
+}
+
+.importShareTitle {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.importShareRows {
+  display: grid;
+  gap: 8px;
+}
+
+.importShareRow {
+  display: grid;
+  grid-template-columns: 96px 1fr 42px;
+  align-items: center;
+  gap: 8px;
+}
+
+.importShareName,
+.importShareValue {
+  font-size: 11px;
+  color: #d9e2ee;
+}
+
+.importShareValue {
+  text-align: right;
+  font-weight: 800;
+  color: #eaff00;
+}
+
+.importShareTrack {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+}
+
+.importShareFill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff2bd6, #ffe600);
+  transition: width .35s ease;
+}
+
+.importShareNote {
+  margin: 10px 0 0;
+  color: #8f9bac;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
 .setupGuideLink {
   display: inline-block;
   margin-top: 12px;
@@ -1775,6 +1836,34 @@
             <span>ファイル取り込み</span>
           </div>
         </div>
+        <div class="importSharePanel" data-import-share-panel>
+          <div class="importShareTitle">現在のデータ取り込み割合</div>
+          <div class="importShareRows">
+            <div class="importShareRow">
+              <div class="importShareName">Strava</div>
+              <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="strava"></div></div>
+              <div class="importShareValue" data-import-share-value="strava">--%</div>
+            </div>
+            <div class="importShareRow">
+              <div class="importShareName">Intervals.icu</div>
+              <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="intervals"></div></div>
+              <div class="importShareValue" data-import-share-value="intervals">--%</div>
+            </div>
+            <div class="importShareRow">
+              <div class="importShareName">COROS</div>
+              <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="coros"></div></div>
+              <div class="importShareValue" data-import-share-value="coros">--%</div>
+            </div>
+            <div class="importShareRow">
+              <div class="importShareName">FIT・GPX・ZIP</div>
+              <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
+              <div class="importShareValue" data-import-share-value="file">--%</div>
+            </div>
+          </div>
+          <p class="importShareNote">
+            ※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。
+          </p>
+        </div>
         <p class="setupGuideNote">
           ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
         </p>
@@ -2011,6 +2100,34 @@
       <strong>FIT・GPX・ZIP</strong>
       <span>ファイル取り込み</span>
     </div>
+  </div>
+  <div class="importSharePanel" data-import-share-panel>
+    <div class="importShareTitle">現在のデータ取り込み割合</div>
+    <div class="importShareRows">
+      <div class="importShareRow">
+        <div class="importShareName">Strava</div>
+        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="strava"></div></div>
+        <div class="importShareValue" data-import-share-value="strava">--%</div>
+      </div>
+      <div class="importShareRow">
+        <div class="importShareName">Intervals.icu</div>
+        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="intervals"></div></div>
+        <div class="importShareValue" data-import-share-value="intervals">--%</div>
+      </div>
+      <div class="importShareRow">
+        <div class="importShareName">COROS</div>
+        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="coros"></div></div>
+        <div class="importShareValue" data-import-share-value="coros">--%</div>
+      </div>
+      <div class="importShareRow">
+        <div class="importShareName">FIT・GPX・ZIP</div>
+        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
+        <div class="importShareValue" data-import-share-value="file">--%</div>
+      </div>
+    </div>
+    <p class="importShareNote">
+      ※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。
+    </p>
   </div>
   <p class="setupGuideNote">
     ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
@@ -4146,6 +4263,36 @@ passwordInput.addEventListener(
   }
 );
 
+
+
+function setImportShareDisplay(shares = {}) {
+  const methods = ['strava', 'intervals', 'coros', 'file'];
+
+  methods.forEach(method => {
+    const raw = Number(shares[method]);
+    const value = Number.isFinite(raw)
+      ? Math.max(0, Math.min(100, raw))
+      : null;
+
+    document
+      .querySelectorAll(`[data-import-share-value="${method}"]`)
+      .forEach(element => {
+        element.textContent =
+          value === null
+            ? '--%'
+            : Math.round(value) + '%';
+      });
+
+    document
+      .querySelectorAll(`[data-import-share-fill="${method}"]`)
+      .forEach(element => {
+        element.style.width =
+          value === null
+            ? '0%'
+            : value + '%';
+      });
+  });
+}
 
 /* =====================================
    AUTH HELPERS
