@@ -44,17 +44,17 @@ const checks = [
       /init\(\)\.finally\(\s*finishLaunchSplash\s*\)/
     ]
   },
-  {
-    name: '初期設定案内',
-    patterns: [
-      /初期設定：データの取り込み方/,
-      /COROS（カロス）をお使いの方/,
-      /COROS以外をお使いの方/,
-      /過去のデータをまとめて取り込みたい方/,
-      /詳しい手順を見る/
-    ]
-  },
-  {
+ {
+  name: '初期設定案内',
+  patterns: [
+    /初期設定：データの取り込み方/,
+    /Strava経由/,
+    /Intervals\.icu経由/,
+    /COROSから直接/,
+    /FIT・GPX・ZIP/,
+    /詳しい手順を見る/
+  ]
+},  {
     name: 'Strava新規連携の一時停止案内',
     patterns: [
       /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*true\s*;/,
