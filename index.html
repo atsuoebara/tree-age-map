@@ -862,6 +862,106 @@
       opacity:.6;
     }
 
+    .prefectureCard{
+      position:relative;
+    }
+
+    .prefectureTop{
+      gap:12px;
+    }
+
+    .prefectureMain{
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    .prefectureConquestButton{
+      flex:0 0 auto;
+      min-width:92px;
+      padding:6px 8px;
+      border:1px solid rgba(234,255,0,.28);
+      border-radius:10px;
+      background:rgba(234,255,0,.05);
+      color:#ffffff;
+      text-align:right;
+      cursor:pointer;
+    }
+
+    .prefectureConquestButton:hover{
+      background:rgba(234,255,0,.10);
+    }
+
+    .prefectureConquestButton:focus-visible{
+      outline:3px solid rgba(234,255,0,.8);
+      outline-offset:2px;
+    }
+
+    .prefectureConquestCount{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.25;
+    }
+
+    .prefectureConquestRate,
+    .prefectureConquestRemaining{
+      margin-top:2px;
+      font-size:10px;
+      line-height:1.25;
+      color:#c9d4e2;
+    }
+
+    .prefectureConquestDetails{
+      display:none;
+      margin-top:10px;
+      padding:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+      font-size:11px;
+      line-height:1.7;
+    }
+
+    .prefectureConquestDetails.isOpen{
+      display:block;
+    }
+
+    .prefectureConquestGroup + .prefectureConquestGroup{
+      margin-top:8px;
+    }
+
+    .prefectureConquestLabel{
+      display:block;
+      margin-bottom:2px;
+      font-weight:800;
+    }
+
+    .prefectureConquestLabel.completed{
+      color:#eaff00;
+    }
+
+    .prefectureConquestLabel.remaining{
+      color:#ffcf33;
+    }
+
+    .prefectureConquestCities{
+      color:#d9e2ee;
+      word-break:break-word;
+    }
+
+    @media (max-width:420px){
+      .prefectureConquestButton{
+        min-width:84px;
+        padding:5px 7px;
+      }
+
+      .prefectureConquestCount{
+        font-size:12px;
+      }
+
+      .prefectureConquestRate,
+      .prefectureConquestRemaining{
+        font-size:9px;
+      }
+    }
+
     .barTrack{
       width:100%;
       height:9px;
@@ -2480,6 +2580,9 @@ const intervalsDisconnectButton =
   document.getElementById(
     'intervalsDisconnectButton'
   );  
+
+const INTERVALS_OWNER_USER_ID =
+  '386da875-298e-46b7-927d-0e02d02c409a';
 
 const corosDisconnectButton =
   document.getElementById(
@@ -12272,6 +12375,149 @@ function updateCountryDashboard(
 
 
 /* =====================================
+   地域走破
+===================================== */
+
+function getMunicipalitiesByPrefecture(
+  prefecture
+) {
+
+  const cityKeys =
+    new Set();
+
+  municipalityFeatures
+    .forEach(
+      item => {
+
+        const feature =
+          item.feature;
+
+        if (
+          getPrefecture(
+            feature
+          ) !==
+          prefecture
+        ) {
+
+          return;
+
+        }
+
+        const city =
+          getCity(
+            feature
+          );
+
+        if (
+          !city ||
+          city ===
+          '名称不明'
+        ) {
+
+          return;
+
+        }
+
+        cityKeys.add(
+          getCityKey(
+            feature
+          )
+        );
+
+      }
+    );
+
+  return Array.from(
+    cityKeys
+  )
+  .sort(
+    (
+      a,
+      b
+    ) =>
+      splitCityKey(
+        a
+      )
+      .city
+      .localeCompare(
+        splitCityKey(
+          b
+        )
+        .city,
+        'ja'
+      )
+  );
+
+}
+
+
+function getPrefectureConquest(
+  prefecture,
+  stats
+) {
+
+  const allCityKeys =
+    getMunicipalitiesByPrefecture(
+      prefecture
+    );
+
+  const completedCityKeys =
+    allCityKeys
+      .filter(
+        cityKey =>
+          (
+            stats
+              .municipalityDistance[
+                cityKey
+              ] ||
+            0
+          ) >
+          0.01
+      );
+
+  const remainingCityKeys =
+    allCityKeys
+      .filter(
+        cityKey =>
+          !completedCityKeys.includes(
+            cityKey
+          )
+      );
+
+  const total =
+    allCityKeys.length;
+
+  const completed =
+    completedCityKeys.length;
+
+  const rate =
+    total >
+    0
+      ? Math.round(
+          completed /
+          total *
+          100
+        )
+      : 0;
+
+  return {
+    total,
+    completed,
+    rate,
+    remaining:
+      Math.max(
+        0,
+        total -
+        completed
+      ),
+    completedCityKeys,
+    remainingCityKeys
+  };
+
+}
+
+
+/* =====================================
    都道府県 Dashboard
 ===================================== */
 
@@ -12384,34 +12630,234 @@ function updatePrefectureDashboard(
         'prefectureCard';
 
 
-      card.innerHTML =
-        '<div class="prefectureTop">' +
-          '<div class="prefectureName">' +
-            prefecture +
-          '</div>' +
-          '<div class="prefectureDistance">' +
-            km.toFixed(
-              2
-            ) +
-            ' km' +
-          '</div>' +
+      const conquest =
+        getPrefectureConquest(
+          prefecture,
+          stats
+        );
+
+
+      const completedNames =
+        conquest
+          .completedCityKeys
+          .map(
+            cityKey =>
+              splitCityKey(
+                cityKey
+              )
+              .city
+          );
+
+
+      const remainingNames =
+        conquest
+          .remainingCityKeys
+          .map(
+            cityKey =>
+              splitCityKey(
+                cityKey
+              )
+              .city
+          );
+
+
+      const top =
+        document.createElement(
+          'div'
+        );
+
+      top.className =
+        'prefectureTop';
+
+
+      const main =
+        document.createElement(
+          'div'
+        );
+
+      main.className =
+        'prefectureMain';
+
+      main.innerHTML =
+        '<div class="prefectureName">' +
+          prefecture +
         '</div>' +
-        '<div class="barTrack">' +
-          '<div class="barFill" style="width:' +
-            percent +
-            '%"></div>' +
-        '</div>' +
-        '<div class="prefectureRuns">' +
-          'RUNS ' +
-          runs +
+        '<div class="prefectureDistance">' +
+          km.toFixed(
+            2
+          ) +
+          ' km' +
         '</div>';
 
 
+      const conquestButton =
+        document.createElement(
+          'button'
+        );
+
+      conquestButton.type =
+        'button';
+
+      conquestButton.className =
+        'prefectureConquestButton';
+
+      conquestButton.setAttribute(
+        'aria-expanded',
+        'false'
+      );
+
+      conquestButton.setAttribute(
+        'aria-label',
+        prefecture +
+        'の走破状況を表示'
+      );
+
+      conquestButton.innerHTML =
+        '<div class="prefectureConquestCount">' +
+          conquest.completed +
+          ' / ' +
+          conquest.total +
+        '</div>' +
+        '<div class="prefectureConquestRate">' +
+          '走破 ' +
+          conquest.rate +
+          '%' +
+        '</div>' +
+        '<div class="prefectureConquestRemaining">' +
+          '残り ' +
+          conquest.remaining +
+        '</div>';
+
+
+      top.append(
+        main,
+        conquestButton
+      );
+
+
+      const barTrack =
+        document.createElement(
+          'div'
+        );
+
+      barTrack.className =
+        'barTrack';
+
+      barTrack.innerHTML =
+        '<div class="barFill" style="width:' +
+          percent +
+          '%"></div>';
+
+
+      const runsRow =
+        document.createElement(
+          'div'
+        );
+
+      runsRow.className =
+        'prefectureRuns';
+
+      runsRow.textContent =
+        'RUNS ' +
+        runs;
+
+
+      const details =
+        document.createElement(
+          'div'
+        );
+
+      details.className =
+        'prefectureConquestDetails';
+
+      details.innerHTML =
+        '<div class="prefectureConquestGroup">' +
+          '<span class="prefectureConquestLabel completed">' +
+            '走破済み ' +
+            conquest.completed +
+          '</span>' +
+          '<div class="prefectureConquestCities">' +
+            (
+              completedNames.length
+                ? completedNames.join(
+                    '、'
+                  )
+                : 'まだありません'
+            ) +
+          '</div>' +
+        '</div>' +
+        '<div class="prefectureConquestGroup">' +
+          '<span class="prefectureConquestLabel remaining">' +
+            '未走破 ' +
+            conquest.remaining +
+          '</span>' +
+          '<div class="prefectureConquestCities">' +
+            (
+              remainingNames.length
+                ? remainingNames.join(
+                    '、'
+                  )
+                : 'コンプリート！'
+            ) +
+          '</div>' +
+        '</div>';
+
+
+      conquestButton.onclick =
+        event => {
+
+          event.stopPropagation();
+
+          const isOpen =
+            details
+              .classList
+              .toggle(
+                'isOpen'
+              );
+
+          conquestButton.setAttribute(
+            'aria-expanded',
+            String(
+              isOpen
+            )
+          );
+
+        };
+
+
+      card.append(
+        top,
+        barTrack,
+        runsRow,
+        details
+      );
+
+
       card.onclick =
-        () =>
+        event => {
+
+          if (
+            event
+              .target
+              .closest(
+                '.prefectureConquestButton'
+              ) ||
+            event
+              .target
+              .closest(
+                '.prefectureConquestDetails'
+              )
+          ) {
+
+            return;
+
+          }
+
           focusPrefecture(
             prefecture
           );
+
+        };
 
 
       list.appendChild(
@@ -13484,7 +13930,8 @@ async function init() {
       null;
 
     intervalsImportButton.style.display =
-      currentUser
+      currentUser?.id ===
+        INTERVALS_OWNER_USER_ID
         ? 'inline-block'
         : 'none';
 
