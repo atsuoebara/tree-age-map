@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Runner's Rings（ランナーズリングス）を作った理由と、開発者AtsuoがAIチャッピーと対話しながら開発している思いを紹介します。">
+  <title>Runner's Ringsを作った理由｜開発者からのメッセージ</title>
+  <link rel="icon" type="image/png" href="icon.PNG">
+  <link rel="apple-touch-icon" href="icon.PNG">
+
+  <style>
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#0b1422;
+      color:#fff;
+    }
+    body{
+      background:
+        radial-gradient(circle at 85% 8%, rgba(255,43,214,.13), transparent 28%),
+        radial-gradient(circle at 8% 34%, rgba(255,232,0,.06), transparent 28%),
+        #0b1422;
+    }
+    a{color:inherit}
+    header{
+      background:#0f1d2f;
+      padding:14px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .headerInner{
+      max-width:820px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:21px;
+    }
+    .brand h1 span{
+      margin-left:4px;
+      font-size:11px;
+      font-weight:600;
+      opacity:.72;
+      white-space:nowrap;
+    }
+    .brand p{
+      margin:4px 0 0;
+      font-size:12px;
+      color:#9fb0c3;
+    }
+    .backLink{
+      flex:0 0 auto;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      text-decoration:none;
+      background:#17283d;
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+    }
+    main{
+      width:min(100% - 28px, 820px);
+      margin:0 auto;
+      padding:30px 0 54px;
+    }
+    .hero{
+      padding:12px 4px 24px;
+    }
+    .eyebrow{
+      margin-bottom:12px;
+      color:#ff2bd6;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:2px;
+    }
+    .hero h2{
+      margin:0;
+      font-size:clamp(30px,6vw,48px);
+      line-height:1.2;
+      letter-spacing:-1px;
+    }
+    .heroLead{
+      margin:18px 0 0;
+      color:#c5d0de;
+      font-size:15px;
+      line-height:1.9;
+    }
+    .messageCard{
+      margin-top:18px;
+      padding:24px 20px;
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:20px;
+      background:rgba(19,34,55,.92);
+      box-shadow:0 18px 45px rgba(0,0,0,.16);
+    }
+    .messageCard h3{
+      margin:0 0 14px;
+      font-size:21px;
+      line-height:1.5;
+    }
+    .messageCard h3::before{
+      content:"";
+      display:inline-block;
+      width:5px;
+      height:1.05em;
+      margin-right:10px;
+      border-radius:999px;
+      vertical-align:-.12em;
+      background:linear-gradient(#ff2bd6,#ffe600);
+    }
+    .messageCard p{
+      margin:0 0 16px;
+      color:#cbd5e1;
+      font-size:14px;
+      line-height:1.9;
+    }
+    .messageCard p:last-child{
+      margin-bottom:0;
+    }
+    .emphasis{
+      color:#fff;
+      font-weight:800;
+    }
+    .quote{
+      margin:20px 0;
+      padding:16px 18px;
+      border-left:3px solid #ff2bd6;
+      border-radius:0 14px 14px 0;
+      background:rgba(255,255,255,.035);
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.8;
+    }
+    .aiCard{
+      border-color:rgba(234,255,0,.14);
+    }
+    .chappy{
+      color:#eaff00;
+      font-weight:800;
+    }
+    .signature{
+      margin-top:28px;
+      padding:22px 20px;
+      border-radius:18px;
+      background:linear-gradient(135deg,rgba(255,43,214,.10),rgba(255,232,0,.05));
+      border:1px solid rgba(255,255,255,.09);
+    }
+    .signatureTitle{
+      margin-bottom:10px;
+      color:#9fb0c3;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:1px;
+    }
+    .signatureName{
+      font-size:22px;
+      font-weight:800;
+    }
+    .signatureAi{
+      margin-top:6px;
+      color:#cbd5e1;
+      font-size:13px;
+    }
+    footer{
+      padding:22px 14px 28px;
+      border-top:1px solid rgba(255,255,255,.08);
+      background:#0f1d2f;
+      text-align:center;
+      color:#8f9bac;
+      font-size:12px;
+    }
+    footer a{
+      color:#cbd5e1;
+      text-decoration:none;
+    }
+    @media(max-width:520px){
+      .headerInner{
+        align-items:flex-start;
+      }
+      .brand h1{
+        font-size:18px;
+      }
+      .backLink{
+        padding:7px 10px;
+        font-size:11px;
+      }
+      .messageCard{
+        padding:20px 16px;
+      }
+      .messageCard h3{
+        font-size:19px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="headerInner">
+    <div class="brand">
+      <h1>Runner's Rings<span>（ランナーズリングス）</span></h1>
+      <p>走った記録ではなく、走った人生を残す。</p>
+    </div>
+    <a class="backLink" href="./index.html">← 戻る</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">DEVELOPER MESSAGE</div>
+    <h2>Runner’s Ringsを作った理由</h2>
+    <p class="heroLead">
+      記録も大事。でも、ランニングには数字だけでは残らない歴史や思い出があります。
+      Runner’s Ringsは、その積み重ねを地図に残したいという思いから始まりました。
+    </p>
+  </section>
+
+  <section class="messageCard">
+    <h3>走った記録だけでは、残らないものがある。</h3>
+
+    <p>
+      ランニングを続けていると、タイムや距離、自己ベストなど、たくさんの数字が残ります。
+      もちろん、それらは大切な記録です。
+    </p>
+
+    <p>
+      でも、自分が本当に残したいものは、それだけではありませんでした。
+    </p>
+
+    <p>
+      いつもの練習コース。<br>
+      家族を待っている間に走った道。<br>
+      旅行先で初めて走った街。<br>
+      調子が良かった日の道。<br>
+      苦しくても走り続けた日の道。
+    </p>
+
+    <p>
+      何年も走っていると、その一つひとつが、自分の生活や思い出と結びついていきます。
+    </p>
+
+    <div class="quote">
+      「自分は、これまでどんな場所を走ってきたんだろう。」
+    </div>
+
+    <p>
+      それを一枚の地図で見られたら、きっと面白い。
+      そこからRunner’s Ringsは始まりました。
+    </p>
+  </section>
+
+  <section class="messageCard">
+    <h3>きっかけの一つは、トップランナーの話でした。</h3>
+
+    <p>
+      以前、高橋尚子さんと野口みずきさんの話を見ていたとき、
+      <span class="emphasis">「走った場所を地図で残していく」</span>
+      という楽しみ方がとても印象に残りました。
+    </p>
+
+    <p>
+      速く走ることだけではなく、走った場所そのものを楽しむ。
+      「それ、自分でもやってみたい。」
+      最初はそんな単純な気持ちでした。
+    </p>
+
+    <p>
+      でも、自分の過去のランニングデータを地図に重ねてみると、
+      そこにあったのは単なる線ではありませんでした。
+    </p>
+
+    <div class="quote">
+      自分が走ってきた歴史そのもの。
+    </div>
+  </section>
+
+  <section class="messageCard">
+    <h3>Runner’s Ringsという名前</h3>
+
+    <p>
+      同じ道を何度も走る。毎年少しずつ走った場所が増えていく。
+      それはまるで、木が一年ずつ年輪を重ねていくようにも見えます。
+    </p>
+
+    <p>
+      速かった年もある。走れなかった時期もある。
+      遠くまで行った日も、家の近所を少しだけ走った日もある。
+    </p>
+
+    <p>
+      全部を重ねたものが、その人だけのランニング人生になる。
+      そんな考えから、
+      <span class="emphasis">Runner’s Rings ― ランナーの年輪</span>
+      という名前になりました。
+    </p>
+  </section>
+
+  <section class="messageCard">
+    <h3>記録から「次に走りたくなる地図」へ</h3>
+
+    <p>
+      開発を始めた頃は、過去のランニングを地図に残すことが中心でした。
+      でも作っているうちに、もう一つ面白いことに気づきました。
+    </p>
+
+    <div class="quote">
+      「ここ、まだ走ってないな。」
+    </div>
+
+    <p>
+      そこで、市町村の走破数や走破率、まだ走っていない地域も見えるようにしました。
+    </p>
+
+    <p>
+      昨日までの自分を見るためだけではなく、
+      <span class="emphasis">「次はどこを走ろう。」</span>
+      と思えるアプリへ。
+    </p>
+
+    <p>
+      Runner’s Ringsは、少しずつそんな方向へ育っています。
+    </p>
+  </section>
+
+  <section class="messageCard aiCard">
+    <h3>AIチャッピーとの向き合い方</h3>
+
+    <p>
+      Runner’s Ringsの開発では、ChatGPTをかなり使っています。
+      私はChatGPTを<span class="chappy">「チャッピー」</span>と呼んでいます。
+    </p>
+
+    <p>
+      ただし、チャッピーに「こんなアプリを作って」と頼んで、
+      完成したものが出てきたわけではありません。
+      実際は、その正反対に近いです。
+    </p>
+  </section>
+
+  <section class="messageCard aiCard">
+    <h3>とにかく壁打ちをしました。</h3>
+
+    <p>
+      「こんなの面白くない？」<br>
+      「それは違う。」<br>
+      「こうしたら？」<br>
+      「いや、それだとRunner’s Ringsじゃない。」
+    </p>
+
+    <p>
+      そんなやり取りを、本当に何度も繰り返してきました。
+    </p>
+
+    <p>
+      最初の頃、チャッピーはもっとゲーム的な方向も考えていました。
+      エリアを制覇する。達成率を出す。バッジを集める。未踏の場所を埋めていく。
+      それも面白い。
+    </p>
+
+    <p>
+      でも話していくうちに、Runner’s Ringsの中心に置きたいものが少しずつ見えてきました。
+    </p>
+
+    <div class="quote">
+      ゲームをするために走るのではなく、走った人生の積み重ねそのものを楽しみたい。
+    </div>
+
+    <p>
+      その考えを中心にしながら、ゲーム的な楽しさも少し加えていく。
+      今のRunner’s Ringsは、そんなバランスで作っています。
+    </p>
+  </section>
+
+  <section class="messageCard aiCard">
+    <h3>チャッピーは万能ではありません。🐓</h3>
+
+    <p>
+      AIと一緒に開発していると書くと、何でも一瞬でできるように聞こえるかもしれません。
+      実際はそんなことはありません。
+    </p>
+
+    <p>
+      チャッピーは間違えます。こちらの意図を取り違えることもあります。
+      長いやり取りの中で、さっき決めたことを忘れたようになることもあります。
+    </p>
+
+    <p>
+      そして時々、
+      <span class="emphasis">「なんでそっちに行った？」</span>
+      という方向へ元気よく走り出します。🐓
+    </p>
+
+    <p>
+      だから、AIに全部を任せることはしていません。
+      違うと思ったら止める。もう一度説明する。実際に動かして確認する。最後は自分で決める。
+      その繰り返しです。
+    </p>
+  </section>
+
+  <section class="messageCard aiCard">
+    <h3>それでも、一人では出なかったアイデアが生まれる。</h3>
+
+    <p>
+      AIとの壁打ちには、不思議な面白さがあります。
+      自分の頭の中だけで考えていたものを言葉にする。
+    </p>
+
+    <p>
+      チャッピーから返ってきた案を見て、「違う。」と思う。
+      でも、
+      <span class="emphasis">なぜ違うのかを考えることで、自分が本当に作りたいものが分かってくる。</span>
+    </p>
+
+    <p>
+      逆に、「それ面白い。」という一言から、一気に新しい機能が生まれることもあります。
+      地域走破も、年間表示も、取り込み方法も、画面の見せ方も、
+      そうした会話の積み重ねで形になってきました。
+    </p>
+
+    <div class="quote">
+      AIは答えを決める存在ではなく、考えるための相手。
+    </div>
+
+    <p>
+      今の私にとって、チャッピーはそんな存在です。
+    </p>
+  </section>
+
+  <section class="messageCard">
+    <h3>完成品ではなく、育っていくアプリ。</h3>
+
+    <p>
+      Runner’s Ringsは、大きな会社が大人数で作っているサービスではありません。
+      一人のランナーが、「こんなものがあったら面白い。」と思ったところから始まったアプリです。
+    </p>
+
+    <p>
+      走って、使って、気づいて、チャッピーと話して、直す。
+      また走って、また考える。
+      その繰り返しで、少しずつ育っています。
+    </p>
+
+    <p>
+      だから、これからRunner’s Ringsを使ってくださる人から、
+      「こんな表示だったよ。」
+      「ここがおかしい。」
+      「こんなのがあったら面白い。」
+      そんな声をもらえたら、とても嬉しいです。
+    </p>
+  </section>
+
+  <section class="messageCard">
+    <h3>走った人生を、地図に残す。</h3>
+
+    <p>
+      記録を残すだけなら、すでに素晴らしいサービスがたくさんあります。
+      Runner’s Ringsが残したいのは、もう少し違うものです。
+    </p>
+
+    <p class="emphasis">
+      どこを走ったか。<br>
+      どんな時間を過ごしたか。<br>
+      どれだけ積み重ねてきたか。
+    </p>
+
+    <p>
+      10年後、20年後に地図を見たとき、
+      <span class="emphasis">「自分、こんなに走ったんだな。」</span>
+      と思えるものを作りたい。
+    </p>
+
+    <p>
+      それが、Runner’s Ringsを作っている理由です。
+    </p>
+  </section>
+
+  <section class="signature">
+    <div class="signatureTitle">RUNNER'S RINGS DEVELOPER</div>
+    <div class="signatureName">Atsuo</div>
+    <div class="signatureAi">開発支援AI：ChatGPT “チャッピー”</div>
+  </section>
+</main>
+
+<footer>
+  <a href="./index.html">Runner's Ringsへ戻る</a>
+  <div style="margin-top:10px;">© 2026 Runner's Rings</div>
+</footer>
+</body>
+</html>
