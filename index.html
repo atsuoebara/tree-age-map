@@ -2443,6 +2443,120 @@ const supabaseClient =
     }
   );
 
+
+/* =====================================
+   データ取り込み割合
+===================================== */
+
+async function updateImportShareDisplay() {
+  const valueElements =
+    document.querySelectorAll(
+      '[data-import-share-value]'
+    );
+
+  const fillElements =
+    document.querySelectorAll(
+      '[data-import-share-fill]'
+    );
+
+  if (
+    !valueElements.length ||
+    !fillElements.length
+  ) {
+    return;
+  }
+
+  try {
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        '/functions/v1/import-share',
+        {
+          headers: {
+            apikey: SUPABASE_KEY
+          }
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        'import-share HTTP ' +
+        response.status
+      );
+    }
+
+    const data =
+      await response.json();
+
+    const shares = {
+      strava:
+        Number(data?.strava),
+      intervals:
+        Number(data?.intervals),
+      coros:
+        Number(data?.coros),
+      file:
+        Number(data?.file)
+    };
+
+    Object.entries(shares)
+      .forEach(
+        ([key, rawValue]) => {
+          if (
+            !Number.isFinite(
+              rawValue
+            )
+          ) {
+            return;
+          }
+
+          const value =
+            Math.max(
+              0,
+              Math.min(
+                100,
+                Math.round(
+                  rawValue
+                )
+              )
+            );
+
+          document
+            .querySelectorAll(
+              '[data-import-share-value="' +
+              key +
+              '"]'
+            )
+            .forEach(
+              element => {
+                element.textContent =
+                  value + '%';
+              }
+            );
+
+          document
+            .querySelectorAll(
+              '[data-import-share-fill="' +
+              key +
+              '"]'
+            )
+            .forEach(
+              element => {
+                element.style.width =
+                  value + '%';
+              }
+            );
+        }
+      );
+
+  } catch (error) {
+    console.warn(
+      'Import share load error:',
+      error
+    );
+  }
+}
+
 let currentSession =
   null;
 
@@ -14044,6 +14158,8 @@ map.on(
 ===================================== */
 
 async function init() {
+
+  updateImportShareDisplay();
 
   try {
 
