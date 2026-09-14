@@ -1029,6 +1029,31 @@
       flex:1 1 auto;
     }
 
+    .countryConquestStatus{
+      flex:0 0 auto;
+      min-width:92px;
+      padding:6px 8px;
+      border:1px solid rgba(234,255,0,.28);
+      border-radius:10px;
+      background:rgba(234,255,0,.05);
+      color:#ffffff;
+      text-align:right;
+    }
+
+    .countryConquestCount{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.25;
+    }
+
+    .countryConquestRate,
+    .countryConquestRemaining{
+      margin-top:2px;
+      font-size:10px;
+      line-height:1.25;
+      color:#c9d4e2;
+    }
+
     .countryShareButton{
       flex:0 0 auto;
       min-width:52px;
@@ -1054,6 +1079,20 @@
     }
 
     @media (max-width:420px){
+      .countryConquestStatus{
+        min-width:84px;
+        padding:5px 7px;
+      }
+
+      .countryConquestCount{
+        font-size:12px;
+      }
+
+      .countryConquestRate,
+      .countryConquestRemaining{
+        font-size:9px;
+      }
+
       .countryShareButton{
         min-width:46px;
         padding:5px 6px;
@@ -12746,10 +12785,73 @@ function updateCountryDashboard(
           );
         };
 
-      top.append(
-        main,
-        shareButton
-      );
+      const countryShareData =
+        getCountryShareData(
+          countryCode,
+          stats
+        );
+
+      if (
+        countryShareData &&
+        countryShareData.mode ===
+          'subregions'
+      ) {
+        const conquestStatus =
+          document.createElement(
+            'div'
+          );
+
+        conquestStatus.className =
+          'countryConquestStatus';
+
+        const conquestRate =
+          countryShareData.total > 0
+            ? Math.round(
+                countryShareData.completed /
+                countryShareData.total *
+                100
+              )
+            : 0;
+
+        conquestStatus.innerHTML =
+          '<div class="countryConquestCount">' +
+            countryShareData.completed +
+            ' / ' +
+            countryShareData.total +
+          '</div>' +
+          '<div class="countryConquestRate">' +
+            (
+              isRunnerRingsEnglish()
+                ? 'Complete ' +
+                  conquestRate +
+                  '%'
+                : '走破 ' +
+                  conquestRate +
+                  '%'
+            ) +
+          '</div>' +
+          '<div class="countryConquestRemaining">' +
+            (
+              isRunnerRingsEnglish()
+                ? 'Remaining ' +
+                  countryShareData.remaining
+                : '残り ' +
+                  countryShareData.remaining
+            ) +
+          '</div>';
+
+        top.append(
+          main,
+          conquestStatus,
+          shareButton
+        );
+      }
+      else {
+        top.append(
+          main,
+          shareButton
+        );
+      }
 
       const barTrack =
         document.createElement(
