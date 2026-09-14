@@ -14112,239 +14112,58 @@ function createCountryConquestShareCanvas(
     }
   }
 
-  /*
-    日本の国共有は元データが市町村境界なので、
-    そのまま各Featureをstrokeすると市町村線まで全部見えてしまう。
-    日本だけは都道府県単位で一度オフスクリーンへ塗り、
-    市町村同士を同色で結合したシルエットとして本体へ合成する。
-    これにより、共有画像では「都道府県のまとまり」だけが見える。
-  */
-  if (
-    countryCode === 'JPN' &&
-    shareData.mode === 'subregions'
-  ) {
-    const groups =
-      new Map();
-
-    shareData.features.forEach(
+  shareData.features
+    .forEach(
       item => {
-        if (
-          !groups.has(
-            item.groupKey
-          )
-        ) {
-          groups.set(
-            item.groupKey,
-            {
-              completed:
-                item.completed,
-              features:[]
-            }
-          );
-        }
+        ctx.save();
+        ctx.beginPath();
 
-        groups
-          .get(
-            item.groupKey
-          )
-          .features
-          .push(
-            item.feature
-          );
-      }
-    );
-
-    const maskCanvas =
-      document.createElement(
-        'canvas'
-      );
-
-    maskCanvas.width = W;
-    maskCanvas.height = H;
-
-    const maskCtx =
-      maskCanvas.getContext(
-        '2d'
-      );
-
-    if (!maskCtx) {
-      throw new Error(
-        '共有画像を作成できません'
-      );
-    }
-
-    function traceRingOn(
-      targetCtx,
-      ring
-    ) {
-      ring.forEach(
-        (point, index) => {
-          const projectedPoint =
-            projectPoint(
-              point
-            );
-
-          if (index === 0) {
-            targetCtx.moveTo(
-              projectedPoint[0],
-              projectedPoint[1]
-            );
-          }
-          else {
-            targetCtx.lineTo(
-              projectedPoint[0],
-              projectedPoint[1]
-            );
-          }
-        }
-      );
-
-      targetCtx.closePath();
-    }
-
-    function traceFeatureOn(
-      targetCtx,
-      feature
-    ) {
-      const geometry =
-        feature.geometry;
-
-      if (
-        geometry.type ===
-        'Polygon'
-      ) {
-        geometry.coordinates
-          .forEach(
-            ring =>
-              traceRingOn(
-                targetCtx,
-                ring
-              )
-          );
-      }
-      else if (
-        geometry.type ===
-        'MultiPolygon'
-      ) {
-        geometry.coordinates
-          .forEach(
-            polygon =>
-              polygon.forEach(
-                ring =>
-                  traceRingOn(
-                    targetCtx,
-                    ring
-                  )
-              )
-          );
-      }
-    }
-
-    groups.forEach(
-      group => {
-        maskCtx.clearRect(
-          0,
-          0,
-          W,
-          H
+        traceFeature(
+          item.feature
         );
 
-        maskCtx.beginPath();
-
-        group.features.forEach(
-          feature =>
-            traceFeatureOn(
-              maskCtx,
-              feature
-            )
-        );
-
-        maskCtx.fillStyle =
-          group.completed
+        ctx.fillStyle =
+          item.completed
             ? '#ff2bd6'
-            : '#243247';
+            : '#3a4b63';
+
+        if (
+          item.completed
+        ) {
+          ctx.shadowColor =
+            'rgba(255,43,214,.34)';
+          ctx.shadowBlur =
+            14;
+        }
 
         try {
-          maskCtx.fill(
+          ctx.fill(
             'evenodd'
           );
         }
         catch(error) {
-          maskCtx.fill();
+          ctx.fill();
         }
 
-        ctx.save();
+        ctx.shadowBlur =
+          0;
 
-        /*
-          drop-shadowは塗り面の外周だけに付くため、
-          市町村の内部線を出さずに都道府県同士を見分けられる。
-        */
-        ctx.filter =
-          group.completed
-            ? 'drop-shadow(0 0 2px rgba(255,255,255,.80)) drop-shadow(0 0 10px rgba(255,43,214,.26))'
-            : 'drop-shadow(0 0 2px rgba(255,255,255,.58))';
+        ctx.strokeStyle =
+          shareData.mode ===
+          'subregions'
+            ? 'rgba(220,232,246,.82)'
+            : 'rgba(255,255,255,.72)';
 
-        ctx.drawImage(
-          maskCanvas,
-          0,
-          0
-        );
+        ctx.lineWidth =
+          shareData.mode ===
+          'subregions'
+            ? 1.45
+            : 2.0;
 
+        ctx.stroke();
         ctx.restore();
       }
     );
-  }
-  else {
-    shareData.features
-      .forEach(
-        item => {
-          ctx.save();
-          ctx.beginPath();
-
-          traceFeature(
-            item.feature
-          );
-
-          ctx.fillStyle =
-            item.completed
-              ? '#ff2bd6'
-              : '#243247';
-
-          if (
-            item.completed
-          ) {
-            ctx.shadowColor =
-              'rgba(255,43,214,.34)';
-            ctx.shadowBlur =
-              14;
-          }
-
-          try {
-            ctx.fill(
-              'evenodd'
-            );
-          }
-          catch(error) {
-            ctx.fill();
-          }
-
-          ctx.shadowBlur =
-            0;
-
-          ctx.strokeStyle =
-            'rgba(255,255,255,.58)';
-
-          ctx.lineWidth =
-            shareData.mode ===
-            'subregions'
-              ? 1.2
-              : 2.0;
-
-          ctx.stroke();
-          ctx.restore();
-        }
-      );
-  }
 
   ctx.fillStyle =
     '#ffffff';
