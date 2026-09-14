@@ -13644,37 +13644,26 @@ function createCountryConquestShareCanvas(
       ]
     );
 
-  const minX =
-    Math.min(
-      ...projected.map(
-        point =>
-          point[0]
-      )
-    );
+  // 日本のように行政境界の頂点数が多い国では、
+  // Math.min(...巨大配列) / Math.max(...巨大配列) が
+  // iPhone Safari の引数上限を超えることがある。
+  // 1点ずつ走査して安全に範囲を求める。
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
 
-  const maxX =
-    Math.max(
-      ...projected.map(
-        point =>
-          point[0]
-      )
-    );
+  projected.forEach(
+    point => {
+      const x = point[0];
+      const y = point[1];
 
-  const minY =
-    Math.min(
-      ...projected.map(
-        point =>
-          point[1]
-      )
-    );
-
-  const maxY =
-    Math.max(
-      ...projected.map(
-        point =>
-          point[1]
-      )
-    );
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  );
 
   const spanX =
     Math.max(
