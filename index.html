@@ -13141,11 +13141,11 @@ function createPrefectureConquestShareCanvas(
     'left';
 
   const mapBox = {
-    x: 72,
-    y: 442,
-    width: W - 144,
-    height: 690,
-    padding: 50
+    x: 58,
+    y: 420,
+    width: W - 116,
+    height: 735,
+    padding: 36
   };
 
   ctx.fillStyle =
@@ -13460,7 +13460,7 @@ function createPrefectureConquestShareCanvas(
   ctx.fillText(
     "Runner's Rings",
     72,
-    1190
+    1182
   );
 
   ctx.fillStyle =
@@ -13474,26 +13474,20 @@ function createPrefectureConquestShareCanvas(
       ? 'Map the life you run.'
       : '走った人生を、地図に残す。',
     72,
-    1248
+    1238
   );
-
-  ctx.textAlign =
-    'right';
 
   ctx.fillStyle =
     '#ff2bd6';
 
   ctx.font =
-    '800 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    '800 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
 
   ctx.fillText(
     'runnersrings.com',
-    W - 72,
-    1250
+    72,
+    1284
   );
-
-  ctx.textAlign =
-    'left';
 
   return canvas;
 
