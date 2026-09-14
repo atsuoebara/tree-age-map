@@ -1021,6 +1021,44 @@
 
     .countryCard{
       cursor:default;
+      position:relative;
+    }
+
+    .countryMain{
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    .countryShareButton{
+      flex:0 0 auto;
+      min-width:52px;
+      padding:6px 8px;
+      border:1px solid rgba(255,43,214,.42);
+      border-radius:10px;
+      background:rgba(255,43,214,.08);
+      color:#ffffff;
+      font:inherit;
+      font-size:10px;
+      font-weight:800;
+      line-height:1.25;
+      cursor:pointer;
+    }
+
+    .countryShareButton:hover{
+      background:rgba(255,43,214,.16);
+    }
+
+    .countryShareButton:focus-visible{
+      outline:3px solid rgba(255,43,214,.75);
+      outline-offset:2px;
+    }
+
+    @media (max-width:420px){
+      .countryShareButton{
+        min-width:46px;
+        padding:5px 6px;
+        font-size:9px;
+      }
     }
 
     .emptyMessage{
@@ -12638,31 +12676,111 @@ function updateCountryDashboard(
       card.className =
         'countryCard';
 
+      const top =
+        document.createElement(
+          'div'
+        );
 
-      card.innerHTML =
-        '<div class="countryTop">' +
-          '<div class="countryName">' +
-            getCountryNameByCode(
-              countryCode
-            ) +
-          '</div>' +
-          '<div class="countryDistance">' +
-            km.toFixed(
-              2
-            ) +
-            ' km' +
-          '</div>' +
+      top.className =
+        'countryTop';
+
+      const main =
+        document.createElement(
+          'div'
+        );
+
+      main.className =
+        'countryMain';
+
+      main.innerHTML =
+        '<div class="countryName">' +
+          getCountryNameByCode(
+            countryCode
+          ) +
         '</div>' +
-        '<div class="barTrack">' +
-          '<div class="barFill" style="width:' +
-            percent +
-            '%"></div>' +
-        '</div>' +
-        '<div class="countryRuns">' +
-          'RUNS ' +
-          runs +
+        '<div class="countryDistance">' +
+          km.toFixed(
+            2
+          ) +
+          ' km' +
         '</div>';
 
+      const shareButton =
+        document.createElement(
+          'button'
+        );
+
+      shareButton.type =
+        'button';
+
+      shareButton.className =
+        'countryShareButton';
+
+      shareButton.textContent =
+        isRunnerRingsEnglish()
+          ? 'Share'
+          : '共有';
+
+      const countryName =
+        getCountryNameByCode(
+          countryCode
+        );
+
+      shareButton.setAttribute(
+        'aria-label',
+        isRunnerRingsEnglish()
+          ? 'Share ' +
+            countryName +
+            ' running map'
+          : countryName +
+            'の走破画像を共有'
+      );
+
+      shareButton.onclick =
+        async event => {
+          event.stopPropagation();
+
+          await shareCountryConquest(
+            countryCode,
+            stats
+          );
+        };
+
+      top.append(
+        main,
+        shareButton
+      );
+
+      const barTrack =
+        document.createElement(
+          'div'
+        );
+
+      barTrack.className =
+        'barTrack';
+
+      barTrack.innerHTML =
+        '<div class="barFill" style="width:' +
+          percent +
+          '%"></div>';
+
+      const runsRow =
+        document.createElement(
+          'div'
+        );
+
+      runsRow.className =
+        'countryRuns';
+
+      runsRow.textContent =
+        'RUNS ' +
+        runs;
+
+      card.append(
+        top,
+        barTrack,
+        runsRow
+      );
 
       list.appendChild(
         card
@@ -12673,7 +12791,6 @@ function updateCountryDashboard(
 
 
 }
-
 
 /* =====================================
    地域走破
@@ -12815,6 +12932,1221 @@ function getPrefectureConquest(
     remainingCityKeys
   };
 
+}
+
+
+/* =====================================
+   国別走破シェア
+   日本は都道府県、アメリカは州・地域を表示。
+   それ以外の国は、国の輪郭＋その期間の距離・RUN数を表示する。
+   世界中で共通ロジックを使い、存在しない行政区分は推測しない。
+===================================== */
+
+function getCountryFeatureByCode(
+  countryCode
+) {
+
+  return countryFeatures
+    .find(
+      item =>
+        getCountryCode(
+          item.feature
+        ) === countryCode
+    )
+    ?.feature ||
+    null;
+
+}
+
+
+function getJapanPrefectureShareData(
+  stats
+) {
+
+  const prefectures =
+    new Map();
+
+  municipalityFeatures
+    .forEach(
+      item => {
+        const name =
+          getPrefecture(
+            item.feature
+          );
+
+        if (
+          !name ||
+          name === '都道府県不明'
+        ) {
+          return;
+        }
+
+        if (
+          !prefectures.has(
+            name
+          )
+        ) {
+          prefectures.set(
+            name,
+            []
+          );
+        }
+
+        prefectures
+          .get(
+            name
+          )
+          .push(
+            item.feature
+          );
+      }
+    );
+
+  const completed =
+    new Set(
+      Array.from(
+        prefectures.keys()
+      )
+      .filter(
+        prefecture =>
+          (
+            stats
+              .prefectureDistance[
+                prefecture
+              ] ||
+            0
+          ) > 0.01
+      )
+    );
+
+  const features =
+    [];
+
+  prefectures.forEach(
+    (
+      prefectureFeatures,
+      prefecture
+    ) => {
+      prefectureFeatures.forEach(
+        feature => {
+          features.push({
+            feature,
+            groupKey:
+              prefecture,
+            completed:
+              completed.has(
+                prefecture
+              )
+          });
+        }
+      );
+    }
+  );
+
+  return {
+    mode: 'subregions',
+    labelJa: '都道府県走破',
+    labelEn: 'prefectures completed',
+    total:
+      prefectures.size,
+    completed:
+      completed.size,
+    remaining:
+      Math.max(
+        0,
+        prefectures.size -
+        completed.size
+      ),
+    features
+  };
+
+}
+
+
+function getUsaRegionShareData(
+  stats
+) {
+
+  if (
+    !usaRegionGeojsonData ||
+    !Array.isArray(
+      usaRegionGeojsonData.features
+    )
+  ) {
+    return null;
+  }
+
+  const uniqueRegions =
+    new Map();
+
+  usaRegionGeojsonData.features
+    .forEach(
+      feature => {
+        const code =
+          getUsaRegionCode(
+            feature
+          );
+
+        if (
+          !code ||
+          code === 'US-UNKNOWN'
+        ) {
+          return;
+        }
+
+        if (
+          !uniqueRegions.has(
+            code
+          )
+        ) {
+          uniqueRegions.set(
+            code,
+            feature
+          );
+        }
+      }
+    );
+
+  const completed =
+    new Set(
+      Array.from(
+        uniqueRegions.keys()
+      )
+      .filter(
+        code =>
+          (
+            stats
+              .regionDistance[
+                code
+              ] ||
+            0
+          ) > 0.01
+      )
+    );
+
+  return {
+    mode: 'subregions',
+    labelJa: '州・地域走破',
+    labelEn: 'states / regions completed',
+    total:
+      uniqueRegions.size,
+    completed:
+      completed.size,
+    remaining:
+      Math.max(
+        0,
+        uniqueRegions.size -
+        completed.size
+      ),
+    features:
+      Array.from(
+        uniqueRegions.entries()
+      )
+      .map(
+        ([code, feature]) => ({
+          feature,
+          groupKey:
+            code,
+          completed:
+            completed.has(
+              code
+            )
+        })
+      )
+  };
+
+}
+
+
+function getCountryShareData(
+  countryCode,
+  stats
+) {
+
+  if (
+    countryCode === 'JPN'
+  ) {
+    return getJapanPrefectureShareData(
+      stats
+    );
+  }
+
+  if (
+    countryCode === 'USA'
+  ) {
+    const usaData =
+      getUsaRegionShareData(
+        stats
+      );
+
+    if (usaData) {
+      return usaData;
+    }
+  }
+
+  const countryFeature =
+    getCountryFeatureByCode(
+      countryCode
+    );
+
+  if (
+    !countryFeature
+  ) {
+    return null;
+  }
+
+  return {
+    mode: 'country',
+    features: [
+      {
+        feature:
+          countryFeature,
+        groupKey:
+          countryCode,
+        completed:
+          true
+      }
+    ]
+  };
+
+}
+
+
+function createCountryConquestShareCanvas(
+  countryCode,
+  stats
+) {
+
+  const shareData =
+    getCountryShareData(
+      countryCode,
+      stats
+    );
+
+  if (
+    !shareData ||
+    !shareData.features.length
+  ) {
+    throw new Error(
+      '共有用の国境データがありません'
+    );
+  }
+
+  const countryName =
+    getCountryNameByCode(
+      countryCode
+    );
+
+  const km =
+    Number(
+      stats.countryDistance[
+        countryCode
+      ] ||
+      0
+    );
+
+  const runs =
+    Number(
+      stats.countryRunCount[
+        countryCode
+      ] ||
+      0
+    );
+
+  const canvas =
+    document.createElement(
+      'canvas'
+    );
+
+  canvas.width = 1080;
+  canvas.height = 1350;
+
+  const ctx =
+    canvas.getContext(
+      '2d'
+    );
+
+  if (!ctx) {
+    throw new Error(
+      '共有画像を作成できません'
+    );
+  }
+
+  const W =
+    canvas.width;
+
+  const H =
+    canvas.height;
+
+  const background =
+    ctx.createLinearGradient(
+      0,
+      0,
+      W,
+      H
+    );
+
+  background.addColorStop(
+    0,
+    '#07101d'
+  );
+
+  background.addColorStop(
+    0.55,
+    '#0b1422'
+  );
+
+  background.addColorStop(
+    1,
+    '#101d31'
+  );
+
+  ctx.fillStyle =
+    background;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const glow =
+    ctx.createRadialGradient(
+      900,
+      170,
+      0,
+      900,
+      170,
+      420
+    );
+
+  glow.addColorStop(
+    0,
+    'rgba(255,43,214,.18)'
+  );
+
+  glow.addColorStop(
+    1,
+    'rgba(255,43,214,0)'
+  );
+
+  ctx.fillStyle =
+    glow;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const english =
+    isRunnerRingsEnglish();
+
+  const periodLabel =
+    getPrefectureSharePeriodLabel();
+
+  ctx.textBaseline =
+    'top';
+
+  ctx.fillStyle =
+    '#ff2bd6';
+
+  ctx.font =
+    '800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'REGION CONQUEST'
+      : '地域走破',
+    72,
+    68
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 58px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    countryName,
+    72,
+    120
+  );
+
+  ctx.fillStyle =
+    '#eaff00';
+
+  ctx.font =
+    '800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    periodLabel,
+    74,
+    200
+  );
+
+  if (
+    shareData.mode ===
+    'subregions'
+  ) {
+
+    const rate =
+      shareData.total > 0
+        ? Math.round(
+            shareData.completed /
+            shareData.total *
+            100
+          )
+        : 0;
+
+    ctx.fillStyle =
+      '#ffffff';
+
+    ctx.font =
+      '800 78px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      shareData.completed +
+        ' / ' +
+        shareData.total,
+      72,
+      262
+    );
+
+    ctx.fillStyle =
+      '#b9c6d6';
+
+    ctx.font =
+      '700 26px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      english
+        ? shareData.labelEn
+        : shareData.labelJa,
+      76,
+      352
+    );
+
+    ctx.textAlign =
+      'right';
+
+    ctx.fillStyle =
+      '#ffffff';
+
+    ctx.font =
+      '800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      rate + '%',
+      W - 72,
+      276
+    );
+
+    ctx.fillStyle =
+      '#b9c6d6';
+
+    ctx.font =
+      '700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      english
+        ? 'completion'
+        : '走破率',
+      W - 72,
+      340
+    );
+
+    ctx.fillStyle =
+      shareData.remaining === 0
+        ? '#eaff00'
+        : '#ffcf33';
+
+    ctx.font =
+      '800 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      shareData.remaining === 0
+        ? 'COMPLETE'
+        : (
+            english
+              ? 'Remaining ' +
+                shareData.remaining
+              : '残り ' +
+                shareData.remaining
+          ),
+      W - 72,
+      382
+    );
+
+    ctx.textAlign =
+      'left';
+
+  }
+  else {
+
+    ctx.fillStyle =
+      '#ffffff';
+
+    ctx.font =
+      '800 70px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      km.toFixed(
+        1
+      ) +
+      ' km',
+      72,
+      266
+    );
+
+    ctx.fillStyle =
+      '#b9c6d6';
+
+    ctx.font =
+      '700 25px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      english
+        ? 'distance run in this country'
+        : 'この国で走った距離',
+      76,
+      350
+    );
+
+    ctx.textAlign =
+      'right';
+
+    ctx.fillStyle =
+      '#ffffff';
+
+    ctx.font =
+      '800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      String(
+        runs
+      ),
+      W - 72,
+      276
+    );
+
+    ctx.fillStyle =
+      '#b9c6d6';
+
+    ctx.font =
+      '700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+    ctx.fillText(
+      english
+        ? 'runs'
+        : 'RUNS',
+      W - 72,
+      340
+    );
+
+    ctx.textAlign =
+      'left';
+  }
+
+  const mapBox = {
+    x: 58,
+    y: 420,
+    width: W - 116,
+    height: 735,
+    padding: 36
+  };
+
+  ctx.fillStyle =
+    'rgba(19,34,55,.82)';
+
+  ctx.strokeStyle =
+    'rgba(255,255,255,.08)';
+
+  ctx.lineWidth =
+    2;
+
+  ctx.beginPath();
+
+  if (
+    typeof ctx.roundRect ===
+    'function'
+  ) {
+    ctx.roundRect(
+      mapBox.x,
+      mapBox.y,
+      mapBox.width,
+      mapBox.height,
+      34
+    );
+  }
+  else {
+    ctx.rect(
+      mapBox.x,
+      mapBox.y,
+      mapBox.width,
+      mapBox.height
+    );
+  }
+
+  ctx.fill();
+  ctx.stroke();
+
+  const coordinates =
+    [];
+
+  shareData.features
+    .forEach(
+      item =>
+        collectCoordinates(
+          item.feature.geometry.coordinates,
+          coordinates
+        )
+    );
+
+  if (
+    !coordinates.length
+  ) {
+    throw new Error(
+      '共有用の座標データがありません'
+    );
+  }
+
+  const centerLat =
+    coordinates.reduce(
+      (sum, point) =>
+        sum +
+        point[1],
+      0
+    ) /
+    coordinates.length;
+
+  const lonFactor =
+    Math.max(
+      0.18,
+      Math.abs(
+        Math.cos(
+          centerLat *
+          Math.PI /
+          180
+        )
+      )
+    );
+
+  const projected =
+    coordinates.map(
+      point => [
+        point[0] *
+          lonFactor,
+        point[1]
+      ]
+    );
+
+  const minX =
+    Math.min(
+      ...projected.map(
+        point =>
+          point[0]
+      )
+    );
+
+  const maxX =
+    Math.max(
+      ...projected.map(
+        point =>
+          point[0]
+      )
+    );
+
+  const minY =
+    Math.min(
+      ...projected.map(
+        point =>
+          point[1]
+      )
+    );
+
+  const maxY =
+    Math.max(
+      ...projected.map(
+        point =>
+          point[1]
+      )
+    );
+
+  const spanX =
+    Math.max(
+      0.000001,
+      maxX -
+      minX
+    );
+
+  const spanY =
+    Math.max(
+      0.000001,
+      maxY -
+      minY
+    );
+
+  /*
+    国や県の大きさ・縦横比に合わせて自動縮尺。
+    周囲に約6%の安全余白を残して最大表示する。
+  */
+  const dynamicPadding =
+    Math.max(
+      30,
+      Math.round(
+        Math.min(
+          mapBox.width,
+          mapBox.height
+        ) *
+        0.06
+      )
+    );
+
+  const availableWidth =
+    mapBox.width -
+    dynamicPadding *
+    2;
+
+  const availableHeight =
+    mapBox.height -
+    dynamicPadding *
+    2;
+
+  const scale =
+    Math.min(
+      availableWidth /
+        spanX,
+      availableHeight /
+        spanY
+    );
+
+  const drawnWidth =
+    spanX *
+    scale;
+
+  const drawnHeight =
+    spanY *
+    scale;
+
+  const offsetX =
+    mapBox.x +
+    (
+      mapBox.width -
+      drawnWidth
+    ) /
+    2;
+
+  const offsetY =
+    mapBox.y +
+    (
+      mapBox.height -
+      drawnHeight
+    ) /
+    2;
+
+  const projectPoint =
+    point => {
+      const x =
+        point[0] *
+        lonFactor;
+
+      const y =
+        point[1];
+
+      return [
+        offsetX +
+          (
+            x -
+            minX
+          ) *
+          scale,
+        offsetY +
+          drawnHeight -
+          (
+            y -
+            minY
+          ) *
+          scale
+      ];
+    };
+
+  function traceRing(
+    ring
+  ) {
+
+    ring.forEach(
+      (point, index) => {
+        const projectedPoint =
+          projectPoint(
+            point
+          );
+
+        if (
+          index === 0
+        ) {
+          ctx.moveTo(
+            projectedPoint[0],
+            projectedPoint[1]
+          );
+        }
+        else {
+          ctx.lineTo(
+            projectedPoint[0],
+            projectedPoint[1]
+          );
+        }
+      }
+    );
+
+    ctx.closePath();
+  }
+
+  function traceFeature(
+    feature
+  ) {
+
+    const geometry =
+      feature.geometry;
+
+    if (
+      geometry.type ===
+      'Polygon'
+    ) {
+      geometry.coordinates
+        .forEach(
+          traceRing
+        );
+    }
+    else if (
+      geometry.type ===
+      'MultiPolygon'
+    ) {
+      geometry.coordinates
+        .forEach(
+          polygon =>
+            polygon.forEach(
+              traceRing
+            )
+        );
+    }
+  }
+
+  shareData.features
+    .forEach(
+      item => {
+        ctx.save();
+        ctx.beginPath();
+
+        traceFeature(
+          item.feature
+        );
+
+        ctx.fillStyle =
+          item.completed
+            ? '#ff2bd6'
+            : '#243247';
+
+        if (
+          item.completed
+        ) {
+          ctx.shadowColor =
+            'rgba(255,43,214,.34)';
+          ctx.shadowBlur =
+            14;
+        }
+
+        try {
+          ctx.fill(
+            'evenodd'
+          );
+        }
+        catch(error) {
+          ctx.fill();
+        }
+
+        ctx.shadowBlur =
+          0;
+
+        ctx.strokeStyle =
+          'rgba(255,255,255,.58)';
+
+        ctx.lineWidth =
+          shareData.mode ===
+          'subregions'
+            ? 1.2
+            : 2.0;
+
+        ctx.stroke();
+        ctx.restore();
+      }
+    );
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 42px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    "Runner's Rings",
+    72,
+    1182
+  );
+
+  ctx.fillStyle =
+    '#b9c6d6';
+
+  ctx.font =
+    '700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'Map the life you run.'
+      : '走った人生を、地図に残す。',
+    72,
+    1238
+  );
+
+  ctx.fillStyle =
+    '#ff2bd6';
+
+  ctx.font =
+    '800 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    'runnersrings.com',
+    72,
+    1284
+  );
+
+  return {
+    canvas,
+    shareData,
+    countryName,
+    km,
+    runs,
+    periodLabel
+  };
+}
+
+
+async function shareCountryConquest(
+  countryCode,
+  stats
+) {
+
+  try {
+    const result =
+      createCountryConquestShareCanvas(
+        countryCode,
+        stats
+      );
+
+    const blob =
+      await new Promise(
+        (resolve, reject) => {
+          result.canvas.toBlob(
+            imageBlob => {
+              if (
+                imageBlob
+              ) {
+                resolve(
+                  imageBlob
+                );
+              }
+              else {
+                reject(
+                  new Error(
+                    '共有画像を作成できません'
+                  )
+                );
+              }
+            },
+            'image/png'
+          );
+        }
+      );
+
+    const safeCountry =
+      result.countryName.replace(
+        /[^0-9A-Za-zぁ-んァ-ヶ一-龠々ー_-]/g,
+        '_'
+      );
+
+    const fileName =
+      'RunnerRings_' +
+      safeCountry +
+      '_' +
+      result.periodLabel.replace(
+        /[^0-9A-Za-z_-]/g,
+        '_'
+      ) +
+      '.png';
+
+    const file =
+      new File(
+        [blob],
+        fileName,
+        {
+          type: 'image/png'
+        }
+      );
+
+    const english =
+      isRunnerRingsEnglish();
+
+    let shareText;
+
+    if (
+      result.shareData.mode ===
+      'subregions'
+    ) {
+      const rate =
+        result.shareData.total > 0
+          ? Math.round(
+              result.shareData.completed /
+              result.shareData.total *
+              100
+            )
+          : 0;
+
+      shareText =
+        english
+          ? (
+              result.countryName +
+              ' ' +
+              result.shareData.completed +
+              '/' +
+              result.shareData.total +
+              ' · ' +
+              rate +
+              '% complete (' +
+              result.periodLabel +
+              ')\nRunner\'s Rings\nhttps://runnersrings.com'
+            )
+          : (
+              result.countryName +
+              ' ' +
+              result.shareData.completed +
+              '/' +
+              result.shareData.total +
+              ' 走破 ' +
+              rate +
+              '%（' +
+              result.periodLabel +
+              '）\nRunner\'s Rings\nhttps://runnersrings.com'
+            );
+    }
+    else {
+      shareText =
+        english
+          ? (
+              result.countryName +
+              ' · ' +
+              result.km.toFixed(
+                1
+              ) +
+              ' km · ' +
+              result.runs +
+              ' runs (' +
+              result.periodLabel +
+              ')\nRunner\'s Rings\nhttps://runnersrings.com'
+            )
+          : (
+              result.countryName +
+              'で ' +
+              result.km.toFixed(
+                1
+              ) +
+              ' km / ' +
+              result.runs +
+              ' RUN（' +
+              result.periodLabel +
+              '）\nRunner\'s Rings\nhttps://runnersrings.com'
+            );
+    }
+
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
+      await navigator.share({
+        title:
+          "Runner's Rings " +
+          result.countryName,
+        text:
+          shareText,
+        files:
+          [file]
+      });
+
+      return;
+    }
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+    link.href =
+      url;
+
+    link.download =
+      fileName;
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+    link.remove();
+
+    setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      1000
+    );
+
+    setStatus(
+      english
+        ? '✅ Country image saved'
+        : '✅ 国別画像を保存しました'
+    );
+
+  }
+  catch(error) {
+    if (
+      error?.name ===
+      'AbortError'
+    ) {
+      return;
+    }
+
+    console.error(
+      'Country conquest share error:',
+      error
+    );
+
+    alert(
+      isRunnerRingsEnglish()
+        ? 'Could not create the country image.'
+        : '国別の共有画像を作成できませんでした。'
+    );
+  }
 }
 
 
