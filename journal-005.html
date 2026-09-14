@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Ringsの走破共有画像で、隣県や周辺地域を出さず、対象地域だけを切り抜く理由を紹介します。">
+<title>走破画像を「その地域だけ」にした理由｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+.articleBody strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main class="articleBody">
+  <article data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 005</div>
+    <h2>走破画像を「その地域だけ」にした理由</h2>
+    <p class="lead">2026.09.14 / Runner's Rings 開発ノート</p>
+    <p>地域走破をSNSで共有するとき、最初に考えたのは「地図をそのままスクリーンショットすればいいのでは？」という方法でした。</p>
+    
+<p>でも、それではRunner's Ringsらしくありませんでした。</p>
+<h3>主役は「どこを走破したか」</h3>
+<p>たとえば群馬県を共有するとき、栃木県や埼玉県、長野県まで一緒に見えると、視線が散ってしまいます。</p>
+<p>そこで共有画像では、選んだ県だけを切り抜き、その中の走破済み市町村をピンクで表示するようにしました。</p>
+<h3>数字も必要最小限に</h3>
+<p>共有画像には、走破数、走破率、残り数を載せます。一方で、走破済み市町村名の長い一覧は入れません。SNSでは、一目で意味が分かることを優先したからです。</p>
+<div class="note"><p>本体では詳しく。共有ではシンプルに。</p></div>
+<h3>国でも同じ考え方</h3>
+<p>日本全体を共有するときは、市町村境界ではなく都道府県境界を使います。走破した都道府県だけがピンクになり、国全体の進み具合が見えるようにしています。</p>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+  </article>
+
+  <article data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 005</div>
+    <h2>Why Conquest Sharing Shows Only the Selected Region</h2>
+    <p class="lead">2026.09.14 / Runner's Rings Development Note</p>
+    <p>At first, it seemed easiest to share a screenshot of the map. But that was not the clearest way to express conquest.</p>
+    
+<h3>The selected region should be the hero</h3>
+<p>When sharing Gunma, neighboring prefectures distract from the point. Runner's Rings therefore crops the image to the selected region and highlights conquered municipalities in pink.</p>
+<h3>Keep the numbers simple</h3>
+<p>Shared images show progress, percentage, and remaining regions, while detailed lists stay inside the app.</p>
+<div class="note"><p>Detailed in the app. Simple when shared.</p></div>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+  </article>
+</main>
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>

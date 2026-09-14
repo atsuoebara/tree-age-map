@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="昔のGPXやFIT、過去のアクティビティを地図に重ねると何が見えるのか。Runner's Ringsが過去データを大切にする理由を紹介します。">
+<title>過去のランを地図に重ねると、何が見えてくるのか｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+.articleBody strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main class="articleBody">
+  <article data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 003</div>
+    <h2>過去のランを地図に重ねると、何が見えてくるのか</h2>
+    <p class="lead">2026.09.14 / Runner's Rings 開発ノート</p>
+    <p>Runner's Ringsで面白いのは、今日のランよりも、むしろ昔のランが増えてきたときです。</p>
+    
+<p>1回のランは1本の線です。でも、それを何年分も重ねると、地図はただのログではなくなります。</p>
+<h3>よく走った場所が「濃く」なる</h3>
+<p>通勤ラン、いつもの周回コース、レース前によく走った道。繰り返した場所には、その人の生活や時期が残ります。</p>
+<p>Runner's Ringsでは、そうした積み重ねを面やルートとして見返せます。</p>
+<div class="note"><p>昔住んでいた場所、子どもの部活を待っている間に走った場所、旅行先で早朝に走った道。距離だけでは残りにくい記憶が、地図では残ります。</p></div>
+<h3>古いデータほど価値が出る</h3>
+<p>Runner's Ringsでは、StravaやIntervals.icuだけでなく、FIT・GPX・ZIPなどから過去データを取り込めます。今から使い始めても、過去のランニング人生を地図に戻していけるようにしたいからです。</p>
+<h3>年輪のように積み重なる</h3>
+<p>ALLで見ると人生全体、年別で見るとその年の広がり。Runner's Ringsという名前には、走った時間が年輪のように積み重なっていくイメージがあります。</p>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+  </article>
+
+  <article data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 003</div>
+    <h2>What Happens When You Put Years of Running on One Map?</h2>
+    <p class="lead">2026.09.14 / Runner's Rings Development Note</p>
+    <p>Runner's Rings becomes more interesting as your older runs are added.</p>
+    
+<p>One run is one line. Years of runs layered together become something more than a log.</p>
+<h3>Repeated places become part of your story</h3>
+<p>Commutes, favorite loops, race preparation, trips, and ordinary evenings all leave a pattern on the map.</p>
+<div class="note"><p>Old running data can preserve memories that distance totals alone cannot.</p></div>
+<h3>History gains value over time</h3>
+<p>Runner's Rings supports historical imports through supported connections and FIT, GPX, and ZIP files so your past can become part of the map.</p>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+  </article>
+</main>
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>

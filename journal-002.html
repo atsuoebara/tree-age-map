@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's RingsでStravaとIntervals.icuをどう使い分けるか。両方を同時に使わない方がよい理由と、重複防止の考え方をまとめます。">
+<title>StravaとIntervals.icu、Runner's Ringsではどう使い分ける？｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+.articleBody strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main class="articleBody">
+  <article data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 002</div>
+    <h2>StravaとIntervals.icu、Runner's Ringsではどう使い分ける？</h2>
+    <p class="lead">2026.09.14 / Runner's Rings 開発ノート</p>
+    <p>Runner's Ringsには複数のデータ取り込み方法があります。その中でもよく聞かれるのが、StravaとIntervals.icuのどちらを使えばいいのか、という質問です。</p>
+    
+<p>結論から言うと、Runner's Ringsでは<strong>StravaかIntervals.icuのどちらか一方を主な取り込み元にする</strong>のがおすすめです。</p>
+<h3>なぜ両方をつながない方がいいのか</h3>
+<p>同じランがStravaとIntervals.icuの両方に存在する場合、同じデータが二重に入る可能性があります。Runner's Ringsでは日付・距離・開始時刻・ルートなどを使って重複判定をしていますが、最初から取り込み元を1つに決めておく方が管理はシンプルです。</p>
+<div class="highlight"><p>トレーニング管理の中心がStravaならStrava経由。Intervals.icuを日常的に使っているならIntervals.icu経由。Runner's Ringsは、そのデータを「走った人生の地図」に変える役割です。</p></div>
+<h3>役割が違うからこそ組み合わせる</h3>
+<p>StravaやIntervals.icuは、トレーニングやアクティビティ管理に強いサービスです。一方、Runner's Ringsは「どこを走ってきたか」「どの地域まで広がったか」を地図で見ることを中心にしています。</p>
+<p>同じランニングデータでも、見る目的が違えば価値も変わります。</p>
+<h3>迷ったら、普段いちばん使っている方から</h3>
+<p>Runner's Ringsのために新しい運用を無理に増やす必要はありません。今まで使ってきたサービスを入口にして、そこからRunner's Ringsへ取り込む。これが一番自然です。</p>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+  </article>
+
+  <article data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 002</div>
+    <h2>Strava or Intervals.icu — Which Should You Use with Runner's Rings?</h2>
+    <p class="lead">2026.09.14 / Runner's Rings Development Note</p>
+    <p>Runner's Rings supports several import methods. One common question is whether Strava or Intervals.icu should be used.</p>
+    
+<p>In most cases, it is best to choose <strong>either Strava or Intervals.icu as your main source</strong>.</p>
+<h3>Why not connect both?</h3>
+<p>If the same run exists in both services, duplicate data may be imported. Runner's Rings includes duplicate detection using date, distance, start time, and route information, but using one main source keeps things simpler.</p>
+<div class="highlight"><p>If Strava is your main training hub, use Strava. If you already live in Intervals.icu, use Intervals.icu. Runner's Rings turns that activity data into a map of your running life.</p></div>
+<h3>Different tools, different roles</h3>
+<p>Strava and Intervals.icu are strong at activity and training management. Runner's Rings focuses on where you have run and how your map has expanded.</p>
+
+    <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+  </article>
+</main>
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>
