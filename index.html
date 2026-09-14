@@ -887,6 +887,37 @@
       cursor:pointer;
     }
 
+    .prefectureActionButtons{
+      flex:0 0 auto;
+      display:flex;
+      align-items:stretch;
+      gap:6px;
+    }
+
+    .prefectureShareButton{
+      flex:0 0 auto;
+      min-width:52px;
+      padding:6px 8px;
+      border:1px solid rgba(255,43,214,.42);
+      border-radius:10px;
+      background:rgba(255,43,214,.08);
+      color:#ffffff;
+      font:inherit;
+      font-size:10px;
+      font-weight:800;
+      line-height:1.25;
+      cursor:pointer;
+    }
+
+    .prefectureShareButton:hover{
+      background:rgba(255,43,214,.16);
+    }
+
+    .prefectureShareButton:focus-visible{
+      outline:3px solid rgba(255,43,214,.75);
+      outline-offset:2px;
+    }
+
     .prefectureConquestButton:hover{
       background:rgba(234,255,0,.10);
     }
@@ -958,6 +989,17 @@
 
       .prefectureConquestRate,
       .prefectureConquestRemaining{
+        font-size:9px;
+      }
+
+
+      .prefectureActionButtons{
+        gap:4px;
+      }
+
+      .prefectureShareButton{
+        min-width:46px;
+        padding:5px 6px;
         font-size:9px;
       }
     }
@@ -12777,6 +12819,868 @@ function getPrefectureConquest(
 
 
 /* =====================================
+   都道府県走破シェア
+===================================== */
+
+function isRunnerRingsEnglish() {
+
+  try {
+    return (
+      localStorage.getItem(
+        'runners-rings-language'
+      ) === 'en'
+    );
+  }
+  catch(error) {
+    return false;
+  }
+
+}
+
+
+function getPrefectureShareFeatures(
+  prefecture
+) {
+
+  return municipalityFeatures
+    .filter(
+      item =>
+        getPrefecture(
+          item.feature
+        ) === prefecture
+    )
+    .map(
+      item =>
+        item.feature
+    );
+
+}
+
+
+function getPrefectureSharePeriodLabel() {
+
+  if (
+    selectedYear ===
+    'ALL'
+  ) {
+    return 'ALL';
+  }
+
+  if (
+    selectedMonth ===
+    'ALL'
+  ) {
+    return String(
+      selectedYear
+    );
+  }
+
+  return (
+    selectedYear +
+    '.' +
+    String(
+      selectedMonth
+    )
+      .padStart(
+        2,
+        '0'
+      )
+  );
+
+}
+
+
+function createPrefectureConquestShareCanvas(
+  prefecture,
+  stats
+) {
+
+  const features =
+    getPrefectureShareFeatures(
+      prefecture
+    );
+
+  if (
+    !features.length
+  ) {
+    throw new Error(
+      '共有用の行政境界データがありません'
+    );
+  }
+
+  const conquest =
+    getPrefectureConquest(
+      prefecture,
+      stats
+    );
+
+  const completed =
+    new Set(
+      conquest.completedCityKeys
+    );
+
+  const canvas =
+    document.createElement(
+      'canvas'
+    );
+
+  canvas.width =
+    1080;
+
+  canvas.height =
+    1350;
+
+  const ctx =
+    canvas.getContext(
+      '2d'
+    );
+
+  if (!ctx) {
+    throw new Error(
+      '共有画像を作成できません'
+    );
+  }
+
+  const W =
+    canvas.width;
+
+  const H =
+    canvas.height;
+
+  const background =
+    ctx.createLinearGradient(
+      0,
+      0,
+      W,
+      H
+    );
+
+  background.addColorStop(
+    0,
+    '#07101d'
+  );
+
+  background.addColorStop(
+    0.55,
+    '#0b1422'
+  );
+
+  background.addColorStop(
+    1,
+    '#101d31'
+  );
+
+  ctx.fillStyle =
+    background;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const glow =
+    ctx.createRadialGradient(
+      900,
+      170,
+      0,
+      900,
+      170,
+      420
+    );
+
+  glow.addColorStop(
+    0,
+    'rgba(255,43,214,.18)'
+  );
+
+  glow.addColorStop(
+    1,
+    'rgba(255,43,214,0)'
+  );
+
+  ctx.fillStyle =
+    glow;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const english =
+    isRunnerRingsEnglish();
+
+  ctx.textBaseline =
+    'top';
+
+  ctx.fillStyle =
+    '#ff2bd6';
+
+  ctx.font =
+    '800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'REGION CONQUEST'
+      : '地域走破',
+    72,
+    68
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 58px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    prefecture,
+    72,
+    120
+  );
+
+  const periodLabel =
+    getPrefectureSharePeriodLabel();
+
+  ctx.fillStyle =
+    '#eaff00';
+
+  ctx.font =
+    '800 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    periodLabel,
+    74,
+    200
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 78px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    conquest.completed +
+      ' / ' +
+      conquest.total,
+    72,
+    262
+  );
+
+  ctx.fillStyle =
+    '#b9c6d6';
+
+  ctx.font =
+    '700 26px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'municipalities completed'
+      : '市町村走破',
+    76,
+    352
+  );
+
+  ctx.textAlign =
+    'right';
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 52px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    conquest.rate +
+      '%',
+    W - 72,
+    276
+  );
+
+  ctx.fillStyle =
+    '#b9c6d6';
+
+  ctx.font =
+    '700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'completion'
+      : '走破率',
+    W - 72,
+    340
+  );
+
+  ctx.fillStyle =
+    conquest.remaining === 0
+      ? '#eaff00'
+      : '#ffcf33';
+
+  ctx.font =
+    '800 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    conquest.remaining === 0
+      ? 'COMPLETE'
+      : (
+          english
+            ? 'Remaining ' +
+              conquest.remaining
+            : '残り ' +
+              conquest.remaining
+        ),
+    W - 72,
+    382
+  );
+
+  ctx.textAlign =
+    'left';
+
+  const mapBox = {
+    x: 72,
+    y: 442,
+    width: W - 144,
+    height: 690,
+    padding: 50
+  };
+
+  ctx.fillStyle =
+    'rgba(19,34,55,.82)';
+
+  ctx.strokeStyle =
+    'rgba(255,255,255,.08)';
+
+  ctx.lineWidth =
+    2;
+
+  ctx.beginPath();
+
+  if (
+    typeof ctx.roundRect ===
+    'function'
+  ) {
+    ctx.roundRect(
+      mapBox.x,
+      mapBox.y,
+      mapBox.width,
+      mapBox.height,
+      34
+    );
+  }
+  else {
+    ctx.rect(
+      mapBox.x,
+      mapBox.y,
+      mapBox.width,
+      mapBox.height
+    );
+  }
+
+  ctx.fill();
+  ctx.stroke();
+
+  const coordinates =
+    [];
+
+  features.forEach(
+    feature =>
+      collectCoordinates(
+        feature.geometry.coordinates,
+        coordinates
+      )
+  );
+
+  const centerLat =
+    coordinates.reduce(
+      (sum, point) =>
+        sum +
+        point[1],
+      0
+    ) /
+    coordinates.length;
+
+  const lonFactor =
+    Math.cos(
+      centerLat *
+      Math.PI /
+      180
+    );
+
+  const projected =
+    coordinates.map(
+      point => [
+        point[0] *
+          lonFactor,
+        point[1]
+      ]
+    );
+
+  const minX =
+    Math.min(
+      ...projected.map(
+        point =>
+          point[0]
+      )
+    );
+
+  const maxX =
+    Math.max(
+      ...projected.map(
+        point =>
+          point[0]
+      )
+    );
+
+  const minY =
+    Math.min(
+      ...projected.map(
+        point =>
+          point[1]
+      )
+    );
+
+  const maxY =
+    Math.max(
+      ...projected.map(
+        point =>
+          point[1]
+      )
+    );
+
+  const availableWidth =
+    mapBox.width -
+    mapBox.padding *
+    2;
+
+  const availableHeight =
+    mapBox.height -
+    mapBox.padding *
+    2;
+
+  const spanX =
+    Math.max(
+      0.000001,
+      maxX -
+      minX
+    );
+
+  const spanY =
+    Math.max(
+      0.000001,
+      maxY -
+      minY
+    );
+
+  const scale =
+    Math.min(
+      availableWidth /
+        spanX,
+      availableHeight /
+        spanY
+    );
+
+  const drawnWidth =
+    spanX *
+    scale;
+
+  const drawnHeight =
+    spanY *
+    scale;
+
+  const offsetX =
+    mapBox.x +
+    (
+      mapBox.width -
+      drawnWidth
+    ) /
+    2;
+
+  const offsetY =
+    mapBox.y +
+    (
+      mapBox.height -
+      drawnHeight
+    ) /
+    2;
+
+  const projectPoint =
+    point => {
+      const x =
+        point[0] *
+        lonFactor;
+
+      const y =
+        point[1];
+
+      return [
+        offsetX +
+          (
+            x -
+            minX
+          ) *
+          scale,
+        offsetY +
+          drawnHeight -
+          (
+            y -
+            minY
+          ) *
+          scale
+      ];
+    };
+
+  function traceRing(
+    ring
+  ) {
+
+    ring.forEach(
+      (point, index) => {
+        const projectedPoint =
+          projectPoint(
+            point
+          );
+
+        if (index === 0) {
+          ctx.moveTo(
+            projectedPoint[0],
+            projectedPoint[1]
+          );
+        }
+        else {
+          ctx.lineTo(
+            projectedPoint[0],
+            projectedPoint[1]
+          );
+        }
+      }
+    );
+
+    ctx.closePath();
+
+  }
+
+  function traceFeature(
+    feature
+  ) {
+
+    const geometry =
+      feature.geometry;
+
+    if (
+      geometry.type ===
+      'Polygon'
+    ) {
+      geometry.coordinates
+        .forEach(
+          traceRing
+        );
+    }
+    else if (
+      geometry.type ===
+      'MultiPolygon'
+    ) {
+      geometry.coordinates
+        .forEach(
+          polygon =>
+            polygon.forEach(
+              traceRing
+            )
+        );
+    }
+
+  }
+
+  features.forEach(
+    feature => {
+      const cityKey =
+        getCityKey(
+          feature
+        );
+
+      const isCompleted =
+        completed.has(
+          cityKey
+        );
+
+      ctx.save();
+
+      ctx.beginPath();
+
+      traceFeature(
+        feature
+      );
+
+      ctx.fillStyle =
+        isCompleted
+          ? '#ff2bd6'
+          : '#243247';
+
+      if (isCompleted) {
+        ctx.shadowColor =
+          'rgba(255,43,214,.34)';
+
+        ctx.shadowBlur =
+          14;
+      }
+
+      try {
+        ctx.fill(
+          'evenodd'
+        );
+      }
+      catch(error) {
+        ctx.fill();
+      }
+
+      ctx.shadowBlur =
+        0;
+
+      ctx.strokeStyle =
+        'rgba(255,255,255,.58)';
+
+      ctx.lineWidth =
+        1.35;
+
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+
+  ctx.font =
+    '800 42px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    "Runner's Rings",
+    72,
+    1190
+  );
+
+  ctx.fillStyle =
+    '#b9c6d6';
+
+  ctx.font =
+    '700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    english
+      ? 'Map the life you run.'
+      : '走った人生を、地図に残す。',
+    72,
+    1248
+  );
+
+  ctx.textAlign =
+    'right';
+
+  ctx.fillStyle =
+    '#ff2bd6';
+
+  ctx.font =
+    '800 24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  ctx.fillText(
+    'runnersrings.com',
+    W - 72,
+    1250
+  );
+
+  ctx.textAlign =
+    'left';
+
+  return canvas;
+
+}
+
+
+async function sharePrefectureConquest(
+  prefecture,
+  stats
+) {
+
+  try {
+    const canvas =
+      createPrefectureConquestShareCanvas(
+        prefecture,
+        stats
+      );
+
+    const blob =
+      await new Promise(
+        (resolve, reject) => {
+          canvas.toBlob(
+            result => {
+              if (result) {
+                resolve(
+                  result
+                );
+              }
+              else {
+                reject(
+                  new Error(
+                    '共有画像を作成できません'
+                  )
+                );
+              }
+            },
+            'image/png'
+          );
+        }
+      );
+
+    const conquest =
+      getPrefectureConquest(
+        prefecture,
+        stats
+      );
+
+    const periodLabel =
+      getPrefectureSharePeriodLabel();
+
+    const safePrefecture =
+      prefecture.replace(
+        /[^0-9A-Za-zぁ-んァ-ヶ一-龠々ー_-]/g,
+        '_'
+      );
+
+    const fileName =
+      'RunnerRings_' +
+      safePrefecture +
+      '_' +
+      periodLabel.replace(
+        /[^0-9A-Za-z_-]/g,
+        '_'
+      ) +
+      '.png';
+
+    const file =
+      new File(
+        [blob],
+        fileName,
+        {
+          type: 'image/png'
+        }
+      );
+
+    const english =
+      isRunnerRingsEnglish();
+
+    const shareText =
+      english
+        ? (
+            prefecture +
+            ' ' +
+            conquest.completed +
+            '/' +
+            conquest.total +
+            ' · ' +
+            conquest.rate +
+            '% complete (' +
+            periodLabel +
+            ')\nRunner\'s Rings\nhttps://runnersrings.com'
+          )
+        : (
+            prefecture +
+            ' ' +
+            conquest.completed +
+            '/' +
+            conquest.total +
+            '市町村 走破' +
+            conquest.rate +
+            '%（' +
+            periodLabel +
+            '）\nRunner\'s Rings\nhttps://runnersrings.com'
+          );
+
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
+      await navigator.share({
+        title:
+          "Runner's Rings " +
+          prefecture,
+        text:
+          shareText,
+        files:
+          [file]
+      });
+
+      return;
+    }
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+    link.href =
+      url;
+
+    link.download =
+      fileName;
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+    link.remove();
+
+    setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      1000
+    );
+
+    setStatus(
+      english
+        ? '✅ Conquest image saved'
+        : '✅ 走破画像を保存しました'
+    );
+
+  }
+  catch(error) {
+    if (
+      error?.name ===
+      'AbortError'
+    ) {
+      return;
+    }
+
+    console.error(
+      'Prefecture conquest share error:',
+      error
+    );
+
+    alert(
+      isRunnerRingsEnglish()
+        ? 'Could not create the conquest image.'
+        : '走破画像を作成できませんでした。'
+    );
+  }
+
+}
+
+
+/* =====================================
    都道府県 Dashboard
 ===================================== */
 
@@ -12988,9 +13892,58 @@ function updatePrefectureDashboard(
         '</div>';
 
 
+      const shareButton =
+        document.createElement(
+          'button'
+        );
+
+      shareButton.type =
+        'button';
+
+      shareButton.className =
+        'prefectureShareButton';
+
+      shareButton.textContent =
+        isRunnerRingsEnglish()
+          ? 'Share'
+          : '共有';
+
+      shareButton.setAttribute(
+        'aria-label',
+        isRunnerRingsEnglish()
+          ? 'Share ' +
+            prefecture +
+            ' conquest image'
+          : prefecture +
+            'の走破画像を共有'
+      );
+
+      shareButton.onclick =
+        async event => {
+          event.stopPropagation();
+
+          await sharePrefectureConquest(
+            prefecture,
+            stats
+          );
+        };
+
+      const actionButtons =
+        document.createElement(
+          'div'
+        );
+
+      actionButtons.className =
+        'prefectureActionButtons';
+
+      actionButtons.append(
+        conquestButton,
+        shareButton
+      );
+
       top.append(
         main,
-        conquestButton
+        actionButtons
       );
 
 
@@ -13105,6 +14058,11 @@ function updatePrefectureDashboard(
               .target
               .closest(
                 '.prefectureConquestDetails'
+              ) ||
+            event
+              .target
+              .closest(
+                '.prefectureShareButton'
               )
           ) {
 
@@ -14507,6 +15465,8 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['読み込み中…','Loading…'],
   ['ページ上部へ戻る','Back to top'],
   ['ランリングをシェア','Share Runner\'s Rings'],
+  ['走破画像を保存しました','Conquest image saved'],
+  ['走破画像を作成できませんでした。','Could not create the conquest image.'],
   ['Runner\'s Ringsとは？','About Runner\'s Rings'],
   ['使い方','How to Use'],
   ['利用規約','Terms of Service'],
