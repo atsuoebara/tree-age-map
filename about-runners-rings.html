@@ -7,7 +7,7 @@
   <title>Runner's Rings（ランナーズリングス）とは？</title>
   <meta
     name="description"
-    content="Runner's Rings（ランナーズリングス）は、走った道を地図に積み重ね、累計距離や地域別・年月別の記録を振り返るランニング記録アプリです。"
+    content="Runner's Rings（ランナーズリングス）は、走った道を地図に積み重ね、国・都道府県・市町村の地域走破、ALL・年別表示、面・コース切替、走破シェアを楽しめるランニング記録アプリです。"
   >
 
   <style>
@@ -208,6 +208,67 @@
       text-decoration:underline;
     }
 
+
+    .unique-value{
+      margin:46px 0 0;
+      padding-top:36px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+
+    .unique-value-grid{
+      display:grid;
+      gap:14px;
+      margin-top:22px;
+    }
+
+    .unique-value-card{
+      padding:18px;
+      background:#132237;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+    }
+
+    .unique-value-card h3{
+      margin:0 0 8px;
+      font-size:18px;
+      line-height:1.5;
+    }
+
+    .unique-value-card p{
+      margin:0;
+      font-size:14px;
+    }
+
+    .unique-value-card strong{
+      color:#ffffff;
+    }
+
+    .next-run{
+      margin:34px 0 0;
+      padding:22px 20px;
+      border-radius:18px;
+      background:
+        linear-gradient(135deg, rgba(255,43,214,.12), rgba(234,255,0,.05)),
+        #132237;
+      border:1px solid rgba(255,255,255,.09);
+    }
+
+    .next-run h3{
+      margin:0 0 10px;
+      color:#eaff00;
+      font-size:20px;
+    }
+
+    .next-run p:last-child{
+      margin-bottom:0;
+    }
+
+    @media (min-width:680px){
+      .unique-value-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
     @media (min-width:680px){
       main{
         padding-top:52px;
@@ -334,6 +395,85 @@
         </ul>
       </div>
     </article>
+  </section>
+
+  <section class="unique-value">
+    <h2 class="features-title">Runner's Ringsならではの楽しみ方</h2>
+
+    <p>
+      Runner's Ringsは、トレーニングの評価だけではなく、
+      「どこまで走ったか」「次はどこを走ろうか」を地図から楽しめるように作っています。
+    </p>
+
+    <div class="unique-value-grid">
+
+      <article class="unique-value-card">
+        <h3>地域走破を、数字と地図で見る</h3>
+        <p>
+          日本では、国から都道府県、さらに市町村へと掘り下げて、
+          <strong>走破した地域数・走破率・残り地域数</strong>を確認できます。
+          走破済みと未走破の地域名も一覧で表示します。
+        </p>
+      </article>
+
+      <article class="unique-value-card">
+        <h3>ALLと年別で「年輪」を比べる</h3>
+        <p>
+          ALLではこれまでの全期間、年を選べばその1年間だけの地図と走破状況を表示します。
+          積み重ねた人生の地図と、今年新しく広がった地図を分けて振り返れます。
+        </p>
+      </article>
+
+      <article class="unique-value-card">
+        <h3>面とコースを、自分で切り替える</h3>
+        <p>
+          地図は<strong>「自動・面・コース」</strong>を切り替えられます。
+          広い範囲では走った地域の広がりを「面」で、
+          道路レベルでは実際に走ったルートを「コース」で確認できます。
+        </p>
+      </article>
+
+      <article class="unique-value-card">
+        <h3>走破した地域だけを、共有画像に</h3>
+        <p>
+          都道府県や国の走破状況は、対象地域だけを切り出した専用画像として共有できます。
+          走破済みの地域はピンクで表示し、走破数・走破率・残り数をシンプルにまとめます。
+        </p>
+      </article>
+
+      <article class="unique-value-card">
+        <h3>国から地域へ、世界へ広げる</h3>
+        <p>
+          日本では国 → 都道府県 → 市町村、
+          海外では利用できる行政境界データに応じて国や州・地域を表示します。
+          世界中を同じ考え方で楽しめるよう、対応地域を段階的に広げています。
+        </p>
+      </article>
+
+      <article class="unique-value-card">
+        <h3>記録を見るだけで終わらない</h3>
+        <p>
+          未走破の地域が見えることで、
+          「あと1つ隣の市まで行ってみよう」「今年はこの県を広げよう」と、
+          過去の記録が次のランニングのきっかけになります。
+        </p>
+      </article>
+
+    </div>
+
+    <div class="next-run">
+      <h3>次はどこを走ろう。</h3>
+      <p>
+        Runner's Ringsで大切にしているのは、過去を振り返ることだけではありません。
+        地図にまだ色が付いていない場所を見つけると、
+        いつものランニングに新しい目的が生まれます。
+      </p>
+      <p>
+        記録するために走るのではなく、
+        走ってきた人生の地図が、次に走る場所を教えてくれる。
+        そんな循環を目指しています。
+      </p>
+    </div>
   </section>
 
   <h2>走った道には、思い出が残っている</h2>
@@ -496,7 +636,25 @@
     "使い方": "How to Use",
     "利用規約": "Terms of Service",
     "プライバシーポリシー": "Privacy Policy",
-    "お問い合わせ": "Contact"
+    "お問い合わせ": "Contact",
+    "Runner's Ringsならではの楽しみ方": "What makes Runner's Rings different",
+    "Runner's Ringsは、トレーニングの評価だけではなく、 「どこまで走ったか」「次はどこを走ろうか」を地図から楽しめるように作っています。": "Runner's Rings is designed not only for training records, but also to make it fun to see how far your map has expanded and decide where to run next.",
+    "地域走破を、数字と地図で見る": "See region conquest on the map and in numbers",
+    "日本では、国から都道府県、さらに市町村へと掘り下げて、 走破した地域数・走破率・残り地域数を確認できます。 走破済みと未走破の地域名も一覧で表示します。": "In Japan, you can drill down from country to prefecture to municipality and see conquered regions, conquest rate, and remaining regions, together with lists of completed and unvisited areas.",
+    "ALLと年別で「年輪」を比べる": "Compare your annual rings with ALL and yearly views",
+    "ALLではこれまでの全期間、年を選べばその1年間だけの地図と走破状況を表示します。 積み重ねた人生の地図と、今年新しく広がった地図を分けて振り返れます。": "ALL shows your full running history, while a selected year shows only that year's map and conquest progress. You can compare your lifetime map with how far it expanded in a particular year.",
+    "面とコースを、自分で切り替える": "Switch between area and route views",
+    "地図は「自動・面・コース」を切り替えられます。 広い範囲では走った地域の広がりを「面」で、 道路レベルでは実際に走ったルートを「コース」で確認できます。": "The map lets you switch between Auto, Area, and Route. Use Area to see how widely you have explored, and Route to see the roads you actually ran.",
+    "走破した地域だけを、共有画像に": "Share a clean image of your conquest",
+    "都道府県や国の走破状況は、対象地域だけを切り出した専用画像として共有できます。 走破済みの地域はピンクで表示し、走破数・走破率・残り数をシンプルにまとめます。": "Country and prefecture conquest can be shared as a dedicated image cropped to the selected region. Conquered areas are highlighted in pink together with progress, percentage, and remaining regions.",
+    "国から地域へ、世界へ広げる": "From countries to regions, expanding worldwide",
+    "日本では国 → 都道府県 → 市町村、 海外では利用できる行政境界データに応じて国や州・地域を表示します。 世界中を同じ考え方で楽しめるよう、対応地域を段階的に広げています。": "In Japan, the hierarchy is country → prefecture → municipality. Outside Japan, countries and supported states or regions are shown according to available boundary data, with coverage expanding gradually.",
+    "記録を見るだけで終わらない": "Your history becomes a reason to run again",
+    "未走破の地域が見えることで、 「あと1つ隣の市まで行ってみよう」「今年はこの県を広げよう」と、 過去の記録が次のランニングのきっかけになります。": "Seeing unvisited areas can turn your history into motivation: run one town farther, explore a neighboring area, or expand your map this year.",
+    "次はどこを走ろう。": "Where will you run next?",
+    "Runner's Ringsで大切にしているのは、過去を振り返ることだけではありません。 地図にまだ色が付いていない場所を見つけると、 いつものランニングに新しい目的が生まれます。": "Runner's Rings is not only about looking back. Finding blank places on your map can give your everyday running a new purpose.",
+    "記録するために走るのではなく、 走ってきた人生の地図が、次に走る場所を教えてくれる。 そんな循環を目指しています。": "The goal is not to run just to collect records, but to let the map of your running life inspire where you go next.",
+    "FAQ": "FAQ"
   };
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
@@ -515,7 +673,7 @@
   document.querySelectorAll('[alt]').forEach((element) => { if (altTranslations[element.alt]) element.alt = altTranslations[element.alt]; });
   document.documentElement.lang = 'en';
   const description = document.querySelector('meta[name="description"]');
-  if (description) description.content = "Runner's Rings builds a personal map from your running routes and lets you explore your history by distance, region, year, and month.";
+  if (description) description.content = "Runner's Rings builds a personal map from your running routes, including region conquest, all-time and yearly views, area and route modes, and shareable conquest images.";
   document.title = "About Runner's Rings";
 })();
 </script>
