@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="地図を「自動・面・コース」で切り替えられるようにした理由">
+<title>地図を「自動・面・コース」で切り替えられるようにした理由｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}
+body{min-height:100vh;background:
+radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),#0b1422}
+header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.meta{margin:12px 0 28px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+strong{color:#fff}
+.highlight{margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)}
+.note{margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)}
+.backArea{margin-top:32px;text-align:center}
+.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none} html[lang="en"] [data-lang="ja"]{display:none} html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>地図を「自動・面・コース」で切り替えられるようにした理由</h2>
+  <div class="meta">2026.09.14 ・ 地図表示</div>
+  
+<p>Runner's Ringsの地図には、同じランニングデータを違う角度から見るための表示があります。以前はズームによって自動的に切り替えていましたが、今は<strong>「自動・面・コース」</strong>を自分で選べるようにしました。</p>
+<h3>「面」は、走った広がりを見るため</h3>
+<p>一本一本の道路だけを見ると、長い年月でどこまで行動範囲が広がったのかは少し分かりにくくなります。そこでRunner's Ringsでは、走った地域の広がりを面として見られるようにしています。</p>
+<div class="highlight"><strong>「どこを走ったか」だけでなく、「どこまで自分の地図が広がったか」を見る。</strong><br>これが面表示の役割です。</div>
+<h3>「コース」は、実際に走った道を残すため</h3>
+<p>一方で、思い出が宿るのは具体的な道です。通勤ランで何度も通った道、大会で走った道、旅先で偶然選んだ道。コース表示では、その軌跡そのものを残します。</p>
+<h3>だから、どちらか一方にはしなかった</h3>
+<p>面だけでは実際の道が見えません。コースだけでは、長年かけて広がった全体像が見えにくくなります。Runner's Ringsでは、この二つは競合する表示ではなく、同じ「走った人生」を別の距離感から見るためのものだと考えています。</p>
+<div class="note"><strong>自動</strong>はこれまでどおりズームに応じて切り替えます。<strong>面</strong>と<strong>コース</strong>は、見たいものを自分で固定したい時に使えます。</div>
+<h3>地図を見る行為そのものを、少し楽しく</h3>
+<p>トレーニングの数値を見るだけでなく、地図を動かしながら昔の自分の道を見つける。Runner's Ringsでは、そんな時間もランニングの楽しみの一部にしたいと思っています。</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+</section>
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Why Runner's Rings Lets You Switch Between Auto, Area, and Route</h2>
+  <div class="meta">2026.09.14 ・ Map View</div>
+  
+<p>Runner's Rings offers different ways to look at the same running history. The map used to switch automatically as you zoomed, but now you can choose between <strong>Auto, Area, and Route</strong>.</p>
+<h3>Area view shows how far your running world has expanded</h3>
+<p>When every road is shown individually, it can be hard to see how your territory has grown over months and years. Area view is designed to make that expansion visible.</p>
+<div class="highlight"><strong>It is not only about which roads you ran, but how far your personal map has spread.</strong></div>
+<h3>Route view keeps the actual roads</h3>
+<p>The memories often live on specific streets: a commute you ran again and again, a race course, or a road you happened to discover while traveling. Route view preserves those exact traces.</p>
+<h3>That is why Runner's Rings keeps both</h3>
+<p>Area alone loses the detail of the roads. Routes alone can hide the bigger picture. We see them as two different distances from which to look at the same running life.</p>
+<div class="note"><strong>Auto</strong> keeps the original zoom-based behavior. <strong>Area</strong> and <strong>Route</strong> let you lock the map to what you want to see.</div>
+<h3>Making the map itself part of the experience</h3>
+<p>Runner's Rings is not only about numbers. Moving around the map and rediscovering roads from years ago can be part of the joy too.</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+</section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
+applyLanguage(savedLanguage);
+</script>
+
+</body>
+</html>
