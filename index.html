@@ -763,6 +763,45 @@
       border-color:#ff2bd6;
     }
 
+    #mapViewModeBar{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:7px;
+      padding:8px 10px;
+      background:#0f1d2f;
+      color:#cbd5e1;
+      font-size:12px;
+    }
+
+    .mapViewModeLabel{
+      margin-right:2px;
+      opacity:.78;
+    }
+
+    .mapViewModeButton{
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      background:#17283d;
+      color:#dce8f5;
+      padding:7px 11px;
+      font:inherit;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mapViewModeButton.isActive{
+      border-color:#ff2bd6;
+      background:#ff2bd6;
+      color:#ffffff;
+    }
+
+    .mapViewModeButton:focus-visible{
+      outline:3px solid rgba(234,255,0,.8);
+      outline-offset:2px;
+    }
+
     #map{
       width:100%;
       height:44vh;
@@ -2396,6 +2435,12 @@
       <option value="11">11月</option>
       <option value="12">12月</option>
     </select>
+  </div>
+  <div id="mapViewModeBar" aria-label="地図の表示モード">
+    <span class="mapViewModeLabel">表示</span>
+    <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
+    <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
+    <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
   </div>
   <div id="map"></div>
 
@@ -4750,6 +4795,32 @@ let selectedYear =
   'ALL';
 let selectedMonth =
   'ALL';
+
+const MAP_VIEW_MODE_STORAGE_KEY =
+  'RunnerRingsMapViewMode';
+
+let mapViewMode =
+  (() => {
+    try {
+      const savedMode =
+        localStorage.getItem(
+          MAP_VIEW_MODE_STORAGE_KEY
+        );
+
+      return [
+        'auto',
+        'area',
+        'route'
+      ].includes(
+        savedMode
+      )
+        ? savedMode
+        : 'auto';
+    } catch (error) {
+      return 'auto';
+    }
+  })();
+
 let cloudRunCount =
   0;
 
@@ -15935,7 +16006,285 @@ function updateDashboard(
    表示切替
 ===================================== */
 
+function syncMapViewModeButtons() {
+  document
+    .querySelectorAll(
+      '.mapViewModeButton'
+    )
+    .forEach(
+      button => {
+        button.classList.toggle(
+          'isActive',
+          button.dataset.mapViewMode ===
+            mapViewMode
+        );
+      }
+    );
+}
+
+
+function setMapViewMode(
+  mode
+) {
+  if (
+    ![
+      'auto',
+      'area',
+      'route'
+    ].includes(
+      mode
+    )
+  ) {
+    return;
+  }
+
+  mapViewMode =
+    mode;
+
+  try {
+    localStorage.setItem(
+      MAP_VIEW_MODE_STORAGE_KEY,
+      mode
+    );
+  } catch (error) {
+    console.warn(
+      'Map view mode storage error:',
+      error
+    );
+  }
+
+  syncMapViewModeButtons();
+  updateDisplay();
+}
+
+
+document
+  .querySelectorAll(
+    '.mapViewModeButton'
+  )
+  .forEach(
+    button => {
+      button.addEventListener(
+        'click',
+        () =>
+          setMapViewMode(
+            button.dataset.mapViewMode
+          )
+      );
+    }
+  );
+
+syncMapViewModeButtons();
+
+
 function updateDisplay() {
+  const zoom =
+    map.getZoom();
+
+  const mapZoomHint =
+    document.getElementById(
+      'mapZoomHint'
+    );
+
+  // 世界表示は既存ルールを優先。
+  // 手動モードでも国の表示を壊さない。
+  if (
+    zoom <=
+    3
+  ) {
+    updateDisplayAuto();
+    return;
+  }
+
+  if (
+    mapViewMode ===
+    'auto'
+  ) {
+    updateDisplayAuto();
+    return;
+  }
+
+  if (
+    mapZoomHint
+  ) {
+    mapZoomHint.style.display =
+      'none';
+  }
+
+  if (
+    worldCountryLayer &&
+    map.hasLayer(
+      worldCountryLayer
+    )
+  ) {
+    map.removeLayer(
+      worldCountryLayer
+    );
+  }
+
+  if (
+    mapViewMode ===
+    'area'
+  ) {
+    if (
+      map.hasLayer(
+        routeGroup
+      )
+    ) {
+      map.removeLayer(
+        routeGroup
+      );
+    }
+
+    if (
+      map.hasLayer(
+        ringGroup
+      )
+    ) {
+      map.removeLayer(
+        ringGroup
+      );
+    }
+
+    const showingUsaRegions =
+      usaRegionLayer &&
+      Object.keys(
+        usaRegionLayers
+      ).length >
+        0 &&
+      map
+        .getBounds()
+        .intersects(
+          usaRegionLayer
+            .getBounds()
+        );
+
+    if (
+      showingUsaRegions
+    ) {
+      if (
+        municipalityLayer &&
+        map.hasLayer(
+          municipalityLayer
+        )
+      ) {
+        map.removeLayer(
+          municipalityLayer
+        );
+      }
+
+      if (
+        usaRegionLayer &&
+        !map.hasLayer(
+          usaRegionLayer
+        )
+      ) {
+        usaRegionLayer.addTo(
+          map
+        );
+      }
+    }
+    else {
+      if (
+        usaRegionLayer &&
+        map.hasLayer(
+          usaRegionLayer
+        )
+      ) {
+        map.removeLayer(
+          usaRegionLayer
+        );
+      }
+
+      if (
+        municipalityLayer &&
+        !map.hasLayer(
+          municipalityLayer
+        )
+      ) {
+        municipalityLayer.addTo(
+          map
+        );
+      }
+    }
+
+    setStatus(
+      showingUsaRegions
+        ? (
+            selectedYear ===
+            'ALL'
+              ? '面表示：走った州・地域を表示'
+              : selectedYear +
+                '年：走った州・地域を面表示'
+          )
+        : (
+            selectedYear ===
+            'ALL'
+              ? '面表示：累積走行距離を市町村面で表示'
+              : selectedYear +
+                '年：走行距離を市町村面で表示'
+          )
+    );
+
+    return;
+  }
+
+  // コース表示：既存の実走線（赤）だけを表示する。
+  // 選択中の1ランを示す青線は selectedRunLine で別管理のため、
+  // この切替では触らず従来どおり保持する。
+  if (
+    municipalityLayer &&
+    map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+    map.removeLayer(
+      municipalityLayer
+    );
+  }
+
+  if (
+    usaRegionLayer &&
+    map.hasLayer(
+      usaRegionLayer
+    )
+  ) {
+    map.removeLayer(
+      usaRegionLayer
+    );
+  }
+
+  if (
+    map.hasLayer(
+      ringGroup
+    )
+  ) {
+    map.removeLayer(
+      ringGroup
+    );
+  }
+
+  if (
+    !map.hasLayer(
+      routeGroup
+    )
+  ) {
+    routeGroup.addTo(
+      map
+    );
+  }
+
+  setStatus(
+    selectedYear ===
+    'ALL'
+      ? 'コース表示：実際に走ったコース'
+      : selectedYear +
+        '年：実際に走ったコース'
+  );
+}
+
+
+function updateDisplayAuto() {
 
   const zoom =
     map.getZoom();
