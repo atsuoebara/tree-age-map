@@ -1078,6 +1078,46 @@
       outline-offset:2px;
     }
 
+    .countryConquestStatus{
+      cursor:pointer;
+    }
+
+    .countryConquestDetails{
+      display:none;
+      margin-top:10px;
+      padding:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+      font-size:11px;
+      line-height:1.7;
+    }
+
+    .countryConquestDetails.isOpen{
+      display:block;
+    }
+
+    .countryConquestGroup + .countryConquestGroup{
+      margin-top:8px;
+    }
+
+    .countryConquestLabel{
+      display:block;
+      margin-bottom:2px;
+      font-weight:800;
+    }
+
+    .countryConquestLabel.completed{
+      color:#eaff00;
+    }
+
+    .countryConquestLabel.remaining{
+      color:#ffcf33;
+    }
+
+    .countryConquestNames{
+      color:#d9e2ee;
+      word-break:break-word;
+    }
+
     @media (max-width:420px){
       .countryConquestStatus{
         min-width:84px;
@@ -12791,6 +12831,9 @@ function updateCountryDashboard(
           stats
         );
 
+      let countryDetails =
+        null;
+
       if (
         countryShareData &&
         countryShareData.mode ===
@@ -12798,11 +12841,19 @@ function updateCountryDashboard(
       ) {
         const conquestStatus =
           document.createElement(
-            'div'
+            'button'
           );
+
+        conquestStatus.type =
+          'button';
 
         conquestStatus.className =
           'countryConquestStatus';
+
+        conquestStatus.setAttribute(
+          'aria-expanded',
+          'false'
+        );
 
         const conquestRate =
           countryShareData.total > 0
@@ -12839,6 +12890,133 @@ function updateCountryDashboard(
                   countryShareData.remaining
             ) +
           '</div>';
+
+        const completedKeys =
+          Array.from(
+            new Set(
+              countryShareData.features
+                .filter(
+                  item =>
+                    item.completed
+                )
+                .map(
+                  item =>
+                    item.groupKey
+                )
+            )
+          );
+
+        const remainingKeys =
+          Array.from(
+            new Set(
+              countryShareData.features
+                .filter(
+                  item =>
+                    !item.completed
+                )
+                .map(
+                  item =>
+                    item.groupKey
+                )
+            )
+          );
+
+        const formatSubregionName =
+          key =>
+            countryCode === 'USA'
+              ? getUsaRegionNameByCode(
+                  key
+                )
+              : key;
+
+        const completedNames =
+          completedKeys
+            .map(
+              formatSubregionName
+            );
+
+        const remainingNames =
+          remainingKeys
+            .map(
+              formatSubregionName
+            );
+
+        countryDetails =
+          document.createElement(
+            'div'
+          );
+
+        countryDetails.className =
+          'countryConquestDetails';
+
+        countryDetails.innerHTML =
+          '<div class="countryConquestGroup">' +
+            '<span class="countryConquestLabel completed">' +
+              (
+                isRunnerRingsEnglish()
+                  ? 'Completed ' +
+                    countryShareData.completed
+                  : '走破済み ' +
+                    countryShareData.completed
+              ) +
+            '</span>' +
+            '<div class="countryConquestNames">' +
+              (
+                completedNames.length
+                  ? completedNames.join(
+                      '、'
+                    )
+                  : (
+                      isRunnerRingsEnglish()
+                        ? 'None yet'
+                        : 'まだありません'
+                    )
+              ) +
+            '</div>' +
+          '</div>' +
+          '<div class="countryConquestGroup">' +
+            '<span class="countryConquestLabel remaining">' +
+              (
+                isRunnerRingsEnglish()
+                  ? 'Remaining ' +
+                    countryShareData.remaining
+                  : '未走破 ' +
+                    countryShareData.remaining
+              ) +
+            '</span>' +
+            '<div class="countryConquestNames">' +
+              (
+                remainingNames.length
+                  ? remainingNames.join(
+                      '、'
+                    )
+                  : (
+                      isRunnerRingsEnglish()
+                        ? 'Complete!'
+                        : 'コンプリート！'
+                    )
+              ) +
+            '</div>' +
+          '</div>';
+
+        conquestStatus.onclick =
+          event => {
+            event.stopPropagation();
+
+            const isOpen =
+              countryDetails
+                .classList
+                .toggle(
+                  'isOpen'
+                );
+
+            conquestStatus.setAttribute(
+              'aria-expanded',
+              String(
+                isOpen
+              )
+            );
+          };
 
         top.append(
           main,
@@ -12883,6 +13061,14 @@ function updateCountryDashboard(
         barTrack,
         runsRow
       );
+
+      if (
+        countryDetails
+      ) {
+        card.appendChild(
+          countryDetails
+        );
+      }
 
       list.appendChild(
         card
