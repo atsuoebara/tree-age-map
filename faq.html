@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Runner's Rings（ランナーズリングス）のよくある質問。データ連携、地域走破、共有、プライバシー、海外ランなどをわかりやすく案内します。">
+  <title>よくある質問｜Runner's Rings（ランナーズリングス）</title>
+  <link rel="icon" type="image/png" href="icon.PNG">
+  <link rel="apple-touch-icon" href="icon.PNG">
+  <style>
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#0b1422;
+      color:#fff;
+    }
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 85% 5%, rgba(255,43,214,.13), transparent 26%),
+        radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+        #0b1422;
+    }
+    header{
+      position:relative;
+      background:#0f1d2f;
+      padding:16px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    header h1{
+      margin:0;
+      font-size:22px;
+    }
+    .brandReading{
+      margin-left:4px;
+      font-size:12px;
+      font-weight:600;
+      opacity:.78;
+    }
+    header p{
+      margin:4px 0 0;
+      color:#aeb9c8;
+      font-size:13px;
+    }
+    #languageSwitch{
+      position:absolute;
+      top:14px;
+      right:14px;
+      display:flex;
+      gap:3px;
+      padding:3px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      background:#132237;
+    }
+    .languageButton{
+      min-width:38px;
+      padding:6px 9px;
+      border:0;
+      border-radius:999px;
+      background:transparent;
+      color:#aeb9c8;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .languageButton.isActive{
+      background:#ff2bd6;
+      color:#fff;
+    }
+    main{
+      width:min(760px,100%);
+      margin:0 auto;
+      padding:34px 16px 50px;
+    }
+    .eyebrow{
+      margin-bottom:10px;
+      color:#ff2bd6;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:1.8px;
+    }
+    h2{
+      margin:0;
+      font-size:30px;
+      line-height:1.3;
+    }
+    .lead{
+      margin:14px 0 26px;
+      color:#b9c6d6;
+      font-size:14px;
+      line-height:1.85;
+    }
+    .introBox{
+      margin-bottom:22px;
+      padding:15px 16px;
+      border-left:3px solid #eaff00;
+      border-radius:0 12px 12px 0;
+      background:rgba(234,255,0,.045);
+      color:#c8d4e2;
+      font-size:13px;
+      line-height:1.75;
+    }
+    .faqList{
+      display:grid;
+      gap:11px;
+    }
+    details{
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:15px;
+      background:#132237;
+    }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      padding:16px 48px 16px 16px;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.5;
+      position:relative;
+    }
+    summary::-webkit-details-marker{display:none}
+    summary::after{
+      content:"+";
+      position:absolute;
+      right:16px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#ff2bd6;
+      font-size:24px;
+      font-weight:400;
+    }
+    details[open] summary::after{
+      content:"−";
+    }
+    .answer{
+      padding:0 16px 17px;
+      color:#b9c6d6;
+      font-size:13px;
+      line-height:1.85;
+    }
+    .answer strong{
+      color:#fff;
+    }
+    .answer a{
+      color:#ff2bd6;
+      font-weight:800;
+      text-decoration:none;
+    }
+    .backArea{
+      margin-top:28px;
+      text-align:center;
+    }
+    .backButton{
+      display:inline-block;
+      padding:12px 20px;
+      border-radius:999px;
+      background:#ff2bd6;
+      color:#fff;
+      font-size:13px;
+      font-weight:800;
+      text-decoration:none;
+    }
+    footer{
+      border-top:1px solid rgba(255,255,255,.08);
+      background:#0f1d2f;
+      padding:22px 14px 28px;
+      text-align:center;
+      color:#8f9bac;
+      font-size:12px;
+    }
+    .footerLinks{
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:10px 16px;
+      margin-bottom:10px;
+    }
+    footer a{
+      color:#cbd5e1;
+      text-decoration:none;
+    }
+    footer a:hover{color:#ff2bd6}
+    [data-lang="en"]{display:none}
+    html[lang="en"] [data-lang="ja"]{display:none}
+    html[lang="en"] [data-lang="en"]{display:block}
+    @media(max-width:520px){
+      header h1{padding-right:98px;font-size:19px}
+      h2{font-size:27px}
+      main{padding-top:28px}
+      summary{font-size:13px}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+
+<main>
+  <section data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS FAQ</div>
+    <h2>よくある質問</h2>
+    <p class="lead">
+      Runner's Ringsのデータ取り込み、地域走破、共有、プライバシーについて、
+      初めて使う方が迷いやすいポイントをまとめています。
+    </p>
+    <div class="introBox">
+      Runner's Ringsは、ランニングの速さやトレーニング評価だけではなく、
+      <strong>「どこを走ってきたか」</strong>を積み重ねて楽しむためのアプリです。
+      走った道、訪れた地域、年ごとの広がりを、自分だけの地図として残していきます。
+    </div>
+
+    <div class="faqList">
+      <details>
+        <summary>Runner's Ringsでは何ができますか？</summary>
+        <div class="answer">
+          走ったルートを地図に積み重ね、総距離・ラン数・訪れた地域を確認できます。
+          日本では都道府県や市町村ごとの<strong>地域走破</strong>も表示でき、
+          ALL（全期間）と年別で、自分のランニングの広がりを振り返れます。
+        </div>
+      </details>
+
+      <details>
+        <summary>StravaとIntervals.icuは両方連携した方がいいですか？</summary>
+        <div class="answer">
+          基本的には<strong>どちらか一方</strong>を選んで連携するのがおすすめです。
+          同じランが両方から入る可能性があるためです。
+          Runner's Ringsでは重複判定を行いますが、取り込み元を1つにすると管理がより分かりやすくなります。
+        </div>
+      </details>
+
+      <details>
+        <summary>COROSのランはどう取り込みますか？</summary>
+        <div class="answer">
+          COROSはRunner's Ringsの画面から連携し、取得できるランを手動で取り込みます。
+          StravaやIntervals.icuのような常時自動連携とは少し使い方が異なります。
+        </div>
+      </details>
+
+      <details>
+        <summary>FIT・GPX・ZIPは何が違いますか？</summary>
+        <div class="answer">
+          GPXはGPSルートを扱いやすいファイル形式、FITはランニングウォッチなどが保存する運動データ形式です。
+          ZIPは複数のデータをまとめて確認するときに使えます。
+          Runner's Ringsでは、過去データをまとめて移行したいときにも利用できます。
+        </div>
+      </details>
+
+      <details>
+        <summary>昔のランニングデータも取り込めますか？</summary>
+        <div class="answer">
+          はい。StravaやIntervals.icu経由の取り込みのほか、FIT・GPX・ZIPファイルを使って、
+          過去のランをRunner's Ringsへ追加できます。
+          昔の記録を重ねるほど、地図が「年輪」のように育っていきます。
+        </div>
+      </details>
+
+      <details>
+        <summary>地域走破はどう判定されますか？</summary>
+        <div class="answer">
+          GPSルートがその地域を通過した記録をもとに判定します。
+          日本では都道府県だけでなく、市町村単位でも走破状況を確認できます。
+          走破済み・未走破の地域名も一覧で確認できます。
+        </div>
+      </details>
+
+      <details>
+        <summary>ALLと年別表示の違いは何ですか？</summary>
+        <div class="answer">
+          <strong>ALL</strong>はこれまでの全期間の積み重ねです。
+          年を選ぶと、その年に走った記録だけで距離・ラン数・地域走破を確認できます。
+          「人生全体の地図」と「今年どこまで広がったか」を分けて楽しめます。
+        </div>
+      </details>
+
+      <details>
+        <summary>国・都道府県・市町村はどのように表示されますか？</summary>
+        <div class="answer">
+          日本では「国 → 都道府県 → 市町村」という階層で確認できます。
+          国では走破した都道府県数、都道府県では走破した市町村数を表示します。
+          海外は、利用できる行政境界データに応じて国や州・地域単位で表示します。
+        </div>
+      </details>
+
+      <details>
+        <summary>走破状況をSNSで共有できますか？</summary>
+        <div class="answer">
+          はい。都道府県や国の走破状況を、Runner's Rings専用デザインの画像として共有できます。
+          走破済みの地域はピンクで表示され、走破数・走破率・残り数も一緒に確認できます。
+          詳細な地域名一覧は共有画像には載せず、見やすさを優先しています。
+        </div>
+      </details>
+
+      <details>
+        <summary>自分のラン記録や地図は他の人に見えますか？</summary>
+        <div class="answer">
+          ログイン後に表示される総距離・ラン数・地図などは、登録した本人向けの表示です。
+          SNSなどへ共有するかどうかは自分で選べます。
+        </div>
+      </details>
+
+      <details>
+        <summary>同じランを複数回取り込んだらどうなりますか？</summary>
+        <div class="answer">
+          Runner's Ringsでは、日付・距離・開始時刻・ルートなどを使って重複候補を判定し、
+          同じランが二重に保存されにくいようにしています。
+          取り込み方法が複数ある場合でも、安全側に確認する設計です。
+        </div>
+      </details>
+
+      <details>
+        <summary>海外で走った記録も表示できますか？</summary>
+        <div class="answer">
+          はい。海外ランも地図や国別の記録として表示できます。
+          アメリカなど、下位の地域境界データを持つ国では州・地域単位の表示にも対応します。
+          世界各地の表示は今後も段階的に拡張していきます。
+        </div>
+      </details>
+    </div>
+
+    <div class="backArea">
+      <a class="backButton" href="./index.html">Runner's Ringsへ戻る</a>
+    </div>
+  </section>
+
+  <section data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS FAQ</div>
+    <h2>Frequently Asked Questions</h2>
+    <p class="lead">
+      Answers to common questions about importing data, region conquest,
+      sharing, privacy, and using Runner's Rings.
+    </p>
+    <div class="introBox">
+      Runner's Rings is not only about pace or training analysis.
+      It is built to preserve <strong>where you have run</strong> and how your running map grows over time.
+    </div>
+
+    <div class="faqList">
+      <details>
+        <summary>What can I do with Runner's Rings?</summary>
+        <div class="answer">
+          You can accumulate your running routes on a map and review total distance,
+          run count, and places you have visited. In Japan, Runner's Rings can also
+          show prefecture and municipality conquest, with ALL-time and yearly views.
+        </div>
+      </details>
+
+      <details>
+        <summary>Should I connect both Strava and Intervals.icu?</summary>
+        <div class="answer">
+          In most cases, choose <strong>one</strong>. Connecting both may bring in the same run twice.
+          Runner's Rings includes duplicate detection, but using one main source keeps things simpler.
+        </div>
+      </details>
+
+      <details>
+        <summary>How do I import COROS runs?</summary>
+        <div class="answer">
+          Connect COROS from Runner's Rings and manually import the runs available for retrieval.
+          Its workflow is different from the automatic-style connection used with Strava or Intervals.icu.
+        </div>
+      </details>
+
+      <details>
+        <summary>What are FIT, GPX, and ZIP files?</summary>
+        <div class="answer">
+          GPX mainly stores GPS routes, FIT is commonly used by sports watches,
+          and ZIP files can contain multiple exported activities.
+          Runner's Rings can use these formats to bring in historical data.
+        </div>
+      </details>
+
+      <details>
+        <summary>Can I import old running data?</summary>
+        <div class="answer">
+          Yes. Historical runs can be added through supported connections or FIT, GPX, and ZIP files.
+          The more history you add, the more your map grows like annual rings.
+        </div>
+      </details>
+
+      <details>
+        <summary>How is region conquest determined?</summary>
+        <div class="answer">
+          It is based on GPS routes that pass through a region.
+          In Japan, conquest can be reviewed at both prefecture and municipality level.
+        </div>
+      </details>
+
+      <details>
+        <summary>What is the difference between ALL and yearly views?</summary>
+        <div class="answer">
+          ALL shows your entire accumulated running history.
+          A yearly view shows only runs from the selected year, so you can compare your lifetime map
+          with how far you expanded in a particular year.
+        </div>
+      </details>
+
+      <details>
+        <summary>How are countries, prefectures, and municipalities shown?</summary>
+        <div class="answer">
+          In Japan, Runner's Rings follows the hierarchy of country → prefecture → municipality.
+          Other countries are shown according to the administrative boundary data currently supported.
+        </div>
+      </details>
+
+      <details>
+        <summary>Can I share my conquest progress?</summary>
+        <div class="answer">
+          Yes. Country and prefecture conquest can be shared as a Runner's Rings image.
+          Conquered regions are highlighted in pink together with progress, percentage, and remaining regions.
+        </div>
+      </details>
+
+      <details>
+        <summary>Can other people see my running map?</summary>
+        <div class="answer">
+          Your logged-in distance, run count, and map are shown for your account.
+          Sharing to social media is optional and controlled by you.
+        </div>
+      </details>
+
+      <details>
+        <summary>What happens if I import the same run more than once?</summary>
+        <div class="answer">
+          Runner's Rings uses date, distance, start time, and route information to identify likely duplicates
+          and reduce accidental double-saving.
+        </div>
+      </details>
+
+      <details>
+        <summary>Can I use Runner's Rings for runs outside Japan?</summary>
+        <div class="answer">
+          Yes. Overseas runs can appear on the map and in country-level records.
+          Where supported boundary data exists, state or regional views can also be shown.
+          Global coverage will continue to expand gradually.
+        </div>
+      </details>
+    </div>
+
+    <div class="backArea">
+      <a class="backButton" href="./index.html">Back to Runner's Rings</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+  const languageButtons =
+    document.querySelectorAll('.languageButton');
+
+  const savedLanguage =
+    localStorage.getItem('runners-rings-language') || 'ja';
+
+  function applyLanguage(language) {
+    const nextLanguage =
+      language === 'en' ? 'en' : 'ja';
+
+    document.documentElement.lang =
+      nextLanguage;
+
+    languageButtons.forEach(button => {
+      button.classList.toggle(
+        'isActive',
+        button.dataset.language === nextLanguage
+      );
+    });
+
+    localStorage.setItem(
+      'runners-rings-language',
+      nextLanguage
+    );
+  }
+
+  languageButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      applyLanguage(button.dataset.language);
+    });
+  });
+
+  applyLanguage(savedLanguage);
+</script>
+</body>
+</html>
