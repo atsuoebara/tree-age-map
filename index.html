@@ -1713,6 +1713,148 @@
   line-height:1.6;
 }
 
+
+/* =====================================
+   ログイン前：Runner's Ringsの価値紹介
+   AdSense再審査に向け、独自機能と使い方を
+   ログイン前でも理解できるようにする。
+===================================== */
+.authValueSection{
+  margin:26px 0 0;
+  padding:20px 18px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:18px;
+  background:rgba(19,34,55,.72);
+}
+
+.authValueEyebrow{
+  margin:0 0 7px;
+  color:#ff2bd6;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.6px;
+}
+
+.authValueSection h3{
+  margin:0;
+  font-size:19px;
+  line-height:1.45;
+}
+
+.authValueLead{
+  margin:10px 0 0;
+  color:#aebed0;
+  font-size:13px;
+  line-height:1.8;
+}
+
+.authFeatureGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+.authFeatureCard{
+  min-width:0;
+  padding:14px 13px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:#0f1d2f;
+}
+
+.authFeatureTitle{
+  margin:0 0 6px;
+  color:#ffffff;
+  font-size:13px;
+  font-weight:800;
+}
+
+.authFeatureText{
+  margin:0;
+  color:#94a5b9;
+  font-size:11px;
+  line-height:1.7;
+}
+
+.authDifference{
+  margin-top:14px;
+  padding:14px 15px;
+  border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;
+  background:rgba(234,255,0,.035);
+}
+
+.authDifference strong{
+  display:block;
+  margin-bottom:5px;
+  color:#eaff00;
+  font-size:13px;
+}
+
+.authDifference p{
+  margin:0;
+  color:#aebed0;
+  font-size:12px;
+  line-height:1.75;
+}
+
+.authNextRun{
+  margin-top:14px;
+  padding:16px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 90% 15%, rgba(255,43,214,.14), transparent 35%),
+    #0f1d2f;
+}
+
+.authNextRun strong{
+  display:block;
+  margin-bottom:6px;
+  color:#ffffff;
+  font-size:15px;
+}
+
+.authNextRun p{
+  margin:0;
+  color:#9fb0c4;
+  font-size:12px;
+  line-height:1.75;
+}
+
+.authPublicLinks{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
+}
+
+.authPublicLink{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:9px 12px;
+  border:1px solid rgba(255,43,214,.38);
+  border-radius:999px;
+  background:rgba(255,43,214,.06);
+  color:#ffffff;
+  font-size:11px;
+  font-weight:800;
+  text-decoration:none;
+}
+
+.authPublicLink:hover{
+  background:rgba(255,43,214,.14);
+}
+
+@media (max-width:520px){
+  .authFeatureGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+
 #authCard{
   width:100%;
   max-width:none;
@@ -2013,6 +2155,59 @@
           StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／ZIPファイルから利用できます。
         </span>
       </div>
+
+      <section class="authValueSection" aria-labelledby="authValueHeading">
+        <div class="authValueEyebrow">RUNNER'S RINGS EXPERIENCE</div>
+        <h3 id="authValueHeading">走った場所が増えるほど、自分だけの地図になる。</h3>
+        <p class="authValueLead">
+          ペースや順位だけでは残しきれない「どこを走ってきたか」を、道・地域・年の積み重ねとして振り返れます。
+          昔のランも取り込めば、これまでのランニングそのものが一枚の地図に育っていきます。
+        </p>
+
+        <div class="authFeatureGrid">
+          <article class="authFeatureCard">
+            <h4 class="authFeatureTitle">走った道を重ねる</h4>
+            <p class="authFeatureText">実際に走ったコースと、繰り返し走ったエリアを地図で確認。広域の「面」と詳細な「コース」を切り替えて見られます。</p>
+          </article>
+
+          <article class="authFeatureCard">
+            <h4 class="authFeatureTitle">地域走破を楽しむ</h4>
+            <p class="authFeatureText">日本では都道府県から市町村へ。走破数・走破率・残りの地域が分かり、「次はどこを走ろう」が見つかります。</p>
+          </article>
+
+          <article class="authFeatureCard">
+            <h4 class="authFeatureTitle">ALLと年別で振り返る</h4>
+            <p class="authFeatureText">これまで全部の積み重ねと、その年に走った記録を分けて表示。同じ街でも毎年違う広がりを楽しめます。</p>
+          </article>
+
+          <article class="authFeatureCard">
+            <h4 class="authFeatureTitle">走破マップをシェア</h4>
+            <p class="authFeatureText">都道府県や国の走破状況を、地域だけを切り出した専用画像で共有。走破した地域はRunner's Ringsカラーで表示されます。</p>
+          </article>
+        </div>
+
+        <div class="authDifference">
+          <strong>トレーニング分析とは、少し違う役割。</strong>
+          <p>
+            StravaやIntervals.icuなどで日々のトレーニングを管理しながら、Runner's Ringsでは「走った場所の積み重ね」を残す。
+            速さだけではなく、走ってきた街や道もランニングの歴史として楽しむためのサービスです。
+          </p>
+        </div>
+
+        <div class="authNextRun">
+          <strong>次はどこを走ろう。</strong>
+          <p>
+            未走破の市町村や、まだ色の付いていない地域が見えると、いつものランに新しい目的が生まれます。
+            Runner's Ringsは、過去を残すだけでなく、次の一本を考えるための地図でもあります。
+          </p>
+        </div>
+
+        <nav class="authPublicLinks" aria-label="Runner's Ringsについて詳しく見る">
+          <a class="authPublicLink" href="./about-runners-rings.html">Runner's Ringsとは？</a>
+          <a class="authPublicLink" href="./how-to.html">使い方を見る</a>
+          <a class="authPublicLink" href="./developer-message.html">開発者からのメッセージ</a>
+        </nav>
+      </section>
 
       <div class="setupGuide setupGuideAuth">
         <h3>データの取り込み方</h3>
@@ -17657,6 +17852,26 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['テキサス州','Texas'],['ユタ州','Utah'],['バーモント州','Vermont'],
   ['バージニア州','Virginia'],['ワシントン州','Washington'],['ウェストバージニア州','West Virginia'],
   ['ウィスコンシン州','Wisconsin'],['ワイオミング州','Wyoming'],['ワシントンD.C.','Washington, D.C.'],
+  ['走った場所が増えるほど、自分だけの地図になる。','The more places you run, the more the map becomes your own.'],
+  ['ペースや順位だけでは残しきれない「どこを走ってきたか」を、道・地域・年の積み重ねとして振り返れます。','Look back on where you have run as layers of roads, regions, and years — not only pace or rankings.'],
+  ['昔のランも取り込めば、これまでのランニングそのものが一枚の地図に育っていきます。','Import older runs too, and your running history grows into a single personal map.'],
+  ['走った道を重ねる','Layer the roads you ran'],
+  ['実際に走ったコースと、繰り返し走ったエリアを地図で確認。広域の「面」と詳細な「コース」を切り替えて見られます。','See your actual routes and the areas you have run repeatedly. Switch between area view and detailed route view.'],
+  ['地域走破を楽しむ','Explore region conquest'],
+  ['日本では都道府県から市町村へ。走破数・走破率・残りの地域が分かり、「次はどこを走ろう」が見つかります。','In Japan, track progress from prefectures down to municipalities. See completed regions, completion rate, and what remains.'],
+  ['ALLと年別で振り返る','View ALL or by year'],
+  ['これまで全部の積み重ねと、その年に走った記録を分けて表示。同じ街でも毎年違う広がりを楽しめます。','Separate your all-time history from each individual year and see how your running map changes over time.'],
+  ['走破マップをシェア','Share your conquest map'],
+  ['都道府県や国の走破状況を、地域だけを切り出した専用画像で共有。走破した地域はRunner’s Ringsカラーで表示されます。','Share dedicated images of your prefecture or country progress, with completed regions highlighted in Runner’s Rings colors.'],
+  ['トレーニング分析とは、少し違う役割。','A different role from training analysis.'],
+  ['StravaやIntervals.icuなどで日々のトレーニングを管理しながら、Runner’s Ringsでは「走った場所の積み重ね」を残す。','Use services such as Strava or Intervals.icu for daily training management, while Runner’s Rings preserves the places you have run.'],
+  ['速さだけではなく、走ってきた街や道もランニングの歴史として楽しむためのサービスです。','It is a service for enjoying the towns and roads you have run as part of your running history, not just your speed.'],
+  ['次はどこを走ろう。','Where will you run next?'],
+  ['未走破の市町村や、まだ色の付いていない地域が見えると、いつものランに新しい目的が生まれます。','Seeing unvisited municipalities and uncolored regions can give your usual run a new purpose.'],
+  ['Runner’s Ringsは、過去を残すだけでなく、次の一本を考えるための地図でもあります。','Runner’s Rings is not only a map of your past — it is also a map for planning your next run.'],
+  ['使い方を見る','How to use'],
+  ['開発者からのメッセージ','Message from the developer'],
+  ['Runner’s Ringsについて詳しく見る','Learn more about Runner’s Rings'],
   ['日本','Japan'],['アメリカ','United States']
 ].sort(
   (a,b) =>
