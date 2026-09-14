@@ -2033,7 +2033,210 @@
   line-height:1.55;
 }
 
-  </style>
+  
+
+/* =====================================
+   制覇カードコレクション
+===================================== */
+#conquestCardCollection{
+  margin-top:18px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  background:#0f1d2f;
+}
+
+#conquestCardCollection > summary{
+  cursor:pointer;
+  color:#ffffff;
+  font-size:14px;
+  font-weight:800;
+}
+
+#conquestCardCollection > summary::marker{
+  color:#ff2bd6;
+}
+
+#conquestCardCollection[open] > summary{
+  margin-bottom:12px;
+}
+
+#conquestCardCollectionCount{
+  margin-left:6px;
+  color:#eaff00;
+  font-size:11px;
+  font-weight:800;
+}
+
+#conquestCardCollectionLead{
+  margin:0 0 12px;
+  color:#9fb0c4;
+  font-size:11px;
+  line-height:1.65;
+}
+
+#conquestCardPeriodTabs{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding-bottom:4px;
+  margin-bottom:12px;
+  -webkit-overflow-scrolling:touch;
+}
+
+.conquestCardPeriodButton{
+  flex:0 0 auto;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:#17283d;
+  color:#dce8f5;
+  padding:7px 11px;
+  font:inherit;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.conquestCardPeriodButton.isActive{
+  border-color:#ff2bd6;
+  background:#ff2bd6;
+  color:#ffffff;
+}
+
+#conquestCardGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.conquestCardItem{
+  min-width:0;
+}
+
+.conquestCardCanvas{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:3 / 4;
+  border-radius:14px;
+  background:#07101d;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+}
+
+.conquestCardItemActions{
+  display:flex;
+  gap:6px;
+  margin-top:7px;
+}
+
+.conquestCardShareButton{
+  width:100%;
+  border:1px solid rgba(255,43,214,.42);
+  border-radius:10px;
+  background:rgba(255,43,214,.08);
+  color:#ffffff;
+  padding:8px 6px;
+  font:inherit;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.conquestCardShareButton:hover{
+  background:rgba(255,43,214,.16);
+}
+
+.conquestCardEmpty{
+  grid-column:1 / -1;
+  padding:14px;
+  border-radius:12px;
+  background:#132237;
+  color:#aebed0;
+  font-size:12px;
+  line-height:1.65;
+}
+
+#conquestCardAwardOverlay{
+  position:fixed;
+  inset:0;
+  z-index:99990;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(4,10,18,.86);
+  backdrop-filter:blur(8px);
+}
+
+#conquestCardAwardOverlay.isVisible{
+  display:flex;
+}
+
+.conquestCardAwardInner{
+  width:min(88vw,360px);
+  text-align:center;
+}
+
+.conquestCardAwardEyebrow{
+  margin-bottom:10px;
+  color:#eaff00;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+#conquestCardAwardCanvas{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:3 / 4;
+  border-radius:18px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.48),
+    0 0 28px rgba(255,43,214,.24);
+}
+
+.conquestCardAwardMessage{
+  margin:12px 0 0;
+  color:#dce8f5;
+  font-size:12px;
+  line-height:1.65;
+}
+
+.conquestCardAwardActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+
+.conquestCardAwardButton{
+  border:0;
+  border-radius:12px;
+  padding:11px 8px;
+  font:inherit;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+#conquestCardAwardOpen{
+  background:#ff2bd6;
+  color:#ffffff;
+}
+
+#conquestCardAwardClose{
+  border:1px solid rgba(255,255,255,.16);
+  background:#17283d;
+  color:#ffffff;
+}
+
+@media (min-width:620px){
+  #conquestCardGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+</style>
 </head>
 
 <body class="splashActive">
@@ -2485,6 +2688,14 @@
 
 
 </div>
+
+<details id="conquestCardCollection">
+  <summary>🏅 制覇カードコレクション <span id="conquestCardCollectionCount">0</span></summary>
+  <p id="conquestCardCollectionLead">走った地域から自動で生まれる、あなただけのカードです。ALLカードと年別カードを切り替えて見られます。</p>
+  <div id="conquestCardPeriodTabs" aria-label="制覇カードの期間"></div>
+  <div id="conquestCardGrid"></div>
+</details>
+
 <div id="stravaPauseNotice" role="status">
   <strong>Strava新規連携を一時停止しています</strong><br>
   接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。
@@ -2536,6 +2747,9 @@
   <button id="accountSaveButton" type="button">
     変更を保存
   </button>
+
+
+
 
 <button id="stravaDisconnectButton" type="button" style="display:none;">
   Strava連携を解除
@@ -2845,6 +3059,18 @@
     title="ページ上部へ戻る"
   >↑</button>
 
+
+<div id="conquestCardAwardOverlay" role="dialog" aria-modal="true" aria-label="制覇カード獲得">
+  <div class="conquestCardAwardInner">
+    <div class="conquestCardAwardEyebrow">NEW CARD GET!</div>
+    <canvas id="conquestCardAwardCanvas" width="720" height="960"></canvas>
+    <p id="conquestCardAwardMessage" class="conquestCardAwardMessage"></p>
+    <div class="conquestCardAwardActions">
+      <button id="conquestCardAwardOpen" class="conquestCardAwardButton" type="button">コレクションを見る</button>
+      <button id="conquestCardAwardClose" class="conquestCardAwardButton" type="button">閉じる</button>
+    </div>
+  </div>
+</div>
   <footer id="siteFooter">
   <button id="shareAppButton" type="button">
     ランリングをシェア
@@ -7310,6 +7536,15 @@ function registerActivity(
     activity
   );
 
+  // 制覇カードはラン履歴から自動生成するため、
+  // 新しいランが追加された時だけ再計算する。
+  if (
+    typeof conquestCardCache !==
+      'undefined'
+  ) {
+    conquestCardCache =
+      null;
+  }
 
   return true;
 
@@ -15637,6 +15872,1705 @@ async function sharePrefectureConquest(
 }
 
 
+
+
+/* =====================================
+   制覇カード
+   ・市町村：初走破カード
+   ・都道府県：全市町村の完全制覇カード
+   ・国：対応する下位地域を全制覇した国のみ
+   ・ALLは生涯1回、年別は年ごとに獲得
+   ・画像は保存せず、表示／共有時に自動生成
+===================================== */
+
+const CONQUEST_CARD_SEEN_PREFIX =
+  'RunnerRingsConquestCardSeen:';
+
+let conquestCardSelectedPeriod =
+  'ALL';
+
+let conquestCardCache =
+  null;
+
+let conquestCardCollectionBound =
+  false;
+
+function getConquestCardActivityTime(
+  activity
+) {
+  const candidates = [
+    activity?.date,
+    activity?.startedAt
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    const date =
+      candidate instanceof Date
+        ? candidate
+        : new Date(candidate);
+
+    if (
+      !Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return date;
+    }
+  }
+
+  return null;
+}
+
+function getConquestCardDateText(
+  date
+) {
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return isRunnerRingsEnglish()
+      ? 'Date unknown'
+      : '獲得日不明';
+  }
+
+  return [
+    date.getFullYear(),
+    String(
+      date.getMonth() + 1
+    ).padStart(2, '0'),
+    String(
+      date.getDate()
+    ).padStart(2, '0')
+  ].join('/');
+}
+
+function getConquestCardYears() {
+  return Array.from(
+    new Set(
+      activities
+        .map(
+          activity =>
+            Number(
+              activity.year
+            )
+        )
+        .filter(
+          Number.isFinite
+        )
+    )
+  ).sort(
+    (a, b) => b - a
+  );
+}
+
+function getConquestCardAllPrefectures() {
+  return Array.from(
+    new Set(
+      municipalityFeatures
+        .map(
+          item =>
+            getPrefecture(
+              item.feature
+            )
+        )
+        .filter(
+          name =>
+            name &&
+            name !==
+              '都道府県不明'
+        )
+    )
+  );
+}
+
+function getConquestCardAllUsaRegions() {
+  return Array.from(
+    new Set(
+      usaRegionFeatures
+        .map(
+          item =>
+            getUsaRegionCode(
+              item.feature
+            )
+        )
+        .filter(
+          code =>
+            code &&
+            code !==
+              'US-UNKNOWN'
+        )
+    )
+  );
+}
+
+function buildConquestCardsForPeriod(
+  period
+) {
+  const periodYear =
+    period === 'ALL'
+      ? null
+      : Number(period);
+
+  const periodActivities =
+    activities
+      .filter(
+        activity =>
+          periodYear === null ||
+          Number(
+            activity.year
+          ) ===
+            periodYear
+      )
+      .slice()
+      .sort(
+        (a, b) => {
+          const aDate =
+            getConquestCardActivityTime(a);
+          const bDate =
+            getConquestCardActivityTime(b);
+
+          return (
+            aDate?.getTime() || 0
+          ) - (
+            bDate?.getTime() || 0
+          );
+        }
+      );
+
+  const cityDistance = {};
+  const prefectureDistance = {};
+  const regionDistance = {};
+
+  const cityAwarded =
+    new Set();
+
+  const prefectureAwarded =
+    new Set();
+
+  const countryAwarded =
+    new Set();
+
+  const cards = [];
+
+  const allPrefectures =
+    getConquestCardAllPrefectures();
+
+  const allUsaRegions =
+    getConquestCardAllUsaRegions();
+
+  const pushCard = (
+    type,
+    key,
+    name,
+    acquiredAt,
+    extra = {}
+  ) => {
+    cards.push({
+      id:
+        String(period) +
+        '|' +
+        type +
+        '|' +
+        key,
+      period:
+        String(period),
+      type,
+      key,
+      name,
+      acquiredAt,
+      ...extra
+    });
+  };
+
+  periodActivities.forEach(
+    activity => {
+      const activityDate =
+        getConquestCardActivityTime(
+          activity
+        );
+
+      Object.entries(
+        activity.cityDistances || {}
+      ).forEach(
+        ([cityKey, km]) => {
+          const safeKm =
+            Number(km) || 0;
+
+          cityDistance[cityKey] =
+            (
+              cityDistance[cityKey] ||
+              0
+            ) + safeKm;
+
+          const {
+            prefecture,
+            city
+          } = splitCityKey(
+            cityKey
+          );
+
+          if (prefecture) {
+            prefectureDistance[
+              prefecture
+            ] =
+              (
+                prefectureDistance[
+                  prefecture
+                ] || 0
+              ) + safeKm;
+          }
+
+          if (
+            cityDistance[cityKey] >
+              0.01 &&
+            !cityAwarded.has(
+              cityKey
+            )
+          ) {
+            cityAwarded.add(
+              cityKey
+            );
+
+            pushCard(
+              'municipality',
+              cityKey,
+              city,
+              activityDate,
+              { prefecture }
+            );
+          }
+        }
+      );
+
+      Object.entries(
+        activity.regionDistances || {}
+      ).forEach(
+        ([regionCode, km]) => {
+          regionDistance[regionCode] =
+            (
+              regionDistance[
+                regionCode
+              ] || 0
+            ) +
+            (Number(km) || 0);
+        }
+      );
+
+      const touchedPrefectures =
+        new Set(
+          Object.keys(
+            activity.cityDistances || {}
+          )
+            .map(
+              cityKey =>
+                splitCityKey(
+                  cityKey
+                ).prefecture
+            )
+            .filter(Boolean)
+        );
+
+      touchedPrefectures.forEach(
+        prefecture => {
+          if (
+            prefectureAwarded.has(
+              prefecture
+            )
+          ) {
+            return;
+          }
+
+          const cityKeys =
+            getMunicipalitiesByPrefecture(
+              prefecture
+            );
+
+          if (
+            cityKeys.length > 0 &&
+            cityKeys.every(
+              cityKey =>
+                (
+                  cityDistance[
+                    cityKey
+                  ] || 0
+                ) > 0.01
+            )
+          ) {
+            prefectureAwarded.add(
+              prefecture
+            );
+
+            pushCard(
+              'prefecture',
+              prefecture,
+              prefecture,
+              activityDate,
+              {
+                completed:
+                  cityKeys.length
+              }
+            );
+          }
+        }
+      );
+
+      if (
+        !countryAwarded.has('JPN') &&
+        allPrefectures.length > 0 &&
+        allPrefectures.every(
+          prefecture =>
+            (
+              prefectureDistance[
+                prefecture
+              ] || 0
+            ) > 0.01
+        )
+      ) {
+        countryAwarded.add('JPN');
+
+        pushCard(
+          'country',
+          'JPN',
+          getCountryNameByCode(
+            'JPN'
+          ),
+          activityDate,
+          {
+            completed:
+              allPrefectures.length,
+            unit:
+              'prefecture'
+          }
+        );
+      }
+
+      if (
+        !countryAwarded.has('USA') &&
+        allUsaRegions.length > 0 &&
+        allUsaRegions.every(
+          regionCode =>
+            (
+              regionDistance[
+                regionCode
+              ] || 0
+            ) > 0.01
+        )
+      ) {
+        countryAwarded.add('USA');
+
+        pushCard(
+          'country',
+          'USA',
+          getCountryNameByCode(
+            'USA'
+          ),
+          activityDate,
+          {
+            completed:
+              allUsaRegions.length,
+            unit:
+              'region'
+          }
+        );
+      }
+    }
+  );
+
+  return cards.sort(
+    (a, b) =>
+      (
+        b.acquiredAt?.getTime() || 0
+      ) -
+      (
+        a.acquiredAt?.getTime() || 0
+      )
+  );
+}
+
+function getConquestCardCollectionData() {
+  if (conquestCardCache) {
+    return conquestCardCache;
+  }
+
+  const result = {
+    ALL:
+      buildConquestCardsForPeriod(
+        'ALL'
+      )
+  };
+
+  getConquestCardYears()
+    .forEach(
+      year => {
+        result[String(year)] =
+          buildConquestCardsForPeriod(
+            String(year)
+          );
+      }
+    );
+
+  conquestCardCache =
+    result;
+
+  return result;
+}
+
+function getConquestCardFeatures(
+  card
+) {
+  if (
+    card.type ===
+      'municipality'
+  ) {
+    return municipalityFeatures
+      .filter(
+        item =>
+          getCityKey(
+            item.feature
+          ) === card.key
+      )
+      .map(
+        item => item.feature
+      );
+  }
+
+  if (
+    card.type ===
+      'prefecture'
+  ) {
+    return municipalityFeatures
+      .filter(
+        item =>
+          getPrefecture(
+            item.feature
+          ) === card.key
+      )
+      .map(
+        item => item.feature
+      );
+  }
+
+  if (
+    card.type ===
+      'country'
+  ) {
+    const item =
+      countryFeatures.find(
+        candidate =>
+          getCountryCode(
+            candidate.feature
+          ) === card.key
+      );
+
+    return item
+      ? [item.feature]
+      : [];
+  }
+
+  return [];
+}
+
+function getConquestCardActivities(
+  card
+) {
+  const periodYear =
+    card.period === 'ALL'
+      ? null
+      : Number(card.period);
+
+  return activities.filter(
+    activity => {
+      if (
+        periodYear !== null &&
+        Number(
+          activity.year
+        ) !== periodYear
+      ) {
+        return false;
+      }
+
+      if (
+        card.type ===
+          'municipality'
+      ) {
+        return (
+          Number(
+            activity
+              .cityDistances?.[
+                card.key
+              ] || 0
+          ) > 0
+        );
+      }
+
+      if (
+        card.type ===
+          'prefecture'
+      ) {
+        return Object.keys(
+          activity.cityDistances || {}
+        ).some(
+          cityKey =>
+            splitCityKey(
+              cityKey
+            ).prefecture ===
+              card.key
+        );
+      }
+
+      if (
+        card.type ===
+          'country'
+      ) {
+        return (
+          Number(
+            activity
+              .countryDistances?.[
+                card.key
+              ] || 0
+          ) > 0
+        );
+      }
+
+      return false;
+    }
+  );
+}
+
+function getConquestCardBBox(
+  features
+) {
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
+
+  features.forEach(
+    feature => {
+      const bbox =
+        getFeatureBBox(
+          feature
+        );
+
+      minLon = Math.min(
+        minLon,
+        bbox.minLon
+      );
+      minLat = Math.min(
+        minLat,
+        bbox.minLat
+      );
+      maxLon = Math.max(
+        maxLon,
+        bbox.maxLon
+      );
+      maxLat = Math.max(
+        maxLat,
+        bbox.maxLat
+      );
+    }
+  );
+
+  if (
+    !Number.isFinite(minLon) ||
+    !Number.isFinite(minLat) ||
+    !Number.isFinite(maxLon) ||
+    !Number.isFinite(maxLat)
+  ) {
+    return null;
+  }
+
+  return {
+    minLon,
+    minLat,
+    maxLon,
+    maxLat
+  };
+}
+
+function createConquestCardProjector(
+  bbox,
+  box
+) {
+  const lonSpan =
+    Math.max(
+      0.000001,
+      bbox.maxLon -
+        bbox.minLon
+    );
+
+  const latSpan =
+    Math.max(
+      0.000001,
+      bbox.maxLat -
+        bbox.minLat
+    );
+
+  const scale =
+    Math.min(
+      box.width / lonSpan,
+      box.height / latSpan
+    );
+
+  const contentWidth =
+    lonSpan * scale;
+
+  const contentHeight =
+    latSpan * scale;
+
+  const left =
+    box.x +
+    (box.width -
+      contentWidth) / 2;
+
+  const top =
+    box.y +
+    (box.height -
+      contentHeight) / 2;
+
+  return (lon, lat) => [
+    left +
+      (lon - bbox.minLon) *
+        scale,
+    top +
+      (bbox.maxLat - lat) *
+        scale
+  ];
+}
+
+function addConquestFeatureToPath(
+  path,
+  feature,
+  project
+) {
+  const geometry =
+    feature?.geometry;
+
+  if (!geometry) return;
+
+  const drawRing = ring => {
+    ring.forEach(
+      (point, index) => {
+        const [x, y] =
+          project(
+            point[0],
+            point[1]
+          );
+
+        if (index === 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+    );
+
+    path.closePath();
+  };
+
+  if (
+    geometry.type ===
+      'Polygon'
+  ) {
+    geometry.coordinates
+      .forEach(drawRing);
+  }
+
+  if (
+    geometry.type ===
+      'MultiPolygon'
+  ) {
+    geometry.coordinates
+      .forEach(
+        polygon =>
+          polygon.forEach(
+            drawRing
+          )
+      );
+  }
+}
+
+function getConquestCardTypeLabel(
+  card
+) {
+  const english =
+    isRunnerRingsEnglish();
+
+  if (
+    card.type ===
+      'municipality'
+  ) {
+    return english
+      ? 'FIRST RUN'
+      : '初走破';
+  }
+
+  if (
+    card.type ===
+      'prefecture'
+  ) {
+    return english
+      ? 'PREFECTURE COMPLETE'
+      : '都道府県 COMPLETE';
+  }
+
+  return english
+    ? 'COUNTRY COMPLETE'
+    : 'COUNTRY COMPLETE';
+}
+
+function drawConquestCard(
+  canvas,
+  card
+) {
+  const ctx =
+    canvas.getContext('2d');
+
+  if (!ctx) return;
+
+  const W =
+    canvas.width;
+  const H =
+    canvas.height;
+
+  const features =
+    getConquestCardFeatures(
+      card
+    );
+
+  const cardActivities =
+    getConquestCardActivities(
+      card
+    );
+
+  const background =
+    ctx.createLinearGradient(
+      0,
+      0,
+      W,
+      H
+    );
+
+  background.addColorStop(
+    0,
+    '#07101d'
+  );
+  background.addColorStop(
+    .58,
+    '#0b1422'
+  );
+  background.addColorStop(
+    1,
+    '#101d31'
+  );
+
+  ctx.fillStyle =
+    background;
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const accent =
+    card.type ===
+      'municipality'
+      ? '#ff2bd6'
+      : '#eaff00';
+
+  ctx.save();
+  ctx.globalAlpha = .16;
+  ctx.strokeStyle =
+    accent;
+  ctx.lineWidth =
+    Math.max(2, W * .006);
+
+  [
+    .50,
+    .64,
+    .78
+  ].forEach(
+    ratio => {
+      ctx.beginPath();
+      ctx.arc(
+        W * .83,
+        H * .10,
+        W * ratio * .33,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+    }
+  );
+  ctx.restore();
+
+  const frameMargin =
+    W * .035;
+
+  ctx.strokeStyle =
+    accent;
+  ctx.lineWidth =
+    Math.max(2, W * .008);
+  ctx.strokeRect(
+    frameMargin,
+    frameMargin,
+    W - frameMargin * 2,
+    H - frameMargin * 2
+  );
+
+  ctx.textBaseline =
+    'top';
+
+  ctx.fillStyle =
+    accent;
+  ctx.font =
+    `900 ${Math.round(W * .050)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(
+    getConquestCardTypeLabel(
+      card
+    ),
+    W * .085,
+    H * .075
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+  ctx.font =
+    `900 ${Math.round(W * .076)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+
+  const maxNameWidth =
+    W * .83;
+
+  let title =
+    card.name;
+
+  while (
+    title.length > 1 &&
+    ctx.measureText(
+      title
+    ).width >
+      maxNameWidth
+  ) {
+    title =
+      title.slice(0, -1);
+  }
+
+  if (
+    title !== card.name
+  ) {
+    title += '…';
+  }
+
+  ctx.fillText(
+    title,
+    W * .085,
+    H * .135
+  );
+
+  ctx.fillStyle =
+    '#aebed0';
+  ctx.font =
+    `800 ${Math.round(W * .034)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+
+  const periodText =
+    card.period === 'ALL'
+      ? 'ALL'
+      : card.period;
+
+  const subLabel =
+    card.type ===
+      'municipality' &&
+    card.prefecture
+      ? card.prefecture +
+        ' · ' +
+        periodText
+      : periodText;
+
+  ctx.fillText(
+    subLabel,
+    W * .087,
+    H * .225
+  );
+
+  const mapBox = {
+    x: W * .095,
+    y: H * .300,
+    width: W * .81,
+    height: H * .39
+  };
+
+  ctx.fillStyle =
+    'rgba(255,255,255,.035)';
+  ctx.fillRect(
+    mapBox.x,
+    mapBox.y,
+    mapBox.width,
+    mapBox.height
+  );
+
+  if (features.length) {
+    const bbox =
+      getConquestCardBBox(
+        features
+      );
+
+    if (bbox) {
+      const project =
+        createConquestCardProjector(
+          bbox,
+          {
+            x:
+              mapBox.x +
+              W * .035,
+            y:
+              mapBox.y +
+              H * .025,
+            width:
+              mapBox.width -
+              W * .070,
+            height:
+              mapBox.height -
+              H * .050
+          }
+        );
+
+      const regionPath =
+        new Path2D();
+
+      features.forEach(
+        feature =>
+          addConquestFeatureToPath(
+            regionPath,
+            feature,
+            project
+          )
+      );
+
+      ctx.save();
+      ctx.fillStyle =
+        '#17283d';
+      ctx.fill(
+        regionPath,
+        'evenodd'
+      );
+      ctx.clip(
+        regionPath,
+        'evenodd'
+      );
+
+      ctx.strokeStyle =
+        '#ff2bd6';
+      ctx.lineWidth =
+        Math.max(
+          1.5,
+          W * .007
+        );
+      ctx.lineCap =
+        'round';
+      ctx.lineJoin =
+        'round';
+
+      cardActivities.forEach(
+        activity => {
+          if (
+            !Array.isArray(
+              activity.latlngs
+            ) ||
+            activity.latlngs.length < 2
+          ) {
+            return;
+          }
+
+          ctx.beginPath();
+
+          activity.latlngs
+            .forEach(
+              (point, index) => {
+                const [x, y] =
+                  project(
+                    point[1],
+                    point[0]
+                  );
+
+                if (index === 0) {
+                  ctx.moveTo(x, y);
+                } else {
+                  ctx.lineTo(x, y);
+                }
+              }
+            );
+
+          ctx.stroke();
+        }
+      );
+
+      ctx.restore();
+
+      ctx.strokeStyle =
+        accent;
+      ctx.lineWidth =
+        Math.max(
+          1.5,
+          W * .004
+        );
+      ctx.stroke(
+        regionPath
+      );
+    }
+  }
+
+  ctx.fillStyle =
+    '#ffffff';
+  ctx.font =
+    `900 ${Math.round(W * .041)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(
+    isRunnerRingsEnglish()
+      ? 'ACQUIRED'
+      : 'GET',
+    W * .085,
+    H * .745
+  );
+
+  ctx.fillStyle =
+    '#eaff00';
+  ctx.font =
+    `900 ${Math.round(W * .054)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(
+    getConquestCardDateText(
+      card.acquiredAt
+    ),
+    W * .085,
+    H * .795
+  );
+
+  ctx.fillStyle =
+    '#ffffff';
+  ctx.font =
+    `900 ${Math.round(W * .034)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(
+    "Runner's Rings",
+    W * .085,
+    H * .900
+  );
+
+  ctx.fillStyle =
+    '#93a4b8';
+  ctx.font =
+    `700 ${Math.round(W * .025)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+  ctx.fillText(
+    'Map the life you run.',
+    W * .085,
+    H * .942
+  );
+}
+
+async function shareConquestCard(
+  card
+) {
+  const canvas =
+    document.createElement(
+      'canvas'
+    );
+
+  canvas.width = 1080;
+  canvas.height = 1440;
+
+  drawConquestCard(
+    canvas,
+    card
+  );
+
+  const blob =
+    await new Promise(
+      resolve =>
+        canvas.toBlob(
+          resolve,
+          'image/png'
+        )
+    );
+
+  if (!blob) {
+    throw new Error(
+      'カード画像を作成できません'
+    );
+  }
+
+  const safeName =
+    String(card.name)
+      .replace(
+        /[^0-9A-Za-zぁ-んァ-ヶ一-龠々ー_-]/g,
+        '_'
+      );
+
+  const fileName =
+    'RunnerRings_Card_' +
+    safeName +
+    '_' +
+    card.period +
+    '.png';
+
+  const file =
+    new File(
+      [blob],
+      fileName,
+      { type:'image/png' }
+    );
+
+  const typeText =
+    getConquestCardTypeLabel(
+      card
+    );
+
+  const shareText =
+    card.name +
+    ' · ' +
+    typeText +
+    ' · ' +
+    (
+      card.period === 'ALL'
+        ? 'ALL'
+        : card.period
+    ) +
+    "\nRunner's Rings\nhttps://runnersrings.com";
+
+  if (
+    navigator.share &&
+    navigator.canShare &&
+    navigator.canShare({
+      files:[file]
+    })
+  ) {
+    await navigator.share({
+      title:
+        "Runner's Rings " +
+        card.name,
+      text:
+        shareText,
+      files:[file]
+    });
+    return;
+  }
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+  const link =
+    document.createElement(
+      'a'
+    );
+
+  link.href = url;
+  link.download =
+    fileName;
+
+  document.body.appendChild(
+    link
+  );
+  link.click();
+  link.remove();
+
+  setTimeout(
+    () =>
+      URL.revokeObjectURL(
+        url
+      ),
+    1000
+  );
+}
+
+function renderConquestCardCollection(
+  force = false
+) {
+  const details =
+    document.getElementById(
+      'conquestCardCollection'
+    );
+
+  const tabs =
+    document.getElementById(
+      'conquestCardPeriodTabs'
+    );
+
+  const grid =
+    document.getElementById(
+      'conquestCardGrid'
+    );
+
+  if (
+    !details ||
+    !tabs ||
+    !grid
+  ) {
+    return;
+  }
+
+  const collection =
+    getConquestCardCollectionData();
+
+  const allCount =
+    collection.ALL?.length || 0;
+
+  const count =
+    document.getElementById(
+      'conquestCardCollectionCount'
+    );
+
+  if (count) {
+    count.textContent =
+      allCount;
+  }
+
+  if (
+    !details.open &&
+    !force
+  ) {
+    return;
+  }
+
+  const periods = [
+    'ALL',
+    ...getConquestCardYears()
+      .map(String)
+  ];
+
+  if (
+    !periods.includes(
+      conquestCardSelectedPeriod
+    )
+  ) {
+    conquestCardSelectedPeriod =
+      'ALL';
+  }
+
+  tabs.innerHTML = '';
+
+  periods.forEach(
+    period => {
+      const button =
+        document.createElement(
+          'button'
+        );
+
+      button.type =
+        'button';
+      button.className =
+        'conquestCardPeriodButton';
+      button.textContent =
+        period;
+
+      button.classList.toggle(
+        'isActive',
+        period ===
+          conquestCardSelectedPeriod
+      );
+
+      button.onclick =
+        () => {
+          conquestCardSelectedPeriod =
+            period;
+          renderConquestCardCollection(
+            true
+          );
+        };
+
+      tabs.appendChild(
+        button
+      );
+    }
+  );
+
+  grid.innerHTML = '';
+
+  const cards =
+    collection[
+      conquestCardSelectedPeriod
+    ] || [];
+
+  if (!cards.length) {
+    const empty =
+      document.createElement(
+        'div'
+      );
+
+    empty.className =
+      'conquestCardEmpty';
+    empty.textContent =
+      isRunnerRingsEnglish()
+        ? 'No conquest cards yet. Run in a new place and grow your collection.'
+        : 'まだ制覇カードはありません。新しい地域を走って、コレクションを増やしていきましょう。';
+
+    grid.appendChild(
+      empty
+    );
+    return;
+  }
+
+  cards.forEach(
+    card => {
+      const item =
+        document.createElement(
+          'div'
+        );
+      item.className =
+        'conquestCardItem';
+
+      const canvas =
+        document.createElement(
+          'canvas'
+        );
+      canvas.className =
+        'conquestCardCanvas';
+      canvas.width = 420;
+      canvas.height = 560;
+
+      drawConquestCard(
+        canvas,
+        card
+      );
+
+      const actions =
+        document.createElement(
+          'div'
+        );
+      actions.className =
+        'conquestCardItemActions';
+
+      const shareButton =
+        document.createElement(
+          'button'
+        );
+      shareButton.type =
+        'button';
+      shareButton.className =
+        'conquestCardShareButton';
+      shareButton.textContent =
+        isRunnerRingsEnglish()
+          ? 'Share card'
+          : 'カードを共有';
+
+      shareButton.onclick =
+        async () => {
+          try {
+            await shareConquestCard(
+              card
+            );
+          } catch (error) {
+            if (
+              error?.name ===
+                'AbortError'
+            ) {
+              return;
+            }
+
+            console.error(
+              'Conquest card share error:',
+              error
+            );
+
+            alert(
+              isRunnerRingsEnglish()
+                ? 'Could not share the card.'
+                : 'カードを共有できませんでした。'
+            );
+          }
+        };
+
+      actions.appendChild(
+        shareButton
+      );
+
+      item.append(
+        canvas,
+        actions
+      );
+
+      grid.appendChild(
+        item
+      );
+    }
+  );
+}
+
+function refreshConquestCardCollection() {
+  renderConquestCardCollection();
+}
+
+function getConquestCardSeenKey() {
+  return (
+    CONQUEST_CARD_SEEN_PREFIX +
+    (
+      currentUser?.id ||
+      'guest'
+    )
+  );
+}
+
+function getAllCurrentConquestCards() {
+  const collection =
+    getConquestCardCollectionData();
+
+  return Object.values(
+    collection
+  ).flat();
+}
+
+function openConquestCardCollection() {
+  openAccountPanel();
+
+  const details =
+    document.getElementById(
+      'conquestCardCollection'
+    );
+
+  if (!details) return;
+
+  details.open = true;
+  renderConquestCardCollection(
+    true
+  );
+
+  setTimeout(
+    () =>
+      details.scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      }),
+    120
+  );
+}
+
+function showConquestCardAward(
+  card,
+  extraCount = 0
+) {
+  const overlay =
+    document.getElementById(
+      'conquestCardAwardOverlay'
+    );
+  const canvas =
+    document.getElementById(
+      'conquestCardAwardCanvas'
+    );
+  const message =
+    document.getElementById(
+      'conquestCardAwardMessage'
+    );
+
+  if (
+    !overlay ||
+    !canvas ||
+    !message
+  ) {
+    return;
+  }
+
+  drawConquestCard(
+    canvas,
+    card
+  );
+
+  message.textContent =
+    isRunnerRingsEnglish()
+      ? (
+          'You earned the ' +
+          card.name +
+          ' card.' +
+          (
+            extraCount > 0
+              ? ' +' +
+                extraCount +
+                ' more'
+              : ''
+          )
+        )
+      : (
+          card.name +
+          'のカードをGETしました！' +
+          (
+            extraCount > 0
+              ? ' ほか' +
+                extraCount +
+                '枚'
+              : ''
+          )
+        );
+
+  overlay.classList.add(
+    'isVisible'
+  );
+}
+
+function checkForNewConquestCards() {
+  if (!currentUser) return;
+
+  const allCards =
+    getAllCurrentConquestCards();
+
+  const currentIds =
+    allCards.map(
+      card => card.id
+    );
+
+  const key =
+    getConquestCardSeenKey();
+
+  let saved =
+    null;
+
+  try {
+    saved =
+      localStorage.getItem(
+        key
+      );
+  } catch (error) {
+    console.warn(
+      'Conquest card storage error:',
+      error
+    );
+    return;
+  }
+
+  if (saved === null) {
+    try {
+      localStorage.setItem(
+        key,
+        JSON.stringify(
+          currentIds
+        )
+      );
+    } catch (error) {
+      console.warn(
+        'Conquest card storage error:',
+        error
+      );
+    }
+    return;
+  }
+
+  let seenIds = [];
+
+  try {
+    const parsed =
+      JSON.parse(saved);
+
+    seenIds =
+      Array.isArray(parsed)
+        ? parsed
+        : [];
+  } catch (error) {
+    seenIds = [];
+  }
+
+  const seen =
+    new Set(
+      seenIds
+    );
+
+  const newCards =
+    allCards
+      .filter(
+        card =>
+          !seen.has(
+            card.id
+          )
+      )
+      .sort(
+        (a, b) =>
+          (
+            b.acquiredAt?.getTime() || 0
+          ) -
+          (
+            a.acquiredAt?.getTime() || 0
+          )
+      );
+
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify(
+        currentIds
+      )
+    );
+  } catch (error) {
+    console.warn(
+      'Conquest card storage error:',
+      error
+    );
+  }
+
+  if (newCards.length) {
+    showConquestCardAward(
+      newCards[0],
+      newCards.length - 1
+    );
+  }
+}
+
+function bindConquestCardCollection() {
+  if (conquestCardCollectionBound) {
+    return;
+  }
+
+  const details =
+    document.getElementById(
+      'conquestCardCollection'
+    );
+
+  if (details) {
+    details.addEventListener(
+      'toggle',
+      () => {
+        if (details.open) {
+          renderConquestCardCollection(
+            true
+          );
+        }
+      }
+    );
+  }
+
+  const openButton =
+    document.getElementById(
+      'conquestCardAwardOpen'
+    );
+  const closeButton =
+    document.getElementById(
+      'conquestCardAwardClose'
+    );
+  const overlay =
+    document.getElementById(
+      'conquestCardAwardOverlay'
+    );
+
+  if (openButton) {
+    openButton.onclick =
+      () => {
+        overlay?.classList.remove(
+          'isVisible'
+        );
+        openConquestCardCollection();
+      };
+  }
+
+  if (closeButton) {
+    closeButton.onclick =
+      () =>
+        overlay?.classList.remove(
+          'isVisible'
+        );
+  }
+
+  conquestCardCollectionBound =
+    true;
+}
+
 /* =====================================
    都道府県 Dashboard
 ===================================== */
@@ -16963,6 +18897,9 @@ function renderSelectedData() {
     stats
   );
 
+  refreshConquestCardCollection();
+  checkForNewConquestCards();
+
     renderCloudRowsList();
 
   updateDisplay();
@@ -17526,6 +19463,7 @@ if (savedAvatarPath) {
       100
     );
 
+    bindConquestCardCollection();
 
     await start();
 
@@ -17602,6 +19540,14 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  ['制覇カードコレクション','Conquest Card Collection'],
+  ['走った地域から自動で生まれる、あなただけのカードです。ALLカードと年別カードを切り替えて見られます。','Your cards are generated automatically from the places you have run. Switch between all-time and yearly collections.'],
+  ['コレクションを見る','View collection'],
+  ['カードを共有','Share card'],
+  ['閉じる','Close'],
+  ['初走破','First run'],
+  ['都道府県 COMPLETE','Prefecture complete'],
+  ['獲得日不明','Date unknown'],
   ['Runner\'s Rings（ランナーズリングス）','Runner\'s Rings'],
   ['Runner\'s Ringsは、','Runner\'s Rings'],
   ['（ランナーズリングス）',''],
