@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Rings Journal。地域走破、地図、データ連携、開発の考え方など、Runner's Ringsならではの機能と背景を紹介します。">
+<title>Runner's Rings Journal｜開発・ランニングノート</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+.articleBody strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main>
+  <section data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+    <h2>開発・ランニングノート</h2>
+    <p class="lead">
+      Runner's Ringsの機能を作った理由、データ連携の考え方、
+      走った地図から生まれた発見などを、開発者自身の言葉で残していきます。
+    </p>
+
+    <a class="articleCard" href="./journal-001.html">
+      <div class="articleDate">2026.09.14</div>
+      <div class="articleTitle">地域走破を作った理由 ─ 「次はどこを走ろう」が生まれる地図へ</div>
+      <div class="articleText">
+        都道府県や市町村を「何km走ったか」だけではなく、
+        どこまで走破したかで見えるようにした理由。
+        ALLと年別、走破率、未走破地域、共有画像まで含めて紹介します。
+      </div>
+      <span class="articleTag">地域走破</span>
+    </a>
+  </section>
+
+  <section data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+    <h2>Development & Running Notes</h2>
+    <p class="lead">
+      Notes from the creator of Runner's Rings about why features were built,
+      how data connections are approached, and what running maps can reveal.
+    </p>
+
+    <a class="articleCard" href="./journal-001.html">
+      <div class="articleDate">2026.09.14</div>
+      <div class="articleTitle">Why We Built Region Conquest — A Map That Makes You Ask, “Where Should I Run Next?”</div>
+      <div class="articleText">
+        Why Runner's Rings shows not only distance, but how many prefectures and municipalities
+        you have explored, together with ALL-time and yearly progress, remaining regions, and shareable images.
+      </div>
+      <span class="articleTag">Region Conquest</span>
+    </a>
+  </section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+
+</body>
+</html>

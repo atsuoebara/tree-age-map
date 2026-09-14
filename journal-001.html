@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Ringsの地域走破を作った理由。都道府県・市町村の走破率、ALLと年別、未走破地域、共有画像によって「次はどこを走ろう」が生まれる考え方を紹介します。">
+<title>地域走破を作った理由｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+.articleBody strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+
+<main class="articleBody">
+  <article data-lang="ja">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 001</div>
+    <h2>地域走破を作った理由<br>─「次はどこを走ろう」が生まれる地図へ</h2>
+    <p class="lead">2026.09.14 / Runner's Rings 開発ノート</p>
+
+    <p>
+      Runner's Ringsを作り始めたときから、ただ距離やラン数を並べるだけのアプリにはしたくありませんでした。
+      走った道を地図に残していくと、「どれだけ走ったか」とは別の面白さが見えてきます。
+    </p>
+
+    <div class="highlight">
+      <p>
+        同じ100kmでも、いつもの道を何度も走った100kmと、
+        行ったことのない街へ少しずつ広げた100kmでは、地図に残る形がまったく違います。
+      </p>
+    </div>
+
+    <h3>距離ではなく「どこまで広がったか」を見たい</h3>
+    <p>
+      そこでRunner's Ringsでは、日本のランを<strong>国 → 都道府県 → 市町村</strong>という階層で見られるようにしました。
+      たとえば群馬県なら、走破した市町村数、走破率、残りの市町村数を表示します。
+      さらに走破済みと未走破の市町村名も確認できます。
+    </p>
+
+    <p>
+      この数字は競争のためのランキングではありません。
+      自分自身の地図を見て、「まだここを走っていない」と気づくためのものです。
+    </p>
+
+    <h3>ALLと年別を分けた理由</h3>
+    <p>
+      Runner's Ringsには、これまでの全期間を見る<strong>ALL</strong>と、年ごとの表示があります。
+      ALLは、長い時間をかけて積み重ねた自分の「年輪」です。
+      一方で年別にすると、「今年はどこまで広がったか」が見えてきます。
+    </p>
+
+    <p>
+      昔の記録が多い人ほどALLは充実します。
+      でも年が変われば、またその年の新しい地図が始まる。
+      過去の積み重ねを消さずに、毎年新しい楽しみを作りたかったためです。
+    </p>
+
+    <h3>未走破が見えると、次のランが変わる</h3>
+    <p>
+      走破済みの地域だけではなく、残っている地域も見えるようにしました。
+      すると地図が「記録を見る場所」から「次のランを考える場所」に変わります。
+    </p>
+
+    <div class="note">
+      <p>
+        「あと1つ隣の市まで行ってみよう」<br>
+        「今年はこの県をもう少し広げてみよう」<br>
+        そんな小さな目的が、いつものランニングを少し変えてくれます。
+      </p>
+    </div>
+
+    <h3>走破した場所を、その地域だけで共有する</h3>
+    <p>
+      地域走破はSNSで共有できるようにもしました。
+      都道府県を共有するときは隣県を出さず、その県だけを切り抜き、
+      走破済みの市町村をRunner's Ringsのピンクで表示します。
+    </p>
+
+    <p>
+      国を共有するときは、日本なら都道府県単位で走破済み地域をピンクにします。
+      共有画像には細かい地域名を詰め込みすぎず、走破数・走破率・残り数を中心にしています。
+      一目で「どこまで走った地図なのか」が分かることを優先しました。
+    </p>
+
+    <h3>世界でも同じ考え方を使えるように</h3>
+    <p>
+      Runner's Ringsは日本だけで完結する考え方ではありません。
+      国ごとに利用できる行政境界データは違いますが、
+      国、州・地域、その下の行政区分へと広げられるよう、共通の考え方で作っています。
+    </p>
+
+    <p>
+      地域ごとに特別なデザインを大量に作るのではなく、
+      境界データを使って同じ仕組みで表示できることを大切にしています。
+    </p>
+
+    <h3>「次はどこを走ろう。」</h3>
+    <p>
+      Runner's Ringsにとって地域走破は、ゲームのための機能ではありません。
+      走ってきた人生を地図で振り返り、その地図から次の行き先が生まれるための機能です。
+    </p>
+
+    <p>
+      記録するために走るのではなく、走ってきた記録が次のランニングを少し楽しくする。
+      その循環がRunner's Ringsらしさだと考えています。
+    </p>
+
+    <div class="backArea">
+      <a class="backButton" href="./journal.html">Journalへ戻る</a>
+    </div>
+  </article>
+
+  <article data-lang="en">
+    <div class="eyebrow">RUNNER'S RINGS JOURNAL · 001</div>
+    <h2>Why We Built Region Conquest<br>— A Map That Makes You Ask, “Where Should I Run Next?”</h2>
+    <p class="lead">2026.09.14 / Runner's Rings Development Note</p>
+
+    <p>
+      From the beginning, Runner's Rings was never meant to be just another place to list distance and run counts.
+      When running routes are accumulated on a map, a different kind of story appears.
+    </p>
+
+    <div class="highlight">
+      <p>
+        Two runners can both cover 100 km, yet the map looks completely different if one repeats familiar roads
+        while the other gradually explores new towns.
+      </p>
+    </div>
+
+    <h3>We wanted to see how far the map had expanded</h3>
+    <p>
+      In Japan, Runner's Rings lets you move through the hierarchy of
+      <strong>country → prefecture → municipality</strong>.
+      For a prefecture, you can see how many municipalities you have conquered,
+      your conquest rate, and how many remain.
+    </p>
+
+    <p>
+      This is not a leaderboard. It is a way to notice places on your own map that you have not run yet.
+    </p>
+
+    <h3>Why ALL and yearly views are separate</h3>
+    <p>
+      ALL represents your entire accumulated running history — your long-term “rings.”
+      A yearly view shows only that year's runs, making it possible to see how your map expanded during one season of your life.
+    </p>
+
+    <h3>Unvisited regions can change your next run</h3>
+    <p>
+      Showing the places that remain turns the map from a record of the past into a tool for choosing what comes next.
+      A blank neighboring town can become a reason to run one road farther.
+    </p>
+
+    <h3>Sharing only the region that matters</h3>
+    <p>
+      Prefecture conquest can be shared as an image cropped to that prefecture,
+      with conquered municipalities highlighted in Runner's Rings pink.
+      Country sharing follows the same idea at the next administrative level where supported.
+    </p>
+
+    <h3>A common idea that can expand worldwide</h3>
+    <p>
+      Administrative boundaries differ around the world, so Runner's Rings avoids building a separate special design for every place.
+      Instead, the goal is a common system that can use available boundary data for countries, states, regions, and smaller areas.
+    </p>
+
+    <h3>Where will you run next?</h3>
+    <p>
+      Region conquest is not meant to turn running into a game for its own sake.
+      It is meant to let your running history inspire the next place you want to explore.
+    </p>
+
+    <div class="backArea">
+      <a class="backButton" href="./journal.html">Back to Journal</a>
+    </div>
+  </article>
+</main>
+
+
+<footer>
+  <div class="footerLinks">
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+
+</body>
+</html>
