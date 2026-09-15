@@ -73,6 +73,24 @@ a{color:#ff2bd6;text-decoration:none}
   display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
   color:#fff;font-size:13px;font-weight:800;text-decoration:none
 }
+.buttonArea{
+  margin-top:34px;
+  text-align:center;
+}
+.mainButton{
+  display:inline-block;
+  padding:12px 24px;
+  border-radius:12px;
+  background:#ff2bd6;
+  color:#ffffff;
+  font-size:13px;
+  font-weight:800;
+  text-decoration:none;
+}
+.mainButton:hover{
+  filter:brightness(1.08);
+}
+
 footer{
   border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
   padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
@@ -239,10 +257,16 @@ html[lang="en"] [data-lang="en"]{display:block}
     </a>
 
   </section>
+  <div class="buttonArea">
+    <a class="mainButton" href="./index.html" data-lang="ja">Runner's Ringsへ戻る</a>
+    <a class="mainButton" href="./index.html" data-lang="en">Back to Runner's Rings</a>
+  </div>
+
 </main>
 
 <footer>
   <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
     <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
     <a href="./developer-message.html">開発者からのメッセージ</a>
     <a href="./how-to.html">使い方</a>
