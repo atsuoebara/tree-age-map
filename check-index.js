@@ -51,7 +51,7 @@ const checks = [
     /Strava経由/,
     /Intervals\.icu経由/,
     /COROSから直接/,
-    /FIT・GPX・ZIP/,
+    /FIT・GPX・TCX・ZIP/,
     /詳しい手順を見る/
   ]
 },  {
