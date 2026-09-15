@@ -3099,6 +3099,22 @@
       <div id="countyList"></div>
     </div>
 
+    <div id="australiaStateSection" hidden>
+      <h2 id="australiaStateHeading">
+        State / Territory別
+      </h2>
+
+      <div id="australiaStateList"></div>
+    </div>
+
+    <div id="australiaLgaSection" hidden>
+      <h2 id="australiaLgaHeading">
+        LGA別
+      </h2>
+
+      <div id="australiaLgaList"></div>
+    </div>
+
     <div id="prefectureSection">
       <h2 id="prefectureHeading">
         都道府県別
@@ -7699,10 +7715,16 @@ function analyseRoute(
   const regionDistances =
     {};
 
+  const admin1Distances =
+    {};
+
   const admin2Distances =
     {};
 
   const admin2RegionCodes =
+    {};
+
+  const admin2Admin1Keys =
     {};
 
   const cities =
@@ -7715,6 +7737,9 @@ function analyseRoute(
     new Set();
 
   const regions =
+    new Set();
+
+  const admin1Areas =
     new Set();
 
   const admin2Areas =
@@ -7900,6 +7925,56 @@ function analyseRoute(
       }
 
 
+      const admin1Feature =
+        findWorldAdminFeature(
+          countryCode,
+          'adm1',
+          midpointLat,
+          midpointLon
+        );
+
+      let admin1Key =
+        null;
+
+      if (
+        admin1Feature
+      ) {
+
+        const admin1Code =
+          getWorldAdminFeatureCode(
+            admin1Feature
+          );
+
+        const admin1Name =
+          getWorldAdminFeatureName(
+            admin1Feature
+          );
+
+        admin1Key =
+          countryCode +
+          '|' +
+          admin1Code;
+
+        admin1Distances[
+          admin1Key
+        ] =
+          (
+            admin1Distances[
+              admin1Key
+            ] ||
+            0
+          ) +
+          segmentKm;
+
+        admin1Areas.add(
+          admin1Key +
+          '|' +
+          admin1Name
+        );
+
+      }
+
+
       const admin2Feature =
         findWorldAdminFeature(
           countryCode,
@@ -7954,6 +8029,17 @@ function analyseRoute(
             admin2Key
           ] =
             usaRegionCode;
+
+        }
+
+        if (
+          admin1Key
+        ) {
+
+          admin2Admin1Keys[
+            admin2Key
+          ] =
+            admin1Key;
 
         }
 
@@ -8100,9 +8186,13 @@ function analyseRoute(
 
     regionDistances,
 
+    admin1Distances,
+
     admin2Distances,
 
     admin2RegionCodes,
+
+    admin2Admin1Keys,
 
     cities:
       Array.from(
@@ -8122,6 +8212,11 @@ function analyseRoute(
     regions:
       Array.from(
         regions
+      ),
+
+    admin1Areas:
+      Array.from(
+        admin1Areas
       ),
 
     admin2Areas:
@@ -8277,11 +8372,20 @@ function registerActivity(
     activity.regions =
       analysis.regions;
 
+    activity.admin1Distances =
+      analysis.admin1Distances;
+
     activity.admin2Distances =
       analysis.admin2Distances;
 
     activity.admin2RegionCodes =
       analysis.admin2RegionCodes;
+
+    activity.admin2Admin1Keys =
+      analysis.admin2Admin1Keys;
+
+    activity.admin1Areas =
+      analysis.admin1Areas;
 
     activity.admin2Areas =
       analysis.admin2Areas;
@@ -8917,11 +9021,17 @@ function buildActivityFromGPXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
     admin2Distances:
       analysis.admin2Distances,
 
     admin2RegionCodes:
       analysis.admin2RegionCodes,
+
+    admin2Admin1Keys:
+      analysis.admin2Admin1Keys,
 
     cities:
       analysis.cities,
@@ -8934,6 +9044,9 @@ function buildActivityFromGPXText(
 
     regions:
       analysis.regions,
+
+    admin1Areas:
+      analysis.admin1Areas,
 
     admin2Areas:
       analysis.admin2Areas,
@@ -9279,11 +9392,17 @@ function buildActivityFromTCXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
     admin2Distances:
       analysis.admin2Distances,
 
     admin2RegionCodes:
       analysis.admin2RegionCodes,
+
+    admin2Admin1Keys:
+      analysis.admin2Admin1Keys,
 
     cities:
       analysis.cities,
@@ -9296,6 +9415,9 @@ function buildActivityFromTCXText(
 
     regions:
       analysis.regions,
+
+    admin1Areas:
+      analysis.admin1Areas,
 
     admin2Areas:
       analysis.admin2Areas,
@@ -9561,11 +9683,17 @@ function buildActivityFromCloudRow(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
     admin2Distances:
       analysis.admin2Distances,
 
     admin2RegionCodes:
       analysis.admin2RegionCodes,
+
+    admin2Admin1Keys:
+      analysis.admin2Admin1Keys,
 
     cities:
       analysis.cities,
@@ -9578,6 +9706,9 @@ function buildActivityFromCloudRow(
 
     regions:
       analysis.regions,
+
+    admin1Areas:
+      analysis.admin1Areas,
 
     admin2Areas:
       analysis.admin2Areas,
@@ -13166,6 +13297,12 @@ function buildSelectedStats() {
   const regionRunCount =
     {};
 
+  const admin1Distance =
+    {};
+
+  const admin1RunCount =
+    {};
+
   const admin2Distance =
     {};
 
@@ -13173,6 +13310,9 @@ function buildSelectedStats() {
     {};
 
   const admin2RegionCodeByKey =
+    {};
+
+  const admin2Admin1KeyByKey =
     {};
 
   const ringCells =
@@ -13303,6 +13443,52 @@ function buildSelectedStats() {
         );
 
 
+      const admin1InRun =
+        new Set();
+
+      Object.entries(
+        activity.admin1Distances ||
+        {}
+      )
+      .forEach(
+        ([admin1Key, km]) => {
+
+          admin1Distance[
+            admin1Key
+          ] =
+            (
+              admin1Distance[
+                admin1Key
+              ] ||
+              0
+            ) +
+            km;
+
+          admin1InRun.add(
+            admin1Key
+          );
+
+        }
+      );
+
+      admin1InRun.forEach(
+        admin1Key => {
+
+          admin1RunCount[
+            admin1Key
+          ] =
+            (
+              admin1RunCount[
+                admin1Key
+              ] ||
+              0
+            ) +
+            1;
+
+        }
+      );
+
+
       const admin2InRun =
         new Set();
 
@@ -13341,6 +13527,22 @@ function buildSelectedStats() {
               admin2Key
             ] =
               parentRegionCode;
+
+          }
+
+          const parentAdmin1Key =
+            activity
+              .admin2Admin1Keys
+              ?.[admin2Key];
+
+          if (
+            parentAdmin1Key
+          ) {
+
+            admin2Admin1KeyByKey[
+              admin2Key
+            ] =
+              parentAdmin1Key;
 
           }
 
@@ -13503,11 +13705,17 @@ function buildSelectedStats() {
 
     regionRunCount,
 
+    admin1Distance,
+
+    admin1RunCount,
+
     admin2Distance,
 
     admin2RunCount,
 
     admin2RegionCodeByKey,
+
+    admin2Admin1KeyByKey,
 
     ringCells,
 
@@ -14503,6 +14711,45 @@ function getWorldAdminFeatureByCode(
 }
 
 
+function getAdmin1NameFromKey(
+  admin1Key
+) {
+
+  const [
+    countryCode,
+    featureCode
+  ] =
+    String(
+      admin1Key ||
+      ''
+    )
+      .split('|');
+
+  if (
+    !countryCode ||
+    !featureCode
+  ) {
+
+    return admin1Key;
+
+  }
+
+  const feature =
+    getWorldAdminFeatureByCode(
+      countryCode,
+      'adm1',
+      featureCode
+    );
+
+  return feature
+    ? getWorldAdminFeatureName(
+        feature
+      )
+    : featureCode;
+
+}
+
+
 function getAdmin2NameFromKey(
   admin2Key
 ) {
@@ -15114,6 +15361,379 @@ function updateRegionDashboard(
 
   applyListLimit(
     countyList,
+    '.countyCard',
+    10
+  );
+
+}
+
+
+function updateAustraliaDashboard(
+  stats
+) {
+
+  const stateSection =
+    document.getElementById(
+      'australiaStateSection'
+    );
+
+  const stateList =
+    document.getElementById(
+      'australiaStateList'
+    );
+
+  const lgaSection =
+    document.getElementById(
+      'australiaLgaSection'
+    );
+
+  const lgaList =
+    document.getElementById(
+      'australiaLgaList'
+    );
+
+  const stateEntries =
+    Object.entries(
+      stats.admin1Distance ||
+      {}
+    )
+    .filter(
+      ([admin1Key, km]) =>
+        admin1Key.startsWith(
+          'AUS|'
+        ) &&
+        km > 0.01
+    )
+    .sort(
+      (a, b) =>
+        b[1] - a[1]
+    );
+
+  const lgaEntries =
+    Object.entries(
+      stats.admin2Distance ||
+      {}
+    )
+    .filter(
+      ([admin2Key, km]) =>
+        admin2Key.startsWith(
+          'AUS|'
+        ) &&
+        km > 0.01
+    )
+    .sort(
+      (a, b) =>
+        b[1] - a[1]
+    );
+
+  stateSection.hidden =
+    !stateEntries.length;
+
+  lgaSection.hidden =
+    !lgaEntries.length;
+
+  stateList.innerHTML = '';
+  lgaList.innerHTML = '';
+
+  if (
+    !stateEntries.length &&
+    !lgaEntries.length
+  ) {
+    return;
+  }
+
+  document
+    .getElementById(
+      'australiaStateHeading'
+    )
+    .textContent =
+      getSelectedPeriodText() +
+      (
+        isRunnerRingsEnglish()
+          ? ' Australia States / Territories'
+          : ' オーストラリア State / Territory別'
+      );
+
+  document
+    .getElementById(
+      'australiaLgaHeading'
+    )
+    .textContent =
+      getSelectedPeriodText() +
+      (
+        isRunnerRingsEnglish()
+          ? ' Australia LGAs'
+          : ' オーストラリア LGA別'
+      );
+
+  const maxStateKm =
+    stateEntries.length
+      ? stateEntries[0][1]
+      : 0;
+
+  stateEntries.forEach(
+    ([admin1Key, km]) => {
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+      card.className =
+        'regionCard';
+
+      const percent =
+        maxStateKm > 0
+          ? Math.max(
+              3,
+              km /
+              maxStateKm *
+              100
+            )
+          : 3;
+
+      const runs =
+        stats
+          .admin1RunCount
+          ?.[admin1Key] ||
+        0;
+
+      const lgas =
+        lgaEntries.filter(
+          ([admin2Key]) =>
+            stats
+              .admin2Admin1KeyByKey
+              ?.[admin2Key] ===
+            admin1Key
+        );
+
+      const top =
+        document.createElement(
+          'div'
+        );
+
+      top.className =
+        'regionTop';
+
+      top.innerHTML =
+        '<div class="regionName">' +
+          getAdmin1NameFromKey(
+            admin1Key
+          ) +
+        '</div>' +
+        '<div class="regionDistance">' +
+          km.toFixed(2) +
+          ' km' +
+        '</div>';
+
+      const bar =
+        document.createElement(
+          'div'
+        );
+
+      bar.className =
+        'barTrack';
+
+      bar.innerHTML =
+        '<div class="barFill" style="width:' +
+          percent +
+          '%"></div>';
+
+      const runsRow =
+        document.createElement(
+          'div'
+        );
+
+      runsRow.className =
+        'regionRuns';
+
+      runsRow.textContent =
+        'RUNS ' +
+        runs;
+
+      card.append(
+        top,
+        bar,
+        runsRow
+      );
+
+      if (
+        lgas.length
+      ) {
+
+        const toggle =
+          document.createElement(
+            'button'
+          );
+
+        toggle.type =
+          'button';
+
+        toggle.className =
+          'regionCountyToggle';
+
+        toggle.textContent =
+          'LGA ' +
+          lgas.length +
+          (
+            isRunnerRingsEnglish()
+              ? ''
+              : '件'
+          );
+
+        toggle.setAttribute(
+          'aria-expanded',
+          'false'
+        );
+
+        const lgaBox =
+          document.createElement(
+            'div'
+          );
+
+        lgaBox.className =
+          'regionCountyList';
+
+        lgas.forEach(
+          ([admin2Key, lgaKm]) => {
+
+            const row =
+              document.createElement(
+                'div'
+              );
+
+            row.className =
+              'regionCountyRow';
+
+            const lgaRuns =
+              stats
+                .admin2RunCount
+                ?.[admin2Key] ||
+              0;
+
+            row.innerHTML =
+              '<div class="regionCountyName">' +
+                getAdmin2NameFromKey(
+                  admin2Key
+                ) +
+              '</div>' +
+              '<div class="regionCountyDistance">' +
+                lgaKm.toFixed(2) +
+                ' km' +
+              '</div>' +
+              '<div class="regionCountyRuns">RUNS ' +
+                lgaRuns +
+              '</div>';
+
+            lgaBox.appendChild(
+              row
+            );
+
+          }
+        );
+
+        toggle.addEventListener(
+          'click',
+          event => {
+            event.stopPropagation();
+
+            const isOpen =
+              lgaBox
+                .classList
+                .toggle(
+                  'isOpen'
+                );
+
+            toggle.setAttribute(
+              'aria-expanded',
+              String(
+                isOpen
+              )
+            );
+          }
+        );
+
+        card.append(
+          toggle,
+          lgaBox
+        );
+      }
+
+      stateList.appendChild(
+        card
+      );
+
+    }
+  );
+
+  lgaEntries.forEach(
+    ([admin2Key, km]) => {
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+      card.className =
+        'countyCard';
+
+      const parentAdmin1Key =
+        stats
+          .admin2Admin1KeyByKey
+          ?.[admin2Key] ||
+        '';
+
+      const stateName =
+        parentAdmin1Key
+          ? getAdmin1NameFromKey(
+              parentAdmin1Key
+            )
+          : '';
+
+      const runs =
+        stats
+          .admin2RunCount
+          ?.[admin2Key] ||
+        0;
+
+      card.innerHTML =
+        '<div class="countyTop">' +
+          '<div class="countyName">' +
+            getAdmin2NameFromKey(
+              admin2Key
+            ) +
+            (
+              stateName
+                ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
+                  stateName +
+                  '</div>'
+                : ''
+            ) +
+          '</div>' +
+          '<div class="countyDistance">' +
+            km.toFixed(2) +
+            ' km' +
+          '</div>' +
+        '</div>' +
+        '<div class="countyRuns">RUNS ' +
+          runs +
+        '</div>';
+
+      lgaList.appendChild(
+        card
+      );
+
+    }
+  );
+
+  applyListLimit(
+    stateList,
+    '.regionCard',
+    5
+  );
+
+  applyListLimit(
+    lgaList,
     '.countyCard',
     10
   );
@@ -19962,6 +20582,11 @@ function updateDashboard(
 
 
   updateRegionDashboard(
+    stats
+  );
+
+
+  updateAustraliaDashboard(
     stats
   );
 
