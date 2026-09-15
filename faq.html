@@ -248,9 +248,10 @@
       </details>
 
       <details>
-        <summary>FIT・GPX・ZIPは何が違いますか？</summary>
+        <summary>FIT・GPX・TCX・ZIPは何が違いますか？</summary>
         <div class="answer">
           GPXはGPSルートを扱いやすいファイル形式、FITはランニングウォッチなどが保存する運動データ形式です。
+          TCXはトレーニング履歴やGPSルートを含められるXML形式で、古いランニングデータの移行にも使われます。
           ZIPは複数のデータをまとめて確認するときに使えます。
           Runner's Ringsでは、過去データをまとめて移行したいときにも利用できます。
         </div>
@@ -259,8 +260,9 @@
       <details>
         <summary>昔のランニングデータも取り込めますか？</summary>
         <div class="answer">
-          はい。StravaやIntervals.icu経由の取り込みのほか、FIT・GPX・ZIPファイルを使って、
+          はい。StravaやIntervals.icu経由の取り込みのほか、FIT・GPX・TCX・ZIPファイルを使って、
           過去のランをRunner's Ringsへ追加できます。
+          TCXはRunningとして記録され、GPS座標を含むデータを取り込み対象とします。
           昔の記録を重ねるほど、地図が「年輪」のように育っていきます。
         </div>
       </details>
@@ -372,9 +374,10 @@
       </details>
 
       <details>
-        <summary>What are FIT, GPX, and ZIP files?</summary>
+        <summary>What are FIT, GPX, TCX, and ZIP files?</summary>
         <div class="answer">
           GPX mainly stores GPS routes, FIT is commonly used by sports watches,
+          TCX is an XML-based training format that can include GPS routes and historical workout data,
           and ZIP files can contain multiple exported activities.
           Runner's Rings can use these formats to bring in historical data.
         </div>
@@ -383,7 +386,8 @@
       <details>
         <summary>Can I import old running data?</summary>
         <div class="answer">
-          Yes. Historical runs can be added through supported connections or FIT, GPX, and ZIP files.
+          Yes. Historical runs can be added through supported connections or FIT, GPX, TCX, and ZIP files.
+          TCX files are imported when the activity is recorded as Running and includes GPS coordinates.
           The more history you add, the more your map grows like annual rings.
         </div>
       </details>
