@@ -2407,7 +2407,7 @@
       <div class="authConcept">
         <strong>走るほど、地図が育つ。</strong>
         <span>
-          StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／ZIPファイルから利用できます。
+          StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／TCX／ZIPファイルから利用できます。
         </span>
       </div>
 
@@ -2480,7 +2480,7 @@
             <span>手動取り込み</span>
           </div>
           <div class="setupGuideOption">
-            <strong>FIT・GPX・ZIP</strong>
+            <strong>FIT・GPX・TCX・ZIP</strong>
             <span>ファイル取り込み</span>
           </div>
         </div>
@@ -2503,7 +2503,7 @@
               <div class="importShareValue" data-import-share-value="coros">--%</div>
             </div>
             <div class="importShareRow">
-              <div class="importShareName">FIT・GPX・ZIP</div>
+              <div class="importShareName">FIT・GPX・TCX・ZIP</div>
               <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
               <div class="importShareValue" data-import-share-value="file">--%</div>
             </div>
@@ -2563,7 +2563,7 @@
             <div class="startStepNumber">2</div>
             <div class="startStepText">
               <strong>ランニングデータを取り込む</strong>
-              <span>Strava、Intervals.icu、COROS、FIT・GPX・ZIPなどから取り込めます。</span>
+              <span>Strava、Intervals.icu、COROS、FIT・GPX・TCX・ZIPなどから取り込めます。</span>
             </div>
           </div>
 
@@ -2787,7 +2787,7 @@
       <span>手動取り込み</span>
     </div>
     <div class="setupGuideOption">
-      <strong>FIT・GPX・ZIP</strong>
+      <strong>FIT・GPX・TCX・ZIP</strong>
       <span>ファイル取り込み</span>
     </div>
   </div>
@@ -2810,7 +2810,7 @@
         <div class="importShareValue" data-import-share-value="coros">--%</div>
       </div>
       <div class="importShareRow">
-        <div class="importShareName">FIT・GPX・ZIP</div>
+        <div class="importShareName">FIT・GPX・TCX・ZIP</div>
         <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
         <div class="importShareValue" data-import-share-value="file">--%</div>
       </div>
@@ -2877,7 +2877,7 @@
     <input
       id="gpxInput"
       type="file"
-      accept=".gpx,.fit,.zip,application/gpx+xml,application/xml,text/xml"      multiple
+      accept=".gpx,.fit,.tcx,.zip,application/gpx+xml,application/vnd.garmin.tcx+xml,application/xml,text/xml"      multiple
     >
 
   </div>
@@ -8151,6 +8151,359 @@ function buildActivityFromGPXText(
 
 
 /* =====================================
+   TCX → Activity
+===================================== */
+
+function buildActivityFromTCXText(
+  text,
+  name,
+  source = 'tcx',
+  fullAnalysis = true
+) {
+
+  const xml =
+    new DOMParser()
+      .parseFromString(
+        text,
+        'application/xml'
+      );
+
+  if (
+    xml.querySelector(
+      'parsererror'
+    )
+  ) {
+
+    throw new Error(
+      'TCXを読み込めません'
+    );
+
+  }
+
+  const activities =
+    Array.from(
+      xml.getElementsByTagNameNS(
+        '*',
+        'Activity'
+      )
+    );
+
+  const activityElement =
+    activities[0];
+
+  if (
+    !activityElement
+  ) {
+
+    throw new Error(
+      'TCXにActivityがありません'
+    );
+
+  }
+
+  const sport =
+    String(
+      activityElement.getAttribute(
+        'Sport'
+      ) ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+  if (
+    sport &&
+    sport !==
+    'running'
+  ) {
+
+    throw new Error(
+      'ランニング以外のTCXです'
+    );
+
+  }
+
+  const idElement =
+    activityElement
+      .getElementsByTagNameNS(
+        '*',
+        'Id'
+      )[0];
+
+  const timeElements =
+    Array.from(
+      activityElement
+        .getElementsByTagNameNS(
+          '*',
+          'Time'
+        )
+    );
+
+  const rawDate =
+    idElement
+      ?.textContent
+      ?.trim() ||
+    timeElements[0]
+      ?.textContent
+      ?.trim() ||
+    '';
+
+  const date =
+    rawDate
+      ? new Date(
+          rawDate
+        )
+      : null;
+
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    throw new Error(
+      'TCXの日時を確認できません'
+    );
+
+  }
+
+  const trackpoints =
+    Array.from(
+      activityElement
+        .getElementsByTagNameNS(
+          '*',
+          'Trackpoint'
+        )
+    );
+
+  const latlngs =
+    trackpoints
+      .map(
+        point => {
+
+          const position =
+            point
+              .getElementsByTagNameNS(
+                '*',
+                'Position'
+              )[0];
+
+          if (
+            !position
+          ) {
+
+            return null;
+
+          }
+
+          const latitude =
+            parseFloat(
+              position
+                .getElementsByTagNameNS(
+                  '*',
+                  'LatitudeDegrees'
+                )[0]
+                ?.textContent
+            );
+
+          const longitude =
+            parseFloat(
+              position
+                .getElementsByTagNameNS(
+                  '*',
+                  'LongitudeDegrees'
+                )[0]
+                ?.textContent
+            );
+
+          if (
+            !Number.isFinite(
+              latitude
+            ) ||
+            !Number.isFinite(
+              longitude
+            )
+          ) {
+
+            return null;
+
+          }
+
+          return [
+            latitude,
+            longitude
+          ];
+
+        }
+      )
+      .filter(
+        Boolean
+      );
+
+  if (
+    latlngs.length <
+    2
+  ) {
+
+    throw new Error(
+      'TCXのGPS座標が不足しています'
+    );
+
+  }
+
+  const lapElements =
+    Array.from(
+      activityElement
+        .getElementsByTagNameNS(
+          '*',
+          'Lap'
+        )
+    );
+
+  const reportedDistanceMeters =
+    lapElements
+      .map(
+        lap => {
+
+          const distanceElement =
+            lap
+              .getElementsByTagNameNS(
+                '*',
+                'DistanceMeters'
+              )[0];
+
+          const value =
+            parseFloat(
+              distanceElement
+                ?.textContent
+            );
+
+          return Number.isFinite(
+            value
+          )
+            ? value
+            : 0;
+
+        }
+      )
+      .reduce(
+        (
+          total,
+          value
+        ) =>
+          total +
+          value,
+        0
+      );
+
+  const routeDistance =
+    latlngs
+      .slice(
+        1
+      )
+      .reduce(
+        (
+          total,
+          point,
+          index
+        ) =>
+          total +
+          distanceKm(
+            latlngs[index][0],
+            latlngs[index][1],
+            point[0],
+            point[1]
+          ),
+        0
+      );
+
+  const distance =
+    reportedDistanceMeters >
+    0
+      ? reportedDistanceMeters /
+        1000
+      : routeDistance;
+
+  const cleanName =
+    String(
+      name ||
+      'TCXラン'
+    )
+      .replace(
+        /\.tcx$/i,
+        ''
+      );
+
+  const baseActivity =
+    {
+      source,
+      name:
+        cleanName ||
+        'TCXラン',
+      date,
+
+      startedAt:
+        date,
+
+      year:
+        date.getFullYear(),
+
+      distance,
+
+      latlngs
+    };
+
+  if (
+    !fullAnalysis
+  ) {
+
+    return baseActivity;
+
+  }
+
+  const analysis =
+    analyseRoute(
+      latlngs,
+      distance
+    );
+
+  return {
+    ...baseActivity,
+
+    cityDistances:
+      analysis.cityDistances,
+
+    countryDistances:
+      analysis.countryDistances,
+
+    regionDistances:
+      analysis.regionDistances,
+
+    cities:
+      analysis.cities,
+
+    prefectures:
+      analysis.prefectures,
+
+    countries:
+      analysis.countries,
+
+    regions:
+      analysis.regions,
+
+    cells:
+      Array.from(
+        buildCellsFromRoute(
+          latlngs
+        )
+      )
+  };
+
+}
+
+
+/* =====================================
    Supabase RUNS
 ===================================== */
 
@@ -10217,9 +10570,15 @@ const isFIT =
     '.fit'
   );
 
+const isTCX =
+  lowerName.endsWith(
+    '.tcx'
+  );
+
 if (
   !isGPX &&
-  !isFIT
+  !isFIT &&
+  !isTCX
 ) {
 
   invalidFormat++;
@@ -10248,6 +10607,19 @@ if (isFIT) {
   activity =
     await window.buildActivityFromFIT(
       file
+    );
+
+}
+else if (isTCX) {
+
+  text =
+    await file.text();
+
+  activity =
+    buildActivityFromTCXText(
+      text,
+      file.name,
+      'tcx'
     );
 
 }
@@ -10563,7 +10935,10 @@ file.name,
       ) {
 
           setStatus(
-  lastAddedActivity.source === 'fit'
+  (
+    lastAddedActivity.source === 'fit' ||
+    lastAddedActivity.source === 'tcx'
+  )
     ? '✅ クラウドに保存しました'
     : '✅ クラウド＋端末に保存しました'
 );
@@ -10577,18 +10952,24 @@ file.name,
       else {
 
         setStatus(
-  lastAddedActivity.source === 'fit'
-    ? '⚠️ FITのクラウド保存に失敗しました'
+  (
+    lastAddedActivity.source === 'fit' ||
+    lastAddedActivity.source === 'tcx'
+  )
+    ? '⚠️ ファイルのクラウド保存に失敗しました'
     : '⚠️ 端末には保存済み・クラウド同期は次回再試行'
 );
 
 
         alert(
-  lastAddedActivity.source === 'fit'
+  (
+    lastAddedActivity.source === 'fit' ||
+    lastAddedActivity.source === 'tcx'
+  )
     ? (
         'ランデータを読み込みましたが、\n' +
         'クラウド保存は完了していません。\n\n' +
-        'FITは端末には保存されません。\n' +
+        'FIT・TCXは端末には保存されません。\n' +
         'ページを再読み込みしてから、もう一度選択してください。'
       )
     : (
@@ -10629,7 +11010,7 @@ file.name,
 
 alert(
   'このファイル形式には対応していません。\n\n' +
-  '「.gpx」または「.fit」のファイルを選択してください。'
+  '「.gpx」「.fit」「.tcx」のいずれかを選択してください。'
 );
     }
     else if (
@@ -10705,6 +11086,27 @@ async function inspectSelectedZIPFiles(
     0;
 
   let gpxCount =
+    0;
+
+  let tcxCount =
+    0;
+
+  let inspectedTCXCount =
+    0;
+
+  let runningTCXGPSCount =
+    0;
+
+  let duplicateTCXCount =
+    0;
+
+  let newTCXCandidateCount =
+    0;
+
+  const newTCXCandidates =
+    [];
+
+  let tcxInspectFailedCount =
     0;
 
   let innerZipCount =
@@ -10918,6 +11320,94 @@ async function inspectSelectedZIPFiles(
       }
       else if (
         lowerName.endsWith(
+          '.tcx'
+        )
+      ) {
+
+        tcxCount++;
+
+        try {
+
+          const tcxText =
+            await entry.async(
+              'text'
+            );
+
+          const tcxActivity =
+            buildActivityFromTCXText(
+              tcxText,
+              entry.name,
+              'tcx',
+              false
+            );
+
+          inspectedTCXCount++;
+
+          if (
+            tcxActivity.latlngs.length >=
+            2
+          ) {
+
+            runningTCXGPSCount++;
+
+          }
+
+          const exactSignature =
+            createActivitySignature(
+              tcxActivity
+            );
+
+          const duplicate =
+            activitySignatures.has(
+              exactSignature
+            ) ||
+            cloudRouteSignatures.has(
+              exactSignature
+            ) ||
+            findPossibleDuplicate(
+              tcxActivity
+            );
+
+          if (
+            duplicate
+          ) {
+
+            duplicateTCXCount++;
+
+          }
+          else {
+
+            newTCXCandidateCount++;
+
+            newTCXCandidates.push(
+              tcxActivity
+            );
+
+          }
+
+          if (
+            inspectedTCXCount %
+            100 ===
+            0
+          ) {
+
+            setStatus(
+              'TCX内容を確認中… ' +
+              inspectedTCXCount
+            );
+
+          }
+
+        }
+        catch(error) {
+
+          tcxInspectFailedCount++;
+
+        }
+
+      }
+      else if (
+        lowerName.endsWith(
           '.gpx'
         )
       ) {
@@ -11008,13 +11498,43 @@ async function inspectSelectedZIPFiles(
         })
       );
 
+  const saveableTCXCandidates =
+    newTCXCandidates
+      .filter(
+        activity =>
+          Number.isFinite(
+            activity.distance
+          ) &&
+          activity.distance >=
+          0.5
+      );
+
+  const saveableImportCandidates =
+    [
+      ...saveableFITCandidates,
+      ...saveableTCXCandidates
+    ];
+
   const heldShortFITCount =
     newFITCandidates.length -
     saveableFITCandidates.length;
 
-  const newFITCandidateDetails =
+  const heldShortTCXCount =
+    newTCXCandidates.length -
+    saveableTCXCandidates.length;
+
+  const heldShortImportCount =
+    heldShortFITCount +
+    heldShortTCXCount;
+
+  const totalDuplicateImportCount =
+    duplicateFITCount +
+    duplicateTCXCount;
+
+  const allNewCandidateDetails =
     [
-      ...newFITCandidates
+      ...newFITCandidates,
+      ...newTCXCandidates
     ]
     .sort(
       (
@@ -11042,6 +11562,12 @@ async function inspectSelectedZIPFiles(
           2
         ) +
         ' km ・ ' +
+        (
+          activity.source === 'tcx'
+            ? 'TCX'
+            : 'FIT'
+        ) +
+        ' ・ ' +
         activity.name
     )
     .join(
@@ -11049,15 +11575,18 @@ async function inspectSelectedZIPFiles(
     );
 
   if (
-    newFITCandidateDetails
+    allNewCandidateDetails
   ) {
 
     const reportText =
       'Runner’s Rings ZIP未登録候補一覧\n' +
       '未登録候補 ' +
-      newFITCandidateCount +
+      (
+        newFITCandidateCount +
+        newTCXCandidateCount
+      ) +
       '件\n\n' +
-      newFITCandidateDetails +
+      allNewCandidateDetails +
       '\n';
 
     const reportBlob =
@@ -11087,7 +11616,10 @@ async function inspectSelectedZIPFiles(
 
     reportLink.download =
       'Runners_Rings_未登録候補_' +
-      newFITCandidateCount +
+      (
+        newFITCandidateCount +
+        newTCXCandidateCount
+      ) +
       '件.txt';
 
     document.body.appendChild(
@@ -11097,7 +11629,6 @@ async function inspectSelectedZIPFiles(
     reportLink.click();
 
     reportLink.remove();
-
 
     setTimeout(
       () =>
@@ -11113,23 +11644,23 @@ async function inspectSelectedZIPFiles(
     '✅ ZIP内のランデータ候補を確認しました'
   );
 
-
   alert(
     files.length +
     '個のZIPを確認しました。\n\n' +
     '内側のZIP ' +
     innerZipCount +
-    '件\n' +
-    'FIT ' +
+    '件\n\n' +
+    '【FIT】\n' +
+    'ファイル ' +
     fitCount +
     '件\n' +
-    'FIT（10KB以上） ' +
+    '10KB以上 ' +
     fitOver10KBCount +
     '件\n' +
-    'FIT（50KB以上） ' +
+    '50KB以上 ' +
     fitOver50KBCount +
     '件\n' +
-        'FIT内容確認成功 ' +
+    '内容確認成功 ' +
     inspectedFITCount +
     '件\n' +
     'ラン＋GPS候補 ' +
@@ -11141,23 +11672,42 @@ async function inspectSelectedZIPFiles(
     '未登録候補 ' +
     newFITCandidateCount +
     '件\n' +
-        '保存予定（500m以上） ' +
-    saveableFITCandidates.length +
+    '内容確認失敗 ' +
+    fitInspectFailedCount +
+    '件\n\n' +
+    '【TCX】\n' +
+    'ファイル ' +
+    tcxCount +
+    '件\n' +
+    '内容確認成功 ' +
+    inspectedTCXCount +
+    '件\n' +
+    'ラン＋GPS候補 ' +
+    runningTCXGPSCount +
+    '件\n' +
+    '既存ランと重複 ' +
+    duplicateTCXCount +
+    '件\n' +
+    '未登録候補 ' +
+    newTCXCandidateCount +
+    '件\n' +
+    '内容確認失敗・対象外 ' +
+    tcxInspectFailedCount +
+    '件\n\n' +
+    '保存予定（500m以上） ' +
+    saveableImportCandidates.length +
     '件\n' +
     '保留（500m未満） ' +
-    heldShortFITCount +
+    heldShortImportCount +
     '件\n' +
-    '重複確認不可 ' +
+    'FIT重複確認不可 ' +
     uncheckableFITCount +
-    '件\n' +
-    'FIT内容確認失敗 ' +
-    fitInspectFailedCount +
     '件\n' +
     'GPX ' +
     gpxCount +
     '件\n\n' +
-            (
-      newFITCandidateDetails
+    (
+      allNewCandidateDetails
         ? (
             '未登録候補一覧をテキスト保存しました。\n\n'
           )
@@ -11167,7 +11717,7 @@ async function inspectSelectedZIPFiles(
   );
 
   if (
-    !saveableFITCandidates.length
+    !saveableImportCandidates.length
   ) {
 
     return;
@@ -11194,15 +11744,16 @@ async function inspectSelectedZIPFiles(
     window.confirm(
       '保存内容を確認してください。\n\n' +
       '新規保存 ' +
-      saveableFITCandidates.length +
+      saveableImportCandidates.length +
       '件\n' +
       '重複スキップ ' +
-      duplicateFITCount +
+      totalDuplicateImportCount +
       '件\n' +
       '保留（500m未満） ' +
-      heldShortFITCount +
+      heldShortImportCount +
       '件\n\n' +
-      '新規候補の表示名は「Garminラン」に統一します。\n\n' +
+      'FIT候補は表示名を「Garminラン」に統一します。\n' +
+      'TCX候補は元のファイル名を表示名に使います。\n\n' +
       'この内容でクラウドへ保存しますか？'
     );
 
@@ -11230,12 +11781,12 @@ async function inspectSelectedZIPFiles(
   for (
     let i = 0;
     i <
-    saveableFITCandidates.length;
+    saveableImportCandidates.length;
     i++
   ) {
 
     const activity =
-      saveableFITCandidates[i];
+      saveableImportCandidates[i];
 
     const signature =
       createActivitySignature(
@@ -11269,10 +11820,10 @@ async function inspectSelectedZIPFiles(
     try {
 
       setStatus(
-        'Garminランをクラウド保存中… ' +
+        'ZIP内ランをクラウド保存中… ' +
         (i + 1) +
         '/' +
-        saveableFITCandidates.length
+        saveableImportCandidates.length
       );
 
       await saveActivityToCloud(
@@ -11289,7 +11840,7 @@ async function inspectSelectedZIPFiles(
     catch(error) {
 
       console.error(
-        'Garmin ZIP保存失敗:',
+        'ZIP保存失敗:',
         activity.date,
         error
       );
@@ -11307,20 +11858,20 @@ async function inspectSelectedZIPFiles(
   ) {
 
     setStatus(
-      '⚠️ Garminランの一部を保存できませんでした'
+      '⚠️ ZIP内ランの一部を保存できませんでした'
     );
 
   }
   else {
 
     setStatus(
-      '✅ Garminランのクラウド保存が完了しました'
+      '✅ ZIP内ランのクラウド保存が完了しました'
     );
 
   }
 
   alert(
-    'Garmin ZIP保存結果\n\n' +
+    'ZIP保存結果\n\n' +
     '保存成功 ' +
     zipCloudSavedCount +
     '件\n' +
@@ -11331,7 +11882,7 @@ async function inspectSelectedZIPFiles(
     zipCloudFailedCount +
     '件\n' +
     '500m未満保留 ' +
-    heldShortFITCount +
+    heldShortImportCount +
     '件\n\n' +
     'クラウド表示件数 ' +
     cloudRunCount +
@@ -11340,6 +11891,7 @@ async function inspectSelectedZIPFiles(
 
 
 }
+
 gpxInput.onchange =
   async event => {
 
@@ -19568,7 +20120,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['あなたのラン数','Your runs'],
   ['あなたが走った地域','Places you have run'],
   ['走るほど、地図が育つ。','Your map grows with every run.'],
-  ['StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／ZIPファイルから利用できます。','Use automatic sync through Strava or Intervals.icu, direct COROS import, or FIT/GPX/ZIP file import.'],
+  ['StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／TCX／ZIPファイルから利用できます。','Use automatic sync through Strava or Intervals.icu, direct COROS import, or FIT/GPX/ZIP file import.'],
   ['データの取り込み方','How to import your data'],
   ['初期設定：データの取り込み方','Getting started: how to import your data'],
   ['Strava経由','Via Strava'],
@@ -19577,7 +20129,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['自動連携','Automatic sync'],
   ['COROSから直接','Direct from COROS'],
   ['手動取り込み','Manual import'],
-  ['FIT・GPX・ZIP','FIT / GPX / ZIP'],
+  ['FIT・GPX・TCX・ZIP','FIT / GPX / TCX / ZIP'],
   ['ファイル取り込み','File import'],
   ['※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。','* As a rule, choose either Strava or Intervals.icu for automatic sync.'],
   ['詳しい手順を見る →','View detailed instructions →'],
@@ -19711,7 +20263,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['登録済みのランです','This run is already saved'],
   ['同じランのため追加しませんでした。','It was not added because the same run is already saved.'],
   ['対応していないファイル形式です','Unsupported file type'],
-  ['「.gpx」または「.fit」のファイルを選択してください。','Select a .gpx or .fit file.'],
+  ['「.gpx」「.fit」「.tcx」のいずれかを選択してください。','Select a .gpx, .fit, or .tcx file.'],
   ['ランデータの読み込みに失敗しました。','Could not read the running data.'],
   ['クラウド保存にはログインが必要です。','Log in to save runs to your account.'],
   ['この内容でクラウドへ保存しますか？','Save these runs to your account?'],
