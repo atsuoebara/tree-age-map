@@ -5384,27 +5384,175 @@ const usaRegionFeatures =
 
 const WORLD_ADMIN_CONFIG = {
   USA: {
+    name: {
+      ja: 'アメリカ',
+      en: 'USA'
+    },
     adm1: {
       file:
-        './runners-rings-usa-adm1.geojson'
+        './runners-rings-usa-adm1.geojson',
+      label: {
+        ja: '州',
+        en: 'State'
+      },
+      listLabel: {
+        ja: '州別',
+        en: 'States'
+      }
     },
     adm2: {
       file:
-        './runners-rings-usa-adm2-simplified.geojson'
+        './runners-rings-usa-adm2-simplified.geojson',
+      label: {
+        ja: 'County・独立市',
+        en: 'County / City'
+      },
+      listLabel: {
+        ja: 'County・独立市別',
+        en: 'Counties / Cities'
+      }
     }
   },
 
   AUS: {
+    name: {
+      ja: 'オーストラリア',
+      en: 'Australia'
+    },
     adm1: {
       file:
-        './runners-rings-aus-adm1-simplified.geojson'
+        './runners-rings-aus-adm1-simplified.geojson',
+      label: {
+        ja: 'State / Territory',
+        en: 'State / Territory'
+      },
+      listLabel: {
+        ja: 'State / Territory別',
+        en: 'States / Territories'
+      }
     },
     adm2: {
       file:
-        './runners-rings-aus-adm2-simplified.geojson'
+        './runners-rings-aus-adm2-simplified.geojson',
+      label: {
+        ja: 'LGA',
+        en: 'LGA'
+      },
+      listLabel: {
+        ja: 'LGA別',
+        en: 'LGAs'
+      }
     }
   }
 };
+
+function getWorldAdminCountryConfig(
+  countryCode
+) {
+  const code =
+    String(
+      countryCode ||
+      ''
+    )
+      .trim()
+      .toUpperCase();
+
+  return (
+    WORLD_ADMIN_CONFIG[
+      code
+    ] ||
+    null
+  );
+}
+
+function getWorldAdminLevelConfig(
+  countryCode,
+  level
+) {
+  const config =
+    getWorldAdminCountryConfig(
+      countryCode
+    );
+
+  const normalizedLevel =
+    String(
+      level ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+  return (
+    config?.[
+      normalizedLevel
+    ] ||
+    null
+  );
+}
+
+function getWorldAdminCountryName(
+  countryCode
+) {
+  const config =
+    getWorldAdminCountryConfig(
+      countryCode
+    );
+
+  if (!config?.name) {
+    return String(
+      countryCode ||
+      ''
+    ).toUpperCase();
+  }
+
+  return (
+    isRunnerRingsEnglish()
+      ? config.name.en
+      : config.name.ja
+  ) || String(
+    countryCode ||
+    ''
+  ).toUpperCase();
+}
+
+function getWorldAdminLevelLabel(
+  countryCode,
+  level,
+  listLabel = false
+) {
+  const config =
+    getWorldAdminLevelConfig(
+      countryCode,
+      level
+    );
+
+  const labels =
+    listLabel
+      ? config?.listLabel
+      : config?.label;
+
+  if (!labels) {
+    return String(
+      level ||
+      ''
+    ).toUpperCase();
+  }
+
+  return (
+    isRunnerRingsEnglish()
+      ? labels.en
+      : labels.ja
+  ) || String(
+    level ||
+    ''
+  ).toUpperCase();
+}
+
+function getWorldAdminSupportedCountryCodes() {
+  return Object.keys(
+    WORLD_ADMIN_CONFIG
+  );
+}
 
 const worldAdminCache =
   new Map();
@@ -7376,11 +7524,10 @@ async function loadWorldAdminLevel(
   }
 
   const config =
-    WORLD_ADMIN_CONFIG[
-      code
-    ]?.[
+    getWorldAdminLevelConfig(
+      code,
       normalizedLevel
-    ];
+    );
 
   if (
     !config?.file &&
@@ -7605,9 +7752,9 @@ async function preloadWorldAdminForCountries(
             code =>
               code &&
               code !== 'JPN' &&
-              WORLD_ADMIN_CONFIG[
+              getWorldAdminCountryConfig(
                 code
-              ]
+              )
           )
       )
     );
@@ -7622,16 +7769,14 @@ async function preloadWorldAdminForCountries(
         level => {
 
           if (
-            WORLD_ADMIN_CONFIG[
-              code
-            ]?.[
+            getWorldAdminLevelConfig(
+              code,
               level
-            ]?.file ||
-            WORLD_ADMIN_CONFIG[
-              code
-            ]?.[
+            )?.file ||
+            getWorldAdminLevelConfig(
+              code,
               level
-            ]?.api
+            )?.api
           ) {
 
             tasks.push(
@@ -15058,10 +15203,11 @@ function updateRegionDashboard(
     )
     .textContent =
       getSelectedPeriodText() +
-      (
-        isRunnerRingsEnglish()
-          ? ' States'
-          : ' 州別'
+      ' ' +
+      getWorldAdminLevelLabel(
+        'USA',
+        'adm1',
+        true
       );
 
   document
@@ -15070,10 +15216,11 @@ function updateRegionDashboard(
     )
     .textContent =
       getSelectedPeriodText() +
-      (
-        isRunnerRingsEnglish()
-          ? ' Counties / Cities'
-          : ' County・独立市別'
+      ' ' +
+      getWorldAdminLevelLabel(
+        'USA',
+        'adm2',
+        true
       );
 
   const maxKm =
@@ -15181,11 +15328,12 @@ function updateRegionDashboard(
           'regionCountyToggle';
 
         toggle.textContent =
-          (
-            isRunnerRingsEnglish()
-              ? 'Counties / Cities '
-              : 'County・独立市 '
+          getWorldAdminLevelLabel(
+            'USA',
+            'adm2',
+            false
           ) +
+          ' ' +
           counties.length +
           (
             isRunnerRingsEnglish()
@@ -15448,10 +15596,15 @@ function updateAustraliaDashboard(
     )
     .textContent =
       getSelectedPeriodText() +
-      (
-        isRunnerRingsEnglish()
-          ? ' Australia States / Territories'
-          : ' オーストラリア State / Territory別'
+      ' ' +
+      getWorldAdminCountryName(
+        'AUS'
+      ) +
+      ' ' +
+      getWorldAdminLevelLabel(
+        'AUS',
+        'adm1',
+        true
       );
 
   document
@@ -15460,10 +15613,15 @@ function updateAustraliaDashboard(
     )
     .textContent =
       getSelectedPeriodText() +
-      (
-        isRunnerRingsEnglish()
-          ? ' Australia LGAs'
-          : ' オーストラリア LGA別'
+      ' ' +
+      getWorldAdminCountryName(
+        'AUS'
+      ) +
+      ' ' +
+      getWorldAdminLevelLabel(
+        'AUS',
+        'adm2',
+        true
       );
 
   const maxStateKm =
@@ -15573,7 +15731,12 @@ function updateAustraliaDashboard(
           'regionCountyToggle';
 
         toggle.textContent =
-          'LGA ' +
+          getWorldAdminLevelLabel(
+            'AUS',
+            'adm2',
+            false
+          ) +
+          ' ' +
           lgas.length +
           (
             isRunnerRingsEnglish()
