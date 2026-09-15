@@ -5285,6 +5285,43 @@ let usaRegionGeojsonData =
 const usaRegionFeatures =
   [];
 
+/* =====================================
+   WORLD ADMIN LAZY LOAD FOUNDATION
+   日本の既存処理は変更せず、海外のADM1 / ADM2を
+   必要になった国だけ読み込むための共通土台。
+   現段階では既存USA表示の動作も変更しない。
+===================================== */
+
+const WORLD_ADMIN_CONFIG = {
+  USA: {
+    adm1: {
+      file:
+        './runners-rings-usa-adm1.geojson'
+    },
+    adm2: {
+      file:
+        './runners-rings-usa-adm2-simplified.geojson'
+    }
+  },
+
+  AUS: {
+    adm1: {
+      file:
+        './runners-rings-aus-adm1-simplified.geojson'
+    },
+    adm2: {
+      file:
+        './runners-rings-aus-adm2-simplified.geojson'
+    }
+  }
+};
+
+const worldAdminCache =
+  new Map();
+
+const worldAdminLoading =
+  new Map();
+
 const activities =
   [];
 
@@ -6981,6 +7018,368 @@ async function loadUsaRegions() {
 
     return false;
   }
+
+}
+
+
+
+/* =====================================
+   海外行政境界 共通遅延ロード
+===================================== */
+
+function getWorldAdminCacheKey(
+  countryCode,
+  level
+) {
+
+  return (
+    String(
+      countryCode ||
+      ''
+    )
+      .trim()
+      .toUpperCase() +
+    '|' +
+    String(
+      level ||
+      ''
+    )
+      .trim()
+      .toLowerCase()
+  );
+
+}
+
+
+function prepareWorldAdminFeatures(
+  geojson
+) {
+
+  const features =
+    Array.isArray(
+      geojson?.features
+    )
+      ? geojson.features
+      : [];
+
+  return features.map(
+    feature => ({
+      feature,
+
+      bbox:
+        getFeatureBBox(
+          feature
+        )
+    })
+  );
+
+}
+
+
+async function loadWorldAdminLevel(
+  countryCode,
+  level
+) {
+
+  const code =
+    String(
+      countryCode ||
+      ''
+    )
+      .trim()
+      .toUpperCase();
+
+  const normalizedLevel =
+    String(
+      level ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+  // 日本は現在の高品質な既存データをそのまま使う。
+  if (
+    code === 'JPN'
+  ) {
+
+    return null;
+
+  }
+
+  const config =
+    WORLD_ADMIN_CONFIG[
+      code
+    ]?.[
+      normalizedLevel
+    ];
+
+  if (
+    !config?.file
+  ) {
+
+    return null;
+
+  }
+
+  const cacheKey =
+    getWorldAdminCacheKey(
+      code,
+      normalizedLevel
+    );
+
+  if (
+    worldAdminCache.has(
+      cacheKey
+    )
+  ) {
+
+    return worldAdminCache.get(
+      cacheKey
+    );
+
+  }
+
+  if (
+    worldAdminLoading.has(
+      cacheKey
+    )
+  ) {
+
+    return worldAdminLoading.get(
+      cacheKey
+    );
+
+  }
+
+  // 現在のUSA ADM1は既存読込結果を再利用できる。
+  if (
+    code === 'USA' &&
+    normalizedLevel === 'adm1' &&
+    usaRegionGeojsonData &&
+    usaRegionFeatures.length
+  ) {
+
+    const prepared = {
+      countryCode:
+        code,
+
+      level:
+        normalizedLevel,
+
+      geojson:
+        usaRegionGeojsonData,
+
+      features:
+        usaRegionFeatures
+    };
+
+    worldAdminCache.set(
+      cacheKey,
+      prepared
+    );
+
+    return prepared;
+
+  }
+
+  const loadingPromise =
+    (
+      async () => {
+
+        try {
+
+          const response =
+            await fetch(
+              config.file
+            );
+
+          if (
+            !response.ok
+          ) {
+
+            throw new Error(
+              code +
+              ' ' +
+              normalizedLevel +
+              ' data HTTP ' +
+              response.status
+            );
+
+          }
+
+          const geojson =
+            await response.json();
+
+          const prepared = {
+            countryCode:
+              code,
+
+            level:
+              normalizedLevel,
+
+            geojson,
+
+            features:
+              prepareWorldAdminFeatures(
+                geojson
+              )
+          };
+
+          worldAdminCache.set(
+            cacheKey,
+            prepared
+          );
+
+          return prepared;
+
+        }
+        catch(error) {
+
+          console.warn(
+            'World admin data unavailable:',
+            code,
+            normalizedLevel,
+            error
+          );
+
+          return null;
+
+        }
+        finally {
+
+          worldAdminLoading.delete(
+            cacheKey
+          );
+
+        }
+
+      }
+    )();
+
+  worldAdminLoading.set(
+    cacheKey,
+    loadingPromise
+  );
+
+  return loadingPromise;
+
+}
+
+
+async function preloadWorldAdminForCountries(
+  countryCodes,
+  levels = [
+    'adm1',
+    'adm2'
+  ]
+) {
+
+  const codes =
+    Array.from(
+      new Set(
+        (
+          Array.isArray(
+            countryCodes
+          )
+            ? countryCodes
+            : []
+        )
+          .map(
+            code =>
+              String(
+                code ||
+                ''
+              )
+                .trim()
+                .toUpperCase()
+          )
+          .filter(
+            code =>
+              code &&
+              code !== 'JPN' &&
+              WORLD_ADMIN_CONFIG[
+                code
+              ]
+          )
+      )
+    );
+
+  const tasks =
+    [];
+
+  codes.forEach(
+    code => {
+
+      levels.forEach(
+        level => {
+
+          if (
+            WORLD_ADMIN_CONFIG[
+              code
+            ]?.[
+              level
+            ]?.file
+          ) {
+
+            tasks.push(
+              loadWorldAdminLevel(
+                code,
+                level
+              )
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+  return Promise.all(
+    tasks
+  );
+
+}
+
+
+function clearWorldAdminCache(
+  countryCode = null
+) {
+
+  if (
+    !countryCode
+  ) {
+
+    worldAdminCache.clear();
+
+    return;
+
+  }
+
+  const prefix =
+    String(
+      countryCode
+    )
+      .trim()
+      .toUpperCase() +
+    '|';
+
+  Array.from(
+    worldAdminCache.keys()
+  )
+    .filter(
+      key =>
+        key.startsWith(
+          prefix
+        )
+    )
+    .forEach(
+      key =>
+        worldAdminCache.delete(
+          key
+        )
+    );
 
 }
 
