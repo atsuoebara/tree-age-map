@@ -20221,11 +20221,42 @@ init().finally(
   finishLaunchSplash
 );
 
-const backToMapButton = document.getElementById("backToMapButton");
+const backToMapButton =
+  document.getElementById(
+    'backToMapButton'
+  );
 
-backToMapButton.onclick = () => {
-  location.href = "https://runnersrings.com";
-};
+backToMapButton.onclick =
+  () => {
+    cloudRunsPanel
+      .classList
+      .remove(
+        'open'
+      );
+
+    savedRunsPanel
+      .classList
+      .remove(
+        'open'
+      );
+
+    document
+      .getElementById(
+        'map'
+      )
+      .scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      });
+
+    setTimeout(
+      () => {
+        map.invalidateSize();
+        updateDisplay();
+      },
+      250
+    );
+  };
 
 const shareAppButton = document.getElementById('shareAppButton');
 const shareAppMessage = document.getElementById('shareAppMessage');
