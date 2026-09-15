@@ -849,6 +849,7 @@
 
     #countryList,
     #regionList,
+    #countyList,
     #prefectureList,
     #cityList{
       display:flex;
@@ -858,6 +859,7 @@
 
     .countryCard,
     .regionCard,
+    .countyCard,
     .prefectureCard,
     .cityCard{
       background:#132237;
@@ -868,6 +870,7 @@
 
     .countryTop,
     .regionTop,
+    .countyTop,
     .prefectureTop,
     .cityTop{
       display:flex;
@@ -878,6 +881,7 @@
 
     .countryName,
     .regionName,
+    .countyName,
     .prefectureName,
     .cityName{
       font-size:14px;
@@ -886,6 +890,7 @@
 
     .countryDistance,
     .regionDistance,
+    .countyDistance,
     .prefectureDistance,
     .cityDistance{
       font-size:14px;
@@ -894,6 +899,7 @@
 
     .countryRuns,
     .regionRuns,
+    .countyRuns,
     .prefectureRuns,
     .cityRuns{
       margin-top:7px;
@@ -1041,6 +1047,66 @@
         padding:5px 6px;
         font-size:9px;
       }
+    }
+
+    .regionCountyToggle{
+      width:100%;
+      margin-top:10px;
+      padding:8px 10px;
+      border:1px solid rgba(255,43,214,.35);
+      border-radius:10px;
+      background:rgba(255,43,214,.06);
+      color:#ffffff;
+      font:inherit;
+      font-size:11px;
+      font-weight:800;
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .regionCountyToggle:hover{
+      background:rgba(255,43,214,.12);
+    }
+
+    .regionCountyList{
+      display:none;
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+
+    .regionCountyList.isOpen{
+      display:grid;
+      gap:7px;
+    }
+
+    .regionCountyRow{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:4px 10px;
+      padding:8px 9px;
+      border-radius:9px;
+      background:rgba(255,255,255,.035);
+    }
+
+    .regionCountyName{
+      min-width:0;
+      font-size:12px;
+      font-weight:800;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .regionCountyDistance{
+      font-size:11px;
+      color:#dce8f5;
+    }
+
+    .regionCountyRuns{
+      grid-column:1 / -1;
+      font-size:9px;
+      color:#9fb0c4;
     }
 
     .barTrack{
@@ -3023,6 +3089,14 @@
       </h2>
 
       <div id="regionList"></div>
+    </div>
+
+    <div id="countySection" hidden>
+      <h2 id="countyHeading">
+        County別
+      </h2>
+
+      <div id="countyList"></div>
     </div>
 
     <div id="prefectureSection">
@@ -7628,6 +7702,9 @@ function analyseRoute(
   const admin2Distances =
     {};
 
+  const admin2RegionCodes =
+    {};
+
   const cities =
     new Set();
 
@@ -7777,6 +7854,9 @@ function analyseRoute(
       );
 
 
+      let usaRegionCode =
+        null;
+
       if (
         countryCode ===
         'USA'
@@ -7793,18 +7873,18 @@ function analyseRoute(
           regionFeature
         ) {
 
-          const regionCode =
+          usaRegionCode =
             getUsaRegionCode(
               regionFeature
             );
 
 
           regionDistances[
-            regionCode
+            usaRegionCode
           ] =
             (
               regionDistances[
-                regionCode
+                usaRegionCode
               ] ||
               0
             ) +
@@ -7812,7 +7892,7 @@ function analyseRoute(
 
 
           regions.add(
-            regionCode
+            usaRegionCode
           );
 
         }
@@ -7864,6 +7944,18 @@ function analyseRoute(
           '|' +
           admin2Name
         );
+
+        if (
+          countryCode === 'USA' &&
+          usaRegionCode
+        ) {
+
+          admin2RegionCodes[
+            admin2Key
+          ] =
+            usaRegionCode;
+
+        }
 
       }
 
@@ -8010,6 +8102,8 @@ function analyseRoute(
 
     admin2Distances,
 
+    admin2RegionCodes,
+
     cities:
       Array.from(
         cities
@@ -8150,7 +8244,11 @@ function registerActivity(
 ) {
 
   if (
-    !activity.regionDistances &&
+    (
+      !activity.regionDistances ||
+      !activity.admin2Distances ||
+      !activity.admin2RegionCodes
+    ) &&
     Array.isArray(
       activity.latlngs
     ) &&
@@ -8181,6 +8279,9 @@ function registerActivity(
 
     activity.admin2Distances =
       analysis.admin2Distances;
+
+    activity.admin2RegionCodes =
+      analysis.admin2RegionCodes;
 
     activity.admin2Areas =
       analysis.admin2Areas;
@@ -8819,6 +8920,9 @@ function buildActivityFromGPXText(
     admin2Distances:
       analysis.admin2Distances,
 
+    admin2RegionCodes:
+      analysis.admin2RegionCodes,
+
     cities:
       analysis.cities,
 
@@ -9178,6 +9282,9 @@ function buildActivityFromTCXText(
     admin2Distances:
       analysis.admin2Distances,
 
+    admin2RegionCodes:
+      analysis.admin2RegionCodes,
+
     cities:
       analysis.cities,
 
@@ -9456,6 +9563,9 @@ function buildActivityFromCloudRow(
 
     admin2Distances:
       analysis.admin2Distances,
+
+    admin2RegionCodes:
+      analysis.admin2RegionCodes,
 
     cities:
       analysis.cities,
@@ -13056,6 +13166,15 @@ function buildSelectedStats() {
   const regionRunCount =
     {};
 
+  const admin2Distance =
+    {};
+
+  const admin2RunCount =
+    {};
+
+  const admin2RegionCodeByKey =
+    {};
+
   const ringCells =
     {};
 
@@ -13184,8 +13303,71 @@ function buildSelectedStats() {
         );
 
 
+      const admin2InRun =
+        new Set();
+
       Object.entries(
-        activity.cityDistances
+        activity.admin2Distances ||
+        {}
+      )
+      .forEach(
+        ([admin2Key, km]) => {
+
+          admin2Distance[
+            admin2Key
+          ] =
+            (
+              admin2Distance[
+                admin2Key
+              ] ||
+              0
+            ) +
+            km;
+
+          admin2InRun.add(
+            admin2Key
+          );
+
+          const parentRegionCode =
+            activity
+              .admin2RegionCodes
+              ?.[admin2Key];
+
+          if (
+            parentRegionCode
+          ) {
+
+            admin2RegionCodeByKey[
+              admin2Key
+            ] =
+              parentRegionCode;
+
+          }
+
+        }
+      );
+
+      admin2InRun.forEach(
+        admin2Key => {
+
+          admin2RunCount[
+            admin2Key
+          ] =
+            (
+              admin2RunCount[
+                admin2Key
+              ] ||
+              0
+            ) +
+            1;
+
+        }
+      );
+
+
+      Object.entries(
+        activity.cityDistances ||
+        {}
       )
       .forEach(
         (
@@ -13320,6 +13502,12 @@ function buildSelectedStats() {
     regionDistance,
 
     regionRunCount,
+
+    admin2Distance,
+
+    admin2RunCount,
+
+    admin2RegionCodeByKey,
 
     ringCells,
 
@@ -14278,6 +14466,82 @@ cloudRunsPanel
    州・地域 Dashboard
 ===================================== */
 
+function getWorldAdminFeatureByCode(
+  countryCode,
+  level,
+  featureCode
+) {
+
+  const prepared =
+    worldAdminCache.get(
+      getWorldAdminCacheKey(
+        countryCode,
+        level
+      )
+    );
+
+  if (
+    !prepared?.features?.length
+  ) {
+
+    return null;
+
+  }
+
+  const item =
+    prepared.features.find(
+      candidate =>
+        getWorldAdminFeatureCode(
+          candidate.feature
+        ) ===
+        featureCode
+    );
+
+  return item?.feature ||
+    null;
+
+}
+
+
+function getAdmin2NameFromKey(
+  admin2Key
+) {
+
+  const [
+    countryCode,
+    featureCode
+  ] =
+    String(
+      admin2Key ||
+      ''
+    )
+      .split('|');
+
+  if (
+    !countryCode ||
+    !featureCode
+  ) {
+
+    return admin2Key;
+
+  }
+
+  const feature =
+    getWorldAdminFeatureByCode(
+      countryCode,
+      'adm2',
+      featureCode
+    );
+
+  return feature
+    ? getWorldAdminFeatureName(
+        feature
+      )
+    : featureCode;
+
+}
+
+
 function focusUsaRegion(
   regionCode
 ) {
@@ -14483,36 +14747,55 @@ function updateRegionDashboard(
       'regionList'
     );
 
+  const countySection =
+    document.getElementById(
+      'countySection'
+    );
+
+  const countyList =
+    document.getElementById(
+      'countyList'
+    );
+
   const entries =
     Object.entries(
       stats.regionDistance
     )
     .filter(
-      (
-        [
-          ,
-          km
-        ]
-      ) =>
-        km >
-        0.01
+      ([, km]) =>
+        km > 0.01
     )
     .sort(
-      (
-        a,
-        b
-      ) =>
-        b[1] -
-        a[1]
+      (a, b) =>
+        b[1] - a[1]
     );
-
 
   section.hidden =
     !entries.length;
 
-  list.innerHTML =
-    '';
+  list.innerHTML = '';
 
+  const usaCountyEntries =
+    Object.entries(
+      stats.admin2Distance ||
+      {}
+    )
+    .filter(
+      ([admin2Key, km]) =>
+        admin2Key.startsWith(
+          'USA|'
+        ) &&
+        km > 0.01
+    )
+    .sort(
+      (a, b) =>
+        b[1] - a[1]
+    );
+
+  countySection.hidden =
+    !usaCountyEntries.length;
+
+  countyList.innerHTML = '';
 
   if (
     !entries.length
@@ -14522,27 +14805,35 @@ function updateRegionDashboard(
 
   }
 
-
   document
     .getElementById(
       'regionHeading'
     )
     .textContent =
       getSelectedPeriodText() +
-      ' 州・地域別';
+      (
+        isRunnerRingsEnglish()
+          ? ' States'
+          : ' 州別'
+      );
 
+  document
+    .getElementById(
+      'countyHeading'
+    )
+    .textContent =
+      getSelectedPeriodText() +
+      (
+        isRunnerRingsEnglish()
+          ? ' Counties / Cities'
+          : ' County・独立市別'
+      );
 
   const maxKm =
     entries[0][1];
 
-
   entries.forEach(
-    (
-      [
-        regionCode,
-        km
-      ]
-    ) => {
+    ([regionCode, km]) => {
 
       const percent =
         Math.max(
@@ -14559,46 +14850,194 @@ function updateRegionDashboard(
           ] ||
         0;
 
+      const counties =
+        usaCountyEntries
+          .filter(
+            ([admin2Key]) =>
+              stats
+                .admin2RegionCodeByKey
+                ?.[admin2Key] ===
+              regionCode
+          );
+
       const card =
         document.createElement(
           'div'
         );
 
-
       card.className =
         'regionCard';
 
-      card.innerHTML =
-        '<div class="regionTop">' +
-          '<div class="regionName">' +
-            getUsaRegionNameByCode(
-              regionCode
-            ) +
-          '</div>' +
-          '<div class="regionDistance">' +
-            km.toFixed(
-              2
-            ) +
-            ' km' +
-          '</div>' +
+      const top =
+        document.createElement(
+          'div'
+        );
+
+      top.className =
+        'regionTop';
+
+      top.innerHTML =
+        '<div class="regionName">' +
+          getUsaRegionNameByCode(
+            regionCode
+          ) +
         '</div>' +
-        '<div class="barTrack">' +
-          '<div class="barFill" style="width:' +
-            percent +
-            '%"></div>' +
-        '</div>' +
-        '<div class="regionRuns">' +
-          'RUNS ' +
-          runs +
+        '<div class="regionDistance">' +
+          km.toFixed(2) +
+          ' km' +
         '</div>';
 
+      const bar =
+        document.createElement(
+          'div'
+        );
+
+      bar.className =
+        'barTrack';
+
+      bar.innerHTML =
+        '<div class="barFill" style="width:' +
+          percent +
+          '%"></div>';
+
+      const runsRow =
+        document.createElement(
+          'div'
+        );
+
+      runsRow.className =
+        'regionRuns';
+
+      runsRow.textContent =
+        'RUNS ' +
+        runs;
+
+      card.append(
+        top,
+        bar,
+        runsRow
+      );
+
+      if (
+        counties.length
+      ) {
+
+        const toggle =
+          document.createElement(
+            'button'
+          );
+
+        toggle.type =
+          'button';
+
+        toggle.className =
+          'regionCountyToggle';
+
+        toggle.textContent =
+          (
+            isRunnerRingsEnglish()
+              ? 'Counties / Cities '
+              : 'County・独立市 '
+          ) +
+          counties.length +
+          (
+            isRunnerRingsEnglish()
+              ? ''
+              : '件'
+          );
+
+        toggle.setAttribute(
+          'aria-expanded',
+          'false'
+        );
+
+        const countyBox =
+          document.createElement(
+            'div'
+          );
+
+        countyBox.className =
+          'regionCountyList';
+
+        counties.forEach(
+          ([admin2Key, countyKm]) => {
+
+            const row =
+              document.createElement(
+                'div'
+              );
+
+            row.className =
+              'regionCountyRow';
+
+            const countyRuns =
+              stats
+                .admin2RunCount
+                ?.[admin2Key] ||
+              0;
+
+            row.innerHTML =
+              '<div class="regionCountyName">' +
+                getAdmin2NameFromKey(
+                  admin2Key
+                ) +
+              '</div>' +
+              '<div class="regionCountyDistance">' +
+                countyKm.toFixed(2) +
+                ' km' +
+              '</div>' +
+              '<div class="regionCountyRuns">RUNS ' +
+                countyRuns +
+              '</div>';
+
+            countyBox.appendChild(
+              row
+            );
+
+          }
+        );
+
+        toggle.addEventListener(
+          'click',
+          event => {
+
+            event.stopPropagation();
+
+            const isOpen =
+              countyBox
+                .classList
+                .toggle(
+                  'isOpen'
+                );
+
+            toggle.setAttribute(
+              'aria-expanded',
+              String(
+                isOpen
+              )
+            );
+
+          }
+        );
+
+        countyBox.addEventListener(
+          'click',
+          event =>
+            event.stopPropagation()
+        );
+
+        card.append(
+          toggle,
+          countyBox
+        );
+
+      }
 
       card.onclick =
         () =>
           focusUsaRegion(
             regionCode
           );
-
 
       list.appendChild(
         card
@@ -14607,11 +15046,76 @@ function updateRegionDashboard(
     }
   );
 
+  usaCountyEntries.forEach(
+    ([admin2Key, km]) => {
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+      card.className =
+        'countyCard';
+
+      const regionCode =
+        stats
+          .admin2RegionCodeByKey
+          ?.[admin2Key] ||
+        '';
+
+      const stateName =
+        regionCode
+          ? getUsaRegionNameByCode(
+              regionCode
+            )
+          : '';
+
+      const runs =
+        stats
+          .admin2RunCount
+          ?.[admin2Key] ||
+        0;
+
+      card.innerHTML =
+        '<div class="countyTop">' +
+          '<div class="countyName">' +
+            getAdmin2NameFromKey(
+              admin2Key
+            ) +
+            (
+              stateName
+                ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
+                  stateName +
+                  '</div>'
+                : ''
+            ) +
+          '</div>' +
+          '<div class="countyDistance">' +
+            km.toFixed(2) +
+            ' km' +
+          '</div>' +
+        '</div>' +
+        '<div class="countyRuns">RUNS ' +
+          runs +
+        '</div>';
+
+      countyList.appendChild(
+        card
+      );
+
+    }
+  );
 
   applyListLimit(
     list,
     '.regionCard',
     5
+  );
+
+  applyListLimit(
+    countyList,
+    '.countyCard',
+    10
   );
 
 }
