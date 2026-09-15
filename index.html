@@ -5299,8 +5299,10 @@ const WORLD_ADMIN_CONFIG = {
         './runners-rings-usa-adm1.geojson'
     },
     adm2: {
-      file:
-        './runners-rings-usa-adm2-simplified.geojson'
+      api:
+        'https://www.geoboundaries.org/api/current/gbOpen/USA/ADM2/',
+      geometry:
+        'simplified'
     }
   },
 
@@ -7076,6 +7078,185 @@ function prepareWorldAdminFeatures(
 }
 
 
+
+async function resolveWorldAdminDataUrl(
+  config
+) {
+
+  if (
+    config?.file
+  ) {
+
+    return config.file;
+
+  }
+
+  if (
+    !config?.api
+  ) {
+
+    return null;
+
+  }
+
+  const metadataResponse =
+    await fetch(
+      config.api
+    );
+
+  if (
+    !metadataResponse.ok
+  ) {
+
+    throw new Error(
+      'geoBoundaries metadata HTTP ' +
+      metadataResponse.status
+    );
+
+  }
+
+  const metadata =
+    await metadataResponse.json();
+
+  if (
+    config.geometry ===
+      'simplified'
+  ) {
+
+    return (
+      metadata
+        ?.simplifiedGeometryGeoJSON ||
+      null
+    );
+
+  }
+
+  return (
+    metadata
+      ?.gjDownloadURL ||
+    null
+  );
+
+}
+
+
+function getWorldAdminFeatureCode(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.shapeISO ||
+    feature
+      ?.properties
+      ?.shapeID ||
+    feature
+      ?.properties
+      ?.region_code ||
+    feature
+      ?.properties
+      ?.code ||
+    feature
+      ?.properties
+      ?.id ||
+    'UNKNOWN'
+  );
+
+}
+
+
+function getWorldAdminFeatureName(
+  feature
+) {
+
+  return (
+    feature
+      ?.properties
+      ?.shapeName ||
+    feature
+      ?.properties
+      ?.name_en ||
+    feature
+      ?.properties
+      ?.name ||
+    getWorldAdminFeatureCode(
+      feature
+    )
+  );
+
+}
+
+
+function findWorldAdminFeature(
+  countryCode,
+  level,
+  lat,
+  lon
+) {
+
+  const cacheKey =
+    getWorldAdminCacheKey(
+      countryCode,
+      level
+    );
+
+  const prepared =
+    worldAdminCache.get(
+      cacheKey
+    );
+
+  if (
+    !prepared?.features?.length
+  ) {
+
+    return null;
+
+  }
+
+  const point =
+    [
+      lon,
+      lat
+    ];
+
+  for (
+    const item of
+    prepared.features
+  ) {
+
+    const b =
+      item.bbox;
+
+    if (
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
+    ) {
+
+      continue;
+
+    }
+
+    if (
+      pointInFeature(
+        point,
+        item.feature
+      )
+    ) {
+
+      return item.feature;
+
+    }
+
+  }
+
+  return null;
+
+}
+
+
 async function loadWorldAdminLevel(
   countryCode,
   level
@@ -7114,7 +7295,8 @@ async function loadWorldAdminLevel(
     ];
 
   if (
-    !config?.file
+    !config?.file &&
+    !config?.api
   ) {
 
     return null;
@@ -7188,9 +7370,27 @@ async function loadWorldAdminLevel(
 
         try {
 
+          const dataUrl =
+            await resolveWorldAdminDataUrl(
+              config
+            );
+
+          if (
+            !dataUrl
+          ) {
+
+            throw new Error(
+              code +
+              ' ' +
+              normalizedLevel +
+              ' data URL unavailable'
+            );
+
+          }
+
           const response =
             await fetch(
-              config.file
+              dataUrl
             );
 
           if (
@@ -7229,6 +7429,26 @@ async function loadWorldAdminLevel(
             cacheKey,
             prepared
           );
+
+          if (
+            code === 'USA' &&
+            normalizedLevel === 'adm1'
+          ) {
+
+            usaRegionGeojsonData =
+              geojson;
+
+            usaRegionFeatures.length =
+              0;
+
+            prepared.features.forEach(
+              item =>
+                usaRegionFeatures.push(
+                  item
+                )
+            );
+
+          }
 
           return prepared;
 
@@ -7318,7 +7538,12 @@ async function preloadWorldAdminForCountries(
               code
             ]?.[
               level
-            ]?.file
+            ]?.file ||
+            WORLD_ADMIN_CONFIG[
+              code
+            ]?.[
+              level
+            ]?.api
           ) {
 
             tasks.push(
@@ -7402,6 +7627,9 @@ function analyseRoute(
   const regionDistances =
     {};
 
+  const admin2Distances =
+    {};
+
   const cities =
     new Set();
 
@@ -7412,6 +7640,9 @@ function analyseRoute(
     new Set();
 
   const regions =
+    new Set();
+
+  const admin2Areas =
     new Set();
 
   let calculatedKm =
@@ -7590,6 +7821,54 @@ function analyseRoute(
 
       }
 
+
+      const admin2Feature =
+        findWorldAdminFeature(
+          countryCode,
+          'adm2',
+          midpointLat,
+          midpointLon
+        );
+
+
+      if (
+        admin2Feature
+      ) {
+
+        const admin2Code =
+          getWorldAdminFeatureCode(
+            admin2Feature
+          );
+
+        const admin2Name =
+          getWorldAdminFeatureName(
+            admin2Feature
+          );
+
+        const admin2Key =
+          countryCode +
+          '|' +
+          admin2Code;
+
+        admin2Distances[
+          admin2Key
+        ] =
+          (
+            admin2Distances[
+              admin2Key
+            ] ||
+            0
+          ) +
+          segmentKm;
+
+        admin2Areas.add(
+          admin2Key +
+          '|' +
+          admin2Name
+        );
+
+      }
+
     }
 
   }
@@ -7731,6 +8010,8 @@ function analyseRoute(
 
     regionDistances,
 
+    admin2Distances,
+
     cities:
       Array.from(
         cities
@@ -7749,6 +8030,11 @@ function analyseRoute(
     regions:
       Array.from(
         regions
+      ),
+
+    admin2Areas:
+      Array.from(
+        admin2Areas
       ),
 
     calculatedKm
@@ -7894,6 +8180,12 @@ function registerActivity(
 
     activity.regions =
       analysis.regions;
+
+    activity.admin2Distances =
+      analysis.admin2Distances;
+
+    activity.admin2Areas =
+      analysis.admin2Areas;
 
     activity.countryDistances =
       activity.countryDistances ||
@@ -8526,6 +8818,9 @@ function buildActivityFromGPXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -8537,6 +8832,9 @@ function buildActivityFromGPXText(
 
     regions:
       analysis.regions,
+
+    admin2Areas:
+      analysis.admin2Areas,
 
     cells:
       Array.from(
@@ -8879,6 +9177,9 @@ function buildActivityFromTCXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -8890,6 +9191,9 @@ function buildActivityFromTCXText(
 
     regions:
       analysis.regions,
+
+    admin2Areas:
+      analysis.admin2Areas,
 
     cells:
       Array.from(
@@ -9152,6 +9456,9 @@ function buildActivityFromCloudRow(
     regionDistances:
       analysis.regionDistances,
 
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -9164,6 +9471,9 @@ function buildActivityFromCloudRow(
     regions:
       analysis.regions,
 
+    admin2Areas:
+      analysis.admin2Areas,
+
     cells:
       Array.from(
         buildCellsFromRoute(
@@ -9171,6 +9481,112 @@ function buildActivityFromCloudRow(
         )
       )
   };
+
+}
+
+
+
+function detectCountryCodesFromCloudRows(
+  rows
+) {
+
+  const detected =
+    new Set();
+
+  (
+    Array.isArray(
+      rows
+    )
+      ? rows
+      : []
+  )
+    .forEach(
+      row => {
+
+        const route =
+          Array.isArray(
+            row?.route
+          )
+            ? row.route
+            : [];
+
+        if (
+          route.length <
+          2
+        ) {
+
+          return;
+
+        }
+
+        const sampleIndexes =
+          Array.from(
+            new Set(
+              [
+                0,
+                Math.floor(
+                  route.length /
+                  2
+                ),
+                route.length -
+                  1
+              ]
+            )
+          );
+
+        sampleIndexes.forEach(
+          index => {
+
+            const lat =
+              Number(
+                route[index]?.[0]
+              );
+
+            const lon =
+              Number(
+                route[index]?.[1]
+              );
+
+            if (
+              !Number.isFinite(
+                lat
+              ) ||
+              !Number.isFinite(
+                lon
+              )
+            ) {
+
+              return;
+
+            }
+
+            const countryFeature =
+              findCountryFeature(
+                lat,
+                lon
+              );
+
+            if (
+              countryFeature
+            ) {
+
+              detected.add(
+                getCountryCode(
+                  countryFeature
+                )
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+  return Array.from(
+    detected
+  );
 
 }
 
@@ -9209,6 +9625,20 @@ async function loadCloudActivities() {
 
     cloudRunCount =
       rows.length;
+
+
+    const touchedCountryCodes =
+      detectCountryCodesFromCloudRows(
+        rows
+      );
+
+    await preloadWorldAdminForCountries(
+      touchedCountryCodes,
+      [
+        'adm1',
+        'adm2'
+      ]
+    );
 
 
     let loaded =
@@ -20018,8 +20448,7 @@ if (
     await Promise.all(
       [
         loadMunicipalities(),
-        loadWorldCountries(),
-        loadUsaRegions()
+        loadWorldCountries()
       ]
     );
 
