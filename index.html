@@ -20240,6 +20240,71 @@ backToMapButton.onclick =
         'open'
       );
 
+    if (
+      selectedRunLine
+    ) {
+      map.removeLayer(
+        selectedRunLine
+      );
+      selectedRunLine =
+        null;
+    }
+
+    try {
+      sessionStorage.removeItem(
+        SELECTED_RUN_STORAGE_KEY
+      );
+    } catch (error) {
+      console.warn(
+        'Selected run storage clear error:',
+        error
+      );
+    }
+
+    const home =
+      getHomePrefectureBounds();
+
+    if (
+      home
+    ) {
+      map.fitBounds(
+        home.bounds,
+        {
+          padding:[
+            20,
+            20
+          ]
+        }
+      );
+    }
+    else {
+      const activityBounds =
+        getSelectedActivityBounds();
+
+      if (
+        activityBounds
+      ) {
+        map.fitBounds(
+          activityBounds,
+          {
+            padding:[
+              20,
+              20
+            ],
+            maxZoom:8
+          }
+        );
+      }
+      else if (
+        municipalityLayer
+      ) {
+        map.fitBounds(
+          municipalityLayer
+            .getBounds()
+        );
+      }
+    }
+
     document
       .getElementById(
         'map'
