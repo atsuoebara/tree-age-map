@@ -270,7 +270,7 @@
           <span class="methodLabel">手動取り込み</span>
         </div>
         <div class="methodCard">
-          <strong>FIT・GPX・ZIP</strong>
+          <strong>FIT・GPX・TCX・ZIP</strong>
           <span class="methodLabel">ファイル取り込み</span>
         </div>
       </div>
@@ -342,12 +342,15 @@
         自動連携ではないため、新しいランを追加したいときに取り込み操作を行ってください。
       </p>
 
-      <h3>FIT・GPX・ZIP：ファイル取り込み</h3>
+      <h3>FIT・GPX・TCX・ZIP：ファイル取り込み</h3>
       <p>
-        FIT・GPX・ZIPファイルを使って、過去のランニングデータや他サービスから書き出したデータを追加できます。
+        FIT・GPX・TCX・ZIPファイルを使って、過去のランニングデータや他サービスから書き出したデータを追加できます。
       </p>
       <p>
-        複数ファイルやZIPの一括取り込みにも対応しています。詳しい手順はこのページの「6. FIT・GPX・ZIPをまとめて追加する」「7. GPX／FITファイルを個別に追加する」をご確認ください。
+        複数ファイルやZIPの一括取り込みにも対応しています。詳しい手順はこのページの「6. FIT・GPX・TCX・ZIPをまとめて追加する」「7. GPX／FIT／TCXファイルを個別に追加する」をご確認ください。
+      </p>
+      <p>
+        TCXはRunningとして記録され、GPS座標が含まれているデータを取り込み対象とします。
       </p>
     </section>
 
@@ -397,19 +400,19 @@
     </section>
 
     <section>
-      <h2>6. FIT・GPX・ZIPをまとめて追加する</h2>
+      <h2>6. FIT・GPX・TCX・ZIPをまとめて追加する</h2>
       <p>
-        過去のランニングデータは、FIT・GPX・ZIPファイルからRunner's Ringsに追加できます。Garminなどから書き出したZIPファイルも、解凍せずそのまま確認・保存できます。
+        過去のランニングデータは、FIT・GPX・TCX・ZIPファイルからRunner's Ringsに追加できます。Garminなどから書き出したZIPファイルも、解凍せずそのまま確認・保存できます。
       </p>
       <p class="notice">
-        データ量が多いZIPの一括取り込みは、パソコンでの操作をおすすめします。ZIPとGPX／FITは同時に選択せず、分けて追加してください。
+        データ量が多いZIPの一括取り込みは、パソコンでの操作をおすすめします。ZIPとGPX／FIT／TCXは同時に選択せず、分けて追加してください。
       </p>
 
       <h3>Runner's Ringsへ追加する</h3>
       <ol class="steps">
         <li>Runner's Ringsを開き、ログインします。</li>
         <li>「＋ランを追加」を押します。</li>
-        <li>追加したいZIP、GPX、FITファイルを選択します。</li>
+        <li>追加したいZIP、GPX、FIT、TCXファイルを選択します。</li>
         <li>ZIPを選んだ場合は、ZIP内の確認が終わるまで画面を閉じずに待ちます。</li>
         <li>ラン＋GPS候補、既存ランとの重複、未登録候補、保存予定件数を確認します。</li>
         <li>確認画面で「保存処理へ進みますか？」を選びます。</li>
@@ -432,12 +435,12 @@
     </section>
 
     <section>
-      <h2>7. GPX／FITファイルを個別に追加する</h2>
+      <h2>7. GPX／FIT／TCXファイルを個別に追加する</h2>
       <p>
-        自動連携に含まれていないランニングデータは、GPX／FITファイルを使ってRunner's Ringsに追加できます。
+        自動連携に含まれていないランニングデータは、GPX／FIT／TCXファイルを使ってRunner's Ringsに追加できます。
       </p>
       <p>
-        「＋ランを追加」を押し、サービスや端末から書き出したGPX／FITファイルを選択してください。複数ファイルもまとめて選択できます。
+        「＋ランを追加」を押し、サービスや端末から書き出したGPX／FIT／TCXファイルを選択してください。複数ファイルもまとめて選択できます。
       </p>
       <p>
         取り込んだランはクラウドに保存され、次回以降もRunner's Ringsの地図に表示されます。
@@ -541,7 +544,7 @@
       "自動連携": "Automatic sync",
       "COROSから直接": "Direct from COROS",
       "手動取り込み": "Manual import",
-      "FIT・GPX・ZIP": "FIT, GPX, and ZIP",
+      "FIT・GPX・TCX・ZIP": "FIT, GPX, TCX, and ZIP",
       "ファイル取り込み": "File import",
       "StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。両方を使うと同じランを重複して取り込む可能性があります。": "In general, choose either Strava or Intervals.icu for automatic sync. Using both may cause the same activity to be imported twice.",
 
@@ -566,9 +569,9 @@
       "COROSのランニングデータは、Runner's Ringsの「COROSから取り込む」から手動で取り込めます。": "COROS running data can be imported manually using “Import from COROS” in Runner's Rings.",
       "自動連携ではないため、新しいランを追加したいときに取り込み操作を行ってください。": "This is not automatic sync, so run the import when you want to add new activities.",
 
-      "FIT・GPX・ZIP：ファイル取り込み": "FIT, GPX, and ZIP: File import",
-      "FIT・GPX・ZIPファイルを使って、過去のランニングデータや他サービスから書き出したデータを追加できます。": "You can use FIT, GPX, and ZIP files to add past running data or data exported from other services.",
-      "複数ファイルやZIPの一括取り込みにも対応しています。詳しい手順はこのページの「6. FIT・GPX・ZIPをまとめて追加する」「7. GPX／FITファイルを個別に追加する」をご確認ください。": "Multiple files and ZIP batch imports are supported. See “6. Import FIT, GPX, and ZIP files” and “7. Import individual GPX or FIT files” below for details.",
+      "FIT・GPX・TCX・ZIP：ファイル取り込み": "FIT, GPX, TCX, and ZIP: File import",
+      "FIT・GPX・TCX・ZIPファイルを使って、過去のランニングデータや他サービスから書き出したデータを追加できます。": "You can use FIT, GPX, TCX, and ZIP files to add past running data or data exported from other services.",
+      "複数ファイルやZIPの一括取り込みにも対応しています。詳しい手順はこのページの「6. FIT・GPX・TCX・ZIPをまとめて追加する」「7. GPX／FIT／TCXファイルを個別に追加する」をご確認ください。": "Multiple files and ZIP batch imports are supported. See “6. Import FIT, GPX, TCX, and ZIP files” and “7. Import individual GPX or FIT files” below for details.",
 
       "4. 地図を見る": "4. View your map",
       "走ったルートやエリアが、Runner's Ringsの地図に表示されます。": "Your running routes and visited areas appear on the Runner's Rings map.",
@@ -580,13 +583,13 @@
       "「Webアプリとして開く」は、URL確認や共有をよく使う場合はOFFがおすすめです。": "If you often check or share the URL, we recommend turning off “Open as Web App.”",
       "ChromeでRunner's Ringsを開き、右上のメニューから「ホーム画面に追加」または「アプリをインストール」を選びます。": "Open Runner's Rings in Chrome and select “Add to Home screen” or “Install app” from the menu.",
 
-      "6. FIT・GPX・ZIPをまとめて追加する": "6. Import FIT, GPX, and ZIP files",
-      "過去のランニングデータは、FIT・GPX・ZIPファイルからRunner's Ringsに追加できます。Garminなどから書き出したZIPファイルも、解凍せずそのまま確認・保存できます。": "Past running data can be added to Runner's Rings from FIT, GPX, and ZIP files. ZIP files exported from services such as Garmin can be reviewed and saved without extracting them first.",
-      "データ量が多いZIPの一括取り込みは、パソコンでの操作をおすすめします。ZIPとGPX／FITは同時に選択せず、分けて追加してください。": "For large ZIP imports, we recommend using a computer. Import ZIP files separately from GPX or FIT files.",
+      "6. FIT・GPX・TCX・ZIPをまとめて追加する": "6. Import FIT, GPX, TCX, and ZIP files",
+      "過去のランニングデータは、FIT・GPX・TCX・ZIPファイルからRunner's Ringsに追加できます。Garminなどから書き出したZIPファイルも、解凍せずそのまま確認・保存できます。": "Past running data can be added to Runner's Rings from FIT, GPX, TCX, and ZIP files. ZIP files exported from services such as Garmin can be reviewed and saved without extracting them first.",
+      "データ量が多いZIPの一括取り込みは、パソコンでの操作をおすすめします。ZIPとGPX／FIT／TCXは同時に選択せず、分けて追加してください。": "For large ZIP imports, we recommend using a computer. Import ZIP files separately from GPX, FIT, or TCX files.",
       "Runner's Ringsへ追加する": "Import into Runner's Rings",
       "Runner's Ringsを開き、ログインします。": "Open Runner's Rings and log in.",
       "「＋ランを追加」を押します。": "Select “+ Add runs.”",
-      "追加したいZIP、GPX、FITファイルを選択します。": "Select the ZIP, GPX, or FIT files you want to add.",
+      "追加したいZIP、GPX、FIT、TCXファイルを選択します。": "Select the ZIP, GPX, FIT, or TCX files you want to add.",
       "ZIPを選んだ場合は、ZIP内の確認が終わるまで画面を閉じずに待ちます。": "If you select a ZIP file, keep the page open while Runner's Rings scans it.",
       "ラン＋GPS候補、既存ランとの重複、未登録候補、保存予定件数を確認します。": "Review detected runs with GPS data, duplicates, unregistered candidates, and the number of activities to be saved.",
       "確認画面で「保存処理へ進みますか？」を選びます。": "At the confirmation prompt, choose to continue with saving.",
@@ -597,9 +600,9 @@
       "誤操作などによる短い記録を避けるため、500m未満の候補は自動保存されません。": "To avoid saving accidental short recordings, activities under 500 meters are not saved automatically.",
       "保存前に未登録候補一覧のテキストファイルが作成された場合は、内容確認のため保管してください。": "If a text file listing unregistered candidates is generated before saving, keep it for review.",
 
-      "7. GPX／FITファイルを個別に追加する": "7. Import individual GPX or FIT files",
-      "自動連携に含まれていないランニングデータは、GPX／FITファイルを使ってRunner's Ringsに追加できます。": "Running data that is not included through automatic sync can be added to Runner's Rings using GPX or FIT files.",
-      "「＋ランを追加」を押し、サービスや端末から書き出したGPX／FITファイルを選択してください。複数ファイルもまとめて選択できます。": "Select “+ Add runs,” then choose GPX or FIT files exported from your service or device. You can select multiple files at once.",
+      "7. GPX／FIT／TCXファイルを個別に追加する": "7. Import individual GPX, FIT, or TCX files",
+      "自動連携に含まれていないランニングデータは、GPX／FIT／TCXファイルを使ってRunner's Ringsに追加できます。": "Running data that is not included through automatic sync can be added to Runner's Rings using GPX, FIT, or TCX files.",
+      "「＋ランを追加」を押し、サービスや端末から書き出したGPX／FIT／TCXファイルを選択してください。複数ファイルもまとめて選択できます。": "Select “+ Add runs,” then choose GPX, FIT, or TCX files exported from your service or device. You can select multiple files at once.",
       "取り込んだランはクラウドに保存され、次回以降もRunner's Ringsの地図に表示されます。": "Imported runs are saved to the cloud and remain visible on your Runner's Rings map.",
       "すでに同じランが存在する場合は、重複しないように同一ランとして判定します。": "If the same run already exists, Runner's Rings identifies it as a duplicate instead of creating another record.",
 
