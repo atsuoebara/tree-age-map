@@ -3083,37 +3083,7 @@
       </div>
     </div>
 
-    <div id="regionSection" hidden>
-      <h2 id="regionHeading">
-        州・地域別
-      </h2>
-
-      <div id="regionList"></div>
-    </div>
-
-    <div id="countySection" hidden>
-      <h2 id="countyHeading">
-        County別
-      </h2>
-
-      <div id="countyList"></div>
-    </div>
-
-    <div id="australiaStateSection" hidden>
-      <h2 id="australiaStateHeading">
-        State / Territory別
-      </h2>
-
-      <div id="australiaStateList"></div>
-    </div>
-
-    <div id="australiaLgaSection" hidden>
-      <h2 id="australiaLgaHeading">
-        LGA別
-      </h2>
-
-      <div id="australiaLgaList"></div>
-    </div>
+    <div id="worldAdminSections"></div>
 
     <div id="prefectureSection">
       <h2 id="prefectureHeading">
@@ -15904,6 +15874,589 @@ function updateAustraliaDashboard(
 }
 
 
+
+function focusWorldAdminFeature(
+  countryCode,
+  level,
+  adminKey
+) {
+
+  const parts =
+    String(
+      adminKey ||
+      ''
+    )
+      .split('|');
+
+  const featureCode =
+    parts[1] ||
+    '';
+
+  if (
+    !countryCode ||
+    !featureCode
+  ) {
+
+    return;
+
+  }
+
+  const feature =
+    getWorldAdminFeatureByCode(
+      countryCode,
+      level,
+      featureCode
+    );
+
+  if (
+    !feature
+  ) {
+
+    return;
+
+  }
+
+  try {
+
+    const bounds =
+      L
+        .geoJSON(
+          feature
+        )
+        .getBounds();
+
+    if (
+      bounds?.isValid?.()
+    ) {
+
+      map.fitBounds(
+        bounds,
+        {
+          padding:[
+            20,
+            20
+          ],
+          maxZoom:
+            level === 'adm1'
+              ? 8
+              : 11
+        }
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.warn(
+      'World admin focus failed:',
+      countryCode,
+      level,
+      error
+    );
+
+  }
+
+  const name =
+    level === 'adm1'
+      ? getAdmin1NameFromKey(
+          adminKey
+        )
+      : getAdmin2NameFromKey(
+          adminKey
+        );
+
+  setStatus(
+    name +
+    (
+      isRunnerRingsEnglish()
+        ? ' displayed'
+        : 'を表示'
+    )
+  );
+
+}
+
+
+function createWorldAdminSection(
+  container,
+  headingText
+) {
+
+  const section =
+    document.createElement(
+      'div'
+    );
+
+  const heading =
+    document.createElement(
+      'h2'
+    );
+
+  heading.textContent =
+    headingText;
+
+  const list =
+    document.createElement(
+      'div'
+    );
+
+  section.append(
+    heading,
+    list
+  );
+
+  container.appendChild(
+    section
+  );
+
+  return list;
+
+}
+
+
+function updateWorldAdminDashboard(
+  stats
+) {
+
+  const container =
+    document.getElementById(
+      'worldAdminSections'
+    );
+
+  if (
+    !container
+  ) {
+
+    return;
+
+  }
+
+  container.innerHTML =
+    '';
+
+  getWorldAdminSupportedCountryCodes()
+    .forEach(
+      countryCode => {
+
+        const admin1Entries =
+          Object.entries(
+            stats.admin1Distance ||
+            {}
+          )
+          .filter(
+            ([admin1Key, km]) =>
+              admin1Key.startsWith(
+                countryCode +
+                '|'
+              ) &&
+              km > 0.01
+          )
+          .sort(
+            (a, b) =>
+              b[1] -
+              a[1]
+          );
+
+        const admin2Entries =
+          Object.entries(
+            stats.admin2Distance ||
+            {}
+          )
+          .filter(
+            ([admin2Key, km]) =>
+              admin2Key.startsWith(
+                countryCode +
+                '|'
+              ) &&
+              km > 0.01
+          )
+          .sort(
+            (a, b) =>
+              b[1] -
+              a[1]
+          );
+
+        if (
+          !admin1Entries.length &&
+          !admin2Entries.length
+        ) {
+
+          return;
+
+        }
+
+        const countryName =
+          getWorldAdminCountryName(
+            countryCode
+          );
+
+        if (
+          admin1Entries.length
+        ) {
+
+          const admin1List =
+            createWorldAdminSection(
+              container,
+              getSelectedPeriodText() +
+              ' ' +
+              countryName +
+              ' ' +
+              getWorldAdminLevelLabel(
+                countryCode,
+                'adm1',
+                true
+              )
+            );
+
+          const maxAdmin1Km =
+            admin1Entries[0][1];
+
+          admin1Entries.forEach(
+            ([admin1Key, km]) => {
+
+              const card =
+                document.createElement(
+                  'div'
+                );
+
+              card.className =
+                'regionCard';
+
+              const percent =
+                maxAdmin1Km > 0
+                  ? Math.max(
+                      3,
+                      km /
+                      maxAdmin1Km *
+                      100
+                    )
+                  : 3;
+
+              const runs =
+                stats
+                  .admin1RunCount
+                  ?.[admin1Key] ||
+                0;
+
+              const children =
+                admin2Entries.filter(
+                  ([admin2Key]) =>
+                    stats
+                      .admin2Admin1KeyByKey
+                      ?.[admin2Key] ===
+                    admin1Key
+                );
+
+              const top =
+                document.createElement(
+                  'div'
+                );
+
+              top.className =
+                'regionTop';
+
+              top.innerHTML =
+                '<div class="regionName">' +
+                  getAdmin1NameFromKey(
+                    admin1Key
+                  ) +
+                '</div>' +
+                '<div class="regionDistance">' +
+                  km.toFixed(2) +
+                  ' km' +
+                '</div>';
+
+              const bar =
+                document.createElement(
+                  'div'
+                );
+
+              bar.className =
+                'barTrack';
+
+              bar.innerHTML =
+                '<div class="barFill" style="width:' +
+                  percent +
+                  '%"></div>';
+
+              const runsRow =
+                document.createElement(
+                  'div'
+                );
+
+              runsRow.className =
+                'regionRuns';
+
+              runsRow.textContent =
+                'RUNS ' +
+                runs;
+
+              card.append(
+                top,
+                bar,
+                runsRow
+              );
+
+              if (
+                children.length
+              ) {
+
+                const toggle =
+                  document.createElement(
+                    'button'
+                  );
+
+                toggle.type =
+                  'button';
+
+                toggle.className =
+                  'regionCountyToggle';
+
+                toggle.textContent =
+                  getWorldAdminLevelLabel(
+                    countryCode,
+                    'adm2',
+                    false
+                  ) +
+                  ' ' +
+                  children.length +
+                  (
+                    isRunnerRingsEnglish()
+                      ? ''
+                      : '件'
+                  );
+
+                toggle.setAttribute(
+                  'aria-expanded',
+                  'false'
+                );
+
+                const childBox =
+                  document.createElement(
+                    'div'
+                  );
+
+                childBox.className =
+                  'regionCountyList';
+
+                children.forEach(
+                  ([admin2Key, admin2Km]) => {
+
+                    const row =
+                      document.createElement(
+                        'div'
+                      );
+
+                    row.className =
+                      'regionCountyRow';
+
+                    const childRuns =
+                      stats
+                        .admin2RunCount
+                        ?.[admin2Key] ||
+                      0;
+
+                    row.innerHTML =
+                      '<div class="regionCountyName">' +
+                        getAdmin2NameFromKey(
+                          admin2Key
+                        ) +
+                      '</div>' +
+                      '<div class="regionCountyDistance">' +
+                        admin2Km.toFixed(2) +
+                        ' km' +
+                      '</div>' +
+                      '<div class="regionCountyRuns">RUNS ' +
+                        childRuns +
+                      '</div>';
+
+                    row.addEventListener(
+                      'click',
+                      event => {
+
+                        event.stopPropagation();
+
+                        focusWorldAdminFeature(
+                          countryCode,
+                          'adm2',
+                          admin2Key
+                        );
+
+                      }
+                    );
+
+                    childBox.appendChild(
+                      row
+                    );
+
+                  }
+                );
+
+                toggle.addEventListener(
+                  'click',
+                  event => {
+
+                    event.stopPropagation();
+
+                    const isOpen =
+                      childBox
+                        .classList
+                        .toggle(
+                          'isOpen'
+                        );
+
+                    toggle.setAttribute(
+                      'aria-expanded',
+                      String(
+                        isOpen
+                      )
+                    );
+
+                  }
+                );
+
+                childBox.addEventListener(
+                  'click',
+                  event =>
+                    event.stopPropagation()
+                );
+
+                card.append(
+                  toggle,
+                  childBox
+                );
+
+              }
+
+              card.addEventListener(
+                'click',
+                () =>
+                  focusWorldAdminFeature(
+                    countryCode,
+                    'adm1',
+                    admin1Key
+                  )
+              );
+
+              admin1List.appendChild(
+                card
+              );
+
+            }
+          );
+
+          applyListLimit(
+            admin1List,
+            '.regionCard',
+            5
+          );
+
+        }
+
+        if (
+          admin2Entries.length
+        ) {
+
+          const admin2List =
+            createWorldAdminSection(
+              container,
+              getSelectedPeriodText() +
+              ' ' +
+              countryName +
+              ' ' +
+              getWorldAdminLevelLabel(
+                countryCode,
+                'adm2',
+                true
+              )
+            );
+
+          admin2Entries.forEach(
+            ([admin2Key, km]) => {
+
+              const card =
+                document.createElement(
+                  'div'
+                );
+
+              card.className =
+                'countyCard';
+
+              const parentAdmin1Key =
+                stats
+                  .admin2Admin1KeyByKey
+                  ?.[admin2Key] ||
+                '';
+
+              const parentName =
+                parentAdmin1Key
+                  ? getAdmin1NameFromKey(
+                      parentAdmin1Key
+                    )
+                  : '';
+
+              const runs =
+                stats
+                  .admin2RunCount
+                  ?.[admin2Key] ||
+                0;
+
+              card.innerHTML =
+                '<div class="countyTop">' +
+                  '<div class="countyName">' +
+                    getAdmin2NameFromKey(
+                      admin2Key
+                    ) +
+                    (
+                      parentName
+                        ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
+                          parentName +
+                          '</div>'
+                        : ''
+                    ) +
+                  '</div>' +
+                  '<div class="countyDistance">' +
+                    km.toFixed(2) +
+                    ' km' +
+                  '</div>' +
+                '</div>' +
+                '<div class="countyRuns">RUNS ' +
+                  runs +
+                '</div>';
+
+              card.addEventListener(
+                'click',
+                () =>
+                  focusWorldAdminFeature(
+                    countryCode,
+                    'adm2',
+                    admin2Key
+                  )
+              );
+
+              admin2List.appendChild(
+                card
+              );
+
+            }
+          );
+
+          applyListLimit(
+            admin2List,
+            '.countyCard',
+            10
+          );
+
+        }
+
+      }
+    );
+
+}
+
+
 /* =====================================
    国 Dashboard
 ===================================== */
@@ -20744,12 +21297,7 @@ function updateDashboard(
   );
 
 
-  updateRegionDashboard(
-    stats
-  );
-
-
-  updateAustraliaDashboard(
+  updateWorldAdminDashboard(
     stats
   );
 
