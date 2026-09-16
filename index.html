@@ -215,6 +215,32 @@
   opacity:.45;
 }
 
+#publicSiteStats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 10px;
+  margin-top:7px;
+  font-size:10px;
+  color:#aeb9c8;
+}
+
+.publicSiteStat{
+  display:none;
+  align-items:baseline;
+  gap:3px;
+  white-space:nowrap;
+}
+
+.publicSiteStat.isVisible{
+  display:inline-flex;
+}
+
+.publicSiteStat strong{
+  color:#eaff00;
+  font-size:11px;
+  font-weight:800;
+}
+
     #languageSwitch{
       position:absolute;
       top:12px;
@@ -849,7 +875,6 @@
 
     #countryList,
     #regionList,
-    #countyList,
     #prefectureList,
     #cityList{
       display:flex;
@@ -859,7 +884,6 @@
 
     .countryCard,
     .regionCard,
-    .countyCard,
     .prefectureCard,
     .cityCard{
       background:#132237;
@@ -870,7 +894,6 @@
 
     .countryTop,
     .regionTop,
-    .countyTop,
     .prefectureTop,
     .cityTop{
       display:flex;
@@ -881,7 +904,6 @@
 
     .countryName,
     .regionName,
-    .countyName,
     .prefectureName,
     .cityName{
       font-size:14px;
@@ -890,7 +912,6 @@
 
     .countryDistance,
     .regionDistance,
-    .countyDistance,
     .prefectureDistance,
     .cityDistance{
       font-size:14px;
@@ -899,7 +920,6 @@
 
     .countryRuns,
     .regionRuns,
-    .countyRuns,
     .prefectureRuns,
     .cityRuns{
       margin-top:7px;
@@ -1047,66 +1067,6 @@
         padding:5px 6px;
         font-size:9px;
       }
-    }
-
-    .regionCountyToggle{
-      width:100%;
-      margin-top:10px;
-      padding:8px 10px;
-      border:1px solid rgba(255,43,214,.35);
-      border-radius:10px;
-      background:rgba(255,43,214,.06);
-      color:#ffffff;
-      font:inherit;
-      font-size:11px;
-      font-weight:800;
-      text-align:left;
-      cursor:pointer;
-    }
-
-    .regionCountyToggle:hover{
-      background:rgba(255,43,214,.12);
-    }
-
-    .regionCountyList{
-      display:none;
-      margin-top:8px;
-      padding-top:8px;
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-
-    .regionCountyList.isOpen{
-      display:grid;
-      gap:7px;
-    }
-
-    .regionCountyRow{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:4px 10px;
-      padding:8px 9px;
-      border-radius:9px;
-      background:rgba(255,255,255,.035);
-    }
-
-    .regionCountyName{
-      min-width:0;
-      font-size:12px;
-      font-weight:800;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-
-    .regionCountyDistance{
-      font-size:11px;
-      color:#dce8f5;
-    }
-
-    .regionCountyRuns{
-      grid-column:1 / -1;
-      font-size:9px;
-      color:#9fb0c4;
     }
 
     .barTrack{
@@ -2391,6 +2351,12 @@
   <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
   <p>走った記録ではなく、走った人生を残す。</p>
   <div id="appVersion"></div>
+  <div id="publicSiteStats" aria-label="Runner's Rings 累計登録データ">
+    <span class="publicSiteStat" data-public-stat="users">利用者 <strong>--</strong></span>
+    <span class="publicSiteStat" data-public-stat="runs">登録ラン <strong>--</strong></span>
+    <span class="publicSiteStat" data-public-stat="distance">登録距離 <strong>--</strong><span>km</span></span>
+    <span class="publicSiteStat" data-public-stat="regions">走破地域 <strong>--</strong></span>
+  </div>
   <div id="languageSwitch" aria-label="Language">
     <button class="languageButton" type="button" data-language="ja">日本語</button>
     <button class="languageButton" type="button" data-language="en">EN</button>
@@ -3050,7 +3016,7 @@
 
     <h2>あなたの記録</h2>
     <p>
-      総距離・ラン数・地域数・地図は、あなた本人だけに表示されています。
+      総距離・ラン数・走破地域数・地図は、あなた本人だけに表示されています。
     </p>
 
     <div class="summary">
@@ -3067,7 +3033,7 @@
       </div>
 
       <div class="card">
-        <div id="cityCountLabel" class="label">地域数</div>
+        <div id="cityCountLabel" class="label">走破地域数</div>
         <div id="cityCount" class="value">--</div>
       </div>
 
@@ -3083,7 +3049,13 @@
       </div>
     </div>
 
-    <div id="worldAdminSections"></div>
+    <div id="regionSection" hidden>
+      <h2 id="regionHeading">
+        州・地域別
+      </h2>
+
+      <div id="regionList"></div>
+    </div>
 
     <div id="prefectureSection">
       <h2 id="prefectureHeading">
@@ -3216,6 +3188,93 @@ const supabaseClient =
 
 
 /* =====================================
+   Runner's Rings 全体の累計登録データ
+   import-share が返せる項目だけ表示する。
+===================================== */
+
+function updatePublicSiteStats(data = {}) {
+  const pickNumber = (...values) => {
+    for (const value of values) {
+      const number = Number(value);
+      if (Number.isFinite(number)) {
+        return number;
+      }
+    }
+    return null;
+  };
+
+  const stats = {
+    users: pickNumber(
+      data.users,
+      data.registered_users,
+      data.user_count
+    ),
+    runs: pickNumber(
+      data.total,
+      data.runs,
+      data.total_runs,
+      data.run_count
+    ),
+    distance: pickNumber(
+      data.distance_km,
+      data.total_distance_km,
+      data.distance
+    ),
+    regions: pickNumber(
+      data.regions,
+      data.total_regions,
+      data.region_count
+    )
+  };
+
+  Object.entries(stats).forEach(
+    ([key, value]) => {
+      const element =
+        document.querySelector(
+          '[data-public-stat="' +
+          key +
+          '"]'
+        );
+
+      if (!element) {
+        return;
+      }
+
+      const valueElement =
+        element.querySelector('strong');
+
+      if (
+        value === null ||
+        value < 0
+      ) {
+        element.classList.remove(
+          'isVisible'
+        );
+        return;
+      }
+
+      if (valueElement) {
+        valueElement.textContent =
+          key === 'distance'
+            ? value.toLocaleString(
+                undefined,
+                {
+                  maximumFractionDigits: 0
+                }
+              )
+            : Math.round(value)
+                .toLocaleString();
+      }
+
+      element.classList.add(
+        'isVisible'
+      );
+    }
+  );
+}
+
+
+/* =====================================
    データ取り込み割合
 ===================================== */
 
@@ -3258,6 +3317,10 @@ async function updateImportShareDisplay() {
 
     const data =
       await response.json();
+
+    updatePublicSiteStats(
+      data
+    );
 
     const shares = {
       strava:
@@ -5345,346 +5408,6 @@ let usaRegionGeojsonData =
 const usaRegionFeatures =
   [];
 
-/* =====================================
-   WORLD ADMIN LAZY LOAD FOUNDATION
-   日本の既存処理は変更せず、海外のADM1 / ADM2を
-   必要になった国だけ読み込むための共通土台。
-   現段階では既存USA表示の動作も変更しない。
-===================================== */
-
-const WORLD_ADMIN_CONFIG = {
-  USA: {
-    name: {
-      ja: 'アメリカ',
-      en: 'USA'
-    },
-    adm1: {
-      file:
-        './runners-rings-usa-adm1.geojson',
-      label: {
-        ja: '州',
-        en: 'State'
-      },
-      listLabel: {
-        ja: '州別',
-        en: 'States'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-usa-adm2-simplified.geojson',
-      label: {
-        ja: 'County・独立市',
-        en: 'County / City'
-      },
-      listLabel: {
-        ja: 'County・独立市別',
-        en: 'Counties / Cities'
-      }
-    }
-  },
-
-  AUS: {
-    name: {
-      ja: 'オーストラリア',
-      en: 'Australia'
-    },
-    adm1: {
-      file:
-        './runners-rings-aus-adm1-simplified.geojson',
-      label: {
-        ja: 'State / Territory',
-        en: 'State / Territory'
-      },
-      listLabel: {
-        ja: 'State / Territory別',
-        en: 'States / Territories'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-aus-adm2-simplified.geojson',
-      label: {
-        ja: 'LGA',
-        en: 'LGA'
-      },
-      listLabel: {
-        ja: 'LGA別',
-        en: 'LGAs'
-      }
-    }
-  },
-
-  CAN: {
-    name: {
-      ja: 'カナダ',
-      en: 'Canada'
-    },
-    adm1: {
-      file:
-        './runners-rings-can-adm1-simplified.geojson',
-      label: {
-        ja: '州・準州',
-        en: 'Province / Territory'
-      },
-      listLabel: {
-        ja: '州・準州別',
-        en: 'Provinces / Territories'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-can-adm2-simplified.geojson',
-      label: {
-        ja: 'Census Division',
-        en: 'Census Division'
-      },
-      listLabel: {
-        ja: 'Census Division別',
-        en: 'Census Divisions'
-      }
-    }
-  },
-
-  GBR: {
-    name: {
-      ja: 'イギリス',
-      en: 'United Kingdom'
-    },
-    adm1: {
-      file:
-        './runners-rings-gbr-adm1-simplified.geojson',
-      label: {
-        ja: 'Country',
-        en: 'Country'
-      },
-      listLabel: {
-        ja: 'Country別',
-        en: 'Countries'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-gbr-adm2-simplified.geojson',
-      label: {
-        ja: 'County / Unitary Authority',
-        en: 'County / Unitary Authority'
-      },
-      listLabel: {
-        ja: 'County / Unitary Authority別',
-        en: 'Counties / Unitary Authorities'
-      }
-    }
-  },
-
-  FRA: {
-    name: {
-      ja: 'フランス',
-      en: 'France'
-    },
-    adm1: {
-      file:
-        './runners-rings-fra-adm1-simplified.geojson',
-      label: {
-        ja: 'Region',
-        en: 'Region'
-      },
-      listLabel: {
-        ja: 'Region別',
-        en: 'Regions'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-fra-adm2-simplified.geojson',
-      label: {
-        ja: 'Department',
-        en: 'Department'
-      },
-      listLabel: {
-        ja: 'Department別',
-        en: 'Departments'
-      }
-    }
-  },
-
-  DEU: {
-    name: {
-      ja: 'ドイツ',
-      en: 'Germany'
-    },
-    adm1: {
-      file:
-        './runners-rings-deu-adm1-simplified.geojson',
-      label: {
-        ja: '州',
-        en: 'State'
-      },
-      listLabel: {
-        ja: '州別',
-        en: 'States'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-deu-adm2-simplified.geojson',
-      label: {
-        ja: 'Government District',
-        en: 'Government District'
-      },
-      listLabel: {
-        ja: 'Government District別',
-        en: 'Government Districts'
-      }
-    }
-  },
-
-  NZL: {
-    name: {
-      ja: 'ニュージーランド',
-      en: 'New Zealand'
-    },
-    adm1: {
-      file:
-        './runners-rings-nzl-adm1-simplified.geojson',
-      label: {
-        ja: 'Region',
-        en: 'Region'
-      },
-      listLabel: {
-        ja: 'Region別',
-        en: 'Regions'
-      }
-    },
-    adm2: {
-      file:
-        './runners-rings-nzl-adm2-simplified.geojson',
-      label: {
-        ja: 'Territorial Authority',
-        en: 'Territorial Authority'
-      },
-      listLabel: {
-        ja: 'Territorial Authority別',
-        en: 'Territorial Authorities'
-      }
-    }
-  }
-};
-
-function getWorldAdminCountryConfig(
-  countryCode
-) {
-  const code =
-    String(
-      countryCode ||
-      ''
-    )
-      .trim()
-      .toUpperCase();
-
-  return (
-    WORLD_ADMIN_CONFIG[
-      code
-    ] ||
-    null
-  );
-}
-
-function getWorldAdminLevelConfig(
-  countryCode,
-  level
-) {
-  const config =
-    getWorldAdminCountryConfig(
-      countryCode
-    );
-
-  const normalizedLevel =
-    String(
-      level ||
-      ''
-    )
-      .trim()
-      .toLowerCase();
-
-  return (
-    config?.[
-      normalizedLevel
-    ] ||
-    null
-  );
-}
-
-function getWorldAdminCountryName(
-  countryCode
-) {
-  const config =
-    getWorldAdminCountryConfig(
-      countryCode
-    );
-
-  if (!config?.name) {
-    return String(
-      countryCode ||
-      ''
-    ).toUpperCase();
-  }
-
-  return (
-    isRunnerRingsEnglish()
-      ? config.name.en
-      : config.name.ja
-  ) || String(
-    countryCode ||
-    ''
-  ).toUpperCase();
-}
-
-function getWorldAdminLevelLabel(
-  countryCode,
-  level,
-  listLabel = false
-) {
-  const config =
-    getWorldAdminLevelConfig(
-      countryCode,
-      level
-    );
-
-  const labels =
-    listLabel
-      ? config?.listLabel
-      : config?.label;
-
-  if (!labels) {
-    return String(
-      level ||
-      ''
-    ).toUpperCase();
-  }
-
-  return (
-    isRunnerRingsEnglish()
-      ? labels.en
-      : labels.ja
-  ) || String(
-    level ||
-    ''
-  ).toUpperCase();
-}
-
-function getWorldAdminSupportedCountryCodes() {
-  return Object.keys(
-    WORLD_ADMIN_CONFIG
-  );
-}
-
-const worldAdminCache =
-  new Map();
-
-const worldAdminLoading =
-  new Map();
-
 const activities =
   [];
 
@@ -7385,588 +7108,6 @@ async function loadUsaRegions() {
 }
 
 
-
-/* =====================================
-   海外行政境界 共通遅延ロード
-===================================== */
-
-function getWorldAdminCacheKey(
-  countryCode,
-  level
-) {
-
-  return (
-    String(
-      countryCode ||
-      ''
-    )
-      .trim()
-      .toUpperCase() +
-    '|' +
-    String(
-      level ||
-      ''
-    )
-      .trim()
-      .toLowerCase()
-  );
-
-}
-
-
-function prepareWorldAdminFeatures(
-  geojson
-) {
-
-  const features =
-    Array.isArray(
-      geojson?.features
-    )
-      ? geojson.features
-      : [];
-
-  return features.map(
-    feature => ({
-      feature,
-
-      bbox:
-        getFeatureBBox(
-          feature
-        )
-    })
-  );
-
-}
-
-
-
-async function resolveWorldAdminDataUrl(
-  config
-) {
-
-  if (
-    config?.file
-  ) {
-
-    return config.file;
-
-  }
-
-  if (
-    !config?.api
-  ) {
-
-    return null;
-
-  }
-
-  const metadataResponse =
-    await fetch(
-      config.api
-    );
-
-  if (
-    !metadataResponse.ok
-  ) {
-
-    throw new Error(
-      'geoBoundaries metadata HTTP ' +
-      metadataResponse.status
-    );
-
-  }
-
-  const metadata =
-    await metadataResponse.json();
-
-  if (
-    config.geometry ===
-      'simplified'
-  ) {
-
-    return (
-      metadata
-        ?.simplifiedGeometryGeoJSON ||
-      null
-    );
-
-  }
-
-  return (
-    metadata
-      ?.gjDownloadURL ||
-    null
-  );
-
-}
-
-
-function getWorldAdminFeatureCode(
-  feature
-) {
-
-  return (
-    feature
-      ?.properties
-      ?.shapeISO ||
-    feature
-      ?.properties
-      ?.shapeID ||
-    feature
-      ?.properties
-      ?.region_code ||
-    feature
-      ?.properties
-      ?.code ||
-    feature
-      ?.properties
-      ?.id ||
-    'UNKNOWN'
-  );
-
-}
-
-
-function getWorldAdminFeatureName(
-  feature
-) {
-
-  return (
-    feature
-      ?.properties
-      ?.shapeName ||
-    feature
-      ?.properties
-      ?.name_en ||
-    feature
-      ?.properties
-      ?.name ||
-    getWorldAdminFeatureCode(
-      feature
-    )
-  );
-
-}
-
-
-function findWorldAdminFeature(
-  countryCode,
-  level,
-  lat,
-  lon
-) {
-
-  const cacheKey =
-    getWorldAdminCacheKey(
-      countryCode,
-      level
-    );
-
-  const prepared =
-    worldAdminCache.get(
-      cacheKey
-    );
-
-  if (
-    !prepared?.features?.length
-  ) {
-
-    return null;
-
-  }
-
-  const point =
-    [
-      lon,
-      lat
-    ];
-
-  for (
-    const item of
-    prepared.features
-  ) {
-
-    const b =
-      item.bbox;
-
-    if (
-      lon < b.minLon ||
-      lon > b.maxLon ||
-      lat < b.minLat ||
-      lat > b.maxLat
-    ) {
-
-      continue;
-
-    }
-
-    if (
-      pointInFeature(
-        point,
-        item.feature
-      )
-    ) {
-
-      return item.feature;
-
-    }
-
-  }
-
-  return null;
-
-}
-
-
-async function loadWorldAdminLevel(
-  countryCode,
-  level
-) {
-
-  const code =
-    String(
-      countryCode ||
-      ''
-    )
-      .trim()
-      .toUpperCase();
-
-  const normalizedLevel =
-    String(
-      level ||
-      ''
-    )
-      .trim()
-      .toLowerCase();
-
-  // 日本は現在の高品質な既存データをそのまま使う。
-  if (
-    code === 'JPN'
-  ) {
-
-    return null;
-
-  }
-
-  const config =
-    getWorldAdminLevelConfig(
-      code,
-      normalizedLevel
-    );
-
-  if (
-    !config?.file &&
-    !config?.api
-  ) {
-
-    return null;
-
-  }
-
-  const cacheKey =
-    getWorldAdminCacheKey(
-      code,
-      normalizedLevel
-    );
-
-  if (
-    worldAdminCache.has(
-      cacheKey
-    )
-  ) {
-
-    return worldAdminCache.get(
-      cacheKey
-    );
-
-  }
-
-  if (
-    worldAdminLoading.has(
-      cacheKey
-    )
-  ) {
-
-    return worldAdminLoading.get(
-      cacheKey
-    );
-
-  }
-
-  // 現在のUSA ADM1は既存読込結果を再利用できる。
-  if (
-    code === 'USA' &&
-    normalizedLevel === 'adm1' &&
-    usaRegionGeojsonData &&
-    usaRegionFeatures.length
-  ) {
-
-    const prepared = {
-      countryCode:
-        code,
-
-      level:
-        normalizedLevel,
-
-      geojson:
-        usaRegionGeojsonData,
-
-      features:
-        usaRegionFeatures
-    };
-
-    worldAdminCache.set(
-      cacheKey,
-      prepared
-    );
-
-    return prepared;
-
-  }
-
-  const loadingPromise =
-    (
-      async () => {
-
-        try {
-
-          const dataUrl =
-            await resolveWorldAdminDataUrl(
-              config
-            );
-
-          if (
-            !dataUrl
-          ) {
-
-            throw new Error(
-              code +
-              ' ' +
-              normalizedLevel +
-              ' data URL unavailable'
-            );
-
-          }
-
-          const response =
-            await fetch(
-              dataUrl
-            );
-
-          if (
-            !response.ok
-          ) {
-
-            throw new Error(
-              code +
-              ' ' +
-              normalizedLevel +
-              ' data HTTP ' +
-              response.status
-            );
-
-          }
-
-          const geojson =
-            await response.json();
-
-          const prepared = {
-            countryCode:
-              code,
-
-            level:
-              normalizedLevel,
-
-            geojson,
-
-            features:
-              prepareWorldAdminFeatures(
-                geojson
-              )
-          };
-
-          worldAdminCache.set(
-            cacheKey,
-            prepared
-          );
-
-          if (
-            code === 'USA' &&
-            normalizedLevel === 'adm1'
-          ) {
-
-            usaRegionGeojsonData =
-              geojson;
-
-            usaRegionFeatures.length =
-              0;
-
-            prepared.features.forEach(
-              item =>
-                usaRegionFeatures.push(
-                  item
-                )
-            );
-
-          }
-
-          return prepared;
-
-        }
-        catch(error) {
-
-          console.warn(
-            'World admin data unavailable:',
-            code,
-            normalizedLevel,
-            error
-          );
-
-          return null;
-
-        }
-        finally {
-
-          worldAdminLoading.delete(
-            cacheKey
-          );
-
-        }
-
-      }
-    )();
-
-  worldAdminLoading.set(
-    cacheKey,
-    loadingPromise
-  );
-
-  return loadingPromise;
-
-}
-
-
-async function preloadWorldAdminForCountries(
-  countryCodes,
-  levels = [
-    'adm1',
-    'adm2'
-  ]
-) {
-
-  const codes =
-    Array.from(
-      new Set(
-        (
-          Array.isArray(
-            countryCodes
-          )
-            ? countryCodes
-            : []
-        )
-          .map(
-            code =>
-              String(
-                code ||
-                ''
-              )
-                .trim()
-                .toUpperCase()
-          )
-          .filter(
-            code =>
-              code &&
-              code !== 'JPN' &&
-              getWorldAdminCountryConfig(
-                code
-              )
-          )
-      )
-    );
-
-  const tasks =
-    [];
-
-  codes.forEach(
-    code => {
-
-      levels.forEach(
-        level => {
-
-          if (
-            getWorldAdminLevelConfig(
-              code,
-              level
-            )?.file ||
-            getWorldAdminLevelConfig(
-              code,
-              level
-            )?.api
-          ) {
-
-            tasks.push(
-              loadWorldAdminLevel(
-                code,
-                level
-              )
-            );
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-  return Promise.all(
-    tasks
-  );
-
-}
-
-
-function clearWorldAdminCache(
-  countryCode = null
-) {
-
-  if (
-    !countryCode
-  ) {
-
-    worldAdminCache.clear();
-
-    return;
-
-  }
-
-  const prefix =
-    String(
-      countryCode
-    )
-      .trim()
-      .toUpperCase() +
-    '|';
-
-  Array.from(
-    worldAdminCache.keys()
-  )
-    .filter(
-      key =>
-        key.startsWith(
-          prefix
-        )
-    )
-    .forEach(
-      key =>
-        worldAdminCache.delete(
-          key
-        )
-    );
-
-}
-
-
 /* =====================================
    ルート解析
 ===================================== */
@@ -7985,18 +7126,6 @@ function analyseRoute(
   const regionDistances =
     {};
 
-  const admin1Distances =
-    {};
-
-  const admin2Distances =
-    {};
-
-  const admin2RegionCodes =
-    {};
-
-  const admin2Admin1Keys =
-    {};
-
   const cities =
     new Set();
 
@@ -8007,12 +7136,6 @@ function analyseRoute(
     new Set();
 
   const regions =
-    new Set();
-
-  const admin1Areas =
-    new Set();
-
-  const admin2Areas =
     new Set();
 
   let calculatedKm =
@@ -8149,9 +7272,6 @@ function analyseRoute(
       );
 
 
-      let usaRegionCode =
-        null;
-
       if (
         countryCode ===
         'USA'
@@ -8168,18 +7288,18 @@ function analyseRoute(
           regionFeature
         ) {
 
-          usaRegionCode =
+          const regionCode =
             getUsaRegionCode(
               regionFeature
             );
 
 
           regionDistances[
-            usaRegionCode
+            regionCode
           ] =
             (
               regionDistances[
-                usaRegionCode
+                regionCode
               ] ||
               0
             ) +
@@ -8187,129 +7307,8 @@ function analyseRoute(
 
 
           regions.add(
-            usaRegionCode
+            regionCode
           );
-
-        }
-
-      }
-
-
-      const admin1Feature =
-        findWorldAdminFeature(
-          countryCode,
-          'adm1',
-          midpointLat,
-          midpointLon
-        );
-
-      let admin1Key =
-        null;
-
-      if (
-        admin1Feature
-      ) {
-
-        const admin1Code =
-          getWorldAdminFeatureCode(
-            admin1Feature
-          );
-
-        const admin1Name =
-          getWorldAdminFeatureName(
-            admin1Feature
-          );
-
-        admin1Key =
-          countryCode +
-          '|' +
-          admin1Code;
-
-        admin1Distances[
-          admin1Key
-        ] =
-          (
-            admin1Distances[
-              admin1Key
-            ] ||
-            0
-          ) +
-          segmentKm;
-
-        admin1Areas.add(
-          admin1Key +
-          '|' +
-          admin1Name
-        );
-
-      }
-
-
-      const admin2Feature =
-        findWorldAdminFeature(
-          countryCode,
-          'adm2',
-          midpointLat,
-          midpointLon
-        );
-
-
-      if (
-        admin2Feature
-      ) {
-
-        const admin2Code =
-          getWorldAdminFeatureCode(
-            admin2Feature
-          );
-
-        const admin2Name =
-          getWorldAdminFeatureName(
-            admin2Feature
-          );
-
-        const admin2Key =
-          countryCode +
-          '|' +
-          admin2Code;
-
-        admin2Distances[
-          admin2Key
-        ] =
-          (
-            admin2Distances[
-              admin2Key
-            ] ||
-            0
-          ) +
-          segmentKm;
-
-        admin2Areas.add(
-          admin2Key +
-          '|' +
-          admin2Name
-        );
-
-        if (
-          countryCode === 'USA' &&
-          usaRegionCode
-        ) {
-
-          admin2RegionCodes[
-            admin2Key
-          ] =
-            usaRegionCode;
-
-        }
-
-        if (
-          admin1Key
-        ) {
-
-          admin2Admin1Keys[
-            admin2Key
-          ] =
-            admin1Key;
 
         }
 
@@ -8456,14 +7455,6 @@ function analyseRoute(
 
     regionDistances,
 
-    admin1Distances,
-
-    admin2Distances,
-
-    admin2RegionCodes,
-
-    admin2Admin1Keys,
-
     cities:
       Array.from(
         cities
@@ -8482,16 +7473,6 @@ function analyseRoute(
     regions:
       Array.from(
         regions
-      ),
-
-    admin1Areas:
-      Array.from(
-        admin1Areas
-      ),
-
-    admin2Areas:
-      Array.from(
-        admin2Areas
       ),
 
     calculatedKm
@@ -8609,11 +7590,7 @@ function registerActivity(
 ) {
 
   if (
-    (
-      !activity.regionDistances ||
-      !activity.admin2Distances ||
-      !activity.admin2RegionCodes
-    ) &&
+    !activity.regionDistances &&
     Array.isArray(
       activity.latlngs
     ) &&
@@ -8641,24 +7618,6 @@ function registerActivity(
 
     activity.regions =
       analysis.regions;
-
-    activity.admin1Distances =
-      analysis.admin1Distances;
-
-    activity.admin2Distances =
-      analysis.admin2Distances;
-
-    activity.admin2RegionCodes =
-      analysis.admin2RegionCodes;
-
-    activity.admin2Admin1Keys =
-      analysis.admin2Admin1Keys;
-
-    activity.admin1Areas =
-      analysis.admin1Areas;
-
-    activity.admin2Areas =
-      analysis.admin2Areas;
 
     activity.countryDistances =
       activity.countryDistances ||
@@ -9291,18 +8250,6 @@ function buildActivityFromGPXText(
     regionDistances:
       analysis.regionDistances,
 
-    admin1Distances:
-      analysis.admin1Distances,
-
-    admin2Distances:
-      analysis.admin2Distances,
-
-    admin2RegionCodes:
-      analysis.admin2RegionCodes,
-
-    admin2Admin1Keys:
-      analysis.admin2Admin1Keys,
-
     cities:
       analysis.cities,
 
@@ -9314,12 +8261,6 @@ function buildActivityFromGPXText(
 
     regions:
       analysis.regions,
-
-    admin1Areas:
-      analysis.admin1Areas,
-
-    admin2Areas:
-      analysis.admin2Areas,
 
     cells:
       Array.from(
@@ -9662,18 +8603,6 @@ function buildActivityFromTCXText(
     regionDistances:
       analysis.regionDistances,
 
-    admin1Distances:
-      analysis.admin1Distances,
-
-    admin2Distances:
-      analysis.admin2Distances,
-
-    admin2RegionCodes:
-      analysis.admin2RegionCodes,
-
-    admin2Admin1Keys:
-      analysis.admin2Admin1Keys,
-
     cities:
       analysis.cities,
 
@@ -9685,12 +8614,6 @@ function buildActivityFromTCXText(
 
     regions:
       analysis.regions,
-
-    admin1Areas:
-      analysis.admin1Areas,
-
-    admin2Areas:
-      analysis.admin2Areas,
 
     cells:
       Array.from(
@@ -9953,18 +8876,6 @@ function buildActivityFromCloudRow(
     regionDistances:
       analysis.regionDistances,
 
-    admin1Distances:
-      analysis.admin1Distances,
-
-    admin2Distances:
-      analysis.admin2Distances,
-
-    admin2RegionCodes:
-      analysis.admin2RegionCodes,
-
-    admin2Admin1Keys:
-      analysis.admin2Admin1Keys,
-
     cities:
       analysis.cities,
 
@@ -9977,12 +8888,6 @@ function buildActivityFromCloudRow(
     regions:
       analysis.regions,
 
-    admin1Areas:
-      analysis.admin1Areas,
-
-    admin2Areas:
-      analysis.admin2Areas,
-
     cells:
       Array.from(
         buildCellsFromRoute(
@@ -9990,112 +8895,6 @@ function buildActivityFromCloudRow(
         )
       )
   };
-
-}
-
-
-
-function detectCountryCodesFromCloudRows(
-  rows
-) {
-
-  const detected =
-    new Set();
-
-  (
-    Array.isArray(
-      rows
-    )
-      ? rows
-      : []
-  )
-    .forEach(
-      row => {
-
-        const route =
-          Array.isArray(
-            row?.route
-          )
-            ? row.route
-            : [];
-
-        if (
-          route.length <
-          2
-        ) {
-
-          return;
-
-        }
-
-        const sampleIndexes =
-          Array.from(
-            new Set(
-              [
-                0,
-                Math.floor(
-                  route.length /
-                  2
-                ),
-                route.length -
-                  1
-              ]
-            )
-          );
-
-        sampleIndexes.forEach(
-          index => {
-
-            const lat =
-              Number(
-                route[index]?.[0]
-              );
-
-            const lon =
-              Number(
-                route[index]?.[1]
-              );
-
-            if (
-              !Number.isFinite(
-                lat
-              ) ||
-              !Number.isFinite(
-                lon
-              )
-            ) {
-
-              return;
-
-            }
-
-            const countryFeature =
-              findCountryFeature(
-                lat,
-                lon
-              );
-
-            if (
-              countryFeature
-            ) {
-
-              detected.add(
-                getCountryCode(
-                  countryFeature
-                )
-              );
-
-            }
-
-          }
-        );
-
-      }
-    );
-
-  return Array.from(
-    detected
-  );
 
 }
 
@@ -10134,20 +8933,6 @@ async function loadCloudActivities() {
 
     cloudRunCount =
       rows.length;
-
-
-    const touchedCountryCodes =
-      detectCountryCodesFromCloudRows(
-        rows
-      );
-
-    await preloadWorldAdminForCountries(
-      touchedCountryCodes,
-      [
-        'adm1',
-        'adm2'
-      ]
-    );
 
 
     let loaded =
@@ -13567,24 +12352,6 @@ function buildSelectedStats() {
   const regionRunCount =
     {};
 
-  const admin1Distance =
-    {};
-
-  const admin1RunCount =
-    {};
-
-  const admin2Distance =
-    {};
-
-  const admin2RunCount =
-    {};
-
-  const admin2RegionCodeByKey =
-    {};
-
-  const admin2Admin1KeyByKey =
-    {};
-
   const ringCells =
     {};
 
@@ -13713,133 +12480,8 @@ function buildSelectedStats() {
         );
 
 
-      const admin1InRun =
-        new Set();
-
       Object.entries(
-        activity.admin1Distances ||
-        {}
-      )
-      .forEach(
-        ([admin1Key, km]) => {
-
-          admin1Distance[
-            admin1Key
-          ] =
-            (
-              admin1Distance[
-                admin1Key
-              ] ||
-              0
-            ) +
-            km;
-
-          admin1InRun.add(
-            admin1Key
-          );
-
-        }
-      );
-
-      admin1InRun.forEach(
-        admin1Key => {
-
-          admin1RunCount[
-            admin1Key
-          ] =
-            (
-              admin1RunCount[
-                admin1Key
-              ] ||
-              0
-            ) +
-            1;
-
-        }
-      );
-
-
-      const admin2InRun =
-        new Set();
-
-      Object.entries(
-        activity.admin2Distances ||
-        {}
-      )
-      .forEach(
-        ([admin2Key, km]) => {
-
-          admin2Distance[
-            admin2Key
-          ] =
-            (
-              admin2Distance[
-                admin2Key
-              ] ||
-              0
-            ) +
-            km;
-
-          admin2InRun.add(
-            admin2Key
-          );
-
-          const parentRegionCode =
-            activity
-              .admin2RegionCodes
-              ?.[admin2Key];
-
-          if (
-            parentRegionCode
-          ) {
-
-            admin2RegionCodeByKey[
-              admin2Key
-            ] =
-              parentRegionCode;
-
-          }
-
-          const parentAdmin1Key =
-            activity
-              .admin2Admin1Keys
-              ?.[admin2Key];
-
-          if (
-            parentAdmin1Key
-          ) {
-
-            admin2Admin1KeyByKey[
-              admin2Key
-            ] =
-              parentAdmin1Key;
-
-          }
-
-        }
-      );
-
-      admin2InRun.forEach(
-        admin2Key => {
-
-          admin2RunCount[
-            admin2Key
-          ] =
-            (
-              admin2RunCount[
-                admin2Key
-              ] ||
-              0
-            ) +
-            1;
-
-        }
-      );
-
-
-      Object.entries(
-        activity.cityDistances ||
-        {}
+        activity.cityDistances
       )
       .forEach(
         (
@@ -13974,18 +12616,6 @@ function buildSelectedStats() {
     regionDistance,
 
     regionRunCount,
-
-    admin1Distance,
-
-    admin1RunCount,
-
-    admin2Distance,
-
-    admin2RunCount,
-
-    admin2RegionCodeByKey,
-
-    admin2Admin1KeyByKey,
 
     ringCells,
 
@@ -14944,121 +13574,6 @@ cloudRunsPanel
    州・地域 Dashboard
 ===================================== */
 
-function getWorldAdminFeatureByCode(
-  countryCode,
-  level,
-  featureCode
-) {
-
-  const prepared =
-    worldAdminCache.get(
-      getWorldAdminCacheKey(
-        countryCode,
-        level
-      )
-    );
-
-  if (
-    !prepared?.features?.length
-  ) {
-
-    return null;
-
-  }
-
-  const item =
-    prepared.features.find(
-      candidate =>
-        getWorldAdminFeatureCode(
-          candidate.feature
-        ) ===
-        featureCode
-    );
-
-  return item?.feature ||
-    null;
-
-}
-
-
-function getAdmin1NameFromKey(
-  admin1Key
-) {
-
-  const [
-    countryCode,
-    featureCode
-  ] =
-    String(
-      admin1Key ||
-      ''
-    )
-      .split('|');
-
-  if (
-    !countryCode ||
-    !featureCode
-  ) {
-
-    return admin1Key;
-
-  }
-
-  const feature =
-    getWorldAdminFeatureByCode(
-      countryCode,
-      'adm1',
-      featureCode
-    );
-
-  return feature
-    ? getWorldAdminFeatureName(
-        feature
-      )
-    : featureCode;
-
-}
-
-
-function getAdmin2NameFromKey(
-  admin2Key
-) {
-
-  const [
-    countryCode,
-    featureCode
-  ] =
-    String(
-      admin2Key ||
-      ''
-    )
-      .split('|');
-
-  if (
-    !countryCode ||
-    !featureCode
-  ) {
-
-    return admin2Key;
-
-  }
-
-  const feature =
-    getWorldAdminFeatureByCode(
-      countryCode,
-      'adm2',
-      featureCode
-    );
-
-  return feature
-    ? getWorldAdminFeatureName(
-        feature
-      )
-    : featureCode;
-
-}
-
-
 function focusUsaRegion(
   regionCode
 ) {
@@ -15264,55 +13779,36 @@ function updateRegionDashboard(
       'regionList'
     );
 
-  const countySection =
-    document.getElementById(
-      'countySection'
-    );
-
-  const countyList =
-    document.getElementById(
-      'countyList'
-    );
-
   const entries =
     Object.entries(
       stats.regionDistance
     )
     .filter(
-      ([, km]) =>
-        km > 0.01
+      (
+        [
+          ,
+          km
+        ]
+      ) =>
+        km >
+        0.01
     )
     .sort(
-      (a, b) =>
-        b[1] - a[1]
+      (
+        a,
+        b
+      ) =>
+        b[1] -
+        a[1]
     );
+
 
   section.hidden =
     !entries.length;
 
-  list.innerHTML = '';
+  list.innerHTML =
+    '';
 
-  const usaCountyEntries =
-    Object.entries(
-      stats.admin2Distance ||
-      {}
-    )
-    .filter(
-      ([admin2Key, km]) =>
-        admin2Key.startsWith(
-          'USA|'
-        ) &&
-        km > 0.01
-    )
-    .sort(
-      (a, b) =>
-        b[1] - a[1]
-    );
-
-  countySection.hidden =
-    !usaCountyEntries.length;
-
-  countyList.innerHTML = '';
 
   if (
     !entries.length
@@ -15322,37 +13818,27 @@ function updateRegionDashboard(
 
   }
 
+
   document
     .getElementById(
       'regionHeading'
     )
     .textContent =
       getSelectedPeriodText() +
-      ' ' +
-      getWorldAdminLevelLabel(
-        'USA',
-        'adm1',
-        true
-      );
+      ' 州・地域別';
 
-  document
-    .getElementById(
-      'countyHeading'
-    )
-    .textContent =
-      getSelectedPeriodText() +
-      ' ' +
-      getWorldAdminLevelLabel(
-        'USA',
-        'adm2',
-        true
-      );
 
   const maxKm =
     entries[0][1];
 
+
   entries.forEach(
-    ([regionCode, km]) => {
+    (
+      [
+        regionCode,
+        km
+      ]
+    ) => {
 
       const percent =
         Math.max(
@@ -15369,195 +13855,46 @@ function updateRegionDashboard(
           ] ||
         0;
 
-      const counties =
-        usaCountyEntries
-          .filter(
-            ([admin2Key]) =>
-              stats
-                .admin2RegionCodeByKey
-                ?.[admin2Key] ===
-              regionCode
-          );
-
       const card =
         document.createElement(
           'div'
         );
 
+
       card.className =
         'regionCard';
 
-      const top =
-        document.createElement(
-          'div'
-        );
-
-      top.className =
-        'regionTop';
-
-      top.innerHTML =
-        '<div class="regionName">' +
-          getUsaRegionNameByCode(
-            regionCode
-          ) +
+      card.innerHTML =
+        '<div class="regionTop">' +
+          '<div class="regionName">' +
+            getUsaRegionNameByCode(
+              regionCode
+            ) +
+          '</div>' +
+          '<div class="regionDistance">' +
+            km.toFixed(
+              2
+            ) +
+            ' km' +
+          '</div>' +
         '</div>' +
-        '<div class="regionDistance">' +
-          km.toFixed(2) +
-          ' km' +
+        '<div class="barTrack">' +
+          '<div class="barFill" style="width:' +
+            percent +
+            '%"></div>' +
+        '</div>' +
+        '<div class="regionRuns">' +
+          'RUNS ' +
+          runs +
         '</div>';
 
-      const bar =
-        document.createElement(
-          'div'
-        );
-
-      bar.className =
-        'barTrack';
-
-      bar.innerHTML =
-        '<div class="barFill" style="width:' +
-          percent +
-          '%"></div>';
-
-      const runsRow =
-        document.createElement(
-          'div'
-        );
-
-      runsRow.className =
-        'regionRuns';
-
-      runsRow.textContent =
-        'RUNS ' +
-        runs;
-
-      card.append(
-        top,
-        bar,
-        runsRow
-      );
-
-      if (
-        counties.length
-      ) {
-
-        const toggle =
-          document.createElement(
-            'button'
-          );
-
-        toggle.type =
-          'button';
-
-        toggle.className =
-          'regionCountyToggle';
-
-        toggle.textContent =
-          getWorldAdminLevelLabel(
-            'USA',
-            'adm2',
-            false
-          ) +
-          ' ' +
-          counties.length +
-          (
-            isRunnerRingsEnglish()
-              ? ''
-              : '件'
-          );
-
-        toggle.setAttribute(
-          'aria-expanded',
-          'false'
-        );
-
-        const countyBox =
-          document.createElement(
-            'div'
-          );
-
-        countyBox.className =
-          'regionCountyList';
-
-        counties.forEach(
-          ([admin2Key, countyKm]) => {
-
-            const row =
-              document.createElement(
-                'div'
-              );
-
-            row.className =
-              'regionCountyRow';
-
-            const countyRuns =
-              stats
-                .admin2RunCount
-                ?.[admin2Key] ||
-              0;
-
-            row.innerHTML =
-              '<div class="regionCountyName">' +
-                getAdmin2NameFromKey(
-                  admin2Key
-                ) +
-              '</div>' +
-              '<div class="regionCountyDistance">' +
-                countyKm.toFixed(2) +
-                ' km' +
-              '</div>' +
-              '<div class="regionCountyRuns">RUNS ' +
-                countyRuns +
-              '</div>';
-
-            countyBox.appendChild(
-              row
-            );
-
-          }
-        );
-
-        toggle.addEventListener(
-          'click',
-          event => {
-
-            event.stopPropagation();
-
-            const isOpen =
-              countyBox
-                .classList
-                .toggle(
-                  'isOpen'
-                );
-
-            toggle.setAttribute(
-              'aria-expanded',
-              String(
-                isOpen
-              )
-            );
-
-          }
-        );
-
-        countyBox.addEventListener(
-          'click',
-          event =>
-            event.stopPropagation()
-        );
-
-        card.append(
-          toggle,
-          countyBox
-        );
-
-      }
 
       card.onclick =
         () =>
           focusUsaRegion(
             regionCode
           );
+
 
       list.appendChild(
         card
@@ -15566,1048 +13903,12 @@ function updateRegionDashboard(
     }
   );
 
-  usaCountyEntries.forEach(
-    ([admin2Key, km]) => {
-
-      const card =
-        document.createElement(
-          'div'
-        );
-
-      card.className =
-        'countyCard';
-
-      const regionCode =
-        stats
-          .admin2RegionCodeByKey
-          ?.[admin2Key] ||
-        '';
-
-      const stateName =
-        regionCode
-          ? getUsaRegionNameByCode(
-              regionCode
-            )
-          : '';
-
-      const runs =
-        stats
-          .admin2RunCount
-          ?.[admin2Key] ||
-        0;
-
-      card.innerHTML =
-        '<div class="countyTop">' +
-          '<div class="countyName">' +
-            getAdmin2NameFromKey(
-              admin2Key
-            ) +
-            (
-              stateName
-                ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
-                  stateName +
-                  '</div>'
-                : ''
-            ) +
-          '</div>' +
-          '<div class="countyDistance">' +
-            km.toFixed(2) +
-            ' km' +
-          '</div>' +
-        '</div>' +
-        '<div class="countyRuns">RUNS ' +
-          runs +
-        '</div>';
-
-      countyList.appendChild(
-        card
-      );
-
-    }
-  );
 
   applyListLimit(
     list,
     '.regionCard',
     5
   );
-
-  applyListLimit(
-    countyList,
-    '.countyCard',
-    10
-  );
-
-}
-
-
-function updateAustraliaDashboard(
-  stats
-) {
-
-  const stateSection =
-    document.getElementById(
-      'australiaStateSection'
-    );
-
-  const stateList =
-    document.getElementById(
-      'australiaStateList'
-    );
-
-  const lgaSection =
-    document.getElementById(
-      'australiaLgaSection'
-    );
-
-  const lgaList =
-    document.getElementById(
-      'australiaLgaList'
-    );
-
-  const stateEntries =
-    Object.entries(
-      stats.admin1Distance ||
-      {}
-    )
-    .filter(
-      ([admin1Key, km]) =>
-        admin1Key.startsWith(
-          'AUS|'
-        ) &&
-        km > 0.01
-    )
-    .sort(
-      (a, b) =>
-        b[1] - a[1]
-    );
-
-  const lgaEntries =
-    Object.entries(
-      stats.admin2Distance ||
-      {}
-    )
-    .filter(
-      ([admin2Key, km]) =>
-        admin2Key.startsWith(
-          'AUS|'
-        ) &&
-        km > 0.01
-    )
-    .sort(
-      (a, b) =>
-        b[1] - a[1]
-    );
-
-  stateSection.hidden =
-    !stateEntries.length;
-
-  lgaSection.hidden =
-    !lgaEntries.length;
-
-  stateList.innerHTML = '';
-  lgaList.innerHTML = '';
-
-  if (
-    !stateEntries.length &&
-    !lgaEntries.length
-  ) {
-    return;
-  }
-
-  document
-    .getElementById(
-      'australiaStateHeading'
-    )
-    .textContent =
-      getSelectedPeriodText() +
-      ' ' +
-      getWorldAdminCountryName(
-        'AUS'
-      ) +
-      ' ' +
-      getWorldAdminLevelLabel(
-        'AUS',
-        'adm1',
-        true
-      );
-
-  document
-    .getElementById(
-      'australiaLgaHeading'
-    )
-    .textContent =
-      getSelectedPeriodText() +
-      ' ' +
-      getWorldAdminCountryName(
-        'AUS'
-      ) +
-      ' ' +
-      getWorldAdminLevelLabel(
-        'AUS',
-        'adm2',
-        true
-      );
-
-  const maxStateKm =
-    stateEntries.length
-      ? stateEntries[0][1]
-      : 0;
-
-  stateEntries.forEach(
-    ([admin1Key, km]) => {
-
-      const card =
-        document.createElement(
-          'div'
-        );
-
-      card.className =
-        'regionCard';
-
-      const percent =
-        maxStateKm > 0
-          ? Math.max(
-              3,
-              km /
-              maxStateKm *
-              100
-            )
-          : 3;
-
-      const runs =
-        stats
-          .admin1RunCount
-          ?.[admin1Key] ||
-        0;
-
-      const lgas =
-        lgaEntries.filter(
-          ([admin2Key]) =>
-            stats
-              .admin2Admin1KeyByKey
-              ?.[admin2Key] ===
-            admin1Key
-        );
-
-      const top =
-        document.createElement(
-          'div'
-        );
-
-      top.className =
-        'regionTop';
-
-      top.innerHTML =
-        '<div class="regionName">' +
-          getAdmin1NameFromKey(
-            admin1Key
-          ) +
-        '</div>' +
-        '<div class="regionDistance">' +
-          km.toFixed(2) +
-          ' km' +
-        '</div>';
-
-      const bar =
-        document.createElement(
-          'div'
-        );
-
-      bar.className =
-        'barTrack';
-
-      bar.innerHTML =
-        '<div class="barFill" style="width:' +
-          percent +
-          '%"></div>';
-
-      const runsRow =
-        document.createElement(
-          'div'
-        );
-
-      runsRow.className =
-        'regionRuns';
-
-      runsRow.textContent =
-        'RUNS ' +
-        runs;
-
-      card.append(
-        top,
-        bar,
-        runsRow
-      );
-
-      if (
-        lgas.length
-      ) {
-
-        const toggle =
-          document.createElement(
-            'button'
-          );
-
-        toggle.type =
-          'button';
-
-        toggle.className =
-          'regionCountyToggle';
-
-        toggle.textContent =
-          getWorldAdminLevelLabel(
-            'AUS',
-            'adm2',
-            false
-          ) +
-          ' ' +
-          lgas.length +
-          (
-            isRunnerRingsEnglish()
-              ? ''
-              : '件'
-          );
-
-        toggle.setAttribute(
-          'aria-expanded',
-          'false'
-        );
-
-        const lgaBox =
-          document.createElement(
-            'div'
-          );
-
-        lgaBox.className =
-          'regionCountyList';
-
-        lgas.forEach(
-          ([admin2Key, lgaKm]) => {
-
-            const row =
-              document.createElement(
-                'div'
-              );
-
-            row.className =
-              'regionCountyRow';
-
-            const lgaRuns =
-              stats
-                .admin2RunCount
-                ?.[admin2Key] ||
-              0;
-
-            row.innerHTML =
-              '<div class="regionCountyName">' +
-                getAdmin2NameFromKey(
-                  admin2Key
-                ) +
-              '</div>' +
-              '<div class="regionCountyDistance">' +
-                lgaKm.toFixed(2) +
-                ' km' +
-              '</div>' +
-              '<div class="regionCountyRuns">RUNS ' +
-                lgaRuns +
-              '</div>';
-
-            lgaBox.appendChild(
-              row
-            );
-
-          }
-        );
-
-        toggle.addEventListener(
-          'click',
-          event => {
-            event.stopPropagation();
-
-            const isOpen =
-              lgaBox
-                .classList
-                .toggle(
-                  'isOpen'
-                );
-
-            toggle.setAttribute(
-              'aria-expanded',
-              String(
-                isOpen
-              )
-            );
-          }
-        );
-
-        card.append(
-          toggle,
-          lgaBox
-        );
-      }
-
-      stateList.appendChild(
-        card
-      );
-
-    }
-  );
-
-  lgaEntries.forEach(
-    ([admin2Key, km]) => {
-
-      const card =
-        document.createElement(
-          'div'
-        );
-
-      card.className =
-        'countyCard';
-
-      const parentAdmin1Key =
-        stats
-          .admin2Admin1KeyByKey
-          ?.[admin2Key] ||
-        '';
-
-      const stateName =
-        parentAdmin1Key
-          ? getAdmin1NameFromKey(
-              parentAdmin1Key
-            )
-          : '';
-
-      const runs =
-        stats
-          .admin2RunCount
-          ?.[admin2Key] ||
-        0;
-
-      card.innerHTML =
-        '<div class="countyTop">' +
-          '<div class="countyName">' +
-            getAdmin2NameFromKey(
-              admin2Key
-            ) +
-            (
-              stateName
-                ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
-                  stateName +
-                  '</div>'
-                : ''
-            ) +
-          '</div>' +
-          '<div class="countyDistance">' +
-            km.toFixed(2) +
-            ' km' +
-          '</div>' +
-        '</div>' +
-        '<div class="countyRuns">RUNS ' +
-          runs +
-        '</div>';
-
-      lgaList.appendChild(
-        card
-      );
-
-    }
-  );
-
-  applyListLimit(
-    stateList,
-    '.regionCard',
-    5
-  );
-
-  applyListLimit(
-    lgaList,
-    '.countyCard',
-    10
-  );
-
-}
-
-
-
-function focusWorldAdminFeature(
-  countryCode,
-  level,
-  adminKey
-) {
-
-  const parts =
-    String(
-      adminKey ||
-      ''
-    )
-      .split('|');
-
-  const featureCode =
-    parts[1] ||
-    '';
-
-  if (
-    !countryCode ||
-    !featureCode
-  ) {
-
-    return;
-
-  }
-
-  const feature =
-    getWorldAdminFeatureByCode(
-      countryCode,
-      level,
-      featureCode
-    );
-
-  if (
-    !feature
-  ) {
-
-    return;
-
-  }
-
-  try {
-
-    const bounds =
-      L
-        .geoJSON(
-          feature
-        )
-        .getBounds();
-
-    if (
-      bounds?.isValid?.()
-    ) {
-
-      map.fitBounds(
-        bounds,
-        {
-          padding:[
-            20,
-            20
-          ],
-          maxZoom:
-            level === 'adm1'
-              ? 8
-              : 11
-        }
-      );
-
-    }
-
-  } catch (
-    error
-  ) {
-
-    console.warn(
-      'World admin focus failed:',
-      countryCode,
-      level,
-      error
-    );
-
-  }
-
-  const name =
-    level === 'adm1'
-      ? getAdmin1NameFromKey(
-          adminKey
-        )
-      : getAdmin2NameFromKey(
-          adminKey
-        );
-
-  setStatus(
-    name +
-    (
-      isRunnerRingsEnglish()
-        ? ' displayed'
-        : 'を表示'
-    )
-  );
-
-}
-
-
-function createWorldAdminSection(
-  container,
-  headingText
-) {
-
-  const section =
-    document.createElement(
-      'div'
-    );
-
-  const heading =
-    document.createElement(
-      'h2'
-    );
-
-  heading.textContent =
-    headingText;
-
-  const list =
-    document.createElement(
-      'div'
-    );
-
-  section.append(
-    heading,
-    list
-  );
-
-  container.appendChild(
-    section
-  );
-
-  return list;
-
-}
-
-
-function updateWorldAdminDashboard(
-  stats
-) {
-
-  const container =
-    document.getElementById(
-      'worldAdminSections'
-    );
-
-  if (
-    !container
-  ) {
-
-    return;
-
-  }
-
-  container.innerHTML =
-    '';
-
-  getWorldAdminSupportedCountryCodes()
-    .forEach(
-      countryCode => {
-
-        const admin1Entries =
-          Object.entries(
-            stats.admin1Distance ||
-            {}
-          )
-          .filter(
-            ([admin1Key, km]) =>
-              admin1Key.startsWith(
-                countryCode +
-                '|'
-              ) &&
-              km > 0.01
-          )
-          .sort(
-            (a, b) =>
-              b[1] -
-              a[1]
-          );
-
-        const admin2Entries =
-          Object.entries(
-            stats.admin2Distance ||
-            {}
-          )
-          .filter(
-            ([admin2Key, km]) =>
-              admin2Key.startsWith(
-                countryCode +
-                '|'
-              ) &&
-              km > 0.01
-          )
-          .sort(
-            (a, b) =>
-              b[1] -
-              a[1]
-          );
-
-        if (
-          !admin1Entries.length &&
-          !admin2Entries.length
-        ) {
-
-          return;
-
-        }
-
-        const countryName =
-          getWorldAdminCountryName(
-            countryCode
-          );
-
-        if (
-          admin1Entries.length
-        ) {
-
-          const admin1List =
-            createWorldAdminSection(
-              container,
-              getSelectedPeriodText() +
-              ' ' +
-              countryName +
-              ' ' +
-              getWorldAdminLevelLabel(
-                countryCode,
-                'adm1',
-                true
-              )
-            );
-
-          const maxAdmin1Km =
-            admin1Entries[0][1];
-
-          admin1Entries.forEach(
-            ([admin1Key, km]) => {
-
-              const card =
-                document.createElement(
-                  'div'
-                );
-
-              card.className =
-                'regionCard';
-
-              const percent =
-                maxAdmin1Km > 0
-                  ? Math.max(
-                      3,
-                      km /
-                      maxAdmin1Km *
-                      100
-                    )
-                  : 3;
-
-              const runs =
-                stats
-                  .admin1RunCount
-                  ?.[admin1Key] ||
-                0;
-
-              const children =
-                admin2Entries.filter(
-                  ([admin2Key]) =>
-                    stats
-                      .admin2Admin1KeyByKey
-                      ?.[admin2Key] ===
-                    admin1Key
-                );
-
-              const top =
-                document.createElement(
-                  'div'
-                );
-
-              top.className =
-                'regionTop';
-
-              top.innerHTML =
-                '<div class="regionName">' +
-                  getAdmin1NameFromKey(
-                    admin1Key
-                  ) +
-                '</div>' +
-                '<div class="regionDistance">' +
-                  km.toFixed(2) +
-                  ' km' +
-                '</div>';
-
-              const bar =
-                document.createElement(
-                  'div'
-                );
-
-              bar.className =
-                'barTrack';
-
-              bar.innerHTML =
-                '<div class="barFill" style="width:' +
-                  percent +
-                  '%"></div>';
-
-              const runsRow =
-                document.createElement(
-                  'div'
-                );
-
-              runsRow.className =
-                'regionRuns';
-
-              runsRow.textContent =
-                'RUNS ' +
-                runs;
-
-              card.append(
-                top,
-                bar,
-                runsRow
-              );
-
-              if (
-                children.length
-              ) {
-
-                const toggle =
-                  document.createElement(
-                    'button'
-                  );
-
-                toggle.type =
-                  'button';
-
-                toggle.className =
-                  'regionCountyToggle';
-
-                toggle.textContent =
-                  getWorldAdminLevelLabel(
-                    countryCode,
-                    'adm2',
-                    false
-                  ) +
-                  ' ' +
-                  children.length +
-                  (
-                    isRunnerRingsEnglish()
-                      ? ''
-                      : '件'
-                  );
-
-                toggle.setAttribute(
-                  'aria-expanded',
-                  'false'
-                );
-
-                const childBox =
-                  document.createElement(
-                    'div'
-                  );
-
-                childBox.className =
-                  'regionCountyList';
-
-                children.forEach(
-                  ([admin2Key, admin2Km]) => {
-
-                    const row =
-                      document.createElement(
-                        'div'
-                      );
-
-                    row.className =
-                      'regionCountyRow';
-
-                    const childRuns =
-                      stats
-                        .admin2RunCount
-                        ?.[admin2Key] ||
-                      0;
-
-                    row.innerHTML =
-                      '<div class="regionCountyName">' +
-                        getAdmin2NameFromKey(
-                          admin2Key
-                        ) +
-                      '</div>' +
-                      '<div class="regionCountyDistance">' +
-                        admin2Km.toFixed(2) +
-                        ' km' +
-                      '</div>' +
-                      '<div class="regionCountyRuns">RUNS ' +
-                        childRuns +
-                      '</div>';
-
-                    row.addEventListener(
-                      'click',
-                      event => {
-
-                        event.stopPropagation();
-
-                        focusWorldAdminFeature(
-                          countryCode,
-                          'adm2',
-                          admin2Key
-                        );
-
-                      }
-                    );
-
-                    childBox.appendChild(
-                      row
-                    );
-
-                  }
-                );
-
-                toggle.addEventListener(
-                  'click',
-                  event => {
-
-                    event.stopPropagation();
-
-                    const isOpen =
-                      childBox
-                        .classList
-                        .toggle(
-                          'isOpen'
-                        );
-
-                    toggle.setAttribute(
-                      'aria-expanded',
-                      String(
-                        isOpen
-                      )
-                    );
-
-                  }
-                );
-
-                childBox.addEventListener(
-                  'click',
-                  event =>
-                    event.stopPropagation()
-                );
-
-                card.append(
-                  toggle,
-                  childBox
-                );
-
-              }
-
-              card.addEventListener(
-                'click',
-                () =>
-                  focusWorldAdminFeature(
-                    countryCode,
-                    'adm1',
-                    admin1Key
-                  )
-              );
-
-              admin1List.appendChild(
-                card
-              );
-
-            }
-          );
-
-          applyListLimit(
-            admin1List,
-            '.regionCard',
-            5
-          );
-
-        }
-
-        if (
-          admin2Entries.length
-        ) {
-
-          const admin2List =
-            createWorldAdminSection(
-              container,
-              getSelectedPeriodText() +
-              ' ' +
-              countryName +
-              ' ' +
-              getWorldAdminLevelLabel(
-                countryCode,
-                'adm2',
-                true
-              )
-            );
-
-          admin2Entries.forEach(
-            ([admin2Key, km]) => {
-
-              const card =
-                document.createElement(
-                  'div'
-                );
-
-              card.className =
-                'countyCard';
-
-              const parentAdmin1Key =
-                stats
-                  .admin2Admin1KeyByKey
-                  ?.[admin2Key] ||
-                '';
-
-              const parentName =
-                parentAdmin1Key
-                  ? getAdmin1NameFromKey(
-                      parentAdmin1Key
-                    )
-                  : '';
-
-              const runs =
-                stats
-                  .admin2RunCount
-                  ?.[admin2Key] ||
-                0;
-
-              card.innerHTML =
-                '<div class="countyTop">' +
-                  '<div class="countyName">' +
-                    getAdmin2NameFromKey(
-                      admin2Key
-                    ) +
-                    (
-                      parentName
-                        ? '<div style="margin-top:2px;font-size:10px;font-weight:600;color:#9fb0c4;">' +
-                          parentName +
-                          '</div>'
-                        : ''
-                    ) +
-                  '</div>' +
-                  '<div class="countyDistance">' +
-                    km.toFixed(2) +
-                    ' km' +
-                  '</div>' +
-                '</div>' +
-                '<div class="countyRuns">RUNS ' +
-                  runs +
-                '</div>';
-
-              card.addEventListener(
-                'click',
-                () =>
-                  focusWorldAdminFeature(
-                    countryCode,
-                    'adm2',
-                    admin2Key
-                  )
-              );
-
-              admin2List.appendChild(
-                card
-              );
-
-            }
-          );
-
-          applyListLimit(
-            admin2List,
-            '.countyCard',
-            10
-          );
-
-        }
-
-      }
-    );
 
 }
 
@@ -21375,7 +18676,7 @@ function updateDashboard(
     periodLabel + 'ラン数';
 
   document.getElementById('cityCountLabel').textContent =
-    periodLabel + '地域数';
+    periodLabel + '走破地域数';
   const entries =
     Object.entries(
       stats.municipalityDistance
@@ -21399,9 +18700,13 @@ function updateDashboard(
         a[1]
     );
 
-  const regionCount =
+  // 走破地域数の共通定義：
+  // 日本 = 市町村、海外 = ADM2。
+  // USAの州などADM1はここには数えない。
+  const admin2RegionCount =
     Object.values(
-      stats.regionDistance
+      stats.admin2Distance ||
+      {}
     )
     .filter(
       km =>
@@ -21444,7 +18749,7 @@ function updateDashboard(
     )
     .textContent =
       entries.length +
-      regionCount;
+      admin2RegionCount;
 
 
   updateCountryDashboard(
@@ -21452,7 +18757,7 @@ function updateDashboard(
   );
 
 
-  updateWorldAdminDashboard(
+  updateRegionDashboard(
     stats
   );
 
@@ -22441,7 +19746,8 @@ if (
     await Promise.all(
       [
         loadMunicipalities(),
-        loadWorldCountries()
+        loadWorldCountries(),
+        loadUsaRegions()
       ]
     );
 
@@ -22998,17 +20304,21 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['新しい順','Newest first'],
   ['古い順','Oldest first'],
   ['あなたの記録','Your history'],
-  ['総距離・ラン数・地域数・地図は、あなた本人だけに表示されています。','Your distance, run count, visited places, and map are visible only to you.'],
+  ['利用者','Users'],
+  ['登録ラン','Registered runs'],
+  ['登録距離','Registered distance'],
+  ['走破地域','Regions visited'],
+  ['総距離・ラン数・走破地域数・地図は、あなた本人だけに表示されています。','Your distance, run count, visited regions, and map are visible only to you.'],
   ['全期間の総距離','All-time distance'],
   ['全期間のラン数','All-time runs'],
-  ['全期間の地域数','All-time places'],
+  ['全期間の走破地域数','All-time regions visited'],
   ['全期間 州・地域別','All-time by state / region'],
   ['全期間 都道府県別','All-time by prefecture'],
   ['全期間 市町村別','All-time by municipality'],
   ['全期間 国別','All-time by country'],
   ['総距離','Distance'],
   ['ラン数','Runs'],
-  ['地域数','Places'],
+  ['走破地域数','Regions visited'],
   ['州・地域別','By state / region'],
   ['都道府県別','By prefecture'],
   ['市町村別','By municipality'],
