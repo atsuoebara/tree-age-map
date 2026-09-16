@@ -3212,6 +3212,7 @@ function updatePublicSiteStats(data = {}) {
       data.run_count
     ),
     distance: pickNumber(
+      data.totalDistanceKm,
       data.distance_km,
       data.total_distance_km,
       data.distance
