@@ -15725,8 +15725,9 @@ function updateCountryDashboard(
       'countryHeading'
     )
     .textContent =
-      getSelectedPeriodText() +
-      ' 国別';
+      rrUiLanguage === 'en'
+        ? getSelectedPeriodText() + ' by country'
+        : getSelectedPeriodText() + ' 国別';
 
 
   const list =
