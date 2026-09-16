@@ -3200,6 +3200,7 @@ function updatePublicSiteStats(data = {}) {
 
   const stats = {
     users: pickNumber(
+      data.registeredUsers,
       data.users,
       data.registered_users,
       data.user_count
