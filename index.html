@@ -225,14 +225,10 @@
 }
 
 .publicSiteStat{
-  display:none;
+  display:inline-flex;
   align-items:baseline;
   gap:3px;
   white-space:nowrap;
-}
-
-.publicSiteStat.isVisible{
-  display:inline-flex;
 }
 
 .publicSiteStat strong{
@@ -2352,10 +2348,9 @@
   <p>走った記録ではなく、走った人生を残す。</p>
   <div id="appVersion"></div>
   <div id="publicSiteStats" aria-label="Runner's Rings 累計登録データ">
-    <span class="publicSiteStat" data-public-stat="users">利用者 <strong>--</strong></span>
+    <span class="publicSiteStat" data-public-stat="users">登録者 <strong>--</strong><span>人</span></span>
     <span class="publicSiteStat" data-public-stat="runs">登録ラン <strong>--</strong></span>
-    <span class="publicSiteStat" data-public-stat="distance">登録距離 <strong>--</strong><span>km</span></span>
-    <span class="publicSiteStat" data-public-stat="regions">走破地域 <strong>--</strong></span>
+    <span class="publicSiteStat" data-public-stat="distance">総走行距離 <strong>--</strong><span>km</span></span>
   </div>
   <div id="languageSwitch" aria-label="Language">
     <button class="languageButton" type="button" data-language="ja">日本語</button>
@@ -20305,6 +20300,8 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['古い順','Oldest first'],
   ['あなたの記録','Your history'],
   ['利用者','Users'],
+  ['総走行距離','Total distance'],
+  ['登録者','Registered users'],
   ['登録ラン','Registered runs'],
   ['登録距離','Registered distance'],
   ['走破地域','Regions visited'],
