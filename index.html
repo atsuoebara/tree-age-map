@@ -3052,6 +3052,14 @@
       <div id="regionList"></div>
     </div>
 
+    <div id="admin2Section" hidden>
+      <h2 id="admin2Heading">
+        海外の市・郡・区別
+      </h2>
+
+      <div id="admin2List"></div>
+    </div>
+
     <div id="prefectureSection">
       <h2 id="prefectureHeading">
         都道府県別
@@ -3152,6 +3160,92 @@ const CELL_SIZE = 0.0009;
 const AREA_COLOR = '#ff2bd6';
 const BORDER_COLOR = '#707580';
 const ROUTE_COLOR = '#ff3b30';
+
+/* =====================================
+   世界行政区分 共通設定
+   ADM0 = 国 / ADM1 = 州・県等 / ADM2 = 市・郡・区等
+   日本は従来の市町村データを使用する。
+===================================== */
+
+const WORLD_ADMIN_CONFIG = {
+  USA: {
+    countryJa: 'アメリカ',
+    countryEn: 'United States',
+    adm1LabelJa: '州・地域',
+    adm1LabelEn: 'State / Region',
+    adm2LabelJa: '郡・独立市',
+    adm2LabelEn: 'County / Independent City'
+  },
+  AUS: {
+    countryJa: 'オーストラリア',
+    countryEn: 'Australia',
+    adm1LabelJa: '州・準州',
+    adm1LabelEn: 'State / Territory',
+    adm2LabelJa: '地方自治体',
+    adm2LabelEn: 'Local Government Area'
+  },
+  CAN: {
+    countryJa: 'カナダ',
+    countryEn: 'Canada',
+    adm1LabelJa: '州・準州',
+    adm1LabelEn: 'Province / Territory',
+    adm2LabelJa: '国勢調査区分',
+    adm2LabelEn: 'Census Division'
+  },
+  GBR: {
+    countryJa: 'イギリス',
+    countryEn: 'United Kingdom',
+    adm1LabelJa: '構成国',
+    adm1LabelEn: 'Country',
+    adm2LabelJa: 'カウンティ・単一自治体',
+    adm2LabelEn: 'County / Unitary Authority'
+  },
+  FRA: {
+    countryJa: 'フランス',
+    countryEn: 'France',
+    adm1LabelJa: '地域圏',
+    adm1LabelEn: 'Region',
+    adm2LabelJa: '県',
+    adm2LabelEn: 'Department'
+  },
+  DEU: {
+    countryJa: 'ドイツ',
+    countryEn: 'Germany',
+    adm1LabelJa: '州',
+    adm1LabelEn: 'State',
+    adm2LabelJa: '行政管区',
+    adm2LabelEn: 'Government District'
+  },
+  NZL: {
+    countryJa: 'ニュージーランド',
+    countryEn: 'New Zealand',
+    adm1LabelJa: '地域',
+    adm1LabelEn: 'Region',
+    adm2LabelJa: '地方自治体',
+    adm2LabelEn: 'Territorial Authority'
+  },
+  KOR: {
+    countryJa: '韓国',
+    countryEn: 'South Korea',
+    adm1LabelJa: '特別市・広域市・特別自治市・道・特別自治道',
+    adm1LabelEn: 'Province / Metropolitan City',
+    adm2LabelJa: '市・郡・区',
+    adm2LabelEn: 'City / County / District'
+  }
+};
+
+function getWorldAdminFileName(
+  countryCode,
+  level
+) {
+  return (
+    './runners-rings-' +
+    String(countryCode).toLowerCase() +
+    '-' +
+    String(level).toLowerCase() +
+    '.geojson'
+  );
+}
 
 
 /* =====================================
@@ -5405,6 +5499,18 @@ let usaRegionGeojsonData =
 const usaRegionFeatures =
   [];
 
+const worldAdminGeojsonData =
+  {};
+
+const worldAdminFeatures =
+  {};
+
+const worldAdminLayers =
+  {};
+
+const worldAdminLayerGroups =
+  {};
+
 const activities =
   [];
 
@@ -6650,6 +6756,228 @@ function findUsaRegionFeature(
 }
 
 
+function getWorldAdminConfig(
+  countryCode
+) {
+  return (
+    WORLD_ADMIN_CONFIG[
+      countryCode
+    ] ||
+    null
+  );
+}
+
+function getWorldAdminFeatureCode(
+  countryCode,
+  level,
+  feature
+) {
+  const properties =
+    feature?.properties || {};
+
+  if (
+    countryCode === 'USA' &&
+    level === 'ADM1' &&
+    properties.region_code
+  ) {
+    return String(
+      properties.region_code
+    );
+  }
+
+  return String(
+    properties.shapeISO ||
+    properties.shapeID ||
+    properties.GID_2 ||
+    properties.GID_1 ||
+    properties.code ||
+    properties.id ||
+    properties.name ||
+    properties.shapeName ||
+    'UNKNOWN'
+  );
+}
+
+function getWorldAdminKey(
+  countryCode,
+  level,
+  feature
+) {
+  return [
+    countryCode,
+    level,
+    getWorldAdminFeatureCode(
+      countryCode,
+      level,
+      feature
+    )
+  ].join('|');
+}
+
+function splitWorldAdminKey(
+  key
+) {
+  const parts =
+    String(key || '')
+      .split('|');
+
+  return {
+    countryCode:
+      parts[0] || '',
+    level:
+      parts[1] || '',
+    code:
+      parts.slice(2).join('|')
+  };
+}
+
+function getWorldAdminName(
+  feature
+) {
+  const properties =
+    feature?.properties || {};
+
+  return (
+    properties.name_ja ||
+    properties.name_en ||
+    properties.shapeName ||
+    properties.name ||
+    properties.NAME_2 ||
+    properties.NAME_1 ||
+    '名称不明'
+  );
+}
+
+function getWorldAdminNameByKey(
+  key
+) {
+  const {
+    countryCode,
+    level
+  } = splitWorldAdminKey(
+    key
+  );
+
+  const items =
+    worldAdminFeatures[
+      countryCode
+    ]?.[level] || [];
+
+  const item =
+    items.find(
+      candidate =>
+        getWorldAdminKey(
+          countryCode,
+          level,
+          candidate.feature
+        ) === key
+    );
+
+  return item
+    ? getWorldAdminName(
+        item.feature
+      )
+    : key;
+}
+
+function findWorldAdminFeature(
+  countryCode,
+  level,
+  lat,
+  lon
+) {
+  const point =
+    [
+      lon,
+      lat
+    ];
+
+  const items =
+    worldAdminFeatures[
+      countryCode
+    ]?.[level] || [];
+
+  for (
+    const item of items
+  ) {
+    const b =
+      item.bbox;
+
+    if (
+      lon < b.minLon ||
+      lon > b.maxLon ||
+      lat < b.minLat ||
+      lat > b.maxLat
+    ) {
+      continue;
+    }
+
+    if (
+      pointInFeature(
+        point,
+        item.feature
+      )
+    ) {
+      return item.feature;
+    }
+  }
+
+  return null;
+}
+
+function getWorldAdminLabel(
+  countryCode,
+  level
+) {
+  const config =
+    getWorldAdminConfig(
+      countryCode
+    );
+
+  if (!config) {
+    return level;
+  }
+
+  const english =
+    typeof isRunnerRingsEnglish ===
+      'function' &&
+    isRunnerRingsEnglish();
+
+  if (level === 'ADM1') {
+    return english
+      ? config.adm1LabelEn
+      : config.adm1LabelJa;
+  }
+
+  return english
+    ? config.adm2LabelEn
+    : config.adm2LabelJa;
+}
+
+function getWorldAdminCountryName(
+  countryCode
+) {
+  const config =
+    getWorldAdminConfig(
+      countryCode
+    );
+
+  if (!config) {
+    return getCountryNameByCode(
+      countryCode
+    );
+  }
+
+  const english =
+    typeof isRunnerRingsEnglish ===
+      'function' &&
+    isRunnerRingsEnglish();
+
+  return english
+    ? config.countryEn
+    : config.countryJa;
+}
+
 function findMunicipalityFeature(
   lat,
   lon
@@ -7105,6 +7433,131 @@ async function loadUsaRegions() {
 }
 
 
+async function loadWorldAdminBoundaries() {
+  const countries =
+    Object.keys(
+      WORLD_ADMIN_CONFIG
+    );
+
+  const tasks = [];
+
+  countries.forEach(
+    countryCode => {
+      ['ADM1','ADM2']
+        .forEach(
+          level => {
+            tasks.push(
+              (async () => {
+                const fileName =
+                  getWorldAdminFileName(
+                    countryCode,
+                    level
+                  );
+
+                try {
+                  const response =
+                    await fetch(
+                      fileName
+                    );
+
+                  if (!response.ok) {
+                    throw new Error(
+                      fileName +
+                      ' HTTP ' +
+                      response.status
+                    );
+                  }
+
+                  const data =
+                    await response.json();
+
+                  if (
+                    !data ||
+                    !Array.isArray(
+                      data.features
+                    )
+                  ) {
+                    throw new Error(
+                      'GeoJSON features missing'
+                    );
+                  }
+
+                  if (
+                    !worldAdminGeojsonData[
+                      countryCode
+                    ]
+                  ) {
+                    worldAdminGeojsonData[
+                      countryCode
+                    ] = {};
+                  }
+
+                  if (
+                    !worldAdminFeatures[
+                      countryCode
+                    ]
+                  ) {
+                    worldAdminFeatures[
+                      countryCode
+                    ] = {};
+                  }
+
+                  worldAdminGeojsonData[
+                    countryCode
+                  ][level] = data;
+
+                  worldAdminFeatures[
+                    countryCode
+                  ][level] =
+                    data.features
+                      .map(
+                        feature => ({
+                          feature,
+                          bbox:
+                            getFeatureBBox(
+                              feature
+                            )
+                        })
+                      );
+
+                  return true;
+
+                } catch(error) {
+                  console.warn(
+                    'World admin data unavailable:',
+                    countryCode,
+                    level,
+                    error
+                  );
+
+                  if (
+                    !worldAdminFeatures[
+                      countryCode
+                    ]
+                  ) {
+                    worldAdminFeatures[
+                      countryCode
+                    ] = {};
+                  }
+
+                  worldAdminFeatures[
+                    countryCode
+                  ][level] = [];
+
+                  return false;
+                }
+              })()
+            );
+          }
+        );
+    }
+  );
+
+  await Promise.all(
+    tasks
+  );
+}
+
 /* =====================================
    ルート解析
 ===================================== */
@@ -7123,6 +7576,12 @@ function analyseRoute(
   const regionDistances =
     {};
 
+  const admin1Distances =
+    {};
+
+  const admin2Distances =
+    {};
+
   const cities =
     new Set();
 
@@ -7133,6 +7592,12 @@ function analyseRoute(
     new Set();
 
   const regions =
+    new Set();
+
+  const admin1Regions =
+    new Set();
+
+  const admin2Regions =
     new Set();
 
   let calculatedKm =
@@ -7270,45 +7735,88 @@ function analyseRoute(
 
 
       if (
-        countryCode ===
-        'USA'
+        countryCode !==
+        'JPN'
       ) {
-
-        const regionFeature =
-          findUsaRegionFeature(
+        const admin1Feature =
+          findWorldAdminFeature(
+            countryCode,
+            'ADM1',
             midpointLat,
             midpointLon
           );
 
-
-        if (
-          regionFeature
-        ) {
-
-          const regionCode =
-            getUsaRegionCode(
-              regionFeature
+        if (admin1Feature) {
+          const admin1Key =
+            getWorldAdminKey(
+              countryCode,
+              'ADM1',
+              admin1Feature
             );
 
-
-          regionDistances[
-            regionCode
+          admin1Distances[
+            admin1Key
           ] =
             (
-              regionDistances[
-                regionCode
+              admin1Distances[
+                admin1Key
               ] ||
               0
             ) +
             segmentKm;
 
-
-          regions.add(
-            regionCode
+          admin1Regions.add(
+            admin1Key
           );
 
+          // 既存の regionDistances は互換用にADM1として維持する。
+          regionDistances[
+            admin1Key
+          ] =
+            (
+              regionDistances[
+                admin1Key
+              ] ||
+              0
+            ) +
+            segmentKm;
+
+          regions.add(
+            admin1Key
+          );
         }
 
+        const admin2Feature =
+          findWorldAdminFeature(
+            countryCode,
+            'ADM2',
+            midpointLat,
+            midpointLon
+          );
+
+        if (admin2Feature) {
+          const admin2Key =
+            getWorldAdminKey(
+              countryCode,
+              'ADM2',
+              admin2Feature
+            );
+
+          admin2Distances[
+            admin2Key
+          ] =
+            (
+              admin2Distances[
+                admin2Key
+              ] ||
+              0
+            ) +
+            segmentKm;
+
+          admin2Regions.add(
+            admin2Key
+          );
+        }
       }
 
     }
@@ -7396,53 +7904,9 @@ function analyseRoute(
   }
 
 
-  const detectedRegionDistance =
-    Object.values(
-      regionDistances
-    )
-    .reduce(
-      (
-        total,
-        km
-      ) =>
-        total +
-        km,
-      0
-    );
+  // 海外行政区分は各セグメントの実測距離をそのまま保持する。
+  // 国ごとのADM1 / ADM2を共通キーで管理するため、USA専用の再スケールは行わない。
 
-
-  const usaTargetDistance =
-    countryDistances.USA ||
-    0;
-
-
-  if (
-    detectedRegionDistance >
-      0 &&
-    usaTargetDistance >
-      0
-  ) {
-
-    const regionScale =
-      usaTargetDistance /
-      detectedRegionDistance;
-
-
-    Object.keys(
-      regionDistances
-    )
-    .forEach(
-      key => {
-
-        regionDistances[
-          key
-        ] *=
-          regionScale;
-
-      }
-    );
-
-  }
 
 
   return {
@@ -7451,6 +7915,10 @@ function analyseRoute(
     countryDistances,
 
     regionDistances,
+
+    admin1Distances,
+
+    admin2Distances,
 
     cities:
       Array.from(
@@ -7470,6 +7938,16 @@ function analyseRoute(
     regions:
       Array.from(
         regions
+      ),
+
+    admin1Regions:
+      Array.from(
+        admin1Regions
+      ),
+
+    admin2Regions:
+      Array.from(
+        admin2Regions
       ),
 
     calculatedKm
@@ -7615,6 +8093,18 @@ function registerActivity(
 
     activity.regions =
       analysis.regions;
+
+    activity.admin1Distances =
+      analysis.admin1Distances;
+
+    activity.admin2Distances =
+      analysis.admin2Distances;
+
+    activity.admin1Regions =
+      analysis.admin1Regions;
+
+    activity.admin2Regions =
+      analysis.admin2Regions;
 
     activity.countryDistances =
       activity.countryDistances ||
@@ -8247,6 +8737,12 @@ function buildActivityFromGPXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -8258,6 +8754,12 @@ function buildActivityFromGPXText(
 
     regions:
       analysis.regions,
+
+    admin1Regions:
+      analysis.admin1Regions,
+
+    admin2Regions:
+      analysis.admin2Regions,
 
     cells:
       Array.from(
@@ -8600,6 +9102,12 @@ function buildActivityFromTCXText(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -8611,6 +9119,12 @@ function buildActivityFromTCXText(
 
     regions:
       analysis.regions,
+
+    admin1Regions:
+      analysis.admin1Regions,
+
+    admin2Regions:
+      analysis.admin2Regions,
 
     cells:
       Array.from(
@@ -8873,6 +9387,12 @@ function buildActivityFromCloudRow(
     regionDistances:
       analysis.regionDistances,
 
+    admin1Distances:
+      analysis.admin1Distances,
+
+    admin2Distances:
+      analysis.admin2Distances,
+
     cities:
       analysis.cities,
 
@@ -8884,6 +9404,12 @@ function buildActivityFromCloudRow(
 
     regions:
       analysis.regions,
+
+    admin1Regions:
+      analysis.admin1Regions,
+
+    admin2Regions:
+      analysis.admin2Regions,
 
     cells:
       Array.from(
@@ -12349,6 +12875,18 @@ function buildSelectedStats() {
   const regionRunCount =
     {};
 
+  const admin1Distance =
+    {};
+
+  const admin1RunCount =
+    {};
+
+  const admin2Distance =
+    {};
+
+  const admin2RunCount =
+    {};
+
   const ringCells =
     {};
 
@@ -12449,6 +12987,27 @@ function buildSelectedStats() {
             ) +
             km;
 
+          const parsedRegion =
+            splitWorldAdminKey(
+              regionCode
+            );
+
+          if (
+            parsedRegion.countryCode === 'USA' &&
+            parsedRegion.code
+          ) {
+            regionDistance[
+              parsedRegion.code
+            ] =
+              (
+                regionDistance[
+                  parsedRegion.code
+                ] ||
+                0
+              ) +
+              km;
+          }
+
 
           regionsInRun.add(
             regionCode
@@ -12475,6 +13034,55 @@ function buildSelectedStats() {
 
           }
         );
+
+      const admin1InRun =
+        new Set();
+
+      Object.entries(
+        activity.admin1Distances ||
+        activity.regionDistances ||
+        {}
+      )
+      .forEach(
+        ([key, km]) => {
+          admin1Distance[key] =
+            (admin1Distance[key] || 0) +
+            km;
+          admin1InRun.add(key);
+        }
+      );
+
+      admin1InRun.forEach(
+        key => {
+          admin1RunCount[key] =
+            (admin1RunCount[key] || 0) +
+            1;
+        }
+      );
+
+      const admin2InRun =
+        new Set();
+
+      Object.entries(
+        activity.admin2Distances ||
+        {}
+      )
+      .forEach(
+        ([key, km]) => {
+          admin2Distance[key] =
+            (admin2Distance[key] || 0) +
+            km;
+          admin2InRun.add(key);
+        }
+      );
+
+      admin2InRun.forEach(
+        key => {
+          admin2RunCount[key] =
+            (admin2RunCount[key] || 0) +
+            1;
+        }
+      );
 
 
       Object.entries(
@@ -12614,6 +13222,14 @@ function buildSelectedStats() {
 
     regionRunCount,
 
+    admin1Distance,
+
+    admin1RunCount,
+
+    admin2Distance,
+
+    admin2RunCount,
+
     ringCells,
 
     totalDistanceKm
@@ -12697,6 +13313,44 @@ function clearMapLayers() {
       ]
   );
 
+
+  Object.values(
+    worldAdminLayerGroups
+  )
+  .forEach(
+    group => {
+      if (
+        group &&
+        map.hasLayer(
+          group
+        )
+      ) {
+        map.removeLayer(
+          group
+        );
+      }
+    }
+  );
+
+  Object.keys(
+    worldAdminLayerGroups
+  )
+  .forEach(
+    key =>
+      delete worldAdminLayerGroups[
+        key
+      ]
+  );
+
+  Object.keys(
+    worldAdminLayers
+  )
+  .forEach(
+    key =>
+      delete worldAdminLayers[
+        key
+      ]
+  );
 
   Object.keys(
     municipalityLayers
@@ -13135,6 +13789,248 @@ function drawUsaRegions(
 
 }
 
+
+function drawWorldAdminRegions(
+  stats
+) {
+  const levels =
+    [
+      {
+        level: 'ADM1',
+        distance:
+          stats.admin1Distance || {},
+        runCount:
+          stats.admin1RunCount || {},
+        addToMap: true
+      },
+      {
+        level: 'ADM2',
+        distance:
+          stats.admin2Distance || {},
+        runCount:
+          stats.admin2RunCount || {},
+        addToMap: false
+      }
+    ];
+
+  levels.forEach(
+    item => {
+      Object.entries(
+        worldAdminGeojsonData
+      )
+      .forEach(
+        ([countryCode, byLevel]) => {
+          const data =
+            byLevel?.[item.level];
+
+          if (
+            !data ||
+            !Array.isArray(
+              data.features
+            )
+          ) {
+            return;
+          }
+
+          const groupKey =
+            countryCode +
+            '|' +
+            item.level;
+
+          const layerGroup =
+            L.geoJSON(
+              data,
+              {
+                filter:
+                  feature => {
+                    const key =
+                      getWorldAdminKey(
+                        countryCode,
+                        item.level,
+                        feature
+                      );
+
+                    return (
+                      item.distance[key] ||
+                      0
+                    ) > 0.01;
+                  },
+
+                style:
+                  feature => {
+                    const key =
+                      getWorldAdminKey(
+                        countryCode,
+                        item.level,
+                        feature
+                      );
+
+                    const km =
+                      item.distance[key] ||
+                      0;
+
+                    return {
+                      color: AREA_COLOR,
+                      weight:
+                        item.level === 'ADM1'
+                          ? 1.5
+                          : 1.0,
+                      opacity: 0.85,
+                      fillColor: AREA_COLOR,
+                      fillOpacity:
+                        item.level === 'ADM1'
+                          ? Math.max(
+                              0.12,
+                              getMunicipalityOpacity(
+                                km
+                              )
+                            )
+                          : 0.08
+                    };
+                  },
+
+                onEachFeature:
+                  (feature, layer) => {
+                    const key =
+                      getWorldAdminKey(
+                        countryCode,
+                        item.level,
+                        feature
+                      );
+
+                    const km =
+                      item.distance[key] ||
+                      0;
+
+                    const runs =
+                      item.runCount[key] ||
+                      0;
+
+                    worldAdminLayers[key] =
+                      layer;
+
+                    layer.bindPopup(
+                      '<div class="popup-title">' +
+                      getWorldAdminName(
+                        feature
+                      ) +
+                      '</div>' +
+                      '<div class="popup-row">' +
+                      getWorldAdminCountryName(
+                        countryCode
+                      ) +
+                      ' / ' +
+                      getWorldAdminLabel(
+                        countryCode,
+                        item.level
+                      ) +
+                      '</div>' +
+                      '<div class="popup-row">' +
+                      '累積走行距離：' +
+                      '<strong>' +
+                      km.toFixed(2) +
+                      ' km</strong>' +
+                      '</div>' +
+                      '<div class="popup-row">' +
+                      '走ったラン：' +
+                      '<strong>' +
+                      runs +
+                      ' 回</strong>' +
+                      '</div>'
+                    );
+                  }
+              }
+            );
+
+          worldAdminLayerGroups[
+            groupKey
+          ] = layerGroup;
+
+          if (
+            item.addToMap &&
+            layerGroup.getLayers().length
+          ) {
+            layerGroup.addTo(
+              map
+            );
+          }
+        }
+      );
+    }
+  );
+}
+
+function focusWorldAdminRegion(
+  key
+) {
+  const layer =
+    worldAdminLayers[key];
+
+  if (!layer) {
+    return;
+  }
+
+  const {
+    countryCode,
+    level
+  } = splitWorldAdminKey(
+    key
+  );
+
+  const groupKey =
+    countryCode +
+    '|' +
+    level;
+
+  const group =
+    worldAdminLayerGroups[
+      groupKey
+    ];
+
+  if (
+    group &&
+    !map.hasLayer(
+      group
+    )
+  ) {
+    group.addTo(
+      map
+    );
+  }
+
+  if (
+    worldCountryLayer &&
+    map.hasLayer(
+      worldCountryLayer
+    )
+  ) {
+    map.removeLayer(
+      worldCountryLayer
+    );
+  }
+
+  map.fitBounds(
+    layer.getBounds(),
+    {
+      padding:[20,20],
+      maxZoom:
+        level === 'ADM2'
+          ? 11
+          : 8
+    }
+  );
+
+  setStatus(
+    getWorldAdminCountryName(
+      countryCode
+    ) +
+    ' → ' +
+    getWorldAdminNameByKey(
+      key
+    ) +
+    'を表示'
+  );
+}
 
 /* =====================================
    市町村面
@@ -13762,116 +14658,178 @@ function applyListLimit(
 }
 
 
-function updateRegionDashboard(
-  stats
+function getAdminDashboardHeading(
+  entries,
+  level
 ) {
+  const countryCodes =
+    Array.from(
+      new Set(
+        entries.map(
+          ([key]) =>
+            splitWorldAdminKey(
+              key
+            ).countryCode
+        )
+        .filter(Boolean)
+      )
+    );
+
+  if (countryCodes.length === 1) {
+    const countryCode =
+      countryCodes[0];
+
+    return (
+      getSelectedPeriodText() +
+      ' ' +
+      getWorldAdminCountryName(
+        countryCode
+      ) +
+      ' → ' +
+      getWorldAdminLabel(
+        countryCode,
+        level
+      ) +
+      '別'
+    );
+  }
+
+  return (
+    getSelectedPeriodText() +
+    (level === 'ADM1'
+      ? ' 海外ADM1別'
+      : ' 海外ADM2別')
+  );
+}
+
+function renderWorldAdminDashboard(
+  stats,
+  level
+) {
+  const isAdm1 =
+    level === 'ADM1';
 
   const section =
     document.getElementById(
-      'regionSection'
+      isAdm1
+        ? 'regionSection'
+        : 'admin2Section'
     );
 
   const list =
     document.getElementById(
-      'regionList'
+      isAdm1
+        ? 'regionList'
+        : 'admin2List'
     );
+
+  const heading =
+    document.getElementById(
+      isAdm1
+        ? 'regionHeading'
+        : 'admin2Heading'
+    );
+
+  const distanceData =
+    isAdm1
+      ? (stats.admin1Distance || {})
+      : (stats.admin2Distance || {});
+
+  const runData =
+    isAdm1
+      ? (stats.admin1RunCount || {})
+      : (stats.admin2RunCount || {});
 
   const entries =
     Object.entries(
-      stats.regionDistance
+      distanceData
     )
     .filter(
-      (
-        [
-          ,
-          km
-        ]
-      ) =>
-        km >
-        0.01
+      ([, km]) =>
+        km > 0.01
     )
     .sort(
-      (
-        a,
-        b
-      ) =>
-        b[1] -
-        a[1]
+      (a, b) =>
+        b[1] - a[1]
     );
-
 
   section.hidden =
     !entries.length;
 
-  list.innerHTML =
-    '';
+  list.innerHTML = '';
 
-
-  if (
-    !entries.length
-  ) {
-
+  if (!entries.length) {
     return;
-
   }
 
-
-  document
-    .getElementById(
-      'regionHeading'
-    )
-    .textContent =
-      getSelectedPeriodText() +
-      ' 州・地域別';
-
+  heading.textContent =
+    getAdminDashboardHeading(
+      entries,
+      level
+    );
 
   const maxKm =
     entries[0][1];
 
-
   entries.forEach(
-    (
-      [
-        regionCode,
-        km
-      ]
-    ) => {
+    ([key, km]) => {
+      const {
+        countryCode
+      } = splitWorldAdminKey(
+        key
+      );
 
       const percent =
         Math.max(
           3,
-          km /
-          maxKm *
-          100
+          km / maxKm * 100
         );
 
       const runs =
-        stats
-          .regionRunCount[
-            regionCode
-          ] ||
-        0;
+        runData[key] || 0;
 
       const card =
         document.createElement(
           'div'
         );
 
-
       card.className =
-        'regionCard';
+        isAdm1
+          ? 'regionCard'
+          : 'cityCard';
+
+      const nameClass =
+        isAdm1
+          ? 'regionName'
+          : 'cityName';
+
+      const distanceClass =
+        isAdm1
+          ? 'regionDistance'
+          : 'cityDistance';
+
+      const runsClass =
+        isAdm1
+          ? 'regionRuns'
+          : 'cityRuns';
 
       card.innerHTML =
-        '<div class="regionTop">' +
-          '<div class="regionName">' +
-            getUsaRegionNameByCode(
-              regionCode
+        '<div class="' +
+          (isAdm1
+            ? 'regionTop'
+            : 'cityTop') +
+        '">' +
+          '<div class="' +
+            nameClass +
+          '">' +
+            getWorldAdminNameByKey(
+              key
             ) +
           '</div>' +
-          '<div class="regionDistance">' +
-            km.toFixed(
-              2
-            ) +
+          '<div class="' +
+            distanceClass +
+          '">' +
+            km.toFixed(2) +
             ' km' +
           '</div>' +
         '</div>' +
@@ -13880,34 +14838,55 @@ function updateRegionDashboard(
             percent +
             '%"></div>' +
         '</div>' +
-        '<div class="regionRuns">' +
-          'RUNS ' +
+        '<div class="' +
+          runsClass +
+        '">' +
+          getWorldAdminCountryName(
+            countryCode
+          ) +
+          ' ・ RUNS ' +
           runs +
         '</div>';
 
-
       card.onclick =
         () =>
-          focusUsaRegion(
-            regionCode
+          focusWorldAdminRegion(
+            key
           );
-
 
       list.appendChild(
         card
       );
-
     }
   );
 
-
   applyListLimit(
     list,
-    '.regionCard',
+    isAdm1
+      ? '.regionCard'
+      : '.cityCard',
     5
   );
-
 }
+
+function updateRegionDashboard(
+  stats
+) {
+  renderWorldAdminDashboard(
+    stats,
+    'ADM1'
+  );
+}
+
+function updateAdmin2Dashboard(
+  stats
+) {
+  renderWorldAdminDashboard(
+    stats,
+    'ADM2'
+  );
+}
+
 
 
 /* =====================================
@@ -16819,16 +17798,29 @@ function buildConquestCardsForPeriod(
       );
 
       Object.entries(
-        activity.regionDistances || {}
+        activity.admin1Distances ||
+        activity.regionDistances ||
+        {}
       ).forEach(
-        ([regionCode, km]) => {
-          regionDistance[regionCode] =
-            (
-              regionDistance[
-                regionCode
-              ] || 0
-            ) +
-            (Number(km) || 0);
+        ([regionKey, km]) => {
+          const parsed =
+            splitWorldAdminKey(
+              regionKey
+            );
+
+          if (
+            parsed.countryCode === 'USA'
+          ) {
+            regionDistance[
+              parsed.code
+            ] =
+              (
+                regionDistance[
+                  parsed.code
+                ] || 0
+              ) +
+              (Number(km) || 0);
+          }
         }
       );
 
@@ -18758,6 +19750,10 @@ function updateDashboard(
     stats
   );
 
+  updateAdmin2Dashboard(
+    stats
+  );
+
 
   updatePrefectureDashboard(
     stats
@@ -19557,9 +20553,8 @@ function renderSelectedData() {
   );
 
 
-  drawUsaRegions(
-    stats.regionDistance,
-    stats.regionRunCount
+  drawWorldAdminRegions(
+    stats
   );
 
 
@@ -19744,7 +20739,8 @@ if (
       [
         loadMunicipalities(),
         loadWorldCountries(),
-        loadUsaRegions()
+        loadUsaRegions(),
+        loadWorldAdminBoundaries()
       ]
     );
 
