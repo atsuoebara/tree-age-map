@@ -15335,7 +15335,11 @@ function createWorldAdminDashboardCard(
           '<div class="prefectureConquestCities">' +
             (
               completedNames.length
-                ? completedNames.join('、')
+                ? completedNames.join(
+                    isRunnerRingsEnglish()
+                      ? ', '
+                      : '、'
+                  )
                 : (
                     isRunnerRingsEnglish()
                       ? 'None yet'
@@ -15357,7 +15361,11 @@ function createWorldAdminDashboardCard(
           '<div class="prefectureConquestCities">' +
             (
               remainingNames.length
-                ? remainingNames.join('、')
+                ? remainingNames.join(
+                    isRunnerRingsEnglish()
+                      ? ', '
+                      : '、'
+                  )
                 : (
                     isRunnerRingsEnglish()
                       ? 'Complete!'
@@ -15516,7 +15524,11 @@ function createWorldCountryDetailBlock(
           countryCode,
           level
         ) +
-        '別';
+        (
+          isRunnerRingsEnglish()
+            ? ''
+            : '別'
+        );
 
       const list =
         document.createElement(
@@ -15832,11 +15844,20 @@ function updateCountryDashboard(
       main.className =
         'countryMain';
 
+      const displayCountryName =
+        WORLD_ADMIN_CONFIG[
+          countryCode
+        ]
+          ? getWorldAdminCountryName(
+              countryCode
+            )
+          : getCountryNameByCode(
+              countryCode
+            );
+
       main.innerHTML =
         '<div class="countryName">' +
-          getCountryNameByCode(
-            countryCode
-          ) +
+          displayCountryName +
         '</div>' +
         '<div class="countryDistance">' +
           km.toFixed(
@@ -15862,9 +15883,7 @@ function updateCountryDashboard(
           : '共有';
 
       const countryName =
-        getCountryNameByCode(
-          countryCode
-        );
+        displayCountryName;
 
       shareButton.setAttribute(
         'aria-label',
@@ -20527,8 +20546,12 @@ function updatePrefectureDashboard(
 
       conquestButton.setAttribute(
         'aria-label',
-        prefecture +
-        'の走破状況を表示'
+        isRunnerRingsEnglish()
+          ? 'Show ' +
+            prefecture +
+            ' conquest status'
+          : prefecture +
+            'の走破状況を表示'
       );
 
       conquestButton.innerHTML =
@@ -20538,13 +20561,24 @@ function updatePrefectureDashboard(
           conquest.total +
         '</div>' +
         '<div class="prefectureConquestRate">' +
-          '走破 ' +
-          conquest.rate +
-          '%' +
+          (
+            isRunnerRingsEnglish()
+              ? 'Complete ' +
+                conquest.rate +
+                '%'
+              : '走破 ' +
+                conquest.rate +
+                '%'
+          ) +
         '</div>' +
         '<div class="prefectureConquestRemaining">' +
-          '残り ' +
-          conquest.remaining +
+          (
+            isRunnerRingsEnglish()
+              ? 'Remaining ' +
+                conquest.remaining
+              : '残り ' +
+                conquest.remaining
+          ) +
         '</div>';
 
 
@@ -20641,31 +20675,53 @@ function updatePrefectureDashboard(
       details.innerHTML =
         '<div class="prefectureConquestGroup">' +
           '<span class="prefectureConquestLabel completed">' +
-            '走破済み ' +
-            conquest.completed +
+            (
+              isRunnerRingsEnglish()
+                ? 'Completed ' +
+                  conquest.completed
+                : '走破済み ' +
+                  conquest.completed
+            ) +
           '</span>' +
           '<div class="prefectureConquestCities">' +
             (
               completedNames.length
                 ? completedNames.join(
-                    '、'
+                    isRunnerRingsEnglish()
+                      ? ', '
+                      : '、'
                   )
-                : 'まだありません'
+                : (
+                    isRunnerRingsEnglish()
+                      ? 'None yet'
+                      : 'まだありません'
+                  )
             ) +
           '</div>' +
         '</div>' +
         '<div class="prefectureConquestGroup">' +
           '<span class="prefectureConquestLabel remaining">' +
-            '未走破 ' +
-            conquest.remaining +
+            (
+              isRunnerRingsEnglish()
+                ? 'Remaining ' +
+                  conquest.remaining
+                : '未走破 ' +
+                  conquest.remaining
+            ) +
           '</span>' +
           '<div class="prefectureConquestCities">' +
             (
               remainingNames.length
                 ? remainingNames.join(
-                    '、'
+                    isRunnerRingsEnglish()
+                      ? ', '
+                      : '、'
                   )
-                : 'コンプリート！'
+                : (
+                    isRunnerRingsEnglish()
+                      ? 'Complete!'
+                      : 'コンプリート！'
+                  )
             ) +
           '</div>' +
         '</div>';
