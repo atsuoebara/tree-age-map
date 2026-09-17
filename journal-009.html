@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stravaだけに頼らないデータ連携を探して、Runner's RingsがIntervals.icuにたどり着いた理由。">
+<title>Stravaだけに頼らない道を探して、Intervals.icuにたどり着いた｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}
+body{min-height:100vh;background:radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),#0b1422}
+header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.meta{margin:12px 0 28px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+strong{color:#fff}
+.highlight{margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)}
+.note{margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)}
+.backArea{margin-top:32px;text-align:center}
+.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+.backHomeButton{margin-left:8px;background:#17283d;border:1px solid rgba(255,255,255,.16)}
+footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none} html[lang="en"] [data-lang="ja"]{display:none} html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Stravaだけに頼らない道を探して、Intervals.icuにたどり着いた</h2>
+  <div class="meta">2026.09.17 ・ データ連携</div>
+
+<p>Runner's Ringsを作りながら、ずっと気になっていたことがあります。<strong>「できるだけ多くのランナーが、自分の過去の走行データを持ってこられる方法はないか」</strong>ということです。</p>
+
+<h3>Stravaは便利。でも、そこだけには頼れない</h3>
+<p>Runner's RingsではStrava連携を用意しています。多くのランナーが使っていて、日々のアクティビティを自動で取り込める、とても便利な入口です。</p>
+<p>ところが、開発を進める中でStrava APIの接続枠という壁にぶつかりました。新しいユーザーに使ってもらいたくても、接続できる人数には上限があります。</p>
+
+<div class="highlight"><strong>「Stravaの枠が広がるまで待つ」だけにはしたくない。</strong><br>Runner's Ringsを使いたい人に、別の入口も用意できないかと考え始めました。</div>
+
+<h3>ウォッチは一つじゃない</h3>
+<p>ランナーが使っているデバイスもさまざまです。Garmin、COROS、Polar、SUUNTO、Wahoo、Fitbitなど、環境は人によって違います。</p>
+<p>それぞれと直接つなげられれば理想ですが、個人開発のサービスがすべてのメーカーと直接連携するのは簡単ではありません。</p>
+<p>だから、メーカーごとに別々の仕組みを増やすのではなく、<strong>複数のサービスをつなぐ共通の入口</strong>を探しました。</p>
+
+<h3>そこで見つけたのがIntervals.icu</h3>
+<p>調べていく中でたどり着いたのが、Intervals.icuでした。</p>
+<p>日本では、StravaやGarmin Connectほどランナー全体に名前が知られているサービスではないかもしれません。特に自転車やトレーニング分析を深くやっていない人にとっては、「初めて聞いた」という名前かもしれません。</p>
+<p>でも調べてみると、さまざまなウォッチやサービスとつながることが分かりました。</p>
+
+<div class="note"><strong>「これなら、Stravaを使っていない人にも別の道を作れるかもしれない。」</strong><br>それが、Runner's RingsでIntervals.icu連携を試し始めた理由です。</div>
+
+<h3>実際に自分で登録して、試してみた</h3>
+<p>まずは自分でIntervals.icuに登録し、サービスをつなぎ、過去データがどこまで取得できるのかを確認しました。</p>
+<p>登録画面や初期設定には少し分かりにくいところもありました。だからこそ、実際に操作した順番をもとに、Runner's Rings側でも使い方を分かりやすく案内できるようにしています。</p>
+
+<h3>今は、いろいろな環境で試してもらう段階</h3>
+<p>自分の環境で動いたからといって、すべてのウォッチやサービスで同じように動くとは限りません。どこまで過去データを取得できるかも、使っているサービスや連携状況によって違う可能性があります。</p>
+<p>そこで現在、Garmin、COROS、Polar、SUUNTOなどを使っている方に、Intervals.icu経由でRunner's Ringsへ取り込めるかテストをお願いしています。</p>
+
+<div class="highlight"><strong>目的は「Intervals.icuを使わせたい」ことではありません。</strong><br>使っているウォッチに関係なく、できるだけ多くのランナーが自分の「走った人生」をRunner's Ringsに持ってこられるようにすることです。</div>
+
+<h3>入口は、一つじゃなくていい</h3>
+<p>Stravaが合う人はStravaから。COROSを使う人にはCOROSから。過去データはFIT、GPX、TCXから。そして、その間をつなぐ選択肢としてIntervals.icuも使える。</p>
+<p>一つのサービスに全員を合わせるのではなく、ランナーそれぞれの環境からRunner's Ringsへ来られるようにする。まだ試行錯誤の途中ですが、その入口を少しずつ増やしていきたいと思っています。</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a><a class="backButton backHomeButton" href="./index.html">Runner's Ringsへ戻る</a></div>
+</section>
+
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Finding Another Path Beyond Strava: Why We Tried Intervals.icu</h2>
+  <div class="meta">2026.09.17 ・ Data Connections</div>
+
+<p>While building Runner's Rings, one question kept coming back: <strong>how can more runners bring their past running history into the service?</strong></p>
+
+<h3>Strava is useful, but it cannot be the only path</h3>
+<p>Runner's Rings supports Strava because it is a convenient way to automatically bring in daily activities.</p>
+<p>But during development, we ran into a practical limitation: the number of athletes who can connect through the Strava API is limited.</p>
+
+<div class="highlight"><strong>We did not want the answer to be, “just wait until the Strava limit is expanded.”</strong><br>We wanted another path for runners who were ready to try Runner's Rings now.</div>
+
+<h3>Runners use many different watches</h3>
+<p>Garmin, COROS, Polar, SUUNTO, Wahoo, Fitbit — runners use many different devices and services.</p>
+<p>Direct connections to every manufacturer would be ideal, but that is not simple for an independently developed service.</p>
+<p>So instead of building a completely separate connection for every brand, we started looking for <strong>a common bridge between multiple services</strong>.</p>
+
+<h3>That search led us to Intervals.icu</h3>
+<p>Intervals.icu may be less familiar to many runners than services such as Strava or Garmin Connect, especially for people who do not spend much time with cycling or detailed training analysis.</p>
+<p>But once we looked more closely, we found that it can connect with a wide range of watches and fitness services.</p>
+
+<div class="note"><strong>“Maybe this can create another route for people who do not use Strava.”</strong><br>That was the reason we started experimenting with Intervals.icu in Runner's Rings.</div>
+
+<h3>We registered and tested it ourselves first</h3>
+<p>Before asking anyone else to use it, we went through the registration process, connected services, and tested how much historical data could be retrieved.</p>
+<p>Some parts of the setup were not immediately obvious, so we are also working on clearer guidance based on the actual steps we followed.</p>
+
+<h3>Now we need to test more real-world setups</h3>
+<p>One successful setup does not prove that every watch or service will behave the same way. The amount of historical data available may also differ depending on the connected service.</p>
+<p>That is why we are currently asking runners using Garmin, COROS, Polar, SUUNTO and other services to test importing their data into Runner's Rings through Intervals.icu.</p>
+
+<div class="highlight"><strong>The goal is not to make everyone use Intervals.icu.</strong><br>The goal is to let more runners bring their own running history into Runner's Rings, regardless of which watch they use.</div>
+
+<h3>There does not have to be only one entrance</h3>
+<p>Strava can be the best route for some runners. COROS can be another. Historical files such as FIT, GPX and TCX remain important too. Intervals.icu can become one more bridge between them.</p>
+<p>Rather than forcing every runner into the same ecosystem, Runner's Rings should meet runners where their data already lives. We are still experimenting, but we want to keep opening more paths.</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a><a class="backButton backHomeButton" href="./index.html">Back to Runner's Rings</a></div>
+</section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
+applyLanguage(savedLanguage);
+</script>
+
+</body>
+</html>

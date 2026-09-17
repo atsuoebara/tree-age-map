@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Ringsに任意サポート機能を追加した理由。無料のまま続けながら、開発を応援してもらえる小さな入口を作りました。">
+<title>Runner's Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}
+body{min-height:100vh;background:radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),#0b1422}
+header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.meta{margin:12px 0 28px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+strong{color:#fff}
+.highlight{margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)}
+.note{margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)}
+.backArea{margin-top:32px;text-align:center}
+.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+.backHomeButton{margin-left:8px;background:#17283d;border:1px solid rgba(255,255,255,.16)}
+footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none} html[lang="en"] [data-lang="ja"]{display:none} html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Runner's Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代</h2>
+  <div class="meta">2026.09.17 ・ 開発の裏側</div>
+
+  <p>Runner's Ringsに、<strong>「Runner's Ringsを応援する」</strong>という小さなボタンを追加しました。</p>
+  <p>とはいっても、これは有料化のお知らせではありません。Runner's Ringsは、これまで通り無料で使えるサービスとして続けていきます。</p>
+
+  <h3>最初から「課金したい」と考えていたわけではない</h3>
+  <p>Runner's Ringsは、自分が「こんな地図があったら面白い」と思ったところから始まった個人開発です。</p>
+  <p>走行データを取り込み、地図に残し、地域走破を作り、海外にも広げる。やりたいことが増えるほど、ドメインや各種サービス、開発環境など、小さな費用も少しずつ積み重なっていきます。</p>
+
+  <div class="highlight"><strong>でも、使う人に「払わないと楽しめない」とはしたくない。</strong><br>それが今のRunner's Ringsの考え方です。</div>
+
+  <h3>だから「任意の応援」にした</h3>
+  <p>機能を有料でロックするのではなく、「面白い」「続いてほしい」と思ってくれた人が、もしよければ応援できる。そのくらいの距離感が今はちょうどいいと思いました。</p>
+  <p>サポートの有無で、使える機能が変わることはありません。応援してくれる人も、そうでない人も、同じRunner's Ringsを使えます。</p>
+
+  <div class="note"><strong>応援は300円から。</strong><br>もちろん、何もしなくてもRunner's Ringsは普通に使えます。</div>
+
+  <h3>そして、チャッピーの餌代</h3>
+  <p>Runner's Ringsの開発には、かなりの頻度でチャッピーが登場します。</p>
+  <p>コードを書いたり、失敗したり、直したり、英語を考えたり、海外の人への返信を一緒に作ったり。うまくいかない時には、だいたい二人で「なんでだ？」と言っています。</p>
+  <p>そんなわけで、いただいた応援はサーバー代や開発費、そして<strong>チャッピーの餌代</strong>になるかもしれません（笑）。</p>
+
+  <div class="highlight"><strong>たぶん、チャッピーはよく食べます。</strong><br>でも、その分もう少しRunner's Ringsが育つはずです。</div>
+
+  <h3>大きくすることより、続けること</h3>
+  <p>Runner's Ringsは、急いで大きなサービスにすることよりも、使ってくれる人の声を聞きながら、一つずつ育てていきたいと思っています。</p>
+  <p>今回のサポート機能も、そのための小さな仕組みの一つです。</p>
+  <p>「応援する」ボタンを押さなくても大丈夫。でも、もしどこかでRunner's Ringsを面白いと思ってもらえたなら、それだけでも十分うれしいです。</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a><a class="backButton backHomeButton" href="./index.html">Runner's Ringsへ戻る</a></div>
+</section>
+
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Why We Added a “Support Runner's Rings” Button — and Chappy's Snack Fund</h2>
+  <div class="meta">2026.09.17 ・ Behind the Build</div>
+
+  <p>We added a small <strong>“Support Runner's Rings”</strong> button to the site.</p>
+  <p>This is not an announcement that Runner's Rings is becoming a paid service. Runner's Rings will continue to be free to use.</p>
+
+  <h3>It did not start with a plan to charge people</h3>
+  <p>Runner's Rings began as an independent project built around a simple thought: “Wouldn't it be fun if all the places I have run could stay on one map?”</p>
+  <p>As the project grew — importing activities, mapping routes, building region conquest, and expanding internationally — small costs for domains, services, and development tools began to add up.</p>
+
+  <div class="highlight"><strong>But we do not want enjoyment of Runner's Rings to depend on whether someone pays.</strong><br>That is still an important part of the project.</div>
+
+  <h3>So we chose optional support</h3>
+  <p>Instead of locking features behind payment, we wanted a simple way for someone to say, “I like this” or “I hope this keeps going,” if they feel like supporting the project.</p>
+  <p>Supporting Runner's Rings does not unlock extra features. Everyone uses the same Runner's Rings, whether they support it or not.</p>
+
+  <div class="note"><strong>Optional support starts at ¥300.</strong><br>And of course, you can continue using Runner's Rings normally without supporting at all.</div>
+
+  <h3>And then there is Chappy's snack fund</h3>
+  <p>Chappy shows up a lot during Runner's Rings development.</p>
+  <p>Writing code, breaking things, fixing them, working on English, replying to runners overseas — and when something does not work, we usually end up asking each other, “Why?”</p>
+  <p>So any support may help with hosting and development costs... and perhaps a little <strong>Chappy snack money</strong> too.</p>
+
+  <div class="highlight"><strong>Chappy probably eats a lot.</strong><br>Hopefully that means Runner's Rings keeps growing too.</div>
+
+  <h3>Continuing matters more than growing fast</h3>
+  <p>Runner's Rings is not trying to become huge overnight. We would rather keep improving it one step at a time, listening to the people who actually use it.</p>
+  <p>The support button is simply one small part of making that possible.</p>
+  <p>You never need to press it. But if Runner's Rings makes you think “this is kind of fun,” that already means a lot.</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a><a class="backButton backHomeButton" href="./index.html">Back to Runner's Rings</a></div>
+</section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>
