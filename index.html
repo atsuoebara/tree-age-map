@@ -1339,6 +1339,40 @@
   outline-offset:3px;
 }
 
+#supportAppButton{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:2px 0 18px 8px;
+  padding:12px 20px;
+  border:1px solid rgba(234,255,0,.52);
+  border-radius:999px;
+  background:rgba(234,255,0,.08);
+  color:#eaff00;
+  font:inherit;
+  font-size:14px;
+  font-weight:800;
+  text-decoration:none;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.16);
+}
+
+#supportAppButton:hover{
+  background:rgba(234,255,0,.14);
+}
+
+#supportAppButton:focus-visible{
+  outline:3px solid rgba(255,255,255,.9);
+  outline-offset:3px;
+}
+
+@media (max-width:520px){
+  #supportAppButton{
+    margin-left:0;
+  }
+}
+
 #shareAppMessage{
   min-height:1.5em;
   margin:-8px 0 14px;
@@ -3110,6 +3144,15 @@
   <button id="shareAppButton" type="button">
     ランリングをシェア
   </button>
+
+  <a
+    id="supportAppButton"
+    href="https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Runner's Ringsを応援する
+  </a>
 
   <div id="shareAppMessage" role="status" aria-live="polite"></div>
 
@@ -22476,6 +22519,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['読み込み中…','Loading…'],
   ['ページ上部へ戻る','Back to top'],
   ['ランリングをシェア','Share Runner\'s Rings'],
+  ['Runner\'s Ringsを応援する','Support Runner\'s Rings'],
   ['走破画像を保存しました','Conquest image saved'],
   ['走破画像を作成できませんでした。','Could not create the conquest image.'],
   ['Runner\'s Ringsとは？','About Runner\'s Rings'],
