@@ -1286,6 +1286,45 @@
       margin-top:4px;
       font-size:13px;
     }
+
+    .routeRunsPopupList{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      max-height:240px;
+      margin-top:9px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .routeRunsPopupButton{
+      width:100%;
+      padding:8px 9px;
+      border:1px solid rgba(15,29,47,.14);
+      border-radius:9px;
+      background:#f4f7fb;
+      color:#0b1422;
+      text-align:left;
+      font:inherit;
+      cursor:pointer;
+    }
+
+    .routeRunsPopupButton:hover{
+      background:#e9eef6;
+    }
+
+    .routeRunsPopupDate{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .routeRunsPopupMeta{
+      display:block;
+      margin-top:2px;
+      font-size:11px;
+      color:#526176;
+    }
 #siteFooter{
   border-top:1px solid rgba(255,255,255,.08);
   background:#0f1d2f;
@@ -5628,6 +5667,12 @@ const routeGroup =
 
 const ringGroup =
   L.layerGroup();
+
+// 選択中の期間について、100mセルごとに
+// その場所を通ったランだけを引ける軽量インデックス。
+// 地図クリック時に全ランを総当たりしないために使う。
+let routeActivityCellIndex =
+  new Map();
 
 const municipalityLayers =
   {};
@@ -13442,6 +13487,9 @@ function buildSelectedStats() {
   const ringCells =
     {};
 
+  const activityCellIndex =
+    new Map();
+
 
   let totalDistanceKm =
     0;
@@ -13747,6 +13795,25 @@ function buildSelectedStats() {
               ) +
               1;
 
+            if (
+              !activityCellIndex.has(
+                key
+              )
+            ) {
+              activityCellIndex.set(
+                key,
+                []
+              );
+            }
+
+            activityCellIndex
+              .get(
+                key
+              )
+              .push(
+                activity
+              );
+
           }
         );
 
@@ -13783,6 +13850,8 @@ function buildSelectedStats() {
     admin2RunCount,
 
     ringCells,
+
+    activityCellIndex,
 
     totalDistanceKm
   };
@@ -14042,6 +14111,370 @@ function drawRoutes(
 
 
 /* =====================================
+   この場所を走った記録
+   100mセルの索引だけを見るため、
+   クリック時に全ランは検索しない。
+===================================== */
+
+function getRouteActivityTime(
+  activity
+) {
+  const startedAt =
+    activity?.startedAt
+      ? new Date(
+          activity.startedAt
+        )
+      : null;
+
+  if (
+    startedAt &&
+    !Number.isNaN(
+      startedAt.getTime()
+    )
+  ) {
+    return startedAt.getTime();
+  }
+
+  const date =
+    activity?.date instanceof Date
+      ? activity.date
+      : activity?.date
+        ? new Date(
+            activity.date
+          )
+        : null;
+
+  return (
+    date &&
+    !Number.isNaN(
+      date.getTime()
+    )
+  )
+    ? date.getTime()
+    : 0;
+}
+
+
+function getRouteActivityDateText(
+  activity
+) {
+  const time =
+    getRouteActivityTime(
+      activity
+    );
+
+  if (!time) {
+    return isRunnerRingsEnglish()
+      ? 'Date unknown'
+      : '日付不明';
+  }
+
+  return new Date(
+    time
+  ).toLocaleDateString(
+    isRunnerRingsEnglish()
+      ? 'en-US'
+      : 'ja-JP',
+    {
+      year:'numeric',
+      month:'2-digit',
+      day:'2-digit'
+    }
+  );
+}
+
+
+function focusActivityFromRoutePopup(
+  activity
+) {
+  const cloudId =
+    activity?.cloudId;
+
+  if (cloudId != null) {
+    const row =
+      cloudRows.find(
+        item =>
+          String(item.id) ===
+          String(cloudId)
+      );
+
+    if (row) {
+      map.closePopup();
+      focusCloudRun(
+        row
+      );
+      return;
+    }
+  }
+
+  if (
+    !Array.isArray(
+      activity?.latlngs
+    ) ||
+    activity.latlngs.length < 2
+  ) {
+    return;
+  }
+
+  map.closePopup();
+
+  if (
+    selectedRunLine
+  ) {
+    map.removeLayer(
+      selectedRunLine
+    );
+  }
+
+  selectedRunLine =
+    L.polyline(
+      activity.latlngs,
+      {
+        color:'#0057ff',
+        weight:6,
+        opacity:1,
+        pane:'selectedRunPane',
+        interactive:false
+      }
+    )
+    .addTo(
+      map
+    );
+
+  selectedRunLine
+    .bringToFront();
+}
+
+
+function createRouteRunsPopupContent(
+  cellKey
+) {
+  const runs =
+    [
+      ...(
+        routeActivityCellIndex
+          .get(
+            cellKey
+          ) ||
+        []
+      )
+    ]
+    .sort(
+      (a, b) =>
+        getRouteActivityTime(b) -
+        getRouteActivityTime(a)
+    );
+
+  if (!runs.length) {
+    return null;
+  }
+
+  const container =
+    document.createElement(
+      'div'
+    );
+
+  const title =
+    document.createElement(
+      'div'
+    );
+
+  title.className =
+    'popup-title';
+
+  title.textContent =
+    isRunnerRingsEnglish()
+      ? 'Runs through this place'
+      : 'この場所を走った記録';
+
+  const count =
+    document.createElement(
+      'div'
+    );
+
+  count.className =
+    'popup-row';
+
+  count.textContent =
+    isRunnerRingsEnglish()
+      ? runs.length + ' runs'
+      : runs.length + '件';
+
+  const list =
+    document.createElement(
+      'div'
+    );
+
+  list.className =
+    'routeRunsPopupList';
+
+  runs.forEach(
+    activity => {
+      const button =
+        document.createElement(
+          'button'
+        );
+
+      button.type =
+        'button';
+
+      button.className =
+        'routeRunsPopupButton';
+
+      const date =
+        document.createElement(
+          'span'
+        );
+
+      date.className =
+        'routeRunsPopupDate';
+
+      date.textContent =
+        getRouteActivityDateText(
+          activity
+        );
+
+      const meta =
+        document.createElement(
+          'span'
+        );
+
+      meta.className =
+        'routeRunsPopupMeta';
+
+      const distance =
+        Number(
+          activity.distance
+        );
+
+      const distanceText =
+        Number.isFinite(
+          distance
+        )
+          ? distance.toFixed(2) +
+            ' km'
+          : (
+              isRunnerRingsEnglish()
+                ? 'Distance unknown'
+                : '距離不明'
+            );
+
+      const name =
+        String(
+          activity.name ||
+          (
+            isRunnerRingsEnglish()
+              ? 'Run'
+              : 'ラン'
+          )
+        )
+        .replace(
+          /\.(gpx|fit|tcx)$/i,
+          ''
+        );
+
+      meta.textContent =
+        distanceText +
+        ' ・ ' +
+        name;
+
+      button.append(
+        date,
+        meta
+      );
+
+      button.addEventListener(
+        'click',
+        () =>
+          focusActivityFromRoutePopup(
+            activity
+          )
+      );
+
+      list.appendChild(
+        button
+      );
+    }
+  );
+
+  container.append(
+    title,
+    count,
+    list
+  );
+
+  return container;
+}
+
+
+function openRouteRunsPopup(
+  cellKey,
+  latlng
+) {
+  const content =
+    createRouteRunsPopupContent(
+      cellKey
+    );
+
+  if (!content) {
+    return;
+  }
+
+  L.popup(
+    {
+      maxWidth:330,
+      minWidth:250
+    }
+  )
+  .setLatLng(
+    latlng
+  )
+  .setContent(
+    content
+  )
+  .openOn(
+    map
+  );
+}
+
+
+map.on(
+  'click',
+  event => {
+    // コースが表示されている時だけ有効。
+    // クリック地点の100mセルだけを見るため、
+    // 1755件など全ランの総当たりは行わない。
+    if (
+      !map.hasLayer(
+        routeGroup
+      )
+    ) {
+      return;
+    }
+
+    const cellKey =
+      getCellKey(
+        event.latlng.lat,
+        event.latlng.lng
+      );
+
+    if (
+      !routeActivityCellIndex.has(
+        cellKey
+      )
+    ) {
+      return;
+    }
+
+    openRouteRunsPopup(
+      cellKey,
+      event.latlng
+    );
+  }
+);
+
+
+/* =====================================
    Rings
 ===================================== */
 
@@ -14081,16 +14514,25 @@ function drawRingCells(
         );
 
 
-      rectangle.bindPopup(
-        '<div class="popup-title">' +
-        'Runner\'s Ring' +
-        '</div>' +
-        '<div class="popup-row">' +
-        'このエリアを走ったラン：' +
-        '<strong>' +
-        count +
-        ' 回</strong>' +
-        '</div>'
+      rectangle.on(
+        'click',
+        event => {
+          if (
+            event.originalEvent
+          ) {
+            L.DomEvent.stopPropagation(
+              event.originalEvent
+            );
+          }
+
+          openRouteRunsPopup(
+            key,
+            event.latlng ||
+              L.latLng(
+                getCellBounds(key)[0]
+              )
+          );
+        }
       );
 
 
@@ -21727,6 +22169,10 @@ function renderSelectedData() {
 
   const stats =
     buildSelectedStats();
+
+  routeActivityCellIndex =
+    stats.activityCellIndex ||
+    new Map();
 
 
   clearMapLayers();
