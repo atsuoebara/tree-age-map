@@ -1299,7 +1299,7 @@
 
     .routeRunsPopupButton{
       width:100%;
-      padding:4px 7px;
+      padding:5px 7px;
       border:1px solid rgba(15,29,47,.14);
       border-radius:7px;
       background:#f4f7fb;
@@ -1308,6 +1308,9 @@
       font:inherit;
       cursor:pointer;
       touch-action:manipulation;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .routeRunsPopupButton:hover{
@@ -1315,17 +1318,17 @@
     }
 
     .routeRunsPopupDate{
-      display:block;
+      display:inline;
       font-size:11px;
       font-weight:800;
-      line-height:1.15;
+      line-height:1.2;
     }
 
     .routeRunsPopupMeta{
-      display:block;
-      margin-top:1px;
+      display:inline;
+      margin-left:6px;
       font-size:10px;
-      line-height:1.15;
+      line-height:1.2;
       color:#526176;
     }
 #siteFooter{
