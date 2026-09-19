@@ -717,6 +717,37 @@
       opacity:.45;
     }
 
+    .editRunNameButton{
+      flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.16);
+      background:#17283d;
+      color:#dce8f5;
+      border-radius:9px;
+      padding:7px 9px;
+      font:inherit;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+      touch-action:manipulation;
+    }
+
+    .editRunNameButton:hover{
+      border-color:#ff2bd6;
+    }
+
+    .editRunNameButton:disabled{
+      opacity:.55;
+      cursor:default;
+    }
+
+    @media (max-width:420px){
+      .editRunNameButton{
+        padding:7px 8px;
+        font-size:10px;
+      }
+    }
+
     .deleteRunButton{
       border:1px solid rgba(255,80,80,.45);
       background:rgba(255,80,80,.10);
@@ -10413,6 +10444,203 @@ selectedRunLine.bringToFront();
 
 
 /* =====================================
+   クラウドラン名編集
+===================================== */
+
+async function updateCloudRunName(
+  row,
+  newName
+) {
+  if (
+    !row?.id ||
+    !cloudEnabled()
+  ) {
+    throw new Error(
+      'ラン名を更新できません'
+    );
+  }
+
+  const cleanName =
+    String(newName || '')
+      .trim();
+
+  if (!cleanName) {
+    throw new Error(
+      'ラン名を入力してください'
+    );
+  }
+
+  const headers =
+    await getCloudHeaders(
+      {
+        'Content-Type':
+          'application/json',
+        Prefer:
+          'return=representation'
+      }
+    );
+
+  const url =
+    SUPABASE_RUNS_URL +
+    '?id=eq.' +
+    encodeURIComponent(
+      row.id
+    ) +
+    '&user_id=eq.' +
+    encodeURIComponent(
+      currentUser.id
+    );
+
+  const response =
+    await fetch(
+      url,
+      {
+        method:'PATCH',
+        headers,
+        body:JSON.stringify(
+          {
+            name:cleanName
+          }
+        )
+      }
+    );
+
+  if (!response.ok) {
+    const message =
+      await response.text();
+
+    throw new Error(
+      'ラン名更新失敗 HTTP ' +
+      response.status +
+      ' ' +
+      message
+    );
+  }
+
+  row.name =
+    cleanName;
+
+  cloudRows.forEach(
+    cloudRow => {
+      if (
+        String(cloudRow.id) ===
+        String(row.id)
+      ) {
+        cloudRow.name =
+          cleanName;
+      }
+    }
+  );
+
+  activities.forEach(
+    activity => {
+      if (
+        activity?.cloudId != null &&
+        String(activity.cloudId) ===
+        String(row.id)
+      ) {
+        activity.name =
+          cleanName;
+      }
+    }
+  );
+
+  return cleanName;
+}
+
+async function editCloudRunName(
+  row,
+  button
+) {
+  const english =
+    typeof isRunnerRingsEnglish ===
+      'function' &&
+    isRunnerRingsEnglish();
+
+  const currentName =
+    String(
+      row?.name ||
+      (english ? 'Run' : 'ラン')
+    );
+
+  const enteredName =
+    window.prompt(
+      english
+        ? 'Edit run name'
+        : 'ランニングの名前を編集',
+      currentName
+    );
+
+  if (enteredName === null) {
+    return;
+  }
+
+  const cleanName =
+    enteredName.trim();
+
+  if (!cleanName) {
+    alert(
+      english
+        ? 'Please enter a run name.'
+        : 'ランニングの名前を入力してください。'
+    );
+    return;
+  }
+
+  if (cleanName === currentName) {
+    return;
+  }
+
+  if (button) {
+    button.disabled =
+      true;
+    button.textContent =
+      english
+        ? 'Saving…'
+        : '保存中…';
+  }
+
+  try {
+    await updateCloudRunName(
+      row,
+      cleanName
+    );
+
+    renderCloudRowsList(
+      lastCloudRowsView ||
+      getSelectedCloudRows()
+    );
+
+    setStatus(
+      english
+        ? '✅ Run name updated'
+        : '✅ ランニングの名前を変更しました'
+    );
+
+  } catch (error) {
+    console.error(
+      'Run name update error:',
+      error
+    );
+
+    alert(
+      english
+        ? 'Could not update the run name.'
+        : 'ランニングの名前を変更できませんでした。'
+    );
+
+    if (button) {
+      button.disabled =
+        false;
+      button.textContent =
+        english
+          ? '✎ Name'
+          : '✎ 名前';
+    }
+  }
+}
+
+/* =====================================
    クラウド一覧描画
 ===================================== */
 
@@ -10666,6 +10894,46 @@ name.textContent =
       );
 
 
+      const editButton =
+        document.createElement(
+          'button'
+        );
+
+      editButton.type =
+        'button';
+
+      editButton.className =
+        'editRunNameButton';
+
+      editButton.textContent =
+        (
+          typeof isRunnerRingsEnglish ===
+            'function' &&
+          isRunnerRingsEnglish()
+        )
+          ? '✎ Name'
+          : '✎ 名前';
+
+      editButton.setAttribute(
+        'aria-label',
+        (
+          typeof isRunnerRingsEnglish ===
+            'function' &&
+          isRunnerRingsEnglish()
+        )
+          ? 'Edit run name'
+          : 'ランニングの名前を編集'
+      );
+
+      editButton.onclick =
+        async event => {
+          event.stopPropagation();
+          await editCloudRunName(
+            row,
+            editButton
+          );
+        };
+
       const chevron =
         document.createElement(
           'div'
@@ -10682,6 +10950,7 @@ name.textContent =
 
       item.append(
         main,
+        editButton,
         chevron
       );
 
