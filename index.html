@@ -7848,6 +7848,67 @@ function buildCellsFromRoute(
 }
 
 
+function getOrBuildActivityCells(
+  activity
+) {
+  if (
+    Array.isArray(
+      activity?.cells
+    )
+  ) {
+    return activity.cells;
+  }
+
+  if (
+    !Array.isArray(
+      activity?.latlngs
+    ) ||
+    activity.latlngs.length < 2
+  ) {
+    activity.cells = [];
+    return activity.cells;
+  }
+
+  activity.cells =
+    Array.from(
+      buildCellsFromRoute(
+        activity.latlngs
+      )
+    );
+
+  return activity.cells;
+}
+
+function shouldPrepareRouteCells() {
+  const zoom =
+    map.getZoom();
+
+  return (
+    mapViewMode === 'route' ||
+    (
+      mapViewMode === 'auto' &&
+      zoom >= 12
+    )
+  );
+}
+
+function selectedActivitiesNeedCells() {
+  if (
+    !shouldPrepareRouteCells()
+  ) {
+    return false;
+  }
+
+  return getSelectedActivities()
+    .some(
+      activity =>
+        !Array.isArray(
+          activity?.cells
+        )
+    );
+}
+
+
 /* =====================================
    市町村濃度
 ===================================== */
@@ -9516,12 +9577,7 @@ function buildActivityFromGPXText(
     admin2Regions:
       analysis.admin2Regions,
 
-    cells:
-      Array.from(
-        buildCellsFromRoute(
-          latlngs
-        )
-      )
+    cells: null
   };
 
 }
@@ -9881,12 +9937,7 @@ function buildActivityFromTCXText(
     admin2Regions:
       analysis.admin2Regions,
 
-    cells:
-      Array.from(
-        buildCellsFromRoute(
-          latlngs
-        )
-      )
+    cells: null
   };
 
 }
@@ -10166,12 +10217,7 @@ function buildActivityFromCloudRow(
     admin2Regions:
       analysis.admin2Regions,
 
-    cells:
-      Array.from(
-        buildCellsFromRoute(
-          latlngs
-        )
-      )
+    cells: null
   };
 
 }
@@ -11321,12 +11367,7 @@ function loadArchiveActivities() {
           regions:
             analysis.regions,
 
-          cells:
-            Array.from(
-              buildCellsFromRoute(
-                latlngs
-              )
-            )
+          cells: null
         };
 
 
@@ -13892,6 +13933,9 @@ function buildSelectedStats() {
   const activityCellIndex =
     new Map();
 
+  const prepareRouteCells =
+    shouldPrepareRouteCells();
+
 
   let totalDistanceKm =
     0;
@@ -14182,42 +14226,48 @@ function buildSelectedStats() {
         );
 
 
-      activity.cells
-        .forEach(
-          key => {
+      if (
+        prepareRouteCells
+      ) {
+        getOrBuildActivityCells(
+          activity
+        )
+          .forEach(
+            key => {
 
-            ringCells[
-              key
-            ] =
-              (
-                ringCells[
+              ringCells[
+                key
+              ] =
+                (
+                  ringCells[
+                    key
+                  ] ||
+                  0
+                ) +
+                1;
+
+              if (
+                !activityCellIndex.has(
                   key
-                ] ||
-                0
-              ) +
-              1;
+                )
+              ) {
+                activityCellIndex.set(
+                  key,
+                  []
+                );
+              }
 
-            if (
-              !activityCellIndex.has(
-                key
-              )
-            ) {
-              activityCellIndex.set(
-                key,
-                []
-              );
+              activityCellIndex
+                .get(
+                  key
+                )
+                .push(
+                  activity
+                );
+
             }
-
-            activityCellIndex
-              .get(
-                key
-              )
-              .push(
-                activity
-              );
-
-          }
-        );
+          );
+      }
 
     }
   );
@@ -21979,6 +22029,14 @@ function setMapViewMode(
   }
 
   syncMapViewModeButtons();
+
+  if (
+    selectedActivitiesNeedCells()
+  ) {
+    renderSelectedData();
+    return;
+  }
+
   updateDisplay();
 }
 
@@ -23027,7 +23085,16 @@ if (
 
 map.on(
   'zoomend',
-  updateDisplay
+  () => {
+    if (
+      selectedActivitiesNeedCells()
+    ) {
+      renderSelectedData();
+      return;
+    }
+
+    updateDisplay();
+  }
 );
 
 
