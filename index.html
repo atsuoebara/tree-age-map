@@ -12518,7 +12518,15 @@ cloudRunsButton.onclick =
         )
     ) {
 
-      await renderCloudRuns();
+      // まず手元にある前回データを即表示する。
+      // 最新取得を待ってから移動していたため、
+      // 電波が弱い時に「自分のラン」を押しても
+      // なかなか一覧へ飛ばない状態になっていた。
+      if (
+        cloudRows.length
+      ) {
+        renderCloudRowsList();
+      }
 
       const panelTop =
         cloudRunsPanel
@@ -12531,6 +12539,17 @@ cloudRunsButton.onclick =
         top: panelTop,
         behavior: 'smooth'
       });
+
+      // 最新データの確認は画面遷移後に裏で行う。
+      renderCloudRuns()
+        .catch(
+          error => {
+            console.warn(
+              'Cloud runs refresh error:',
+              error
+            );
+          }
+        );
 
     }
 
