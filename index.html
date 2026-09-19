@@ -8067,11 +8067,24 @@ async function loadUsaRegions() {
 }
 
 
-async function loadWorldAdminBoundaries() {
+async function loadWorldAdminBoundaries(
+  countryCodes = null
+) {
+  const requestedCountries =
+    Array.isArray(countryCodes)
+      ? countryCodes
+      : Object.keys(
+          WORLD_ADMIN_CONFIG
+        );
+
   const countries =
-    Object.keys(
-      WORLD_ADMIN_CONFIG
-    );
+    requestedCountries
+      .filter(
+        countryCode =>
+          !!WORLD_ADMIN_CONFIG[
+            countryCode
+          ]
+      );
 
   const tasks = [];
 
@@ -8189,6 +8202,114 @@ async function loadWorldAdminBoundaries() {
 
   await Promise.all(
     tasks
+  );
+}
+
+
+/* =====================================
+   起動時の海外行政境界を必要な国だけ読む
+   全対応国のADM1 / ADM2を毎回読み込まず、
+   ユーザーのクラウドRUNに含まれる国だけを対象にする。
+===================================== */
+
+function detectWorldAdminCountriesFromRows(
+  rows
+) {
+  const countries =
+    new Set();
+
+  if (
+    !Array.isArray(rows) ||
+    !countryFeatures.length
+  ) {
+    return [];
+  }
+
+  rows.forEach(
+    row => {
+      const route =
+        Array.isArray(row?.route)
+          ? row.route
+          : [];
+
+      if (!route.length) {
+        return;
+      }
+
+      const sampleCount =
+        Math.min(
+          7,
+          route.length
+        );
+
+      for (
+        let i = 0;
+        i < sampleCount;
+        i++
+      ) {
+        const index =
+          sampleCount === 1
+            ? 0
+            : Math.round(
+                i *
+                (route.length - 1) /
+                (sampleCount - 1)
+              );
+
+        const point =
+          route[index];
+
+        if (
+          !Array.isArray(point) ||
+          point.length < 2
+        ) {
+          continue;
+        }
+
+        const lat =
+          Number(point[0]);
+
+        const lon =
+          Number(point[1]);
+
+        if (
+          !Number.isFinite(lat) ||
+          !Number.isFinite(lon)
+        ) {
+          continue;
+        }
+
+        const feature =
+          findCountryFeature(
+            lat,
+            lon
+          );
+
+        if (!feature) {
+          continue;
+        }
+
+        const countryCode =
+          getCountryCode(
+            feature
+          );
+
+        if (
+          countryCode !== 'JPN' &&
+          WORLD_ADMIN_CONFIG[
+            countryCode
+          ]
+        ) {
+          countries.add(
+            countryCode
+          );
+        }
+      }
+    }
+  );
+
+  return Array.from(
+    countries
   );
 }
 
@@ -10056,7 +10177,9 @@ function buildActivityFromCloudRow(
 }
 
 
-async function loadCloudActivities() {
+async function loadCloudActivities(
+  preloadedRows = null
+) {
 
   if (
     !cloudEnabled()
@@ -10081,7 +10204,11 @@ async function loadCloudActivities() {
 
 
     const rows =
-      await fetchCloudRuns();
+      Array.isArray(
+        preloadedRows
+      )
+        ? preloadedRows
+        : await fetchCloudRuns();
 
 
     cloudRows =
@@ -22651,12 +22778,42 @@ if (
     await claimLegacyLocalGPX();
 
 
+    // 起動時はまず日本の行政境界と世界の国境だけを読む。
+    // ADM1 / ADM2は、実際にユーザーが走った国だけ後から読む。
     await Promise.all(
       [
         loadMunicipalities(),
-        loadWorldCountries(),
-        loadUsaRegions(),
-        loadWorldAdminBoundaries()
+        loadWorldCountries()
+      ]
+    );
+
+    let preloadedCloudRows =
+      [];
+
+    if (cloudEnabled()) {
+      setStatus(
+        '☁️ クラウドRUNを確認中…'
+      );
+
+      preloadedCloudRows =
+        await fetchCloudRuns();
+    }
+
+    const neededWorldAdminCountries =
+      detectWorldAdminCountriesFromRows(
+        preloadedCloudRows
+      );
+
+    await Promise.all(
+      [
+        neededWorldAdminCountries.includes(
+          'USA'
+        )
+          ? loadUsaRegions()
+          : Promise.resolve(true),
+        loadWorldAdminBoundaries(
+          neededWorldAdminCountries
+        )
       ]
     );
 
@@ -22675,7 +22832,9 @@ let archiveCount = 0;
 let githubCount = 0;
 
 const cloudCount =
-  await loadCloudActivities();
+  await loadCloudActivities(
+    preloadedCloudRows
+  );
 
 if (
   cloudCount === 0 &&
