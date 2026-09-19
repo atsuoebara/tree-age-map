@@ -5720,6 +5720,11 @@ let cloudRunCount =
 let cloudRows =
   [];
 
+// 同じクラウドランを一覧・地図・「この場所を走った記録」から
+// 何度開いても analyseRoute() をやり直さないためのセッション内キャッシュ。
+const cloudActivityCache =
+  new Map();
+
 let historySortOrder =
   'desc';
 let lastCloudRowsView =
@@ -10109,6 +10114,43 @@ function buildActivityFromCloudRow(
   row
 ) {
 
+  const cacheKey =
+    row?.id == null
+      ? null
+      : String(
+          row.id
+        );
+
+  if (
+    cacheKey &&
+    cloudActivityCache.has(
+      cacheKey
+    )
+  ) {
+    const cached =
+      cloudActivityCache.get(
+        cacheKey
+      );
+
+    // 名前など軽いメタ情報は最新のrowに合わせる。
+    cached.name =
+      row.name ||
+      cached.name ||
+      'クラウドラン';
+
+    cached.startedAt =
+      row.started_at ||
+      cached.startedAt ||
+      null;
+
+    cached.originalSource =
+      row.source ||
+      cached.originalSource ||
+      null;
+
+    return cached;
+  }
+
   if (
     !Array.isArray(
       row.route
@@ -10184,7 +10226,7 @@ function buildActivityFromCloudRow(
       : null;
 
 
-  return {
+  const activity = {
     source:
       'cloud',
 
@@ -10262,6 +10304,17 @@ function buildActivityFromCloudRow(
     cells: null
   };
 
+  if (
+    cacheKey
+  ) {
+    cloudActivityCache.set(
+      cacheKey,
+      activity
+    );
+  }
+
+  return activity;
+
 }
 
 
@@ -10301,6 +10354,8 @@ async function loadCloudActivities(
 
     cloudRows =
       rows;
+
+    cloudActivityCache.clear();
 
 
     cloudRunCount =
