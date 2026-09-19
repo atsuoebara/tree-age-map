@@ -691,6 +691,27 @@
 
     .cloudRunRow{
       cursor:pointer;
+      grid-template-columns:minmax(0,1fr) auto auto;
+      gap:6px 8px;
+    }
+
+    .cloudRunRow .savedRunMain{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      overflow:hidden;
+    }
+
+    .cloudRunRow .savedRunName{
+      flex:1 1 auto;
+      min-width:0;
+    }
+
+    .cloudRunRow .savedRunMeta{
+      flex:0 0 auto;
+      margin-top:0;
+      white-space:nowrap;
     }
 
     .savedRunMain{
@@ -741,9 +762,30 @@
       cursor:default;
     }
 
-    @media (max-width:420px){
+    @media (max-width:520px){
+      .cloudRunRow{
+        padding:9px 10px;
+        gap:5px 6px;
+      }
+
+      .cloudRunRow .savedRunMain{
+        gap:6px;
+      }
+
+      .cloudRunRow .savedRunName{
+        font-size:12px;
+      }
+
+      .cloudRunRow .savedRunMeta{
+        font-size:10px;
+      }
+
+      .cloudRunRow .historyChevron{
+        font-size:18px;
+      }
+
       .editRunNameButton{
-        padding:7px 8px;
+        padding:6px 7px;
         font-size:10px;
       }
     }
