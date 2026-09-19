@@ -14869,121 +14869,58 @@ function drawRoutes(
   selectedActivities
 ) {
 
-  const drawn =
-    new Set();
+  const routes =
+    selectedActivities
+      .map(
+        activity =>
+          Array.isArray(
+            activity.latlngs
+          ) &&
+          activity.latlngs.length >= 2
+            ? activity.latlngs
+            : null
+      )
+      .filter(
+        Boolean
+      );
 
+  if (
+    !routes.length
+  ) {
+    return;
+  }
 
-  const round =
-    value =>
-      Math.round(
-        value *
-        10000
-      ) /
-      10000;
+  // 以前はルートの各区間ごとに
+  // LeafletのPolylineを作っていたため、
+  // ラン数・GPS点数が増えるほど大量のレイヤーが発生していた。
+  // 複数ランを1つのMultiPolylineとして描画し、
+  // 地図の再描画コストを大きく抑える。
+  routeGroup.addLayer(
+    L.polyline(
+      routes,
+      {
+        color:
+          ROUTE_COLOR,
 
+        weight:
+          2.5,
 
-  selectedActivities
-    .forEach(
-      activity => {
+        opacity:
+          0.65,
 
-        for (
-          let i = 1;
-          i < activity.latlngs.length;
-          i++
-        ) {
+        lineCap:
+          'round',
 
-          const a =
-            activity.latlngs[
-              i - 1
-            ];
+        lineJoin:
+          'round',
 
-          const b =
-            activity.latlngs[i];
-
-
-          const aKey =
-            round(
-              a[0]
-            ) +
-            ',' +
-            round(
-              a[1]
-            );
-
-
-          const bKey =
-            round(
-              b[0]
-            ) +
-            ',' +
-            round(
-              b[1]
-            );
-
-
-          const key =
-            aKey < bKey
-
-              ? aKey +
-                '|' +
-                bKey
-
-              : bKey +
-                '|' +
-                aKey;
-
-
-          if (
-            drawn.has(
-              key
-            )
-          ) {
-
-            continue;
-
-          }
-
-
-          drawn.add(
-            key
-          );
-
-
-          routeGroup.addLayer(
-            L.polyline(
-              [
-                a,
-                b
-              ],
-              {
-                color:
-                  ROUTE_COLOR,
-
-                weight:
-                  2.5,
-
-                opacity:
-                  0.65,
-
-                lineCap:
-                  'round',
-
-                lineJoin:
-                  'round',
-
-                interactive:
-                  false
-              }
-            )
-          );
-
-        }
-
+        interactive:
+          false
       }
-    );
+    )
+  );
 
 }
-
 
 /* =====================================
    この場所を走った記録
