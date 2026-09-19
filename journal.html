@@ -43,23 +43,11 @@ header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
 main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
 .eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
 h2{margin:0;font-size:30px;line-height:1.35}
-.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+.meta{margin:12px 0 26px;color:#8796aa;font-size:12px}
 p{color:#b9c6d6;font-size:14px;line-height:1.9}
 a{color:#ff2bd6;text-decoration:none}
-.articleCard{
-  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
-  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
-}
-.articleCard:hover{border-color:rgba(255,43,214,.55)}
-.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
-.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
-.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
-.articleTag{
-  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
-  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
-}
-.articleBody h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
-.articleBody strong{color:#fff}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+strong{color:#fff}
 .highlight{
   margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
   border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
@@ -68,29 +56,16 @@ a{color:#ff2bd6;text-decoration:none}
   margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
   border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
 }
+.placeCard{
+  margin:24px 0;padding:16px 17px;border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;background:#132237;
+}
+.placeCard p{margin:4px 0}
 .backArea{margin-top:32px;text-align:center}
 .backButton{
   display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
   color:#fff;font-size:13px;font-weight:800;text-decoration:none
 }
-.buttonArea{
-  margin-top:34px;
-  text-align:center;
-}
-.mainButton{
-  display:inline-block;
-  padding:12px 24px;
-  border-radius:12px;
-  background:#ff2bd6;
-  color:#ffffff;
-  font-size:13px;
-  font-weight:800;
-  text-decoration:none;
-}
-.mainButton:hover{
-  filter:brightness(1.08);
-}
-
 footer{
   border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
   padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
@@ -105,6 +80,25 @@ html[lang="en"] [data-lang="en"]{display:block}
   header h1{padding-right:98px;font-size:19px}
   h2{font-size:27px}
   main{padding-top:28px}
+}
+
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+.articleCard{
+  display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;
+  border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none
+}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}
+.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{
+  display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;
+  background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800
+}
+.buttonArea{margin-top:34px;text-align:center}
+.mainButton{
+  display:inline-block;padding:12px 24px;border-radius:12px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
 }
 </style>
 </head>
@@ -130,46 +124,42 @@ html[lang="en"] [data-lang="en"]{display:block}
     <a class="articleCard" href="./journal-001.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">地域走破を作った理由 ─ 「次はどこを走ろう」が生まれる地図へ</div>
-      <div class="articleText">
-        都道府県や市町村を「何km走ったか」だけではなく、
-        どこまで走破したかで見えるようにした理由。
-        ALLと年別、走破率、未走破地域、共有画像まで含めて紹介します。
-      </div>
+      <div class="articleText">都道府県や市町村を「何km走ったか」だけではなく、どこまで走破したかで見えるようにした理由。ALLと年別、走破率、未走破地域、共有画像まで含めて紹介します。</div>
       <span class="articleTag">地域走破</span>
     </a>
-  
+
     <a class="articleCard" href="./journal-002.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">StravaとIntervals.icu、Runner's Ringsではどう使い分ける？</div>
-      <div class="articleText">Runner's RingsでStravaとIntervals.icuをどう使い分けるか。両方を同時に使わない方がよい理由と、重複防止の考え方をまとめます。</div>
+      <div class="articleTitle">StravaとIntervals.icu、Runner&#x27;s Ringsではどう使い分ける？</div>
+      <div class="articleText">Runner&#x27;s RingsでStravaとIntervals.icuをどう使い分けるか。両方を同時に使わない方がよい理由と、重複防止の考え方をまとめます。</div>
       <span class="articleTag">データ連携</span>
     </a>
 
     <a class="articleCard" href="./journal-003.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">過去のランを地図に重ねると、何が見えてくるのか</div>
-      <div class="articleText">昔のGPXやFIT、過去のアクティビティを地図に重ねると何が見えるのか。Runner's Ringsが過去データを大切にする理由を紹介します。</div>
+      <div class="articleText">昔のGPXやFIT、過去のアクティビティを地図に重ねると何が見えるのか。Runner&#x27;s Ringsが過去データを大切にする理由を紹介します。</div>
       <span class="articleTag">過去データ</span>
     </a>
 
     <a class="articleCard" href="./journal-004.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">「面」と「コース」を両方残す理由</div>
-      <div class="articleText">Runner's Ringsの地図で「面」と「コース」を切り替えられる理由。広がりと実際の道、どちらも残したい設計思想を紹介します。</div>
+      <div class="articleText">Runner&#x27;s Ringsの地図で「面」と「コース」を切り替えられる理由。広がりと実際の道、どちらも残したい設計思想を紹介します。</div>
       <span class="articleTag">地図表示</span>
     </a>
 
     <a class="articleCard" href="./journal-005.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">走破画像を「その地域だけ」にした理由</div>
-      <div class="articleText">Runner's Ringsの走破共有画像で、隣県や周辺地域を出さず、対象地域だけを切り抜く理由を紹介します。</div>
+      <div class="articleText">Runner&#x27;s Ringsの走破共有画像で、隣県や周辺地域を出さず、対象地域だけを切り抜く理由を紹介します。</div>
       <span class="articleTag">共有</span>
     </a>
 
     <a class="articleCard" href="./journal-006.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">Runner's Ringsは、なぜランキング中心にしないのか</div>
-      <div class="articleText">Runner's Ringsが他人との順位競争より、自分の過去・年別・地域走破を重視する理由を紹介します。</div>
+      <div class="articleTitle">Runner&#x27;s Ringsは、なぜランキング中心にしないのか</div>
+      <div class="articleText">Runner&#x27;s Ringsが他人との順位競争より、自分の過去・年別・地域走破を重視する理由を紹介します。</div>
       <span class="articleTag">コンセプト</span>
     </a>
 
@@ -190,17 +180,23 @@ html[lang="en"] [data-lang="en"]{display:block}
     <a class="articleCard" href="./journal-009.html">
       <div class="articleDate">2026.09.17</div>
       <div class="articleTitle">Stravaだけに頼らない道を探して、Intervals.icuにたどり着いた</div>
-      <div class="articleText">Stravaの接続枠、さまざまなウォッチ、直接連携の難しさ。できるだけ多くのランナーに入口を作るため、Intervals.icuにたどり着いた経緯を紹介します。</div>
+      <div class="articleText">Stravaの接続枠がいっぱいになったことをきっかけに、より多くのランナーがRunner&#x27;s Ringsへデータを取り込める道を探した開発記録です。</div>
       <span class="articleTag">データ連携</span>
     </a>
 
     <a class="articleCard" href="./journal-010.html">
       <div class="articleDate">2026.09.17</div>
-      <div class="articleTitle">Runner's Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代</div>
-      <div class="articleText">Runner's Ringsはこれまで通り無料。そのまま続けながら、任意で開発を応援してもらえる小さな入口を作った理由と、チャッピーの餌代のお話です。</div>
-      <span class="articleTag">開発の裏側</span>
+      <div class="articleTitle">Runner&#x27;s Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代</div>
+      <div class="articleText">Runner&#x27;s Ringsは無料のまま。機能差を付けるためではなく、サーバーや開発を続けるための任意サポートを置いた理由を紹介します。</div>
+      <span class="articleTag">開発運営</span>
     </a>
 
+    <a class="articleCard" href="./journal-011.html">
+      <div class="articleDate">2026.09.19</div>
+      <div class="articleTitle">トレッドミルも、「走った人生」の積み重ねにしたい</div>
+      <div class="articleText">高崎の低酸素ランニングジムRUNGRYでの体験から、地図には描けないトレッドミルのランも「走った人生」として残したいと考えた日の記録です。</div>
+      <span class="articleTag">Running &amp; Development</span>
+    </a>
   </section>
 
   <section data-lang="en">
@@ -214,51 +210,48 @@ html[lang="en"] [data-lang="en"]{display:block}
     <a class="articleCard" href="./journal-001.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">Why We Built Region Conquest — A Map That Makes You Ask, “Where Should I Run Next?”</div>
-      <div class="articleText">
-        Why Runner's Rings shows not only distance, but how many prefectures and municipalities
-        you have explored, together with ALL-time and yearly progress, remaining regions, and shareable images.
-      </div>
+      <div class="articleText">Why Runner&#x27;s Rings shows not only distance, but how many prefectures and municipalities you have explored, together with ALL-time and yearly progress, remaining regions, and shareable images.</div>
       <span class="articleTag">Region Conquest</span>
     </a>
-  
+
     <a class="articleCard" href="./journal-002.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">Strava or Intervals.icu — Which Should You Use with Runner's Rings?</div>
-      <div class="articleText">Runner's RingsでStravaとIntervals.icuをどう使い分けるか。両方を同時に使わない方がよい理由と、重複防止の考え方をまとめます。</div>
+      <div class="articleTitle">Strava or Intervals.icu — Which Should You Use with Runner&#x27;s Rings?</div>
+      <div class="articleText">How Runner&#x27;s Rings approaches Strava and Intervals.icu as data sources, and why using one main source keeps duplicate handling simpler.</div>
       <span class="articleTag">Data Connections</span>
     </a>
 
     <a class="articleCard" href="./journal-003.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">What Happens When You Put Years of Running on One Map?</div>
-      <div class="articleText">昔のGPXやFIT、過去のアクティビティを地図に重ねると何が見えるのか。Runner's Ringsが過去データを大切にする理由を紹介します。</div>
+      <div class="articleText">Why Runner&#x27;s Rings values old GPX, FIT, and past activity data as part of a runner&#x27;s history.</div>
       <span class="articleTag">History</span>
     </a>
 
     <a class="articleCard" href="./journal-004.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">Why Runner's Rings Keeps Both Area and Route Views</div>
-      <div class="articleText">Runner's Ringsの地図で「面」と「コース」を切り替えられる理由。広がりと実際の道、どちらも残したい設計思想を紹介します。</div>
+      <div class="articleTitle">Why Runner&#x27;s Rings Keeps Both Area and Route Views</div>
+      <div class="articleText">Why both the broad geographic spread and the exact roads you ran deserve a place on the map.</div>
       <span class="articleTag">Map View</span>
     </a>
 
     <a class="articleCard" href="./journal-005.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">Why Conquest Sharing Shows Only the Selected Region</div>
-      <div class="articleText">Runner's Ringsの走破共有画像で、隣県や周辺地域を出さず、対象地域だけを切り抜く理由を紹介します。</div>
+      <div class="articleText">Why share images focus on the selected region instead of showing everything around it.</div>
       <span class="articleTag">Sharing</span>
     </a>
 
     <a class="articleCard" href="./journal-006.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">Why Runner's Rings Is Not Built Around Rankings</div>
-      <div class="articleText">Runner's Ringsが他人との順位競争より、自分の過去・年別・地域走破を重視する理由を紹介します。</div>
+      <div class="articleTitle">Why Runner&#x27;s Rings Is Not Built Around Rankings</div>
+      <div class="articleText">Why Runner&#x27;s Rings centers personal history and exploration instead of competition with other runners.</div>
       <span class="articleTag">Concept</span>
     </a>
 
     <a class="articleCard" href="./journal-007.html">
       <div class="articleDate">2026.09.14</div>
-      <div class="articleTitle">Why Runner's Rings Lets You Switch Between Auto, Area, and Route</div>
+      <div class="articleTitle">Why Runner&#x27;s Rings Lets You Switch Between Auto, Area, and Route</div>
       <div class="articleText">Why the map keeps both a broad area view and the actual roads you ran, and why runners can now choose the view themselves.</div>
       <span class="articleTag">Map View</span>
     </a>
@@ -266,30 +259,36 @@ html[lang="en"] [data-lang="en"]{display:block}
     <a class="articleCard" href="./journal-008.html">
       <div class="articleDate">2026.09.14</div>
       <div class="articleTitle">Why We Turned Conquered Regions into Collectible Cards</div>
-      <div class="articleText">How first-run municipality cards and COMPLETE cards are generated from region boundaries and each runner's own history.</div>
+      <div class="articleText">How first-run municipality cards and COMPLETE cards are generated from region boundaries and each runner&#x27;s own history.</div>
       <span class="articleTag">Conquest Cards</span>
     </a>
 
     <a class="articleCard" href="./journal-009.html">
       <div class="articleDate">2026.09.17</div>
-      <div class="articleTitle">Finding Another Path Beyond Strava: Why We Tried Intervals.icu</div>
-      <div class="articleText">How Strava connection limits, different watches, and the challenge of direct integrations led Runner's Rings to explore Intervals.icu as another path for runners.</div>
+      <div class="articleTitle">Looking Beyond Strava — How Runner&#x27;s Rings Found Intervals.icu</div>
+      <div class="articleText">A development note about searching for another data path when Strava athlete capacity became full.</div>
       <span class="articleTag">Data Connections</span>
     </a>
 
     <a class="articleCard" href="./journal-010.html">
       <div class="articleDate">2026.09.17</div>
-      <div class="articleTitle">Why We Added a “Support Runner's Rings” Button — and Chappy's Snack Fund</div>
-      <div class="articleText">Why Runner's Rings added an optional support button while keeping the service free — plus a small note about Chappy's snack fund.</div>
-      <span class="articleTag">Behind the Build</span>
+      <div class="articleTitle">Why Runner&#x27;s Rings Added a Support Button — and Chappy&#x27;s Snack Fund</div>
+      <div class="articleText">Why optional support was added while keeping Runner&#x27;s Rings free and without feature differences.</div>
+      <span class="articleTag">Development</span>
     </a>
 
+    <a class="articleCard" href="./journal-011.html">
+      <div class="articleDate">2026.09.19</div>
+      <div class="articleTitle">Treadmill Runs Should Count as Part of the Life You Ran, Too</div>
+      <div class="articleText">A visit to RUNGRY in Takasaki led to a new thought: treadmill runs may not draw roads, but they still belong to a runner&#x27;s accumulated history.</div>
+      <span class="articleTag">Running &amp; Development</span>
+    </a>
   </section>
+
   <div class="buttonArea">
     <a class="mainButton" href="./index.html" data-lang="ja">Runner's Ringsへ戻る</a>
     <a class="mainButton" href="./index.html" data-lang="en">Back to Runner's Rings</a>
   </div>
-
 </main>
 
 <footer>
@@ -307,7 +306,6 @@ html[lang="en"] [data-lang="en"]{display:block}
   <div>© 2026 Runner's Rings</div>
 </footer>
 
-
 <script>
 const languageButtons=document.querySelectorAll('.languageButton');
 const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
@@ -324,6 +322,5 @@ languageButtons.forEach(button=>{
 });
 applyLanguage(savedLanguage);
 </script>
-
 </body>
 </html>

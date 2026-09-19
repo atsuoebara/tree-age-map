@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="高崎の低酸素ランニングジムRUNGRYでの体験から、トレッドミルのランもRunner\'s Ringsの「走った人生」の積み重ねとして残したいと考えた開発ノート。">
+<title>トレッドミルも「走った人生」の積み重ねにしたい｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#0b1422;
+  color:#fff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(255,43,214,.12), transparent 26%),
+    radial-gradient(circle at 10% 28%, rgba(49,132,255,.08), transparent 30%),
+    #0b1422;
+}
+header{
+  position:relative;
+  background:#0f1d2f;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header h1{margin:0;font-size:22px}
+.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{
+  position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237;
+}
+.languageButton{
+  min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;
+  color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer
+}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}
+.meta{margin:12px 0 26px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}
+a{color:#ff2bd6;text-decoration:none}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}
+strong{color:#fff}
+.highlight{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;
+  border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)
+}
+.note{
+  margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;
+  border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)
+}
+.placeCard{
+  margin:24px 0;padding:16px 17px;border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;background:#132237;
+}
+.placeCard p{margin:4px 0}
+.backArea{margin-top:32px;text-align:center}
+.backButton{
+  display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;
+  color:#fff;font-size:13px;font-weight:800;text-decoration:none
+}
+footer{
+  border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;
+  padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px
+}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}
+footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}
+html[lang="en"] [data-lang="ja"]{display:none}
+html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){
+  header h1{padding-right:98px;font-size:19px}
+  h2{font-size:27px}
+  main{padding-top:28px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL · 011</div>
+  <h2>トレッドミルも、「走った人生」の積み重ねにしたい</h2>
+  <div class="meta">2026.09.19 ・ Running & Development</div>
+
+  <p>
+    今日は、群馬県高崎市にある低酸素ランニングジム
+    <strong>RUNGRY（ラングリー）</strong>で、低酸素トレーニングを体験させていただきました。
+  </p>
+
+  <div class="placeCard">
+    <p><strong>低酸素ランニングジム RUNGRY（ラングリー）</strong></p>
+    <p>所在地：群馬県高崎市上中居町45-2</p>
+    <p><a href="https://tk-rungry.com/" target="_blank" rel="noopener noreferrer">RUNGRY 公式サイト</a></p>
+    <p><a href="https://www.instagram.com/rungry2020/" target="_blank" rel="noopener noreferrer">RUNGRY Instagram</a></p>
+  </div>
+
+  <p>
+    普段とは違う環境で走る体験そのものが新鮮で、
+    Runner's Ringsについても話をする機会がありました。
+  </p>
+
+  <h3>地図には描けない。でも、走ったことには変わりない。</h3>
+
+  <p>
+    今のRunner's Ringsは、GPSで走った道や地域を地図に積み重ねていくことが中心です。
+    でも今回のようなトレッドミルのランは、実際に走っていても地図には残りません。
+  </p>
+
+  <div class="highlight">
+    <strong>地図に線は残らなくても、それも「走った人生」の一部。</strong>
+  </div>
+
+  <p>
+    だから将来は、トレッドミルで走った距離も、
+    Runner's Ringsの中で何らかの形で積み重ねとして残せるようにしたい。
+  </p>
+
+  <p>
+    まだ細かい仕様は決めていません。
+    でも、実際に外へ出て体験したことで、
+    Runner's Ringsにまた一つ新しい視点が加わりました。
+  </p>
+
+  <p>
+    RUNGRYの皆さま、貴重な体験をありがとうございました。
+  </p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+</section>
+
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL · 011</div>
+  <h2>Treadmill Runs Should Count as Part of the Life You Ran, Too</h2>
+  <div class="meta">2026.09.19 ・ Running & Development</div>
+
+  <p>
+    Today I had the chance to experience hypoxic training at
+    <strong>RUNGRY</strong>, a hypoxic running gym in Takasaki, Gunma.
+  </p>
+
+  <div class="placeCard">
+    <p><strong>Hypoxic Running Gym RUNGRY</strong></p>
+    <p>Location: 45-2 Kaminakaimachi, Takasaki, Gunma, Japan</p>
+    <p><a href="https://tk-rungry.com/" target="_blank" rel="noopener noreferrer">RUNGRY official website</a></p>
+    <p><a href="https://www.instagram.com/rungry2020/" target="_blank" rel="noopener noreferrer">RUNGRY Instagram</a></p>
+  </div>
+
+  <p>
+    It was a fresh experience to run in a different environment,
+    and I also had the opportunity to talk about Runner's Rings.
+  </p>
+
+  <h3>No line on the map, but it is still a run.</h3>
+
+  <p>
+    Runner's Rings currently focuses on building a map from the roads and regions you actually run with GPS.
+    A treadmill run, however, does not create a route on the map even though the running itself is real.
+  </p>
+
+  <div class="highlight">
+    <strong>Even without a line on the map, it is still part of the life you ran.</strong>
+  </div>
+
+  <p>
+    In the future, I want Runner's Rings to find a way to include treadmill distance
+    as part of a runner's accumulated history.
+  </p>
+
+  <p>
+    The details are not decided yet.
+    But this experience added one more perspective to how Runner's Rings can grow.
+  </p>
+
+  <p>
+    Thank you to everyone at RUNGRY for the experience.
+  </p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+</section>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>{
+    button.classList.toggle('isActive',button.dataset.language===nextLanguage);
+  });
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>{
+  button.addEventListener('click',()=>applyLanguage(button.dataset.language));
+});
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>
