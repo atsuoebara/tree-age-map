@@ -5773,10 +5773,13 @@ const DB_NAME =
   'RunnersRingsDB';
 
 const DB_VERSION =
-  1;
+  2;
 
 const STORE_NAME =
   'importedGPX';
+
+const CLOUD_CACHE_STORE =
+  'cloudRunsCache';
 
 const LEGACY_OWNER_KEY =
   'RunnersRingsLegacyOwnerUserId';
@@ -5822,6 +5825,23 @@ function openDatabase() {
 
           }
 
+          if (
+            !db
+              .objectStoreNames
+              .contains(
+                CLOUD_CACHE_STORE
+              )
+          ) {
+
+            db.createObjectStore(
+              CLOUD_CACHE_STORE,
+              {
+                keyPath:'userId'
+              }
+            );
+
+          }
+
         };
 
 
@@ -5840,6 +5860,245 @@ function openDatabase() {
 
     }
   );
+
+}
+
+
+
+async function loadCloudRowsCache() {
+
+  if (
+    !currentUser
+  ) {
+    return [];
+  }
+
+  try {
+    const db =
+      await openDatabase();
+
+    return await new Promise(
+      (
+        resolve,
+        reject
+      ) => {
+
+        const request =
+          db
+            .transaction(
+              CLOUD_CACHE_STORE,
+              'readonly'
+            )
+            .objectStore(
+              CLOUD_CACHE_STORE
+            )
+            .get(
+              currentUser.id
+            );
+
+        request.onsuccess =
+          () =>
+            resolve(
+              Array.isArray(
+                request.result?.rows
+              )
+                ? request.result.rows
+                : []
+            );
+
+        request.onerror =
+          () =>
+            reject(
+              request.error
+            );
+
+      }
+    );
+
+  } catch(error) {
+    console.warn(
+      'Cloud cache load error:',
+      error
+    );
+
+    return [];
+  }
+
+}
+
+
+async function saveCloudRowsCache(
+  rows
+) {
+
+  if (
+    !currentUser ||
+    !Array.isArray(
+      rows
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const db =
+      await openDatabase();
+
+    await new Promise(
+      (
+        resolve,
+        reject
+      ) => {
+
+        const request =
+          db
+            .transaction(
+              CLOUD_CACHE_STORE,
+              'readwrite'
+            )
+            .objectStore(
+              CLOUD_CACHE_STORE
+            )
+            .put(
+              {
+                userId:
+                  currentUser.id,
+
+                rows,
+
+                savedAt:
+                  new Date()
+                    .toISOString()
+              }
+            );
+
+        request.onsuccess =
+          () =>
+            resolve();
+
+        request.onerror =
+          () =>
+            reject(
+              request.error
+            );
+
+      }
+    );
+
+  } catch(error) {
+    console.warn(
+      'Cloud cache save error:',
+      error
+    );
+  }
+
+}
+
+
+function getCloudRowsSnapshotKey(
+  rows
+) {
+
+  if (
+    !Array.isArray(
+      rows
+    )
+  ) {
+    return '';
+  }
+
+  return rows
+    .map(
+      row => [
+        row?.id ?? '',
+        row?.activity_date ?? '',
+        row?.started_at ?? '',
+        row?.name ?? '',
+        row?.distance_km ?? '',
+        Array.isArray(
+          row?.route
+        )
+          ? row.route.length
+          : 0
+      ].join('|')
+    )
+    .sort()
+    .join('||');
+
+}
+
+
+let cloudStartupUsedCache =
+  false;
+
+let cloudBackgroundRefreshStarted =
+  false;
+
+
+async function refreshCloudRowsInBackground(
+  cachedRows
+) {
+
+  if (
+    cloudBackgroundRefreshStarted ||
+    !cloudEnabled()
+  ) {
+    return;
+  }
+
+  cloudBackgroundRefreshStarted =
+    true;
+
+  try {
+    const freshRows =
+      await fetchCloudRuns();
+
+    await saveCloudRowsCache(
+      freshRows
+    );
+
+    const cachedKey =
+      getCloudRowsSnapshotKey(
+        cachedRows
+      );
+
+    const freshKey =
+      getCloudRowsSnapshotKey(
+        freshRows
+      );
+
+    if (
+      cachedKey ===
+      freshKey
+    ) {
+      setStatus(
+        '✅ 最新データを確認しました'
+      );
+      return;
+    }
+
+    // キャッシュを最新に更新したうえで1回だけ再読込する。
+    // 次の起動は新しいキャッシュから即表示される。
+    setStatus(
+      '✅ 最新データを取得しました。表示を更新します…'
+    );
+
+    setTimeout(
+      () =>
+        location.reload(),
+      350
+    );
+
+  } catch(error) {
+    console.warn(
+      'Background cloud refresh error:',
+      error
+    );
+
+    setStatus(
+      '⚠️ 最新データを取得できません。前回取得したデータを表示しています'
+    );
+  }
 
 }
 
@@ -11250,14 +11509,24 @@ async function renderCloudRuns() {
     );
 
 
-  list.innerHTML =
-    '<div class="savedEmpty">読み込み中…</div>';
+  if (
+    !cloudRows.length
+  ) {
+    list.innerHTML =
+      '<div class="savedEmpty">読み込み中…</div>';
+  } else {
+    renderCloudRowsList();
+  }
 
 
   try {
 
     const rows =
       await fetchCloudRuns();
+
+    await saveCloudRowsCache(
+      rows
+    );
 
 
     cloudRows =
@@ -11279,6 +11548,18 @@ async function renderCloudRuns() {
     console.error(
       error
     );
+
+    if (
+      cloudRows.length
+    ) {
+      renderCloudRowsList();
+
+      setStatus(
+        '⚠️ 最新データを取得できません。前回取得したデータを表示しています'
+      );
+
+      return;
+    }
 
 
     list.innerHTML =
@@ -22945,13 +23226,53 @@ if (
     let preloadedCloudRows =
       [];
 
-    if (cloudEnabled()) {
-      setStatus(
-        '☁️ クラウドRUNを確認中…'
-      );
+    let cachedCloudRows =
+      [];
 
-      preloadedCloudRows =
-        await fetchCloudRuns();
+    if (cloudEnabled()) {
+      cachedCloudRows =
+        await loadCloudRowsCache();
+
+      if (
+        cachedCloudRows.length
+      ) {
+        cloudStartupUsedCache =
+          true;
+
+        preloadedCloudRows =
+          cachedCloudRows;
+
+        setStatus(
+          '📱 前回のデータを表示しています…'
+        );
+
+      } else {
+        setStatus(
+          '☁️ クラウドRUNを確認中…'
+        );
+
+        try {
+          preloadedCloudRows =
+            await fetchCloudRuns();
+
+          await saveCloudRowsCache(
+            preloadedCloudRows
+          );
+
+        } catch(error) {
+          console.warn(
+            'Initial cloud load error:',
+            error
+          );
+
+          preloadedCloudRows =
+            [];
+
+          setStatus(
+            '⚠️ 最新データを取得できません'
+          );
+        }
+      }
     }
 
     const neededWorldAdminCountries =
@@ -23029,6 +23350,14 @@ if (
 
 
     await renderSavedRuns();
+
+    if (
+      cloudStartupUsedCache
+    ) {
+      refreshCloudRowsInBackground(
+        cachedCloudRows
+      );
+    }
 
 
     const home =
@@ -23678,6 +24007,11 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['クラウド読込失敗','Could not load account data'],
   ['クラウドラン','account run'],
   ['クラウドRUNを読み込み中…','Loading account runs…'],
+  ['📱 前回のデータを表示しています…','📱 Showing your previous data…'],
+  ['⚠️ 最新データを取得できません。前回取得したデータを表示しています','⚠️ Could not retrieve the latest data. Showing your previously saved data.'],
+  ['⚠️ 最新データを取得できません','⚠️ Could not retrieve the latest data.'],
+  ['✅ 最新データを確認しました','✅ Latest data checked'],
+  ['✅ 最新データを取得しました。表示を更新します…','✅ Latest data retrieved. Refreshing the view…'],
   ['クラウド読込失敗・端末データで表示','Account data unavailable; showing device data'],
   ['ログインしていません','Not logged in'],
   ['クラウド保存失敗','Account save failed'],
