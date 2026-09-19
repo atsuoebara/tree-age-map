@@ -5675,6 +5675,11 @@ const worldAdminLayerGroups =
 const activities =
   [];
 
+// 年・月切替で同じ集計を何度も作り直さないためのキャッシュ。
+// 100mセルが必要な表示と、不要な表示は別々に保持する。
+const selectedStatsCache =
+  new Map();
+
 const activitySignatures =
   new Set();
 
@@ -9267,6 +9272,9 @@ function registerActivity(
   activities.push(
     activity
   );
+
+  // ランが増えたら年・月別の集計結果も古くなるため破棄する。
+  selectedStatsCache.clear();
 
   // 制覇カードはラン履歴から自動生成するため、
   // 新しいランが追加された時だけ再計算する。
@@ -14263,7 +14271,40 @@ function getSelectedPeriodText() {
    集計
 ===================================== */
 
+function getSelectedStatsCacheKey(
+  prepareRouteCells
+) {
+
+  return [
+    selectedYear,
+    selectedMonth,
+    prepareRouteCells
+      ? 'cells'
+      : 'base'
+  ].join('|');
+
+}
+
+
 function buildSelectedStats() {
+
+  const prepareRouteCells =
+    shouldPrepareRouteCells();
+
+  const cacheKey =
+    getSelectedStatsCacheKey(
+      prepareRouteCells
+    );
+
+  if (
+    selectedStatsCache.has(
+      cacheKey
+    )
+  ) {
+    return selectedStatsCache.get(
+      cacheKey
+    );
+  }
 
   const selected =
     getSelectedActivities();
@@ -14310,9 +14351,6 @@ function buildSelectedStats() {
 
   const activityCellIndex =
     new Map();
-
-  const prepareRouteCells =
-    shouldPrepareRouteCells();
 
 
   let totalDistanceKm =
@@ -14651,7 +14689,7 @@ function buildSelectedStats() {
   );
 
 
-  return {
+  const stats = {
     activities:
       selected,
 
@@ -14685,6 +14723,13 @@ function buildSelectedStats() {
 
     totalDistanceKm
   };
+
+  selectedStatsCache.set(
+    cacheKey,
+    stats
+  );
+
+  return stats;
 
 }
 
