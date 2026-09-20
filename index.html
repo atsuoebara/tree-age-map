@@ -3392,6 +3392,62 @@ const WORLD_ADMIN_CONFIG = {
     adm1LabelEn: 'Province / Metropolitan City',
     adm2LabelJa: '市・郡・区',
     adm2LabelEn: 'City / County / District'
+  },
+  KHM: {
+    countryJa: 'カンボジア',
+    countryEn: 'Cambodia',
+    adm1LabelJa: '州・特別市',
+    adm1LabelEn: 'Province / Municipality',
+    adm2LabelJa: '郡・区・市',
+    adm2LabelEn: 'District / Municipality'
+  },
+  THA: {
+    countryJa: 'タイ',
+    countryEn: 'Thailand',
+    adm1LabelJa: '県・首都府',
+    adm1LabelEn: 'Province / Bangkok',
+    adm2LabelJa: '郡・区',
+    adm2LabelEn: 'District'
+  },
+  VNM: {
+    countryJa: 'ベトナム',
+    countryEn: 'Vietnam',
+    adm1LabelJa: '省・中央直轄市',
+    adm1LabelEn: 'Province / Municipality',
+    adm2LabelJa: '県・区・市',
+    adm2LabelEn: 'District / City'
+  },
+  SGP: {
+    countryJa: 'シンガポール',
+    countryEn: 'Singapore',
+    adm1LabelJa: '地域',
+    adm1LabelEn: 'Region',
+    adm2LabelJa: '計画区域',
+    adm2LabelEn: 'Planning Area'
+  },
+  MYS: {
+    countryJa: 'マレーシア',
+    countryEn: 'Malaysia',
+    adm1LabelJa: '州・連邦直轄領',
+    adm1LabelEn: 'State / Federal Territory',
+    adm2LabelJa: '郡・地区',
+    adm2LabelEn: 'District'
+  },
+  PHL: {
+    countryJa: 'フィリピン',
+    countryEn: 'Philippines',
+    adm1LabelJa: '地方',
+    adm1LabelEn: 'Region',
+    adm2LabelJa: '州',
+    adm2LabelEn: 'Province'
+  },
+  IDN: {
+    countryJa: 'インドネシア',
+    countryEn: 'Indonesia',
+    adm1LabelJa: '州・特別州',
+    adm1LabelEn: 'Province / Special Region',
+    adm2LabelJa: '県・市',
+    adm2LabelEn: 'Regency / City'
   }
 };
 
@@ -5617,7 +5673,9 @@ L.tileLayer(
   {
     maxZoom:19,
     attribution:
-      '&copy; OpenStreetMap contributors'
+      '&copy; OpenStreetMap contributors' +
+      ' | Administrative boundaries: ' +
+      '<a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>'
   }
 )
 .addTo(
