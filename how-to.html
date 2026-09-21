@@ -128,6 +128,66 @@
     margin-bottom: 0;
   }
 
+  .garminGuide {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    background: #0f1d2f;
+  }
+
+  .garminGuide summary {
+    color: #eaff00;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .garminGuide[open] summary {
+    margin-bottom: 16px;
+  }
+
+  .garminGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .garminStep {
+    margin: 0;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,.03);
+  }
+
+  .garminStep img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 9px;
+  }
+
+  .garminStep figcaption {
+    margin-top: 8px;
+    color: #d9e2ee;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .garminStep strong {
+    color: #ff72d7;
+  }
+
+  .garminFinish {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid rgba(234,255,0,.35);
+    border-radius: 12px;
+    background: rgba(234,255,0,.07);
+    color: #f5ffd0;
+  }
+
   .buttonArea {
     text-align: center;
     margin-top: 34px;
@@ -202,6 +262,10 @@
     .container {
       padding-top: 88px;
     }
+
+    .garminGrid {
+      grid-template-columns: 1fr;
+    }
   }
   </style>
 </head>
@@ -258,6 +322,10 @@
 
       <div class="methodList">
         <div class="methodCard">
+          <strong>Garmin Connect IQから直接</strong>
+          <span class="methodLabel">自動連携（初回設定のみ）</span>
+        </div>
+        <div class="methodCard">
           <strong>Strava経由</strong>
           <span class="methodLabel">自動連携（利用枠拡大審査中）</span>
         </div>
@@ -276,8 +344,75 @@
       </div>
 
       <p class="notice">
-        StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。両方を使うと同じランを重複して取り込む可能性があります。
+        Garmin Connect IQ・Strava・Intervals.icuなど、複数の自動連携を同時に使うと同じランを重複して取り込む可能性があります。基本的に自動連携は一つを選んでください。
       </p>
+
+      <h3>Garmin Connect IQから直接：自動連携</h3>
+      <p>
+        対応するGarminウォッチへ「Runner's Rings」を追加すると、ラン終了後のデータをRunner's Ringsへ直接送信できます。
+      </p>
+      <p>
+        初回だけ、Connect IQアプリのインストール、連携コードの保存、ウォッチのトレーニングページへの追加を行います。
+      </p>
+      <p class="notice">
+        設定後はRunner's Ringsの画面を表示したまま走る必要はありません。いつもの画面でランを計測し、終了して保存するだけです。
+      </p>
+
+      <details class="garminGuide">
+        <summary>Garmin Connect IQ 初期設定ガイド</summary>
+
+        <h3>1. Connect IQへインストール</h3>
+        <div class="garminGrid">
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-01.jpg" alt="Connect IQでRunner's Ringsを検索">
+            <figcaption><strong>1</strong> Connect IQアプリで「Runner's Rings」を検索します。</figcaption>
+          </figure>
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-02.jpg" alt="Runner's Ringsをインストール">
+            <figcaption><strong>2</strong> Runner's Ringsを選び、対応するGarminウォッチへインストールします。</figcaption>
+          </figure>
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-03.jpg" alt="Runner's Ringsインストール完了">
+            <figcaption><strong>3</strong> インストール完了を確認します。</figcaption>
+          </figure>
+        </div>
+
+        <h3>2. 連携コードを保存</h3>
+        <div class="garminGrid">
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-04.jpg" alt="Runner's RingsでGarmin連携コードを発行">
+            <figcaption><strong>4</strong> Runner's Ringsのアカウント設定で「Garmin連携コードを発行・再発行」を押し、コードをコピーします。画像のコードとメールアドレスは非表示にしています。</figcaption>
+          </figure>
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-05.jpg" alt="Connect IQ設定へ連携コードを入力">
+            <figcaption><strong>5</strong> Connect IQのRunner's Rings設定を開き、「Runner's Rings link code」へ貼り付けます。</figcaption>
+          </figure>
+          <figure class="garminStep">
+            <img src="./assets/garmin-phone-06.jpg" alt="Runner's Rings連携コード設定保存完了">
+            <figcaption><strong>6</strong> 右上の「保存」を押し、設定完了を確認します。</figcaption>
+          </figure>
+        </div>
+
+        <h3>3. ウォッチのトレーニングページへ追加</h3>
+        <div class="garminGrid">
+          <figure class="garminStep"><img src="./assets/garmin-watch-01.jpg" alt="Garminランのアクティビティ設定"><figcaption><strong>7</strong> 「ラン」のオプションを開きます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-02.jpg" alt="Garminラン設定"><figcaption><strong>8</strong> 「ラン設定」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-03.jpg" alt="Garminトレーニングページ"><figcaption><strong>9</strong> 「トレーニングページ」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-04.jpg" alt="Garminトレーニングページを追加"><figcaption><strong>10</strong> 「追加」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-05.jpg" alt="Garminカスタムデータ"><figcaption><strong>11</strong> 「カスタムデータ」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-06.jpg" alt="Garminレイアウト選択"><figcaption><strong>12</strong> レイアウトを選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-07.jpg" alt="Garminデータ項目選択"><figcaption><strong>13</strong> 追加するデータ項目を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-08.jpg" alt="Garmin Connect IQ項目"><figcaption><strong>14</strong> 「Connect IQ」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-09.jpg" alt="Garmin RunnersRings選択"><figcaption><strong>15</strong> 「RunnersRings」を選びます。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-10.jpg" alt="Garmin RunnersRings追加"><figcaption><strong>16</strong> RunnersRingsをデータ項目へ追加します。</figcaption></figure>
+          <figure class="garminStep"><img src="./assets/garmin-watch-11-ready.jpg" alt="Runner's Rings Ready表示"><figcaption><strong>17</strong> 「Runner's Rings / Ready」が表示されれば初回設定は完了です。</figcaption></figure>
+        </div>
+
+        <div class="garminFinish">
+          <strong>普段の使い方</strong><br>
+          あとは通常どおり「ラン」を開始し、終了後に保存するだけです。Runner's Ringsは裏で動くため、ReadyやRecordingの画面へ毎回切り替える必要はありません。
+        </div>
+      </details>
 
       <h3>Strava経由：自動連携</h3>
       <p>
@@ -538,6 +673,8 @@
 
       "3. ランニングデータを取り込む": "3. Import running data",
       "Runner's Ringsでは、使っているウォッチのメーカーではなく、データの取り込み方法から選べます。": "In Runner's Rings, you choose how to import your data rather than choosing by watch manufacturer.",
+      "Garmin Connect IQから直接": "Direct from Garmin Connect IQ",
+      "自動連携（初回設定のみ）": "Automatic sync (one-time setup)",
       "Strava経由": "Via Strava",
       "自動連携（利用枠拡大審査中）": "Automatic sync (capacity expansion under review)",
       "Intervals.icu経由": "Via Intervals.icu",
@@ -546,7 +683,35 @@
       "手動取り込み": "Manual import",
       "FIT・GPX・TCX・ZIP": "FIT, GPX, TCX, and ZIP",
       "ファイル取り込み": "File import",
-      "StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。両方を使うと同じランを重複して取り込む可能性があります。": "In general, choose either Strava or Intervals.icu for automatic sync. Using both may cause the same activity to be imported twice.",
+      "Garmin Connect IQ・Strava・Intervals.icuなど、複数の自動連携を同時に使うと同じランを重複して取り込む可能性があります。基本的に自動連携は一つを選んでください。": "Using more than one automatic connection, such as Garmin Connect IQ, Strava, or Intervals.icu, may import the same run more than once. In general, choose one automatic connection.",
+
+      "Garmin Connect IQから直接：自動連携": "Direct from Garmin Connect IQ: Automatic sync",
+      "対応するGarminウォッチへ「Runner's Rings」を追加すると、ラン終了後のデータをRunner's Ringsへ直接送信できます。": "Add Runner's Rings to a compatible Garmin watch to send completed runs directly to Runner's Rings.",
+      "初回だけ、Connect IQアプリのインストール、連携コードの保存、ウォッチのトレーニングページへの追加を行います。": "One-time setup includes installing the Connect IQ app, saving your link code, and adding the data field to a training page on your watch.",
+      "設定後はRunner's Ringsの画面を表示したまま走る必要はありません。いつもの画面でランを計測し、終了して保存するだけです。": "After setup, you do not need to keep the Runner's Rings screen visible. Record your run using your normal screens, then finish and save it.",
+      "Garmin Connect IQ 初期設定ガイド": "Garmin Connect IQ setup guide",
+      "1. Connect IQへインストール": "1. Install from Connect IQ",
+      "Connect IQアプリで「Runner's Rings」を検索します。": "Search for Runner's Rings in the Connect IQ app.",
+      "Runner's Ringsを選び、対応するGarminウォッチへインストールします。": "Select Runner's Rings and install it on a compatible Garmin watch.",
+      "インストール完了を確認します。": "Confirm that installation is complete.",
+      "2. 連携コードを保存": "2. Save the link code",
+      "Runner's Ringsのアカウント設定で「Garmin連携コードを発行・再発行」を押し、コードをコピーします。画像のコードとメールアドレスは非表示にしています。": "In Runner's Rings Account Settings, select “Issue / reissue Garmin link code,” then copy the code. The code and email address are hidden in this guide.",
+      "Connect IQのRunner's Rings設定を開き、「Runner's Rings link code」へ貼り付けます。": "Open the Runner's Rings settings in Connect IQ and paste it into “Runner's Rings link code.”",
+      "右上の「保存」を押し、設定完了を確認します。": "Select Save in the upper-right corner and confirm that the setting was saved.",
+      "3. ウォッチのトレーニングページへ追加": "3. Add it to a training page on the watch",
+      "「ラン」のオプションを開きます。": "Open the options for Run.",
+      "「ラン設定」を選びます。": "Select Run Settings.",
+      "「トレーニングページ」を選びます。": "Select Training Pages.",
+      "「追加」を選びます。": "Select Add.",
+      "「カスタムデータ」を選びます。": "Select Custom Data.",
+      "レイアウトを選びます。": "Select a layout.",
+      "追加するデータ項目を選びます。": "Select the data field to add.",
+      "「Connect IQ」を選びます。": "Select Connect IQ.",
+      "「RunnersRings」を選びます。": "Select RunnersRings.",
+      "RunnersRingsをデータ項目へ追加します。": "Add RunnersRings as the data field.",
+      "「Runner's Rings / Ready」が表示されれば初回設定は完了です。": "When “Runner's Rings / Ready” appears, initial setup is complete.",
+      "普段の使い方": "For everyday runs",
+      "あとは通常どおり「ラン」を開始し、終了後に保存するだけです。Runner's Ringsは裏で動くため、ReadyやRecordingの画面へ毎回切り替える必要はありません。": "Start Run as usual, then save it when finished. Runner's Rings works in the background, so you do not need to switch to the Ready or Recording screen each time.",
 
       "Strava経由：自動連携": "Via Strava: Automatic sync",
       "Runner's Ringsは、Stravaに保存されているランニングデータを読み込み、これまで走った道を地図に残します。": "Runner's Rings imports your running activities from Strava and adds the routes you have run to your map.",
