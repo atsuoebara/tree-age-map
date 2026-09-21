@@ -545,6 +545,72 @@
   color:#ffffff;
 }
 
+#garminLinkSection{
+  margin-top:20px;
+  padding:16px;
+  border:1px solid rgba(234,255,0,.28);
+  border-radius:14px;
+  background:rgba(234,255,0,.07);
+}
+
+#garminLinkSection h3{
+  margin:0 0 8px;
+  color:#eaff00;
+  font-size:16px;
+}
+
+#garminLinkSection p{
+  margin:8px 0;
+  color:#cbd5e1;
+  font-size:12px;
+  line-height:1.65;
+}
+
+#garminLinkButton,
+#garminCopyButton{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border:0;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+#garminLinkButton{
+  background:#eaff00;
+  color:#0b1422;
+}
+
+#garminCopyButton{
+  background:#ff2bd6;
+  color:#ffffff;
+}
+
+#garminLinkButton:disabled,
+#garminCopyButton:disabled{
+  cursor:wait;
+  opacity:.55;
+}
+
+#garminLinkResult{
+  margin-top:12px;
+}
+
+#garminLinkCode{
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  font-size:13px;
+  letter-spacing:.04em;
+}
+
+#garminLinkMessage{
+  min-height:1.5em;
+  margin-top:8px;
+  color:#dce8f5;
+  font-size:12px;
+  line-height:1.5;
+}
+
 #accountCloseButton{
   border:1px solid rgba(255,255,255,.15);
   background:#17283d;
@@ -2928,6 +2994,29 @@
   </button>
 
 
+  <section id="garminLinkSection">
+    <h3>Garmin Connect IQ連携</h3>
+    <p>
+      Runner’s RingsのGarminアプリから、このアカウントへランを直接送信するための連携コードを発行します。
+    </p>
+    <p>
+      新しいコードを発行すると、以前のコードは使えなくなります。
+    </p>
+    <button id="garminLinkButton" type="button">
+      Garmin連携コードを発行・再発行
+    </button>
+    <div id="garminLinkResult" hidden>
+      <label for="garminLinkCode">Garmin連携コード</label>
+      <input id="garminLinkCode" type="text" readonly>
+      <button id="garminCopyButton" type="button">
+        連携コードをコピー
+      </button>
+      <p>
+        コピーしたコードをGarmin Connect IQアプリの「Runner's Rings link code」に貼り付けてください。
+      </p>
+    </div>
+    <div id="garminLinkMessage" role="status" aria-live="polite"></div>
+  </section>
 
 
 <button id="stravaDisconnectButton" type="button" style="display:none;">
@@ -3804,6 +3893,32 @@ const accountAvatarInput =
   document.getElementById(
     'accountAvatarInput'
   );
+
+const garminLinkButton =
+  document.getElementById(
+    'garminLinkButton'
+  );
+
+const garminLinkResult =
+  document.getElementById(
+    'garminLinkResult'
+  );
+
+const garminLinkCode =
+  document.getElementById(
+    'garminLinkCode'
+  );
+
+const garminCopyButton =
+  document.getElementById(
+    'garminCopyButton'
+  );
+
+const garminLinkMessage =
+  document.getElementById(
+    'garminLinkMessage'
+  );
+
 function openAccountPanel(){
   accountPanel.style.display = 'block';
   accountPanel.open = true;
@@ -4303,6 +4418,105 @@ async function logout() {
   location.reload();
 
 }
+
+async function createGarminLinkCode() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    alert(
+      '先にRunner’s Ringsへログインしてください。'
+    );
+    return;
+  }
+
+  const shouldCreate = confirm(
+    'Garmin連携コードを発行します。すでに発行済みの場合、以前のコードは使えなくなります。よろしいですか？'
+  );
+
+  if (!shouldCreate) {
+    return;
+  }
+
+  garminLinkButton.disabled = true;
+  garminLinkButton.textContent =
+    '連携コードを発行中…';
+  garminLinkMessage.textContent = '';
+
+  try {
+    const { data, error } =
+      await supabaseClient.functions.invoke(
+        'garmin-link',
+        {
+          body: {
+            action: 'issue'
+          },
+          headers: {
+            Authorization:
+              `Bearer ${session.access_token}`
+          }
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.link_code) {
+      throw new Error(
+        'Garmin連携コードを取得できませんでした。'
+      );
+    }
+
+    garminLinkCode.value =
+      data.link_code;
+    garminLinkResult.hidden = false;
+    garminLinkMessage.textContent =
+      '連携コードを発行しました。Garmin Connect IQのアプリ設定へ貼り付けてください。';
+
+  } catch (error) {
+    console.error(
+      'Garmin link error:',
+      error
+    );
+
+    garminLinkMessage.textContent =
+      'Garmin連携コードを発行できませんでした。時間をおいて、もう一度お試しください。';
+
+  } finally {
+    garminLinkButton.disabled = false;
+    garminLinkButton.textContent =
+      'Garmin連携コードを発行・再発行';
+  }
+}
+
+async function copyGarminLinkCode() {
+  const linkCode =
+    garminLinkCode.value.trim();
+
+  if (!linkCode) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(
+      linkCode
+    );
+    garminLinkMessage.textContent =
+      'Garmin連携コードをコピーしました。';
+  } catch (error) {
+    console.error(
+      'Garmin link code copy error:',
+      error
+    );
+    garminLinkCode.focus();
+    garminLinkCode.select();
+    garminLinkMessage.textContent =
+      'コードを選択しました。コピーしてください。';
+  }
+}
+
 async function connectStrava() {
   if (
     STRAVA_NEW_CONNECTIONS_PAUSED
@@ -5247,6 +5461,10 @@ corosDisconnectButton.onclick =
   disconnectCoros;
 intervalsDisconnectButton.onclick =
   disconnectIntervals;  
+garminLinkButton.onclick =
+  createGarminLinkCode;
+garminCopyButton.onclick =
+  copyGarminLinkCode;
 
 async function updateStravaConnectionStatus() {
   const {
@@ -23906,6 +24124,20 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['パスワードを変更','Change password'],
   ['新しいパスワード','New password'],
   ['変更を保存','Save changes'],
+  ['Garmin Connect IQ連携','Garmin Connect IQ connection'],
+  ['Runner’s RingsのGarminアプリから、このアカウントへランを直接送信するための連携コードを発行します。','Create a link code so the Runner’s Rings Garmin app can send runs directly to this account.'],
+  ['新しいコードを発行すると、以前のコードは使えなくなります。','Creating a new code disables the previous code.'],
+  ['Garmin連携コードを発行・再発行','Create or renew Garmin link code'],
+  ['Garmin連携コード','Garmin link code'],
+  ['連携コードをコピー','Copy link code'],
+  ['コピーしたコードをGarmin Connect IQアプリの「Runner\'s Rings link code」に貼り付けてください。','Paste the copied code into “Runner\'s Rings link code” in the Garmin Connect IQ app settings.'],
+  ['Garmin連携コードを発行します。すでに発行済みの場合、以前のコードは使えなくなります。よろしいですか？','Create a Garmin link code? If one already exists, the previous code will stop working.'],
+  ['連携コードを発行中…','Creating link code…'],
+  ['Garmin連携コードを取得できませんでした。','Could not retrieve the Garmin link code.'],
+  ['連携コードを発行しました。Garmin Connect IQのアプリ設定へ貼り付けてください。','Link code created. Paste it into the Garmin Connect IQ app settings.'],
+  ['Garmin連携コードを発行できませんでした。時間をおいて、もう一度お試しください。','Could not create the Garmin link code. Please try again later.'],
+  ['Garmin連携コードをコピーしました。','Garmin link code copied.'],
+  ['コードを選択しました。コピーしてください。','The code has been selected. Please copy it.'],
   ['Strava連携を解除','Disconnect Strava'],
   ['COROS連携を解除','Disconnect COROS'],
   ['ログアウト','Log out'],
