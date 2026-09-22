@@ -3225,6 +3225,11 @@
   ← 地図に戻る
 </button>
 
+    <div id="cloudTrashArea" style="display:flex;gap:7px;margin:0 0 10px;">
+      <button id="cloudActiveViewButton" class="historySortButton active" type="button">ラン一覧</button>
+      <button id="cloudTrashViewButton" class="historySortButton" type="button">ゴミ箱</button>
+    </div>
+
     <div id="historySortArea">
       <button
         class="historySortButton active"
@@ -3395,7 +3400,7 @@ const OWNER = 'atsuoebara';
 const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
-const APP_VERSION = '0.9 Beta';
+const APP_VERSION = '1.0';
   document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION}`;
 
@@ -6001,6 +6006,12 @@ let cloudRunCount =
 let cloudRows =
   [];
 
+let deletedCloudRows =
+  [];
+
+let cloudTrashView =
+  false;
+
 // 同じクラウドランを一覧・地図・「この場所を走った記録」から
 // 何度開いても analyseRoute() をやり直さないためのセッション内キャッシュ。
 const cloudActivityCache =
@@ -6296,6 +6307,7 @@ function getCloudRowsSnapshotKey(
         row?.started_at ?? '',
         row?.name ?? '',
         row?.distance_km ?? '',
+        row?.deleted_at ?? '',
         Array.isArray(
           row?.route
         )
@@ -10599,7 +10611,7 @@ async function fetchCloudRuns() {
 
     const url =
       SUPABASE_RUNS_URL +
-      '?select=id,created_at,activity_date,name,distance_km,route,user_id,strava_id,source,started_at' +
+      '?select=id,created_at,activity_date,name,distance_km,route,user_id,strava_id,source,started_at,source_external_id,deleted_at' +
       '&user_id=eq.' +
       encodeURIComponent(
         currentUser.id
@@ -10896,13 +10908,16 @@ async function loadCloudActivities(
 
 
     cloudRows =
-      rows;
+      rows.filter(row => !row.deleted_at);
+
+    deletedCloudRows =
+      rows.filter(row => !!row.deleted_at);
 
     cloudActivityCache.clear();
 
 
     cloudRunCount =
-      rows.length;
+      cloudRows.length;
 
 
     let loaded =
@@ -10948,6 +10963,11 @@ async function loadCloudActivities(
           signature
         );
 
+
+        // 削除済みランは重複判定用シグネチャだけ残し、地図・集計には登録しない。
+        if (row.deleted_at) {
+          return;
+        }
 
         if (
           registerActivity(
@@ -11454,12 +11474,88 @@ async function editCloudRunName(
 }
 
 /* =====================================
+   クラウドラン削除・ゴミ箱・復元
+===================================== */
+
+async function patchCloudRunDeletedAt(row, deletedAt) {
+  if (!row?.id || !cloudEnabled()) {
+    throw new Error('ランを更新できません');
+  }
+
+  const headers = await getCloudHeaders({
+    'Content-Type':'application/json',
+    Prefer:'return=representation'
+  });
+
+  const url = SUPABASE_RUNS_URL +
+    '?id=eq.' + encodeURIComponent(row.id) +
+    '&user_id=eq.' + encodeURIComponent(currentUser.id);
+
+  const response = await fetch(url, {
+    method:'PATCH',
+    headers,
+    body:JSON.stringify({ deleted_at: deletedAt })
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error('ラン更新失敗 HTTP ' + response.status + ' ' + message);
+  }
+
+  return await response.json();
+}
+
+async function moveCloudRunToTrash(row, button) {
+  const english = typeof isRunnerRingsEnglish === 'function' && isRunnerRingsEnglish();
+  const confirmed = window.confirm(
+    english
+      ? 'Delete this run?\nIt will not be automatically re-added by external sync.\nYou can restore it from Trash.'
+      : 'このランを削除しますか？\n削除後は、外部サービスと再同期しても自動では追加されません。\nゴミ箱から復元できます。'
+  );
+  if (!confirmed) return;
+  if (button) button.disabled = true;
+
+  try {
+    await patchCloudRunDeletedAt(row, new Date().toISOString());
+    const freshRows = await fetchCloudRuns();
+    await saveCloudRowsCache(freshRows);
+    setStatus(english ? '🗑️ Moved run to Trash' : '🗑️ ランをゴミ箱へ移動しました');
+    setTimeout(() => location.reload(), 180);
+  } catch (error) {
+    console.error('Run trash error:', error);
+    alert(english ? 'Could not delete the run.' : 'ランを削除できませんでした。');
+    if (button) button.disabled = false;
+  }
+}
+
+async function restoreCloudRunFromTrash(row, button) {
+  const english = typeof isRunnerRingsEnglish === 'function' && isRunnerRingsEnglish();
+  if (button) button.disabled = true;
+
+  try {
+    await patchCloudRunDeletedAt(row, null);
+    const freshRows = await fetchCloudRuns();
+    await saveCloudRowsCache(freshRows);
+    setStatus(english ? '♻️ Run restored' : '♻️ ランを復元しました');
+    setTimeout(() => location.reload(), 180);
+  } catch (error) {
+    console.error('Run restore error:', error);
+    alert(english ? 'Could not restore the run.' : 'ランを復元できませんでした。');
+    if (button) button.disabled = false;
+  }
+}
+
+/* =====================================
    クラウド一覧描画
 ===================================== */
 
 function getSelectedCloudRows() {
 
-  return cloudRows.filter(
+  const sourceRows = cloudTrashView
+    ? deletedCloudRows
+    : cloudRows;
+
+  return sourceRows.filter(
     row => {
 
       const [
@@ -11522,7 +11618,7 @@ function getSelectedCloudRows() {
 
     list.innerHTML =
       '<div class="savedEmpty">' +
-      'クラウドに保存したランはありません' +
+      (cloudTrashView ? 'ゴミ箱は空です' : 'クラウドに保存したランはありません') +
       '</div>';
 
     return;
@@ -11707,45 +11803,27 @@ name.textContent =
       );
 
 
-      const editButton =
+      const actionButton =
         document.createElement(
           'button'
         );
 
-      editButton.type =
-        'button';
+      actionButton.type = 'button';
+      actionButton.className = cloudTrashView
+        ? 'editRunNameButton'
+        : 'deleteRunButton';
+      actionButton.textContent = cloudTrashView
+        ? '♻ 復元'
+        : '🗑 削除';
 
-      editButton.className =
-        'editRunNameButton';
-
-      editButton.textContent =
-        (
-          typeof isRunnerRingsEnglish ===
-            'function' &&
-          isRunnerRingsEnglish()
-        )
-          ? '✎ Name'
-          : '✎ 名前';
-
-      editButton.setAttribute(
-        'aria-label',
-        (
-          typeof isRunnerRingsEnglish ===
-            'function' &&
-          isRunnerRingsEnglish()
-        )
-          ? 'Edit run name'
-          : 'ランニングの名前を編集'
-      );
-
-      editButton.onclick =
-        async event => {
-          event.stopPropagation();
-          await editCloudRunName(
-            row,
-            editButton
-          );
-        };
+      actionButton.onclick = async event => {
+        event.stopPropagation();
+        if (cloudTrashView) {
+          await restoreCloudRunFromTrash(row, actionButton);
+        } else {
+          await moveCloudRunToTrash(row, actionButton);
+        }
+      };
 
       const chevron =
         document.createElement(
@@ -11763,16 +11841,18 @@ name.textContent =
 
       item.append(
         main,
-        editButton,
+        actionButton,
         chevron
       );
 
 
       item.onclick =
-        () =>
-          focusCloudRun(
-            row
-          );
+        cloudTrashView
+          ? null
+          : () =>
+              focusCloudRun(
+                row
+              );
 
 
       list.appendChild(
@@ -11814,11 +11894,14 @@ async function renderCloudRuns() {
 
 
     cloudRows =
-      rows;
+      rows.filter(row => !row.deleted_at);
+
+    deletedCloudRows =
+      rows.filter(row => !!row.deleted_at);
 
 
     cloudRunCount =
-      rows.length;
+      cloudRows.length;
 
 
     await updateStorageInfo();
@@ -12831,9 +12914,30 @@ cloudRunsButton.onclick =
 
   };
 
+const cloudActiveViewButton = document.getElementById('cloudActiveViewButton');
+const cloudTrashViewButton = document.getElementById('cloudTrashViewButton');
+
+if (cloudActiveViewButton) {
+  cloudActiveViewButton.onclick = () => {
+    cloudTrashView = false;
+    cloudActiveViewButton.classList.add('active');
+    cloudTrashViewButton?.classList.remove('active');
+    renderCloudRowsList();
+  };
+}
+
+if (cloudTrashViewButton) {
+  cloudTrashViewButton.onclick = () => {
+    cloudTrashView = true;
+    cloudTrashViewButton.classList.add('active');
+    cloudActiveViewButton?.classList.remove('active');
+    renderCloudRowsList();
+  };
+}
+
 document
   .querySelectorAll(
-    '.historySortButton'
+    '#historySortArea .historySortButton'
   )
   .forEach(
     button => {
@@ -12847,7 +12951,7 @@ document
 
           document
             .querySelectorAll(
-              '.historySortButton'
+              '#historySortArea .historySortButton'
             )
             .forEach(
               btn =>
