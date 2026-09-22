@@ -44,23 +44,23 @@ const checks = [
       /init\(\)\.finally\(\s*finishLaunchSplash\s*\)/
     ]
   },
- {
-  name: '初期設定案内',
-  patterns: [
-    /初期設定：データの取り込み方/,
-    /Strava経由/,
-    /Intervals\.icu経由/,
-    /COROSから直接/,
-    /FIT・GPX・TCX・ZIP/,
-    /詳しい手順を見る/
-  ]
-},  {
-    name: 'Strava新規連携の一時停止案内',
+  {
+    name: '初期設定案内',
     patterns: [
-      /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*true\s*;/,
+      /初期設定：データの取り込み方/,
+      /Strava経由/,
+      /Intervals\.icu経由/,
+      /COROSから直接/,
+      /FIT・GPX・TCX・ZIP/,
+      /詳しい手順を見る/
+    ]
+  },
+  {
+    name: 'Strava新規連携制御',
+    patterns: [
+      /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*false\s*;/,
       /id=['"]stravaPauseNotice['"]/,
-      /Strava新規連携を一時停止しています/,
-      /New Strava connections are temporarily paused/
+      /STRAVA_NEW_CONNECTIONS_PAUSED/
     ]
   },
   {
