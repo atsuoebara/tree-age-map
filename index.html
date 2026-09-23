@@ -22972,7 +22972,8 @@ syncMapViewModeButtons();
 function refreshMapByZoomNudge() {
   if (
     !map ||
-    !map._loaded
+    !map._loaded ||
+    !map.zoomControl
   ) {
     return;
   }
@@ -22986,38 +22987,48 @@ function refreshMapByZoomNudge() {
   const minZoom =
     map.getMinZoom();
 
-  const temporaryZoom =
-    originalZoom < maxZoom
-      ? originalZoom + 1
-      : originalZoom > minZoom
-        ? originalZoom - 1
-        : originalZoom;
+  const canZoomIn =
+    originalZoom <
+    maxZoom;
+
+  const canZoomOut =
+    originalZoom >
+    minZoom;
 
   if (
-    temporaryZoom ===
-    originalZoom
+    !canZoomIn &&
+    !canZoomOut
   ) {
     return;
   }
 
+  // ユーザーがLeafletの＋／−を押すと確実に復活するため、
+  // setZoom()ではなく実際のZoom Controlと同じzoomIn/zoomOutを使う。
+  const firstAction =
+    canZoomIn
+      ? () => map.zoomIn(1, { animate: false })
+      : () => map.zoomOut(1, { animate: false });
+
+  const restoreAction =
+    canZoomIn
+      ? () => map.zoomOut(1, { animate: false })
+      : () => map.zoomIn(1, { animate: false });
+
   map.once(
     'zoomend',
     () => {
-      map.setZoom(
-        originalZoom,
-        {
-          animate: false
+      map.once(
+        'zoomend',
+        () => {
+          updateDisplay();
         }
       );
+
+      restoreAction();
     }
   );
 
-  map.setZoom(
-    temporaryZoom,
-    {
-      animate: false
-    }
-  );
+  firstAction();
 }
 
 
