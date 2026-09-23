@@ -988,6 +988,10 @@
       cursor:pointer;
     }
     body.mapFullscreenActive{overflow:hidden;}
+    body.mapFullscreenActive #map{
+      touch-action:none;
+      overscroll-behavior:none;
+    }
     body.mapFullscreenActive #mapViewModeBar{
       position:fixed;z-index:10001;top:0;left:0;right:0;
       height:48px;box-sizing:border-box;
@@ -5935,11 +5939,33 @@ let mapFullscreenActive = false;
 function setMapFullscreen(active){
   mapFullscreenActive = Boolean(active);
   document.body.classList.toggle('mapFullscreenActive', mapFullscreenActive);
+
   if(mapFullscreenButton){
     mapFullscreenButton.textContent = mapFullscreenActive ? '✕ 戻る' : '⛶ 全画面';
     mapFullscreenButton.setAttribute('aria-label', mapFullscreenActive ? '全画面表示を終了' : '地図を全画面表示');
   }
-  setTimeout(() => map.invalidateSize({pan:false}), 80);
+
+  // iPhone/Safariでも全画面切替後にLeafletのタッチ操作を確実に復帰させる。
+  const refreshFullscreenMap = () => {
+    if(!map) return;
+
+    map.invalidateSize({pan:false, animate:false});
+
+    if(mapFullscreenActive){
+      if(map.dragging && !map.dragging.enabled()) map.dragging.enable();
+      if(map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
+      if(map.doubleClickZoom && !map.doubleClickZoom.enabled()) map.doubleClickZoom.enable();
+      if(map.scrollWheelZoom && !map.scrollWheelZoom.enabled()) map.scrollWheelZoom.enable();
+    }
+  };
+
+  requestAnimationFrame(() => {
+    refreshFullscreenMap();
+    requestAnimationFrame(refreshFullscreenMap);
+  });
+
+  setTimeout(refreshFullscreenMap, 120);
+  setTimeout(refreshFullscreenMap, 350);
 }
 
 if(mapFullscreenButton){
