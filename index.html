@@ -23483,33 +23483,6 @@ function updateDisplayAuto() {
    再描画
 ===================================== */
 
-function forceRedrawVisibleMapLayers() {
-  const redrawGroup = group => {
-    if (!group) return;
-
-    if (typeof group.eachLayer === 'function') {
-      group.eachLayer(layer => {
-        if (layer && typeof layer.redraw === 'function') {
-          layer.redraw();
-        }
-      });
-    }
-
-    if (typeof group.redraw === 'function') {
-      group.redraw();
-    }
-  };
-
-  redrawGroup(municipalityLayer);
-  redrawGroup(usaRegionLayer);
-  redrawGroup(worldCountryLayer);
-  redrawGroup(routeGroup);
-  redrawGroup(ringGroup);
-
-  Object.values(worldAdminLayerGroups || {}).forEach(redrawGroup);
-}
-
-
 function renderSelectedData() {
 
   const stats =
@@ -23560,21 +23533,93 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
-  forceRedrawVisibleMapLayers();
 
-  // 年・月切替ではレイヤー自体を作り直すため、表示グループへ戻しても
-  // Leaflet の Path(SVG) が古い描画状態のまま残ることがある。
-  // zoomend では Path の再計算が走るため「縮尺を変えると出る」状態になる。
-  // 次フレームで表示状態を確定したあと、Path 自体も明示的に redraw する。
-  requestAnimationFrame(
+  // iOS Safari では、全国 GeoJSON や MultiPolyline を作り直した直後、
+  // Leaflet の SVG Path が現在の表示範囲で再描画されないことがある。
+  // ズームすると復活するのは zoomend で Path.redraw() 相当が走るため。
+  // 表示中のベクターレイヤーを明示的に redraw して、
+  // 年・月・面・コース切替だけでも確実に表示させる。
+  const forceVisibleVectorRedraw =
     () => {
       map.invalidateSize({
         pan: false,
-        debounceMoveend: true
+        animate: false
       });
+
+      const redrawLayer =
+        layer => {
+          if (!layer) return;
+
+          if (typeof layer.redraw === 'function') {
+            layer.redraw();
+          }
+
+          if (typeof layer.eachLayer === 'function') {
+            layer.eachLayer(
+              child => {
+                if (
+                  child &&
+                  typeof child.redraw === 'function'
+                ) {
+                  child.redraw();
+                }
+              }
+            );
+          }
+        };
+
+      if (
+        municipalityLayer &&
+        map.hasLayer(municipalityLayer)
+      ) {
+        redrawLayer(municipalityLayer);
+      }
+
+      if (
+        map.hasLayer(routeGroup)
+      ) {
+        redrawLayer(routeGroup);
+      }
+
+      if (
+        map.hasLayer(ringGroup)
+      ) {
+        redrawLayer(ringGroup);
+      }
+
+      if (
+        usaRegionLayer &&
+        map.hasLayer(usaRegionLayer)
+      ) {
+        redrawLayer(usaRegionLayer);
+      }
+
+      Object.values(worldAdminLayerGroups)
+        .forEach(
+          group => {
+            if (
+              group &&
+              map.hasLayer(group)
+            ) {
+              redrawLayer(group);
+            }
+          }
+        );
+    };
+
+  requestAnimationFrame(
+    () => {
       updateDisplay();
-      forceRedrawVisibleMapLayers();
+      forceVisibleVectorRedraw();
+      requestAnimationFrame(
+        forceVisibleVectorRedraw
+      );
     }
+  );
+
+  setTimeout(
+    forceVisibleVectorRedraw,
+    120
   );
 
 }
