@@ -3276,13 +3276,8 @@
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
-
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
-<div class="map-display-help" style="margin-top:6px;font-size:12px;line-height:1.45;color:#666;">
-  地図に「面」や「コース」が表示されない場合は、地図左上の「＋ / −」を一度押してください。
-</div>
-
   <div id="map"></div>
 
   <div id="appAdArea">
@@ -6150,6 +6145,14 @@ const map =
       139.06
     ],
     9
+  );
+
+
+const municipalityRenderer =
+  L.canvas(
+    {
+      padding: 0.5
+    }
   );
 
 
@@ -13022,6 +13025,8 @@ savedRunsButton.onclick =
   };
 backToRunListButton.onclick =
   () => {
+    map.closePopup();
+
     if (selectedRunLine) {
       map.removeLayer(selectedRunLine);
       selectedRunLine = null;
@@ -13070,6 +13075,23 @@ window.scrollTo({
         'none';
 
       };
+
+// Leafletのポップアップを×で閉じた時は、
+// 「ラン一覧へ戻る」ボタンも閉じる。
+map.on(
+  'popupclose',
+  () => {
+    if (
+      backToRunListButton
+    ) {
+      backToRunListButton
+        .style
+        .display =
+          'none';
+    }
+  }
+);
+
 
 // =====================================
 // クラウド保存ラン一覧を開く
@@ -15651,6 +15673,66 @@ function focusActivityFromRoutePopup(
 
   selectedRunLine
     .bringToFront();
+
+  const routeBounds =
+    L.latLngBounds(
+      activity.latlngs
+    );
+
+  if (
+    routeBounds.isValid()
+  ) {
+    map.fitBounds(
+      routeBounds,
+      {
+        padding:[
+          25,
+          25
+        ],
+        maxZoom:16
+      }
+    );
+
+    L.popup(
+      {
+        maxWidth:330,
+        minWidth:250
+      }
+    )
+    .setLatLng(
+      routeBounds.getCenter()
+    )
+    .setContent(
+      '<div class="popup-title">' +
+      String(
+        activity.name ||
+        (
+          isRunnerRingsEnglish()
+            ? 'Run'
+            : 'ラン'
+        )
+      )
+      .replace(
+        /\.(gpx|fit|tcx)$/i,
+        ''
+      ) +
+      '</div>' +
+      '<div class="popup-row">' +
+      getRouteActivityDateText(
+        activity
+      ) +
+      ' ・ ' +
+      Number(
+        activity.distance || 0
+      ).toFixed(
+        2
+      ) +
+      ' km</div>'
+    )
+    .openOn(
+      map
+    );
+  }
 }
 
 
@@ -16447,6 +16529,9 @@ function drawMunicipalities(
     L.geoJSON(
       geojsonData,
       {
+        renderer:
+          municipalityRenderer,
+
         style:
           feature => {
 
