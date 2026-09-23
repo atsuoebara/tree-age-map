@@ -7453,6 +7453,26 @@ function getCountryName(
   feature
 ) {
 
+  const english =
+    typeof isRunnerRingsEnglish ===
+      'function' &&
+    isRunnerRingsEnglish();
+
+  if (english) {
+    return (
+      feature
+        ?.properties
+        ?.name_en ||
+      feature
+        ?.properties
+        ?.name ||
+      feature
+        ?.properties
+        ?.name_ja ||
+      'Unknown country'
+    );
+  }
+
   return (
     feature
       ?.properties
@@ -7467,7 +7487,6 @@ function getCountryName(
   );
 
 }
-
 
 function getCountryNameByCode(
   countryCode
