@@ -5465,8 +5465,7 @@ async function disconnectStrava() {
 async function syncStrava(
   silent = false,
   fullSync = false
-) {
-  const {
+) {  const {
     data: { session }
   } = await supabaseClient.auth.getSession();
 
@@ -5477,132 +5476,40 @@ async function syncStrava(
     return null;
   }
 
-  if (!fullSync) {
-    const { data, error } =
-      await supabaseClient.functions.invoke(
-        'strava-sync',
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
-          },
-          body: {
-            full_sync: false
-          }
-        }
-      );
-
-    if (error) {
-      console.error(error);
-
-      if (!silent) {
-        alert('Stravaのラン取得に失敗しました。');
-      }
-
-      return null;
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+  'strava-sync',
+  {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    },
+    body: {
+      full_sync: fullSync
     }
+  }
+);
 
-    console.log('Strava activities:', data);
+  if (error) {
+    console.error(error);
 
     if (!silent) {
-      alert(
-        'Stravaから ' +
-        (data?.count ?? 0) +
-        ' 件取得しました。'
-      );
+      alert('Stravaのラン取得に失敗しました。');
     }
 
-    return data;
+    return null;
   }
 
-  let page = 1;
-  let totalCount = 0;
-  let totalRunsFound = 0;
-  let totalSaved = 0;
-  let totalLinked = 0;
+  console.log('Strava activities:', data);
 
-  while (true) {
-    const { data, error } =
-      await supabaseClient.functions.invoke(
-        'strava-sync',
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
-          },
-          body: {
-            full_sync: true,
-            page: page
-          }
-        }
-      );
-
-    if (error) {
-      console.error(
-        'Strava full sync error:',
-        error
-      );
-
-      if (!silent) {
-        alert(
-          'Stravaの全履歴取得中にエラーが発生しました。\n' +
-          '保存済みのデータはそのまま残ります。'
-        );
-      }
-
-      return null;
-    }
-
-    console.log(
-      'Strava full sync page:',
-      data
+  if (!silent) {
+    alert(
+      'Stravaから ' +
+      (data?.count ?? 0) +
+      ' 件取得しました。'
     );
-
-    totalCount += Number(data?.count || 0);
-    totalRunsFound += Number(data?.runs_found || 0);
-    totalSaved += Number(data?.saved || 0);
-    totalLinked += Number(data?.linked || 0);
-
-    if (!data?.next_page) {
-      const result = {
-        success: true,
-        count: totalCount,
-        runs_found: totalRunsFound,
-        saved: totalSaved,
-        linked: totalLinked,
-        full_sync: true
-      };
-
-      if (!silent) {
-        alert(
-          'Stravaの全履歴同期が完了しました。\n' +
-          totalCount +
-          ' 件取得しました。'
-        );
-      }
-
-      return result;
-    }
-
-    page = Number(data.next_page);
-
-    if (
-      !Number.isFinite(page) ||
-      page < 1
-    ) {
-      console.error(
-        'Invalid Strava next_page:',
-        data?.next_page
-      );
-
-      if (!silent) {
-        alert(
-          'Stravaの全履歴同期を続行できませんでした。\n' +
-          '保存済みのデータはそのまま残ります。'
-        );
-      }
-
-      return null;
-    }
   }
+
+  return data;
 }
 
 window.syncStrava = syncStrava;
@@ -23626,6 +23533,20 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
+
+  // 年・月・表示モードの切替直後は、Leaflet のレイヤー再構築と
+  // ブラウザ描画のタイミングがずれることがある。
+  // 次の描画フレームでもう一度サイズと表示状態を確定し、
+  // 「切替後に面／コースが消え、ズームすると復活する」を防ぐ。
+  requestAnimationFrame(
+    () => {
+      map.invalidateSize({
+        pan: false,
+        debounceMoveend: true
+      });
+      updateDisplay();
+    }
+  );
 
 }
 
