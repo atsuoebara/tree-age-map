@@ -14764,7 +14764,11 @@ function createYearFilters() {
 
           requestAnimationFrame(
             () => {
-              refreshMapWithLeafletControlClick();
+              requestAnimationFrame(
+                () => {
+                  refreshMapAfterFilterChange();
+                }
+              );
             }
           );
 
@@ -14793,7 +14797,11 @@ monthFilter.onchange =
 
     requestAnimationFrame(
       () => {
-        refreshMapWithLeafletControlClick();
+        requestAnimationFrame(
+          () => {
+            refreshMapAfterFilterChange();
+          }
+        );
       }
     );
   };
@@ -23024,39 +23032,70 @@ syncMapViewModeButtons();
 
 
 
-function refreshMapWithLeafletControlClick() {
-  const zoomInButton =
-    document.querySelector(
-      '.leaflet-control-zoom-in'
-    );
-
-  const zoomOutButton =
-    document.querySelector(
-      '.leaflet-control-zoom-out'
-    );
-
+function refreshMapAfterFilterChange() {
   if (
-    !zoomInButton ||
-    !zoomOutButton
+    !map ||
+    !map._loaded
   ) {
     return;
   }
 
+  const originalZoom =
+    map.getZoom();
+
+  const maxZoom =
+    map.getMaxZoom();
+
+  const minZoom =
+    map.getMinZoom();
+
+  const zoomDelta =
+    originalZoom < maxZoom
+      ? 1
+      : originalZoom > minZoom
+        ? -1
+        : 0;
+
+  if (
+    zoomDelta === 0
+  ) {
+    return;
+  }
+
+  let restored = false;
+
   map.once(
     'zoomend',
     () => {
-      map.once(
-        'zoomend',
+      // The first real zoom is the confirmed operation that restores
+      // Auto/Area rendering. Restore the user's scale only after Leaflet
+      // has completely finished that zoom cycle.
+      requestAnimationFrame(
         () => {
-          updateDisplay();
+          requestAnimationFrame(
+            () => {
+              if (restored) return;
+              restored = true;
+
+              map.setZoom(
+                originalZoom,
+                {
+                  animate: false
+                }
+              );
+            }
+          );
         }
       );
-
-      zoomOutButton.click();
     }
   );
 
-  zoomInButton.click();
+  map.setZoom(
+    originalZoom + zoomDelta,
+    {
+      animate: false
+    }
+  );
 }
 
 
