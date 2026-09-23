@@ -5935,16 +5935,23 @@ async function getCloudHeaders(
 ===================================== */
 const mapFullscreenButton = document.getElementById('mapFullscreenButton');
 const mapElementForFullscreen = document.getElementById('map');
-const mapNormalInlineStyle = mapElementForFullscreen
-  ? mapElementForFullscreen.getAttribute('style')
-  : null;
 let mapFullscreenActive = false;
+let mapFullscreenScrollY = 0;
+let mapNormalInlineStyle = null;
 
 function setMapFullscreen(active){
-  mapFullscreenActive = Boolean(active);
-  document.body.classList.toggle('mapFullscreenActive', mapFullscreenActive);
-
+  const nextActive = Boolean(active);
   const mapElement = document.getElementById('map');
+
+  if(nextActive && !mapFullscreenActive){
+    mapFullscreenScrollY = window.scrollY || window.pageYOffset || 0;
+    mapNormalInlineStyle = mapElement
+      ? mapElement.getAttribute('style')
+      : null;
+  }
+
+  mapFullscreenActive = nextActive;
+  document.body.classList.toggle('mapFullscreenActive', mapFullscreenActive);
 
   if(mapFullscreenButton){
     mapFullscreenButton.textContent = mapFullscreenActive ? '✕ 戻る' : '⛶ 全画面';
@@ -5967,13 +5974,25 @@ function setMapFullscreen(active){
       mapElement.style.setProperty('visibility', 'visible', 'important');
       mapElement.style.setProperty('pointer-events', 'auto', 'important');
     }else{
-      // Leafletが通常表示用に持っていたinline styleを丸ごと復元する。
-      // width/heightを個別removeするとiPhone Safariでページ全体が縮小するため行わない。
       if(mapNormalInlineStyle === null){
         mapElement.removeAttribute('style');
       }else{
         mapElement.setAttribute('style', mapNormalInlineStyle);
       }
+
+      // 通常表示のCSSサイズを即座に取り戻す。
+      mapElement.style.removeProperty('position');
+      mapElement.style.removeProperty('top');
+      mapElement.style.removeProperty('left');
+      mapElement.style.removeProperty('right');
+      mapElement.style.removeProperty('bottom');
+      mapElement.style.removeProperty('z-index');
+      mapElement.style.removeProperty('touch-action');
+      mapElement.style.removeProperty('visibility');
+      mapElement.style.removeProperty('pointer-events');
+      mapElement.style.removeProperty('width');
+      mapElement.style.removeProperty('height');
+      mapElement.style.removeProperty('min-height');
     }
   }
 
@@ -5997,10 +6016,18 @@ function setMapFullscreen(active){
   setTimeout(refreshFullscreenMap, 300);
 
   if(!mapFullscreenActive){
-    setTimeout(() => {
+    const restoreNormalMap = () => {
       map.invalidateSize({pan:false, animate:false});
-      window.scrollBy(0, 0);
-    }, 450);
+      window.scrollTo(0, mapFullscreenScrollY);
+    };
+
+    requestAnimationFrame(() => {
+      restoreNormalMap();
+      requestAnimationFrame(restoreNormalMap);
+    });
+
+    setTimeout(restoreNormalMap, 120);
+    setTimeout(restoreNormalMap, 350);
   }
 }
 
