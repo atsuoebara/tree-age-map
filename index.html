@@ -23674,6 +23674,25 @@ function updateDisplayAuto() {
    再描画
 ===================================== */
 
+function debugRenderState(
+  label
+) {
+  requestAnimationFrame(() => {
+    const canvasEls = document.querySelectorAll('#map canvas');
+    console.log('[RR-DEBUG]', label, {
+      zoom: map.getZoom(),
+      mapViewMode,
+      municipalityLayerOnMap: municipalityLayer ? map.hasLayer(municipalityLayer) : null,
+      municipalityLayerCount: municipalityLayer ? municipalityLayer.getLayers().length : null,
+      routeGroupOnMap: map.hasLayer(routeGroup),
+      routeGroupCount: routeGroup.getLayers().length,
+      canvasCount: canvasEls.length,
+      canvasSizes: Array.from(canvasEls).map(c => [c.width, c.height])
+    });
+  });
+}
+
+
 function renderSelectedData() {
 
   const stats =
@@ -23724,6 +23743,10 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
+
+  debugRenderState(
+    'after renderSelectedData'
+  );
 
 }
 
