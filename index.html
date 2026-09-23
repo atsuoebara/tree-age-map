@@ -5940,22 +5940,44 @@ function setMapFullscreen(active){
   mapFullscreenActive = Boolean(active);
   document.body.classList.toggle('mapFullscreenActive', mapFullscreenActive);
 
+  const mapElement = document.getElementById('map');
+
   if(mapFullscreenButton){
     mapFullscreenButton.textContent = mapFullscreenActive ? '✕ 戻る' : '⛶ 全画面';
     mapFullscreenButton.setAttribute('aria-label', mapFullscreenActive ? '全画面表示を終了' : '地図を全画面表示');
   }
 
-  // iPhone/Safariでも全画面切替後にLeafletのタッチ操作を確実に復帰させる。
+  // CSSだけに頼らず、iPhone Safariでも地図を確実に画面へ固定する。
+  if(mapElement){
+    if(mapFullscreenActive){
+      mapElement.style.setProperty('position', 'fixed', 'important');
+      mapElement.style.setProperty('top', '54px', 'important');
+      mapElement.style.setProperty('left', '0', 'important');
+      mapElement.style.setProperty('right', '0', 'important');
+      mapElement.style.setProperty('bottom', '0', 'important');
+      mapElement.style.setProperty('width', '100vw', 'important');
+      mapElement.style.setProperty('height', 'calc(100dvh - 54px)', 'important');
+      mapElement.style.setProperty('min-height', '0', 'important');
+      mapElement.style.setProperty('z-index', '10000', 'important');
+      mapElement.style.setProperty('touch-action', 'none', 'important');
+      mapElement.style.setProperty('visibility', 'visible', 'important');
+      mapElement.style.setProperty('pointer-events', 'auto', 'important');
+    }else{
+      [
+        'position','top','left','right','bottom','width','height',
+        'min-height','z-index','touch-action','visibility','pointer-events'
+      ].forEach(property => mapElement.style.removeProperty(property));
+    }
+  }
+
   const refreshFullscreenMap = () => {
     if(!map) return;
-
     map.invalidateSize({pan:false, animate:false});
 
     if(mapFullscreenActive){
-      if(map.dragging && !map.dragging.enabled()) map.dragging.enable();
-      if(map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
-      if(map.doubleClickZoom && !map.doubleClickZoom.enabled()) map.doubleClickZoom.enable();
-      if(map.scrollWheelZoom && !map.scrollWheelZoom.enabled()) map.scrollWheelZoom.enable();
+      if(map.dragging) map.dragging.enable();
+      if(map.touchZoom) map.touchZoom.enable();
+      if(map.doubleClickZoom) map.doubleClickZoom.enable();
     }
   };
 
@@ -5964,8 +5986,8 @@ function setMapFullscreen(active){
     requestAnimationFrame(refreshFullscreenMap);
   });
 
-  setTimeout(refreshFullscreenMap, 120);
-  setTimeout(refreshFullscreenMap, 350);
+  setTimeout(refreshFullscreenMap, 100);
+  setTimeout(refreshFullscreenMap, 300);
 }
 
 if(mapFullscreenButton){
