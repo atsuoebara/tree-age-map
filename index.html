@@ -5465,7 +5465,8 @@ async function disconnectStrava() {
 async function syncStrava(
   silent = false,
   fullSync = false
-) {  const {
+) {
+  const {
     data: { session }
   } = await supabaseClient.auth.getSession();
 
@@ -5476,40 +5477,132 @@ async function syncStrava(
     return null;
   }
 
-  const { data, error } =
-    await supabaseClient.functions.invoke(
-  'strava-sync',
-  {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`
-    },
-    body: {
-      full_sync: fullSync
-    }
-  }
-);
+  if (!fullSync) {
+    const { data, error } =
+      await supabaseClient.functions.invoke(
+        'strava-sync',
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: {
+            full_sync: false
+          }
+        }
+      );
 
-  if (error) {
-    console.error(error);
+    if (error) {
+      console.error(error);
+
+      if (!silent) {
+        alert('Stravaのラン取得に失敗しました。');
+      }
+
+      return null;
+    }
+
+    console.log('Strava activities:', data);
 
     if (!silent) {
-      alert('Stravaのラン取得に失敗しました。');
+      alert(
+        'Stravaから ' +
+        (data?.count ?? 0) +
+        ' 件取得しました。'
+      );
     }
 
-    return null;
+    return data;
   }
 
-  console.log('Strava activities:', data);
+  let page = 1;
+  let totalCount = 0;
+  let totalRunsFound = 0;
+  let totalSaved = 0;
+  let totalLinked = 0;
 
-  if (!silent) {
-    alert(
-      'Stravaから ' +
-      (data?.count ?? 0) +
-      ' 件取得しました。'
+  while (true) {
+    const { data, error } =
+      await supabaseClient.functions.invoke(
+        'strava-sync',
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: {
+            full_sync: true,
+            page: page
+          }
+        }
+      );
+
+    if (error) {
+      console.error(
+        'Strava full sync error:',
+        error
+      );
+
+      if (!silent) {
+        alert(
+          'Stravaの全履歴取得中にエラーが発生しました。\n' +
+          '保存済みのデータはそのまま残ります。'
+        );
+      }
+
+      return null;
+    }
+
+    console.log(
+      'Strava full sync page:',
+      data
     );
-  }
 
-  return data;
+    totalCount += Number(data?.count || 0);
+    totalRunsFound += Number(data?.runs_found || 0);
+    totalSaved += Number(data?.saved || 0);
+    totalLinked += Number(data?.linked || 0);
+
+    if (!data?.next_page) {
+      const result = {
+        success: true,
+        count: totalCount,
+        runs_found: totalRunsFound,
+        saved: totalSaved,
+        linked: totalLinked,
+        full_sync: true
+      };
+
+      if (!silent) {
+        alert(
+          'Stravaの全履歴同期が完了しました。\n' +
+          totalCount +
+          ' 件取得しました。'
+        );
+      }
+
+      return result;
+    }
+
+    page = Number(data.next_page);
+
+    if (
+      !Number.isFinite(page) ||
+      page < 1
+    ) {
+      console.error(
+        'Invalid Strava next_page:',
+        data?.next_page
+      );
+
+      if (!silent) {
+        alert(
+          'Stravaの全履歴同期を続行できませんでした。\n' +
+          '保存済みのデータはそのまま残ります。'
+        );
+      }
+
+      return null;
+    }
+  }
 }
 
 window.syncStrava = syncStrava;
@@ -14669,18 +14762,10 @@ function createYearFilters() {
 
           renderSelectedData();
 
-          // 面モードでは実際のズーム後に zoomend -> updateDisplay() だけで
-          // 表示が復活するため、同じ処理をフィルター変更後にも実行する。
           requestAnimationFrame(
             () => {
-              refreshMapByZoomNudge();
+              refreshMapWithLeafletControlClick();
             }
-          );
-          setTimeout(
-            () => {
-              refreshMapByZoomNudge();
-            },
-            250
           );
 
         };
@@ -14706,19 +14791,10 @@ monthFilter.onchange =
 
     renderSelectedData();
 
-    // 年切替と同じく、zoomend と同じ表示切替を遅延実行する。
     requestAnimationFrame(
       () => {
-        updateDisplay();
-        refreshVisibleLeafletRenderer();
+        refreshMapWithLeafletControlClick();
       }
-    );
-    setTimeout(
-      () => {
-        updateDisplay();
-        refreshVisibleLeafletRenderer();
-      },
-      250
     );
   };
 
@@ -16378,24 +16454,6 @@ function drawMunicipalities(
     L.geoJSON(
       geojsonData,
       {
-        // 描画対象を「実際に走った市町村」だけに絞る。
-        // 全国すべての市町村ポリゴンを毎回SVG化すると、
-        // iPhone Safariで年/月切替直後にベクターレイヤーが
-        // 描画されないことがあるため。
-        filter:
-          feature => {
-            const cityKey =
-              getCityKey(
-                feature
-              );
-
-            return (
-              municipalityDistance[
-                cityKey
-              ] || 0
-            ) > 0.01;
-          },
-
         style:
           feature => {
 
@@ -22966,53 +23024,23 @@ syncMapViewModeButtons();
 
 
 
+function refreshMapWithLeafletControlClick() {
+  const zoomInButton =
+    document.querySelector(
+      '.leaflet-control-zoom-in'
+    );
 
+  const zoomOutButton =
+    document.querySelector(
+      '.leaflet-control-zoom-out'
+    );
 
-
-function refreshMapByZoomNudge() {
   if (
-    !map ||
-    !map._loaded ||
-    !map.zoomControl
+    !zoomInButton ||
+    !zoomOutButton
   ) {
     return;
   }
-
-  const originalZoom =
-    map.getZoom();
-
-  const maxZoom =
-    map.getMaxZoom();
-
-  const minZoom =
-    map.getMinZoom();
-
-  const canZoomIn =
-    originalZoom <
-    maxZoom;
-
-  const canZoomOut =
-    originalZoom >
-    minZoom;
-
-  if (
-    !canZoomIn &&
-    !canZoomOut
-  ) {
-    return;
-  }
-
-  // ユーザーがLeafletの＋／−を押すと確実に復活するため、
-  // setZoom()ではなく実際のZoom Controlと同じzoomIn/zoomOutを使う。
-  const firstAction =
-    canZoomIn
-      ? () => map.zoomIn(1, { animate: false })
-      : () => map.zoomOut(1, { animate: false });
-
-  const restoreAction =
-    canZoomIn
-      ? () => map.zoomOut(1, { animate: false })
-      : () => map.zoomIn(1, { animate: false });
 
   map.once(
     'zoomend',
@@ -23024,186 +23052,11 @@ function refreshMapByZoomNudge() {
         }
       );
 
-      restoreAction();
+      zoomOutButton.click();
     }
   );
 
-  firstAction();
-}
-
-
-function refreshMapByModeCycle() {
-  const originalMode =
-    mapViewMode;
-
-  if (
-    originalMode !== 'area' &&
-    originalMode !== 'route'
-  ) {
-    updateDisplay();
-    return;
-  }
-
-  const temporaryMode =
-    originalMode === 'area'
-      ? 'route'
-      : 'area';
-
-  setMapViewMode(
-    temporaryMode
-  );
-
-  requestAnimationFrame(
-    () => {
-      setMapViewMode(
-        originalMode
-      );
-    }
-  );
-}
-
-
-function reattachCurrentMapViewLayer() {
-  // 「面 ↔ コース」を切り替えると表示が復活するため、
-  // フィルター変更後も現在モードのレイヤーを一度だけ外して
-  // updateDisplay() に再装着させる。
-  if (
-    mapViewMode ===
-    'area'
-  ) {
-    if (
-      municipalityLayer &&
-      map.hasLayer(
-        municipalityLayer
-      )
-    ) {
-      map.removeLayer(
-        municipalityLayer
-      );
-    }
-
-    if (
-      usaRegionLayer &&
-      map.hasLayer(
-        usaRegionLayer
-      )
-    ) {
-      map.removeLayer(
-        usaRegionLayer
-      );
-    }
-  }
-
-  if (
-    mapViewMode ===
-    'route'
-  ) {
-    if (
-      map.hasLayer(
-        routeGroup
-      )
-    ) {
-      map.removeLayer(
-        routeGroup
-      );
-    }
-  }
-
-  updateDisplay();
-}
-
-
-function refreshVisibleLeafletRenderer() {
-  // LeafletのPath.redraw()だけではSVG renderer自体の表示領域が
-  // 更新されない場合がある。実際のズーム時にLeafletが行う
-  // renderer更新を、縮尺を変えずに実行する。
-  const refreshLayer =
-    layer => {
-      if (!layer) return;
-
-      if (
-        typeof layer.eachLayer ===
-        'function'
-      ) {
-        layer.eachLayer(
-          child => {
-            refreshLayer(
-              child
-            );
-          }
-        );
-        return;
-      }
-
-      try {
-        const renderer =
-          map.getRenderer(
-            layer
-          );
-
-        if (
-          renderer &&
-          typeof renderer._update ===
-            'function'
-        ) {
-          renderer._update();
-        }
-
-        if (
-          typeof layer.redraw ===
-          'function'
-        ) {
-          layer.redraw();
-        }
-      } catch (error) {
-        console.warn(
-          'Map renderer refresh error:',
-          error
-        );
-      }
-    };
-
-  if (
-    municipalityLayer &&
-    map.hasLayer(
-      municipalityLayer
-    )
-  ) {
-    refreshLayer(
-      municipalityLayer
-    );
-  }
-
-  if (
-    map.hasLayer(
-      routeGroup
-    )
-  ) {
-    refreshLayer(
-      routeGroup
-    );
-  }
-
-  if (
-    map.hasLayer(
-      ringGroup
-    )
-  ) {
-    refreshLayer(
-      ringGroup
-    );
-  }
-
-  if (
-    usaRegionLayer &&
-    map.hasLayer(
-      usaRegionLayer
-    )
-  ) {
-    refreshLayer(
-      usaRegionLayer
-    );
-  }
+  zoomInButton.click();
 }
 
 
@@ -23822,97 +23675,6 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
-
-  // iOS Safari では、全国 GeoJSON や MultiPolyline を作り直した直後、
-  // Leaflet の SVG Path が現在の表示範囲で再描画されないことがある。
-  // ズームすると復活するのは zoomend で Path.redraw() 相当が走るため。
-  // 表示中のベクターレイヤーを明示的に redraw して、
-  // 年・月・面・コース切替だけでも確実に表示させる。
-  const forceVisibleVectorRedraw =
-    () => {
-      map.invalidateSize({
-        pan: false,
-        animate: false
-      });
-
-      const redrawLayer =
-        layer => {
-          if (!layer) return;
-
-          if (typeof layer.redraw === 'function') {
-            layer.redraw();
-          }
-
-          if (typeof layer.eachLayer === 'function') {
-            layer.eachLayer(
-              child => {
-                if (
-                  child &&
-                  typeof child.redraw === 'function'
-                ) {
-                  child.redraw();
-                }
-              }
-            );
-          }
-        };
-
-      if (
-        municipalityLayer &&
-        map.hasLayer(municipalityLayer)
-      ) {
-        redrawLayer(municipalityLayer);
-      }
-
-      if (
-        map.hasLayer(routeGroup)
-      ) {
-        redrawLayer(routeGroup);
-      }
-
-      if (
-        map.hasLayer(ringGroup)
-      ) {
-        redrawLayer(ringGroup);
-      }
-
-      if (
-        usaRegionLayer &&
-        map.hasLayer(usaRegionLayer)
-      ) {
-        redrawLayer(usaRegionLayer);
-      }
-
-      Object.values(worldAdminLayerGroups)
-        .forEach(
-          group => {
-            if (
-              group &&
-              map.hasLayer(group)
-            ) {
-              redrawLayer(group);
-            }
-          }
-        );
-    };
-
-  requestAnimationFrame(
-    () => {
-      updateDisplay();
-      forceVisibleVectorRedraw();
-      requestAnimationFrame(
-        forceVisibleVectorRedraw
-      );
-    }
-  );
-
-  setTimeout(
-    forceVisibleVectorRedraw,
-    120
-  );
-
-
-
 
 }
 
