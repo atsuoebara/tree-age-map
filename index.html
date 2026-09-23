@@ -992,9 +992,44 @@
       position:fixed;z-index:10001;top:0;left:0;right:0;
       height:48px;box-sizing:border-box;
     }
+    body.mapFullscreenActive #mapViewModeBar{
+      position:fixed;z-index:10001;top:0;left:0;right:0;
+      height:54px;box-sizing:border-box;justify-content:flex-start;
+      gap:5px;padding:max(8px, env(safe-area-inset-top)) 8px 6px;
+      white-space:nowrap;
+    }
+    body.mapFullscreenActive #filters{
+      position:fixed;z-index:10002;top:0;left:154px;right:176px;
+      height:54px;box-sizing:border-box;
+      padding:max(8px, env(safe-area-inset-top)) 4px 6px;
+      background:transparent;overflow-x:auto;white-space:nowrap;
+    }
+    body.mapFullscreenActive #monthFilterArea{
+      position:fixed;z-index:10003;top:0;right:70px;height:54px;
+      box-sizing:border-box;padding:max(8px, env(safe-area-inset-top)) 4px 6px;
+      background:transparent;gap:4px;font-size:10px;
+    }
+    body.mapFullscreenActive #monthFilter{
+      min-width:62px;width:62px;padding:6px 4px;font-size:11px;
+    }
+    body.mapFullscreenActive .mapViewModeLabel{display:none;}
+    body.mapFullscreenActive .mapViewModeButton{
+      padding:6px 8px;font-size:10px;
+    }
+    body.mapFullscreenActive .mapFullscreenButton{
+      position:fixed;z-index:10004;
+      top:max(8px, env(safe-area-inset-top));right:8px;
+      margin:0;padding:6px 9px;font-size:11px;
+    }
     body.mapFullscreenActive #map{
-      position:fixed;z-index:10000;top:48px;left:0;
-      width:100vw;height:calc(100dvh - 48px);min-height:0;
+      position:fixed;z-index:10000;top:54px;left:0;
+      width:100vw;height:calc(100dvh - 54px);min-height:0;
+    }
+    @media (max-width:520px){
+      body.mapFullscreenActive #filters{left:142px;right:160px;}
+      body.mapFullscreenActive #monthFilterArea{right:64px;}
+      body.mapFullscreenActive #monthFilterArea label{display:none;}
+      body.mapFullscreenActive #monthFilter{min-width:58px;width:58px;}
     }
 
     #dashboard{
