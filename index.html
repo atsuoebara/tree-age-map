@@ -3276,8 +3276,13 @@
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
+
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
+<div class="map-display-help" style="margin-top:6px;font-size:12px;line-height:1.45;color:#666;">
+  地図に「面」や「コース」が表示されない場合は、地図左上の「＋ / −」を一度押してください。
+</div>
+
   <div id="map"></div>
 
   <div id="appAdArea">
@@ -14762,13 +14767,6 @@ function createYearFilters() {
 
           renderSelectedData();
 
-          setTimeout(
-            () => {
-              refreshMunicipalityLayerAfterFilter();
-            },
-            120
-          );
-
         };
 
 
@@ -14791,13 +14789,6 @@ monthFilter.onchange =
       monthFilter.value;
 
     renderSelectedData();
-
-    setTimeout(
-      () => {
-        refreshMunicipalityLayerAfterFilter();
-      },
-      120
-    );
   };
 
 
@@ -23023,64 +23014,6 @@ document
   );
 
 syncMapViewModeButtons();
-
-
-
-function refreshMunicipalityLayerAfterFilter() {
-  if (
-    !municipalityLayer
-  ) {
-    return;
-  }
-
-  const zoom =
-    map.getZoom();
-
-  const shouldShowMunicipality =
-    mapViewMode === 'area' ||
-    (
-      mapViewMode === 'auto' &&
-      zoom < 12
-    );
-
-  if (
-    !shouldShowMunicipality
-  ) {
-    return;
-  }
-
-  if (
-    map.hasLayer(
-      municipalityLayer
-    )
-  ) {
-    map.removeLayer(
-      municipalityLayer
-    );
-  }
-
-  municipalityLayer.addTo(
-    map
-  );
-
-  municipalityLayer.eachLayer(
-    layer => {
-      if (
-        typeof layer.bringToFront ===
-        'function'
-      ) {
-        layer.bringToFront();
-      }
-
-      if (
-        typeof layer.redraw ===
-        'function'
-      ) {
-        layer.redraw();
-      }
-    }
-  );
-}
 
 
 function updateDisplay() {
