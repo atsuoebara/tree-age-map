@@ -14669,6 +14669,14 @@ function createYearFilters() {
 
           renderSelectedData();
 
+          // 実際のズーム操作で表示が復活するケースに合わせ、
+          // フィルター変更直後にもう一度データから地図を再生成する。
+          requestAnimationFrame(
+            () => {
+              renderSelectedData();
+            }
+          );
+
         };
 
 
@@ -14691,6 +14699,13 @@ monthFilter.onchange =
       monthFilter.value;
 
     renderSelectedData();
+
+    // 年切替と同じく、次フレームでもう一度地図データを再生成する。
+    requestAnimationFrame(
+      () => {
+        renderSelectedData();
+      }
+    );
   };
 
 
@@ -23641,27 +23656,7 @@ function renderSelectedData() {
   );
 
 
-  // 実際のズーム操作で復活する症状に合わせ、
-  // 縮尺は変えずLeafletのviewだけをresetする。
-  // setView(..., { reset:true }) により地図内部のpane / renderer配置を
-  // ズーム時と同様に再確定させる。
-  requestAnimationFrame(
-    () => {
-      if (
-        map &&
-        map._loaded
-      ) {
-        map.setView(
-          map.getCenter(),
-          map.getZoom(),
-          {
-            animate: false,
-            reset: true
-          }
-        );
-      }
-    }
-  );
+
 
 }
 
