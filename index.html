@@ -14673,14 +14673,12 @@ function createYearFilters() {
           // 表示が復活するため、同じ処理をフィルター変更後にも実行する。
           requestAnimationFrame(
             () => {
-              updateDisplay();
-              refreshVisibleLeafletRenderer();
+              refreshMapByModeCycle();
             }
           );
           setTimeout(
             () => {
-              updateDisplay();
-              refreshVisibleLeafletRenderer();
+              refreshMapByModeCycle();
             },
             250
           );
@@ -22966,6 +22964,89 @@ document
 
 syncMapViewModeButtons();
 
+
+
+
+
+function refreshMapByModeCycle() {
+  const originalMode =
+    mapViewMode;
+
+  if (
+    originalMode !== 'area' &&
+    originalMode !== 'route'
+  ) {
+    updateDisplay();
+    return;
+  }
+
+  const temporaryMode =
+    originalMode === 'area'
+      ? 'route'
+      : 'area';
+
+  setMapViewMode(
+    temporaryMode
+  );
+
+  requestAnimationFrame(
+    () => {
+      setMapViewMode(
+        originalMode
+      );
+    }
+  );
+}
+
+
+function reattachCurrentMapViewLayer() {
+  // 「面 ↔ コース」を切り替えると表示が復活するため、
+  // フィルター変更後も現在モードのレイヤーを一度だけ外して
+  // updateDisplay() に再装着させる。
+  if (
+    mapViewMode ===
+    'area'
+  ) {
+    if (
+      municipalityLayer &&
+      map.hasLayer(
+        municipalityLayer
+      )
+    ) {
+      map.removeLayer(
+        municipalityLayer
+      );
+    }
+
+    if (
+      usaRegionLayer &&
+      map.hasLayer(
+        usaRegionLayer
+      )
+    ) {
+      map.removeLayer(
+        usaRegionLayer
+      );
+    }
+  }
+
+  if (
+    mapViewMode ===
+    'route'
+  ) {
+    if (
+      map.hasLayer(
+        routeGroup
+      )
+    ) {
+      map.removeLayer(
+        routeGroup
+      );
+    }
+  }
+
+  updateDisplay();
+}
 
 
 function refreshVisibleLeafletRenderer() {
