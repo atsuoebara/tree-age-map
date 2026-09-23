@@ -14669,12 +14669,18 @@ function createYearFilters() {
 
           renderSelectedData();
 
-          // 実際のズーム操作で表示が復活するケースに合わせ、
-          // フィルター変更直後にもう一度データから地図を再生成する。
+          // 面モードでは実際のズーム後に zoomend -> updateDisplay() だけで
+          // 表示が復活するため、同じ処理をフィルター変更後にも実行する。
           requestAnimationFrame(
             () => {
-              renderSelectedData();
+              updateDisplay();
             }
+          );
+          setTimeout(
+            () => {
+              updateDisplay();
+            },
+            250
           );
 
         };
@@ -14700,11 +14706,17 @@ monthFilter.onchange =
 
     renderSelectedData();
 
-    // 年切替と同じく、次フレームでもう一度地図データを再生成する。
+    // 年切替と同じく、zoomend と同じ表示切替を遅延実行する。
     requestAnimationFrame(
       () => {
-        renderSelectedData();
+        updateDisplay();
       }
+    );
+    setTimeout(
+      () => {
+        updateDisplay();
+      },
+      250
     );
   };
 
