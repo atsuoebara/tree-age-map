@@ -3402,7 +3402,7 @@ const OWNER = 'atsuoebara';
 const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
-const APP_VERSION = '0.9 Beta';
+const APP_VERSION = '1.0';
   document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION}`;
 
@@ -16085,55 +16085,6 @@ function focusWorldAdminRegion(
     key
   );
 
-  const worldAdminRows =
-    cloudRows.filter(
-      row => {
-        const activity =
-          buildActivityFromCloudRow(
-            row
-          );
-
-        if (!activity) {
-          return false;
-        }
-
-        const distanceData =
-          level === 'ADM1'
-            ? (
-                activity.admin1Distances ||
-                activity.regionDistances ||
-                {}
-              )
-            : (
-                activity.admin2Distances ||
-                {}
-              );
-
-        return (
-          Number(
-            distanceData[key] ||
-            0
-          ) > 0
-        );
-      }
-    );
-
-  renderCloudRowsList(
-    worldAdminRows
-  );
-
-  savedRunsPanel
-    .classList
-    .remove(
-      'open'
-    );
-
-  cloudRunsPanel
-    .classList
-    .add(
-      'open'
-    );
-
   const groupKey =
     countryCode +
     '|' +
@@ -16166,26 +16117,6 @@ function focusWorldAdminRegion(
     );
   }
 
-  if (
-    map.hasLayer(
-      routeGroup
-    )
-  ) {
-    map.removeLayer(
-      routeGroup
-    );
-  }
-
-  if (
-    map.hasLayer(
-      ringGroup
-    )
-  ) {
-    map.removeLayer(
-      ringGroup
-    );
-  }
-
   map.fitBounds(
     layer.getBounds(),
     {
@@ -16197,20 +16128,6 @@ function focusWorldAdminRegion(
     }
   );
 
-  cloudRunsPanel
-    .scrollIntoView(
-      {
-        behavior:'smooth',
-        block:'start'
-      }
-    );
-
-  setTimeout(
-    () =>
-      layer.openPopup(),
-    500
-  );
-
   setStatus(
     getWorldAdminCountryName(
       countryCode
@@ -16219,17 +16136,7 @@ function focusWorldAdminRegion(
     getWorldAdminNameByKey(
       key
     ) +
-    (
-      isRunnerRingsEnglish()
-        ? ' runs '
-        : 'のラン '
-    ) +
-    worldAdminRows.length +
-    (
-      isRunnerRingsEnglish()
-        ? ''
-        : '件'
-    )
+    'を表示'
   );
 }
 
@@ -24083,6 +23990,47 @@ if (savedAvatarPath) {
     bindConquestCardCollection();
 
     await start();
+
+    const stravaFullSyncRequested =
+      new URLSearchParams(
+        location.search
+      ).get(
+        'strava_full_sync'
+      ) === '1';
+
+    if (
+      stravaFullSyncRequested
+    ) {
+      const fullSyncResult =
+        await syncStrava(
+          false,
+          true
+        );
+
+      const cleanUrl =
+        new URL(
+          location.href
+        );
+
+      cleanUrl.searchParams.delete(
+        'strava_full_sync'
+      );
+
+      history.replaceState(
+        null,
+        '',
+        cleanUrl.pathname +
+          cleanUrl.search +
+          cleanUrl.hash
+      );
+
+      if (
+        fullSyncResult
+      ) {
+        location.reload();
+        return;
+      }
+    }
 
     try {
       const pendingCorosResult =
