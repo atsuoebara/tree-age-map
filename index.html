@@ -14673,12 +14673,12 @@ function createYearFilters() {
           // 表示が復活するため、同じ処理をフィルター変更後にも実行する。
           requestAnimationFrame(
             () => {
-              refreshMapByModeCycle();
+              refreshMapByZoomNudge();
             }
           );
           setTimeout(
             () => {
-              refreshMapByModeCycle();
+              refreshMapByZoomNudge();
             },
             250
           );
@@ -22968,6 +22968,59 @@ syncMapViewModeButtons();
 
 
 
+
+function refreshMapByZoomNudge() {
+  if (
+    !map ||
+    !map._loaded
+  ) {
+    return;
+  }
+
+  const originalZoom =
+    map.getZoom();
+
+  const maxZoom =
+    map.getMaxZoom();
+
+  const minZoom =
+    map.getMinZoom();
+
+  const temporaryZoom =
+    originalZoom < maxZoom
+      ? originalZoom + 1
+      : originalZoom > minZoom
+        ? originalZoom - 1
+        : originalZoom;
+
+  if (
+    temporaryZoom ===
+    originalZoom
+  ) {
+    return;
+  }
+
+  map.once(
+    'zoomend',
+    () => {
+      map.setZoom(
+        originalZoom,
+        {
+          animate: false
+        }
+      );
+    }
+  );
+
+  map.setZoom(
+    temporaryZoom,
+    {
+      animate: false
+    }
+  );
+}
+
+
 function refreshMapByModeCycle() {
   const originalMode =
     mapViewMode;
@@ -23849,39 +23902,6 @@ function renderSelectedData() {
 
 
 
-
-
-  // 一時診断表示：年切替直後に「データが無い」のか
-  // 「レイヤーはあるのに描画されない」のかを画面だけで判定する。
-  const debugId = 'runnerRingsMapDebug';
-  let debugEl = document.getElementById(debugId);
-  if (!debugEl) {
-    debugEl = document.createElement('div');
-    debugEl.id = debugId;
-    debugEl.style.cssText =
-      'position:fixed;left:6px;bottom:6px;z-index:20000;' +
-      'max-width:96vw;padding:5px 7px;border-radius:6px;' +
-      'background:rgba(0,0,0,.82);color:#fff;font:11px/1.25 monospace;' +
-      'pointer-events:none;white-space:normal;';
-    document.body.appendChild(debugEl);
-  }
-
-  const selectedNow = getSelectedActivities();
-  const municipalityKeys =
-    Object.keys(stats.municipalityDistance || {})
-      .filter(key => (stats.municipalityDistance[key] || 0) > 0.01);
-
-  debugEl.textContent =
-    'Y=' + selectedYear +
-    ' M=' + selectedMonth +
-    ' mode=' + mapViewMode +
-    ' zoom=' + map.getZoom() +
-    ' runs=' + selectedNow.length +
-    ' muni=' + municipalityKeys.length +
-    ' muniLayer=' + (municipalityLayer ? municipalityLayer.getLayers().length : -1) +
-    ' muniOn=' + (!!municipalityLayer && map.hasLayer(municipalityLayer)) +
-    ' routeLayers=' + routeGroup.getLayers().length +
-    ' routeOn=' + map.hasLayer(routeGroup);
 
 }
 
