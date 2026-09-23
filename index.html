@@ -14674,11 +14674,13 @@ function createYearFilters() {
           requestAnimationFrame(
             () => {
               updateDisplay();
+              refreshVisibleLeafletRenderer();
             }
           );
           setTimeout(
             () => {
               updateDisplay();
+              refreshVisibleLeafletRenderer();
             },
             250
           );
@@ -14710,11 +14712,13 @@ monthFilter.onchange =
     requestAnimationFrame(
       () => {
         updateDisplay();
+        refreshVisibleLeafletRenderer();
       }
     );
     setTimeout(
       () => {
         updateDisplay();
+        refreshVisibleLeafletRenderer();
       },
       250
     );
@@ -22961,6 +22965,101 @@ document
   );
 
 syncMapViewModeButtons();
+
+
+
+function refreshVisibleLeafletRenderer() {
+  // LeafletのPath.redraw()だけではSVG renderer自体の表示領域が
+  // 更新されない場合がある。実際のズーム時にLeafletが行う
+  // renderer更新を、縮尺を変えずに実行する。
+  const refreshLayer =
+    layer => {
+      if (!layer) return;
+
+      if (
+        typeof layer.eachLayer ===
+        'function'
+      ) {
+        layer.eachLayer(
+          child => {
+            refreshLayer(
+              child
+            );
+          }
+        );
+        return;
+      }
+
+      try {
+        const renderer =
+          map.getRenderer(
+            layer
+          );
+
+        if (
+          renderer &&
+          typeof renderer._update ===
+            'function'
+        ) {
+          renderer._update();
+        }
+
+        if (
+          typeof layer.redraw ===
+          'function'
+        ) {
+          layer.redraw();
+        }
+      } catch (error) {
+        console.warn(
+          'Map renderer refresh error:',
+          error
+        );
+      }
+    };
+
+  if (
+    municipalityLayer &&
+    map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+    refreshLayer(
+      municipalityLayer
+    );
+  }
+
+  if (
+    map.hasLayer(
+      routeGroup
+    )
+  ) {
+    refreshLayer(
+      routeGroup
+    );
+  }
+
+  if (
+    map.hasLayer(
+      ringGroup
+    )
+  ) {
+    refreshLayer(
+      ringGroup
+    );
+  }
+
+  if (
+    usaRegionLayer &&
+    map.hasLayer(
+      usaRegionLayer
+    )
+  ) {
+    refreshLayer(
+      usaRegionLayer
+    );
+  }
+}
 
 
 function updateDisplay() {
