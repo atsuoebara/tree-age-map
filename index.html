@@ -23665,11 +23665,18 @@ const lastStravaSync =
 const now =
   Date.now();
 
-if (
-  now - lastStravaSync >=
-  STRAVA_SYNC_INTERVAL
-) {
+const stravaFullSyncRequested =
+  new URLSearchParams(
+    location.search
+  ).get(
+    'strava_full_sync'
+  ) === '1';
 
+if (
+  !stravaFullSyncRequested &&
+  now - lastStravaSync >=
+    STRAVA_SYNC_INTERVAL
+) {
   syncStrava(true)
   .then(syncResult => {
     if (syncResult) {
