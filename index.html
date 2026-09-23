@@ -5974,25 +5974,20 @@ function setMapFullscreen(active){
       mapElement.style.setProperty('visibility', 'visible', 'important');
       mapElement.style.setProperty('pointer-events', 'auto', 'important');
     }else{
-      if(mapNormalInlineStyle === null){
-        mapElement.removeAttribute('style');
-      }else{
-        mapElement.setAttribute('style', mapNormalInlineStyle);
-      }
-
-      // 通常表示のCSSサイズを即座に取り戻す。
-      mapElement.style.removeProperty('position');
-      mapElement.style.removeProperty('top');
-      mapElement.style.removeProperty('left');
-      mapElement.style.removeProperty('right');
-      mapElement.style.removeProperty('bottom');
-      mapElement.style.removeProperty('z-index');
-      mapElement.style.removeProperty('touch-action');
-      mapElement.style.removeProperty('visibility');
-      mapElement.style.removeProperty('pointer-events');
-      mapElement.style.removeProperty('width');
-      mapElement.style.removeProperty('height');
-      mapElement.style.removeProperty('min-height');
+      // iPhone Safariではfixed解除直後に古いレイヤー状態が残ることがある。
+      // removePropertyではなく、通常表示の値を明示的に上書きして確実に戻す。
+      mapElement.style.setProperty('position', 'relative', 'important');
+      mapElement.style.setProperty('top', 'auto', 'important');
+      mapElement.style.setProperty('left', 'auto', 'important');
+      mapElement.style.setProperty('right', 'auto', 'important');
+      mapElement.style.setProperty('bottom', 'auto', 'important');
+      mapElement.style.setProperty('width', '100%', 'important');
+      mapElement.style.setProperty('height', '44vh', 'important');
+      mapElement.style.setProperty('min-height', '320px', 'important');
+      mapElement.style.setProperty('z-index', 'auto', 'important');
+      mapElement.style.setProperty('touch-action', 'auto', 'important');
+      mapElement.style.setProperty('visibility', 'visible', 'important');
+      mapElement.style.setProperty('pointer-events', 'auto', 'important');
     }
   }
 
@@ -6017,6 +6012,10 @@ function setMapFullscreen(active){
 
   if(!mapFullscreenActive){
     const restoreNormalMap = () => {
+      const mapElement = document.getElementById('map');
+      if(mapElement){
+        void mapElement.offsetHeight;
+      }
       map.invalidateSize({pan:false, animate:false});
       window.scrollTo(0, mapFullscreenScrollY);
     };
