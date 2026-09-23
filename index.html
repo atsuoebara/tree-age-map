@@ -16349,6 +16349,24 @@ function drawMunicipalities(
     L.geoJSON(
       geojsonData,
       {
+        // 描画対象を「実際に走った市町村」だけに絞る。
+        // 全国すべての市町村ポリゴンを毎回SVG化すると、
+        // iPhone Safariで年/月切替直後にベクターレイヤーが
+        // 描画されないことがあるため。
+        filter:
+          feature => {
+            const cityKey =
+              getCityKey(
+                feature
+              );
+
+            return (
+              municipalityDistance[
+                cityKey
+              ] || 0
+            ) > 0.01;
+          },
+
         style:
           feature => {
 
