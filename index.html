@@ -976,6 +976,27 @@
       min-height:320px;
     }
 
+    .mapFullscreenButton{
+      margin-left:auto;
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:999px;
+      background:#17283d;
+      color:#ffffff;
+      padding:6px 11px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    body.mapFullscreenActive{overflow:hidden;}
+    body.mapFullscreenActive #mapViewModeBar{
+      position:fixed;z-index:10001;top:0;left:0;right:0;
+      height:48px;box-sizing:border-box;
+    }
+    body.mapFullscreenActive #map{
+      position:fixed;z-index:10000;top:48px;left:0;
+      width:100vw;height:calc(100dvh - 48px);min-height:0;
+    }
+
     #dashboard{
       padding:18px 16px 32px;
     }
@@ -3216,6 +3237,7 @@
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
+    <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
   <div id="map"></div>
 
@@ -5868,6 +5890,30 @@ async function getCloudHeaders(
 
 }
 
+
+/* =====================================
+   地図 全画面表示
+===================================== */
+const mapFullscreenButton = document.getElementById('mapFullscreenButton');
+let mapFullscreenActive = false;
+
+function setMapFullscreen(active){
+  mapFullscreenActive = Boolean(active);
+  document.body.classList.toggle('mapFullscreenActive', mapFullscreenActive);
+  if(mapFullscreenButton){
+    mapFullscreenButton.textContent = mapFullscreenActive ? '✕ 戻る' : '⛶ 全画面';
+    mapFullscreenButton.setAttribute('aria-label', mapFullscreenActive ? '全画面表示を終了' : '地図を全画面表示');
+  }
+  setTimeout(() => map.invalidateSize({pan:false}), 80);
+}
+
+if(mapFullscreenButton){
+  mapFullscreenButton.addEventListener('click', () => setMapFullscreen(!mapFullscreenActive));
+}
+
+document.addEventListener('keydown', (event) => {
+  if(event.key === 'Escape' && mapFullscreenActive) setMapFullscreen(false);
+});
 
 /* =====================================
    MAP
