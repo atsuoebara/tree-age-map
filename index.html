@@ -23640,6 +23640,29 @@ function renderSelectedData() {
     120
   );
 
+
+  // 実際のズーム操作で復活する症状に合わせ、
+  // 縮尺は変えずLeafletのviewだけをresetする。
+  // setView(..., { reset:true }) により地図内部のpane / renderer配置を
+  // ズーム時と同様に再確定させる。
+  requestAnimationFrame(
+    () => {
+      if (
+        map &&
+        map._loaded
+      ) {
+        map.setView(
+          map.getCenter(),
+          map.getZoom(),
+          {
+            animate: false,
+            reset: true
+          }
+        );
+      }
+    }
+  );
+
 }
 
 
