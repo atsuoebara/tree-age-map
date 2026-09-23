@@ -23483,6 +23483,33 @@ function updateDisplayAuto() {
    再描画
 ===================================== */
 
+function forceRedrawVisibleMapLayers() {
+  const redrawGroup = group => {
+    if (!group) return;
+
+    if (typeof group.eachLayer === 'function') {
+      group.eachLayer(layer => {
+        if (layer && typeof layer.redraw === 'function') {
+          layer.redraw();
+        }
+      });
+    }
+
+    if (typeof group.redraw === 'function') {
+      group.redraw();
+    }
+  };
+
+  redrawGroup(municipalityLayer);
+  redrawGroup(usaRegionLayer);
+  redrawGroup(worldCountryLayer);
+  redrawGroup(routeGroup);
+  redrawGroup(ringGroup);
+
+  Object.values(worldAdminLayerGroups || {}).forEach(redrawGroup);
+}
+
+
 function renderSelectedData() {
 
   const stats =
@@ -23533,11 +23560,12 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
+  forceRedrawVisibleMapLayers();
 
-  // 年・月・表示モードの切替直後は、Leaflet のレイヤー再構築と
-  // ブラウザ描画のタイミングがずれることがある。
-  // 次の描画フレームでもう一度サイズと表示状態を確定し、
-  // 「切替後に面／コースが消え、ズームすると復活する」を防ぐ。
+  // 年・月切替ではレイヤー自体を作り直すため、表示グループへ戻しても
+  // Leaflet の Path(SVG) が古い描画状態のまま残ることがある。
+  // zoomend では Path の再計算が走るため「縮尺を変えると出る」状態になる。
+  // 次フレームで表示状態を確定したあと、Path 自体も明示的に redraw する。
   requestAnimationFrame(
     () => {
       map.invalidateSize({
@@ -23545,6 +23573,7 @@ function renderSelectedData() {
         debounceMoveend: true
       });
       updateDisplay();
+      forceRedrawVisibleMapLayers();
     }
   );
 
