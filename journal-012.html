@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Rings Version 1.0正式リリース。走った道と地域を地図に積み重ね、「走った人生を残す」ためのRunner's Ringsが最初の正式版を迎えました。">
+<title>Runner's Rings Version 1.0をリリースしました｜Runner's Rings Journal</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}
+body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),radial-gradient(circle at 10% 28%,rgba(49,132,255,.08),transparent 30%),#0b1422}
+header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}.meta{margin:12px 0 26px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}a{color:#ff2bd6;text-decoration:none}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}strong{color:#fff}
+.highlight{margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)}
+.note{margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)}
+.placeCard{margin:24px 0;padding:16px 17px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#132237}
+.placeCard p{margin:4px 0}.backArea{margin-top:32px;text-align:center}
+.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}html[lang="en"] [data-lang="ja"]{display:none}html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL · 012</div>
+  <h2>Runner's Rings Version 1.0をリリースしました ─ 「走った人生を残す」地図へ</h2>
+  <div class="meta">2026.09.23 ・ Version 1.0</div>
+
+  <p>今日、<strong>Runner's Rings Version 1.0</strong>を正式にリリースしました。</p>
+  <p>Runner's Ringsは、ランニングの記録をただ数字として残すのではなく、<strong>自分が走ってきた道や地域を地図に積み重ねていく</strong>ために作ったサービスです。</p>
+
+  <div class="highlight">
+    <strong>走った記録ではなく、走った人生を残す。</strong>
+  </div>
+
+  <p>この言葉を中心に、走った道が増えるほど、自分だけの地図が育っていくものを目指して開発してきました。</p>
+
+  <h3>Version 1.0でできること</h3>
+  <p>Runner's Ringsでは、GPS付きのランニングデータを取り込み、これまで走ってきた道を一つの地図に重ねて見ることができます。</p>
+
+  <div class="placeCard">
+    <p><strong>主なデータ取込方法</strong></p>
+    <p>・Strava</p>
+    <p>・COROS</p>
+    <p>・Intervals.icu</p>
+    <p>・Garmin Connect IQ</p>
+    <p>・FIT / GPX / TCX / ZIP ファイル</p>
+  </div>
+
+  <p>地図は「面」と「コース」の両方から見ることができ、ALL・年・月で走った軌跡を振り返ることもできます。</p>
+  <p>さらに、走った都道府県や市町村などを可視化する<strong>地域走破</strong>、走った地域を記念として残す<strong>制覇カード</strong>など、距離やタイムだけでは見えないランニングの積み重ねも形にしています。</p>
+
+  <h3>過去のランも、これからのランも</h3>
+  <p>Runner's Ringsで大切にしたかったのは、「今日走ったか」だけではありません。</p>
+  <p>昔走った道、旅先で走った道、いつもの近所の道。何年も前のランでも、その人が実際に走った時間であることに変わりはありません。</p>
+
+  <div class="note">
+    <strong>過去のデータを取り込めば、それまでのランニング人生も地図の上に戻ってきます。</strong>
+  </div>
+
+  <p>そして、これから走る一本一本が、その地図に新しい線や地域を加えていきます。</p>
+
+  <h3>日本から、世界のランナーへ</h3>
+  <p>Version 1.0では、日本国内だけでなく海外のランニングも地図に残せるよう、国や地域の表示にも対応を広げてきました。</p>
+  <p>まだ改善したいところ、追加したい機能はたくさんあります。Version 1.0は完成というより、Runner's Ringsが正式に走り始めるスタートラインです。</p>
+
+  <h3>ここから始まります</h3>
+  <p>速い人だけのサービスではありません。たくさん走る人だけのサービスでもありません。</p>
+  <p>1kmでも、旅先の一本でも、毎日のいつもの道でも。その人が走った場所には、その人だけの物語があります。</p>
+
+  <div class="highlight">
+    <strong>Map the life you run.</strong><br>
+    <span style="color:#b9c6d6">あなたが走った人生を、地図に。</span>
+  </div>
+
+  <p>Runner's Ringsは今日、Version 1.0になりました。ここから、もっと多くのランナーの「走った人生」が地図に残っていくことを楽しみにしています。</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a></div>
+</section>
+
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL · 012</div>
+  <h2>Runner's Rings Version 1.0 Is Here — A Map for the Life You Run</h2>
+  <div class="meta">2026.09.23 ・ Version 1.0</div>
+
+  <p>Today, <strong>Runner's Rings Version 1.0</strong> is officially released.</p>
+  <p>Runner's Rings was built to preserve more than running statistics. It brings together the <strong>roads and regions you have actually run</strong> and lets them grow into a map of your own running history.</p>
+
+  <div class="highlight">
+    <strong>Map the life you run.</strong>
+  </div>
+
+  <p>That idea has guided the project from the beginning: the more you run, the more your own map grows.</p>
+
+  <h3>What Version 1.0 can do</h3>
+  <p>Runner's Rings imports GPS-based running data and brings your past routes together on one map.</p>
+
+  <div class="placeCard">
+    <p><strong>Main ways to import running data</strong></p>
+    <p>・Strava</p>
+    <p>・COROS</p>
+    <p>・Intervals.icu</p>
+    <p>・Garmin Connect IQ</p>
+    <p>・FIT / GPX / TCX / ZIP files</p>
+  </div>
+
+  <p>You can explore your history through both area and route views, and look back across ALL-time, yearly, and monthly periods.</p>
+  <p>Region Conquest turns the places you have run into visible progress, while Conquest Cards preserve milestones from the regions in your own running history.</p>
+
+  <h3>Your old runs matter, too</h3>
+  <p>Runner's Rings is not only about what you ran today.</p>
+  <p>An old route, a run while traveling, or the roads around home all belong to the same story. Even a run from years ago is still time you spent running.</p>
+
+  <div class="note">
+    <strong>Import your past data, and those years of running can become part of your map again.</strong>
+  </div>
+
+  <p>Every new run then adds another road, another region, and another layer to that history.</p>
+
+  <h3>From Japan to runners around the world</h3>
+  <p>Version 1.0 has also expanded beyond Japan, with support for displaying running activity across countries and regions overseas.</p>
+  <p>There is still plenty to improve and build. Version 1.0 is not the finish line. It is the starting line for Runner's Rings as a released service.</p>
+
+  <h3>This is where it begins</h3>
+  <p>Runner's Rings is not only for fast runners, and it is not only for people who run huge distances.</p>
+  <p>One kilometer, one run on a trip, or the same familiar road every day — every place you run becomes part of your own story.</p>
+
+  <div class="highlight">
+    <strong>Map the life you run.</strong><br>
+    <span style="color:#b9c6d6">Turn the life you run into a map.</span>
+  </div>
+
+  <p>Runner's Rings is now Version 1.0. I am looking forward to seeing more runners build maps from the lives they run.</p>
+
+  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a></div>
+</section>
+</main>
+
+
+<footer>
+  <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
+applyLanguage(savedLanguage);
+</script>
+</body>
+</html>
