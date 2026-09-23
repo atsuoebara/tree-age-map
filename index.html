@@ -14762,14 +14762,11 @@ function createYearFilters() {
 
           renderSelectedData();
 
-          requestAnimationFrame(
+          setTimeout(
             () => {
-              requestAnimationFrame(
-                () => {
-                  refreshMapAfterFilterChange();
-                }
-              );
-            }
+              refreshMunicipalityLayerAfterFilter();
+            },
+            120
           );
 
         };
@@ -14795,14 +14792,11 @@ monthFilter.onchange =
 
     renderSelectedData();
 
-    requestAnimationFrame(
+    setTimeout(
       () => {
-        requestAnimationFrame(
-          () => {
-            refreshMapAfterFilterChange();
-          }
-        );
-      }
+        refreshMunicipalityLayerAfterFilter();
+      },
+      120
     );
   };
 
@@ -23032,68 +23026,58 @@ syncMapViewModeButtons();
 
 
 
-function refreshMapAfterFilterChange() {
+function refreshMunicipalityLayerAfterFilter() {
   if (
-    !map ||
-    !map._loaded
+    !municipalityLayer
   ) {
     return;
   }
 
-  const originalZoom =
+  const zoom =
     map.getZoom();
 
-  const maxZoom =
-    map.getMaxZoom();
-
-  const minZoom =
-    map.getMinZoom();
-
-  const zoomDelta =
-    originalZoom < maxZoom
-      ? 1
-      : originalZoom > minZoom
-        ? -1
-        : 0;
+  const shouldShowMunicipality =
+    mapViewMode === 'area' ||
+    (
+      mapViewMode === 'auto' &&
+      zoom < 12
+    );
 
   if (
-    zoomDelta === 0
+    !shouldShowMunicipality
   ) {
     return;
   }
 
-  let restored = false;
+  if (
+    map.hasLayer(
+      municipalityLayer
+    )
+  ) {
+    map.removeLayer(
+      municipalityLayer
+    );
+  }
 
-  map.once(
-    'zoomend',
-    () => {
-      // The first real zoom is the confirmed operation that restores
-      // Auto/Area rendering. Restore the user's scale only after Leaflet
-      // has completely finished that zoom cycle.
-      requestAnimationFrame(
-        () => {
-          requestAnimationFrame(
-            () => {
-              if (restored) return;
-              restored = true;
-
-              map.setZoom(
-                originalZoom,
-                {
-                  animate: false
-                }
-              );
-            }
-          );
-        }
-      );
-    }
+  municipalityLayer.addTo(
+    map
   );
 
-  map.setZoom(
-    originalZoom + zoomDelta,
-    {
-      animate: false
+  municipalityLayer.eachLayer(
+    layer => {
+      if (
+        typeof layer.bringToFront ===
+        'function'
+      ) {
+        layer.bringToFront();
+      }
+
+      if (
+        typeof layer.redraw ===
+        'function'
+      ) {
+        layer.redraw();
+      }
     }
   );
 }
