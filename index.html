@@ -5934,6 +5934,10 @@ async function getCloudHeaders(
    地図 全画面表示
 ===================================== */
 const mapFullscreenButton = document.getElementById('mapFullscreenButton');
+const mapElementForFullscreen = document.getElementById('map');
+const mapNormalInlineStyle = mapElementForFullscreen
+  ? mapElementForFullscreen.getAttribute('style')
+  : null;
 let mapFullscreenActive = false;
 
 function setMapFullscreen(active){
@@ -5963,10 +5967,13 @@ function setMapFullscreen(active){
       mapElement.style.setProperty('visibility', 'visible', 'important');
       mapElement.style.setProperty('pointer-events', 'auto', 'important');
     }else{
-      [
-        'position','top','left','right','bottom','width','height',
-        'min-height','z-index','touch-action','visibility','pointer-events'
-      ].forEach(property => mapElement.style.removeProperty(property));
+      // Leafletが通常表示用に持っていたinline styleを丸ごと復元する。
+      // width/heightを個別removeするとiPhone Safariでページ全体が縮小するため行わない。
+      if(mapNormalInlineStyle === null){
+        mapElement.removeAttribute('style');
+      }else{
+        mapElement.setAttribute('style', mapNormalInlineStyle);
+      }
     }
   }
 
@@ -5988,6 +5995,13 @@ function setMapFullscreen(active){
 
   setTimeout(refreshFullscreenMap, 100);
   setTimeout(refreshFullscreenMap, 300);
+
+  if(!mapFullscreenActive){
+    setTimeout(() => {
+      map.invalidateSize({pan:false, animate:false});
+      window.scrollBy(0, 0);
+    }, 450);
+  }
 }
 
 if(mapFullscreenButton){
