@@ -7635,6 +7635,17 @@ function getCountryNameByCode(
     );
 
 
+  // Some country boundary files provide only Japanese display names.
+  // Prefer a localized name by ISO-3 code rather than leaking Japanese into English UI.
+  if (typeof isRunnerRingsEnglish === 'function' && isRunnerRingsEnglish()) {
+    const englishCountryNames = {
+      GBR: 'United Kingdom', CYM: 'Cayman Islands', NOR: 'Norway',
+      USA: 'United States', JPN: 'Japan', AUS: 'Australia',
+      CAN: 'Canada', FRA: 'France', DEU: 'Germany', NZL: 'New Zealand',
+      KOR: 'South Korea'
+    };
+    if (englishCountryNames[countryCode]) return englishCountryNames[countryCode];
+  }
   return item
     ? getCountryName(
         item.feature
@@ -22899,13 +22910,20 @@ function updateDashboard(
       stats.activities.length;
 
 
+  // An overseas run without ADM2 analysis is not evidence of zero visited regions.
+  // Keep the ADM2 definition; never silently substitute ADM1 state counts.
+  const hasOverseasRunsWithoutAdmin2 =
+    !admin2RegionCount &&
+    Object.values(stats.countryDistance || {}).some(km => km > 0.01) &&
+    Object.keys(stats.admin1Distance || {}).length > 0;
   document
     .getElementById(
       'cityCount'
     )
     .textContent =
-      entries.length +
-      admin2RegionCount;
+      hasOverseasRunsWithoutAdmin2 && !entries.length
+        ? '—'
+        : entries.length + admin2RegionCount;
 
 
   updateCountryDashboard(
@@ -24666,6 +24684,13 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['登録ラン','Registered runs'],
   ['登録距離','Registered distance'],
   ['走破地域','Regions visited'],
+  ['地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。','If areas or routes are missing, tap the map’s + / − zoom control once.'],
+  ['走破済み','Completed'],
+  ['未走破','Not yet completed'],
+  ['走破 ','Completed '],
+  ['イギリス','United Kingdom'],
+  ['ケイマン諸島','Cayman Islands'],
+  ['ノルウェー','Norway'],
   ['総距離・ラン数・走破地域数・地図は、あなた本人だけに表示されています。','Your distance, run count, visited regions, and map are visible only to you.'],
   ['全期間の総距離','All-time distance'],
   ['全期間のラン数','All-time runs'],
