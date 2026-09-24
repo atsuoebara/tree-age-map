@@ -941,15 +941,7 @@
       color:#cbd5e1;
       font-size:12px;
     }
-
-    #mapDisplayHelp{
-      margin:6px 10px 8px;
-      color:#facc15;
-      font-size:12px;
-      line-height:1.5;
-    }
-
-    .mapViewModeLabel{
+.mapViewModeLabel{
       margin-right:2px;
       opacity:.78;
     }
@@ -3285,8 +3277,7 @@
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
-  <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
-  <div id="map"></div>
+<div id="map"></div>
 
   <div id="appAdArea">
   <div class="authAdLabel">ADVERTISEMENT</div>
@@ -23677,25 +23668,6 @@ function updateDisplayAuto() {
    再描画
 ===================================== */
 
-function debugRenderState(
-  label
-) {
-  requestAnimationFrame(() => {
-    const canvasEls = document.querySelectorAll('#map canvas');
-    console.log('[RR-DEBUG]', label, {
-      zoom: map.getZoom(),
-      mapViewMode,
-      municipalityLayerOnMap: municipalityLayer ? map.hasLayer(municipalityLayer) : null,
-      municipalityLayerCount: municipalityLayer ? municipalityLayer.getLayers().length : null,
-      routeGroupOnMap: map.hasLayer(routeGroup),
-      routeGroupCount: routeGroup.getLayers().length,
-      canvasCount: canvasEls.length,
-      canvasSizes: Array.from(canvasEls).map(c => [c.width, c.height])
-    });
-  });
-}
-
-
 function renderSelectedData() {
 
   const stats =
@@ -23746,11 +23718,6 @@ function renderSelectedData() {
     renderCloudRowsList();
 
   updateDisplay();
-
-  debugRenderState(
-    'after renderSelectedData'
-  );
-
 }
 
 
