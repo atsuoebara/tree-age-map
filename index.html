@@ -17601,8 +17601,9 @@ function updateCountryDetailFlow(
     );
   }
 
-  flow.innerHTML = '';
-
+  // Keep references before clearing countryDetailFlow.
+  // prefectureSection / citySection may already have been moved into this flow
+  // by the previous render. Clearing first would remove them from the document.
   const regionSection =
     document.getElementById(
       'regionSection'
@@ -17613,9 +17614,6 @@ function updateCountryDetailFlow(
       'admin2Section'
     );
 
-  regionSection.hidden = true;
-  admin2Section.hidden = true;
-
   const prefectureSection =
     document.getElementById(
       'prefectureSection'
@@ -17625,6 +17623,11 @@ function updateCountryDetailFlow(
     document.getElementById(
       'citySection'
     );
+
+  flow.innerHTML = '';
+
+  regionSection.hidden = true;
+  admin2Section.hidden = true;
 
   const countryOrder =
     Object.entries(
