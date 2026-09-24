@@ -22401,6 +22401,31 @@ function getDisplayPrefectureName(name) {
     : name;
 }
 
+// Display-only city translations. Original Japanese keys remain unchanged.
+// This initial verified-name dictionary is intentionally limited: do not
+// guess readings for Japanese municipalities that are not listed here.
+const MUNICIPALITY_ENGLISH_NAMES = Object.freeze({
+  '前橋市':'Maebashi','高崎市':'Takasaki','渋川市':'Shibukawa',
+  '伊勢崎市':'Isesaki','桐生市':'Kiryu','太田市':'Ota',
+  '沼田市':'Numata','館林市':'Tatebayashi','藤岡市':'Fujioka',
+  '富岡市':'Tomioka','安中市':'Annaka','みどり市':'Midori',
+  '吉岡町':'Yoshioka','榛東村':'Shinto','玉村町':'Tamamura',
+  '足利市':'Ashikaga','佐野市':'Sano','宇都宮市':'Utsunomiya',
+  '日光市':'Nikko','小山市':'Oyama','栃木市':'Tochigi',
+  'さいたま市':'Saitama','川越市':'Kawagoe','熊谷市':'Kumagaya',
+  '本庄市':'Honjo','深谷市':'Fukaya','上里町':'Kamisato',
+  '東京都特別区部':'Tokyo Special Wards','千代田区':'Chiyoda',
+  '新宿区':'Shinjuku','渋谷区':'Shibuya','横浜市':'Yokohama',
+  '川崎市':'Kawasaki','相模原市':'Sagamihara',
+  '大阪市':'Osaka','京都市':'Kyoto','名古屋市':'Nagoya',
+  '札幌市':'Sapporo','仙台市':'Sendai','福岡市':'Fukuoka'
+});
+function getDisplayMunicipalityName(name) {
+  return isRunnerRingsEnglish()
+    ? (MUNICIPALITY_ENGLISH_NAMES[name] || name)
+    : name;
+}
+
 function updatePrefectureDashboard(
   stats
 ) {
@@ -22522,10 +22547,9 @@ function updatePrefectureDashboard(
           .completedCityKeys
           .map(
             cityKey =>
-              splitCityKey(
-                cityKey
+              getDisplayMunicipalityName(
+                splitCityKey(cityKey).city
               )
-              .city
           );
 
 
@@ -22534,10 +22558,9 @@ function updatePrefectureDashboard(
           .remainingCityKeys
           .map(
             cityKey =>
-              splitCityKey(
-                cityKey
+              getDisplayMunicipalityName(
+                splitCityKey(cityKey).city
               )
-              .city
           );
 
 
@@ -23044,7 +23067,7 @@ function updateDashboard(
       card.innerHTML =
         '<div class="cityTop">' +
           '<div class="cityName">' +
-            city +
+            getDisplayMunicipalityName(city) +
           '</div>' +
           '<div class="cityDistance">' +
             km.toFixed(
@@ -23059,7 +23082,7 @@ function updateDashboard(
             '%"></div>' +
         '</div>' +
         '<div class="cityRuns">' +
-          prefecture +
+          getDisplayPrefectureName(prefecture) +
           ' ・ RUNS ' +
           runs +
         '</div>';
