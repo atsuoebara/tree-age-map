@@ -1,0 +1,45 @@
+name: Generate Journal article pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview generated pages without publishing'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  generate-journal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Generate pages
+        env:
+          JOURNAL_SUPABASE_URL: ${{ secrets.JOURNAL_SUPABASE_URL }}
+          JOURNAL_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.JOURNAL_SUPABASE_PUBLISHABLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node scripts/generate-journal.mjs
+      - name: Commit pages (only when approved)
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add journal/articles/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Generate published Journal article pages'
+            git push origin HEAD:main
+          fi
