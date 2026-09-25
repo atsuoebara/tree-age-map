@@ -33,6 +33,14 @@ footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22p
 footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
 [data-lang="en"]{display:none} html[lang="en"] [data-lang="ja"]{display:none} html[lang="en"] [data-lang="en"]{display:block}
 @media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+
+/* Journal article sharing: localized buttons, independent of article content */
+.rrSharePanel{margin:30px 0 22px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#132237}
+.rrShareHeading{margin:0 0 12px;color:#cbd5e1;font-size:13px;font-weight:700}
+.rrShareActions{display:flex;flex-wrap:wrap;gap:9px}
+.rrShareButton{padding:10px 13px;border:1px solid rgba(255,255,255,.19);border-radius:10px;background:#1c3049;color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.rrShareButton:hover,.rrShareButton:focus-visible{border-color:#ff2bd6;outline-color:#ff2bd6}
+.rrShareMessage{min-height:18px;margin:10px 0 0;color:#eaff00;font-size:12px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -79,7 +87,16 @@ footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
   <p>今回のサポート機能も、そのための小さな仕組みの一つです。</p>
   <p>「応援する」ボタンを押さなくても大丈夫。でも、もしどこかでRunner's Ringsを面白いと思ってもらえたなら、それだけでも十分うれしいです。</p>
 
-  <div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a><a class="backButton backHomeButton" href="./index.html">Runner's Ringsへ戻る</a></div>
+  <div class="rrSharePanel" aria-label="記事を共有">
+  <div class="rrShareHeading">この記事を共有</div>
+  <div class="rrShareActions">
+    <button type="button" class="rrShareButton" data-rr-share="copy">リンクをコピー</button>
+    <button type="button" class="rrShareButton" data-rr-share="native">共有</button>
+    <button type="button" class="rrShareButton" data-rr-share="x">Xで共有</button>
+  </div>
+  <p class="rrShareMessage" role="status" aria-live="polite"></p>
+</div>
+<div class="backArea"><a class="backButton" href="./journal.html">Journalへ戻る</a><a class="backButton backHomeButton" href="./index.html">Runner's Ringsへ戻る</a></div>
 </section>
 
 <section data-lang="en">
@@ -114,7 +131,16 @@ footer a{color:#cbd5e1;text-decoration:none} footer a:hover{color:#ff2bd6}
   <p>The support button is simply one small part of making that possible.</p>
   <p>You never need to press it. But if Runner's Rings makes you think “this is kind of fun,” that already means a lot.</p>
 
-  <div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a><a class="backButton backHomeButton" href="./index.html">Back to Runner's Rings</a></div>
+  <div class="rrSharePanel" aria-label="Share article">
+  <div class="rrShareHeading">Share this article</div>
+  <div class="rrShareActions">
+    <button type="button" class="rrShareButton" data-rr-share="copy">Copy link</button>
+    <button type="button" class="rrShareButton" data-rr-share="native">Share</button>
+    <button type="button" class="rrShareButton" data-rr-share="x">Share on X</button>
+  </div>
+  <p class="rrShareMessage" role="status" aria-live="polite"></p>
+</div>
+<div class="backArea"><a class="backButton" href="./journal.html">Back to Journal</a><a class="backButton backHomeButton" href="./index.html">Back to Runner's Rings</a></div>
 </section>
 </main>
 
@@ -144,6 +170,52 @@ function applyLanguage(language){
 }
 languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
 applyLanguage(savedLanguage);
+</script>
+
+<script>
+/* Buttons share this article's permanent URL (not the Journal list URL). */
+(function(){
+  function rrCopyFallback(value){
+    var area=document.createElement('textarea');
+    area.value=value;area.style.position='fixed';area.style.opacity='0';
+    document.body.appendChild(area);area.select();
+    var copied=document.execCommand('copy');area.remove();
+    if(!copied)throw new Error('Copy not supported');
+  }
+  async function rrCopy(value){
+    if(navigator.clipboard && window.isSecureContext){
+      try{await navigator.clipboard.writeText(value);return;}catch(e){}
+    }
+    rrCopyFallback(value);
+  }
+  document.querySelectorAll('[data-rr-share]').forEach(function(button){
+    button.addEventListener('click',async function(){
+      var panel=button.closest('.rrSharePanel');
+      var article=panel.closest('article,section');
+      var isEn=article && article.getAttribute('data-lang')==='en';
+      var titleNode=article && article.querySelector('h2');
+      var title=titleNode?titleNode.textContent.replace(/\s+/g,' ').trim():document.title;
+      var url=location.href.split('#')[0];
+      var message=panel.querySelector('.rrShareMessage');
+      var action=button.getAttribute('data-rr-share');
+      message.textContent='';
+      if(action==='x'){
+        window.open('https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url:url}).toString(),'_blank','noopener,noreferrer');
+        return;
+      }
+      if(action==='native' && navigator.share){
+        try{await navigator.share({title:title,text:title,url:url});return;}
+        catch(e){if(e && e.name==='AbortError')return;}
+      }
+      try{
+        await rrCopy(url);
+        message.textContent=isEn?'Link copied.':'リンクをコピーしました。';
+      }catch(e){
+        message.textContent=isEn?'Unable to copy. Please copy the address bar URL.':'コピーできませんでした。アドレスバーのURLをコピーしてください。';
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>
