@@ -237,7 +237,7 @@ applyLanguage(savedLanguage);
 /* Preview only: does NOT change the production journal.html. */
 (() => {
   'use strict';
-  const URL = 'https://fhwvntpzwyenendhcgbw.supabase.co';
+  const SUPABASE_URL = 'https://fhwvntpzwyenendhcgbw.supabase.co';
   const KEY = 'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
   const PAGE_SIZE = 10;
   const lists = { ja: document.querySelector('section[data-lang="ja"]'),
@@ -343,7 +343,7 @@ applyLanguage(savedLanguage);
   }
   render();
   if(!window.supabase){failed=true;render();return;}
-  const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
   db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,image_url,category,published_at,status')
     .eq('status','published').order('published_at',{ascending:false}).limit(200)
     .then(({data,error})=>{ if(error){failed=true;console.error(error);} else {published=data||[];} render(); })
