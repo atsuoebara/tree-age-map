@@ -3,271 +3,89 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Runner's Rings Journal Admin</title>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      background: #0b1422;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-    }
-
-    .page {
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 18px 14px 40px;
-    }
-
-    .header {
-      margin-bottom: 18px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-      line-height: 1.3;
-    }
-
-    .header p {
-      margin: 7px 0 0;
-      color: #aeb9c8;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .card {
-      background: #132237;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
-    }
-
-    .statusBox {
-      margin-bottom: 16px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #0f1d2f;
-      color: #dce8f5;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .statusBox.ok {
-      border: 1px solid rgba(234, 255, 0, 0.35);
-      color: #eaff00;
-    }
-
-    .statusBox.error {
-      border: 1px solid rgba(255, 80, 120, 0.45);
-      color: #ff9db5;
-    }
-
-    .field {
-      margin-top: 16px;
-    }
-
-    .field:first-of-type {
-      margin-top: 0;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 7px;
-      color: #cbd5e1;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 12px;
-      background: #0f1d2f;
-      color: #ffffff;
-      font: inherit;
-      font-size: 16px;
-      outline: none;
-    }
-
-    input,
-    select {
-      min-height: 48px;
-      padding: 11px 12px;
-    }
-
-    textarea {
-      min-height: 120px;
-      padding: 12px;
-      resize: vertical;
-      line-height: 1.65;
-    }
-
-    textarea.bodyField {
-      min-height: 220px;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: #ff2bd6;
-      box-shadow: 0 0 0 3px rgba(255, 43, 214, 0.11);
-    }
-
-    .help {
-      margin-top: 6px;
-      color: #8190a3;
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .buttonRow {
-      margin-top: 22px;
-    }
-
-    button {
-      width: 100%;
-      min-height: 50px;
-      border: 0;
-      border-radius: 13px;
-      background: #ff2bd6;
-      color: #ffffff;
-      font: inherit;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: wait;
-    }
-
-    .backLink {
-      display: block;
-      margin-top: 16px;
-      color: #aeb9c8;
-      font-size: 12px;
-      text-align: center;
-      text-decoration: none;
-    }
-
-    .backLink:hover {
-      color: #ffffff;
-    }
-
-    .hidden {
-      display: none;
-    }
-
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #0b1422; color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { min-height: 100vh; }
+    .page { width: 100%; max-width: 720px; margin: 0 auto; padding: 18px 14px 40px; }
+    .header { margin-bottom: 18px; }
+    .header h1 { margin: 0; font-size: 24px; line-height: 1.3; }
+    .header p { margin: 7px 0 0; color: #aeb9c8; font-size: 13px; line-height: 1.6; }
+    .card { background: #132237; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px; padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,.16); }
+    .statusBox { margin-bottom: 16px; padding: 12px 14px; border-radius: 12px;
+      background: #0f1d2f; color: #dce8f5; font-size: 13px; line-height: 1.6;
+      overflow-wrap: anywhere; }
+    .statusBox.ok { border: 1px solid rgba(234,255,0,.35); color: #eaff00; }
+    .statusBox.error { border: 1px solid rgba(255,80,120,.45); color: #ff9db5; }
+    .statusBox.notice { border: 1px solid rgba(255,203,69,.45); color: #ffdb83; }
+    .field { margin-top: 16px; }
+    .field:first-of-type { margin-top: 0; }
+    label { display: block; margin-bottom: 7px; color: #cbd5e1; font-size: 13px; font-weight: 700; }
+    input, textarea, select { width: 100%; border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px; background: #0f1d2f; color: #fff; font: inherit;
+      font-size: 16px; outline: none; }
+    input, select { min-height: 48px; padding: 11px 12px; }
+    input[type="file"] { padding: 12px; height: auto; }
+    textarea { min-height: 120px; padding: 12px; resize: vertical; line-height: 1.65; }
+    textarea.bodyField { min-height: 220px; }
+    input:focus, textarea:focus, select:focus { border-color: #ff2bd6;
+      box-shadow: 0 0 0 3px rgba(255,43,214,.11); }
+    .help { margin-top: 6px; color: #a7b5c8; font-size: 12px; line-height: 1.5; }
+    .preview { display: block; max-width: 100%; max-height: 340px;
+      margin-top: 12px; border-radius: 12px; object-fit: contain; border: 1px solid #38516b; }
+    .buttonRow { margin-top: 22px; }
+    button { width: 100%; min-height: 50px; border: 0; border-radius: 13px;
+      background: #ff2bd6; color: #fff; font: inherit; font-size: 15px;
+      font-weight: 800; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .backLink { display: block; margin-top: 16px; color: #aeb9c8;
+      font-size: 12px; text-align: center; text-decoration: none; }
+    .backLink:hover { color: #fff; }
+    .hidden { display: none !important; }
     @media (max-width: 520px) {
-      .page {
-        padding: 14px 10px 32px;
-      }
-
-      .card {
-        padding: 15px;
-        border-radius: 16px;
-      }
-
-      .header h1 {
-        font-size: 21px;
-      }
+      .page { padding: 14px 10px 32px; }
+      .card { padding: 15px; border-radius: 16px; }
+      .header h1 { font-size: 21px; }
     }
   </style>
 </head>
-
 <body>
   <main class="page">
     <header class="header">
       <h1>Runner's Rings Journal</h1>
-      <p>
-        Journal記事の下書き投稿画面です。
-        まずはSupabaseへdraft保存できるところまで確認します。
-      </p>
+      <p>Journal記事の下書き投稿画面です。画像を確認してから保存できます。</p>
     </header>
-
     <section class="card">
-      <div id="authStatus" class="statusBox">
-        ログイン状態を確認しています...
-      </div>
-
+      <div id="authStatus" class="statusBox">ログイン状態を確認しています...</div>
       <form id="journalForm" class="hidden">
         <div class="field">
           <label for="titleJa">日本語タイトル</label>
-          <input
-            id="titleJa"
-            name="titleJa"
-            type="text"
-            maxlength="160"
-            required
-          >
+          <input id="titleJa" name="titleJa" type="text" maxlength="160" required>
         </div>
-
         <div class="field">
           <label for="titleEn">English title</label>
-          <input
-            id="titleEn"
-            name="titleEn"
-            type="text"
-            maxlength="160"
-          >
+          <input id="titleEn" name="titleEn" type="text" maxlength="160">
         </div>
-
         <div class="field">
           <label for="summaryJa">日本語概要</label>
-          <textarea
-            id="summaryJa"
-            name="summaryJa"
-            maxlength="500"
-          ></textarea>
+          <textarea id="summaryJa" name="summaryJa" maxlength="500"></textarea>
         </div>
-
         <div class="field">
           <label for="summaryEn">English summary</label>
-          <textarea
-            id="summaryEn"
-            name="summaryEn"
-            maxlength="500"
-          ></textarea>
+          <textarea id="summaryEn" name="summaryEn" maxlength="500"></textarea>
         </div>
-
         <div class="field">
           <label for="bodyJa">日本語本文</label>
-          <textarea
-            id="bodyJa"
-            name="bodyJa"
-            class="bodyField"
-            required
-          ></textarea>
+          <textarea id="bodyJa" name="bodyJa" class="bodyField" required></textarea>
         </div>
-
         <div class="field">
           <label for="bodyEn">English body</label>
-          <textarea
-            id="bodyEn"
-            name="bodyEn"
-            class="bodyField"
-          ></textarea>
+          <textarea id="bodyEn" name="bodyEn" class="bodyField"></textarea>
         </div>
-
         <div class="field">
           <label for="category">カテゴリ</label>
           <select id="category" name="category">
@@ -278,282 +96,198 @@
             <option value="other">その他</option>
           </select>
         </div>
-
-        <div class="buttonRow">
-          <button id="saveDraftButton" type="submit">
-            下書き保存
-          </button>
+        <div class="field">
+          <label for="journalImage">写真・1コマ漫画（任意）</label>
+          <input id="journalImage" name="journalImage" type="file" accept="image/*">
+          <div class="help">画像のみ、5MB以下。保存前にプレビューできます。</div>
+          <img id="imagePreview" class="preview hidden" alt="選択した画像のプレビュー">
+          <div id="imageInfo" class="help" aria-live="polite"></div>
         </div>
-
-        <div id="saveMessage" class="statusBox hidden"></div>
+        <div class="buttonRow">
+          <button id="saveDraftButton" type="submit">下書き保存</button>
+        </div>
+        <div id="saveMessage" class="statusBox hidden" aria-live="polite"></div>
       </form>
     </section>
-
-    <a class="backLink" href="./index.html">
-      Runner's Ringsへ戻る
-    </a>
+    <a class="backLink" href="./index.html">Runner's Ringsへ戻る</a>
   </main>
-
   <script>
-    const SUPABASE_URL =
-      'https://fhwvntpzwyenendhcgbw.supabase.co';
+    'use strict';
+    const SUPABASE_URL = 'https://fhwvntpzwyenendhcgbw.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
+    const ADMIN_USER_ID = '386da875-298e-46b7-927d-0e02d02c409a';
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    const BUCKET = 'journal-images';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    const $ = id => document.getElementById(id);
+    const authStatus = $('authStatus');
+    const form = $('journalForm');
+    const button = $('saveDraftButton');
+    const saveMessage = $('saveMessage');
+    const imageInput = $('journalImage');
+    const preview = $('imagePreview');
+    const imageInfo = $('imageInfo');
+    let previewUrl = null;
+    // 途中失敗した場合は同じ下書きを再利用し、重複記事を増やさない。
+    let draftId = null;
+    let imageStoragePath = null;
+    let pendingImageUrl = null;
+    let initialImage = null;
+    let busy = false;
 
-    const SUPABASE_KEY =
-      'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
-
-    const ADMIN_USER_ID =
-      '386da875-298e-46b7-927d-0e02d02c409a';
-
-    const supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY,
-        {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
-          }
-        }
-      );
-
-    const authStatus =
-      document.getElementById('authStatus');
-
-    const journalForm =
-      document.getElementById('journalForm');
-
-    const saveDraftButton =
-      document.getElementById('saveDraftButton');
-
-    const saveMessage =
-      document.getElementById('saveMessage');
-
-    function setAuthStatus(message, type = '') {
-      authStatus.textContent = message;
-      authStatus.className = 'statusBox';
-
-      if (type) {
-        authStatus.classList.add(type);
-      }
+    function showStatus(element, message, type = '') {
+      element.textContent = message;
+      element.className = 'statusBox' + (type ? ' ' + type : '');
     }
-
-    function setSaveMessage(message, type = '') {
-      saveMessage.textContent = message;
-      saveMessage.className = 'statusBox';
-
-      if (type) {
-        saveMessage.classList.add(type);
-      }
-
-      saveMessage.classList.remove('hidden');
-    }
-
-    function hideSaveMessage() {
-      saveMessage.classList.add('hidden');
-    }
-
     function makeSlug() {
       const now = new Date();
-
-      const pad = value =>
-        String(value).padStart(2, '0');
-
-      const datePart =
-        now.getFullYear() +
-        pad(now.getMonth() + 1) +
-        pad(now.getDate());
-
-      const timePart =
-        pad(now.getHours()) +
-        pad(now.getMinutes()) +
-        pad(now.getSeconds());
-
-      return 'journal-' + datePart + '-' + timePart;
+      const pad = n => String(n).padStart(2, '0');
+      return 'journal-' + now.getFullYear() + pad(now.getMonth() + 1) +
+        pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes()) +
+        pad(now.getSeconds()) + '-' + crypto.randomUUID().slice(0, 8);
     }
-
+    async function requireAdmin() {
+      // サーバーにユーザーを確認。画面での判定に加えて、RLSが実際の権限を守る。
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error || !data?.user || data.user.id !== ADMIN_USER_ID) {
+        throw new Error('管理者ログインを確認できません。Runner\'s Ringsへログインしてください。');
+      }
+      return data.user;
+    }
     async function checkAdmin() {
       try {
-        const {
-          data,
-          error
-        } =
-          await supabaseClient.auth.getSession();
-
-        if (error) {
-          throw error;
-        }
-
-        const session =
-          data.session;
-
-        if (!session) {
-          setAuthStatus(
-            'Runner\'s Ringsにログインしてください。',
-            'error'
-          );
-          return;
-        }
-
-        const user =
-          session.user;
-
-        if (!user || user.id !== ADMIN_USER_ID) {
-          setAuthStatus(
-            'このページを利用する権限がありません。',
-            'error'
-          );
-          return;
-        }
-
-        setAuthStatus(
-          '管理者ログインを確認しました。',
-          'ok'
-        );
-
-        journalForm.classList.remove('hidden');
-
+        await requireAdmin();
+        showStatus(authStatus, '管理者ログインを確認しました。', 'ok');
+        form.classList.remove('hidden');
       } catch (error) {
-        console.error(error);
-
-        setAuthStatus(
-          'ログイン状態の確認に失敗しました。',
-          'error'
-        );
+        showStatus(authStatus, error.message, 'error');
+        form.classList.add('hidden');
       }
     }
-
-    journalForm.addEventListener(
-      'submit',
-      async event => {
-        event.preventDefault();
-
-        hideSaveMessage();
-
-        const titleJa =
-          document.getElementById('titleJa')
-            .value
-            .trim();
-
-        const titleEn =
-          document.getElementById('titleEn')
-            .value
-            .trim();
-
-        const summaryJa =
-          document.getElementById('summaryJa')
-            .value
-            .trim();
-
-        const summaryEn =
-          document.getElementById('summaryEn')
-            .value
-            .trim();
-
-        const bodyJa =
-          document.getElementById('bodyJa')
-            .value
-            .trim();
-
-        const bodyEn =
-          document.getElementById('bodyEn')
-            .value
-            .trim();
-
-        const category =
-          document.getElementById('category')
-            .value;
-
-        if (!titleJa || !bodyJa) {
-          setSaveMessage(
-            '日本語タイトルと日本語本文は必須です。',
-            'error'
-          );
-          return;
-        }
-
-        saveDraftButton.disabled = true;
-        saveDraftButton.textContent =
-          '保存しています...';
-
-        try {
-          const {
-            data: sessionData,
-            error: sessionError
-          } =
-            await supabaseClient.auth.getSession();
-
-          if (sessionError) {
-            throw sessionError;
-          }
-
-          const user =
-            sessionData.session?.user;
-
-          if (!user || user.id !== ADMIN_USER_ID) {
-            throw new Error(
-              '管理者ログインを確認できません。'
-            );
-          }
-
-          const slug =
-            makeSlug();
-
-          const {
-            data,
-            error
-          } =
-            await supabaseClient
-              .from('journal_posts')
-              .insert({
-                slug,
-                title_ja: titleJa,
-                title_en: titleEn || null,
-                summary_ja: summaryJa || null,
-                summary_en: summaryEn || null,
-                body_ja: bodyJa,
-                body_en: bodyEn || null,
-                category,
-                status: 'draft',
-                published_at: null
-              })
-              .select('id, slug, created_at')
-              .single();
-
-          if (error) {
-            throw error;
-          }
-
-          setSaveMessage(
-            '下書きを保存しました。ID: ' +
-              data.id,
-            'ok'
-          );
-
-          journalForm.reset();
-
-          document.getElementById('category')
-            .value = 'development';
-
-        } catch (error) {
-          console.error(error);
-
-          setSaveMessage(
-            '保存に失敗しました。' +
-            (error?.message
-              ? ' ' + error.message
-              : ''),
-            'error'
-          );
-
-        } finally {
-          saveDraftButton.disabled = false;
-          saveDraftButton.textContent =
-            '下書き保存';
-        }
+    function clearPreview() {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+      preview.removeAttribute('src');
+      preview.classList.add('hidden');
+      imageInfo.textContent = '';
+    }
+    function validateImage(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) throw new Error('画像ファイルを選んでください。');
+      if (file.size > MAX_IMAGE_SIZE) throw new Error('画像は5MB以下にしてください。');
+      if (file.size === 0) throw new Error('空の画像はアップロードできません。');
+    }
+    imageInput.addEventListener('change', () => {
+      clearPreview();
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      try {
+        validateImage(file);
+        previewUrl = URL.createObjectURL(file);
+        preview.src = previewUrl;
+        preview.classList.remove('hidden');
+        imageInfo.textContent = file.name + '（' + (file.size / 1024 / 1024).toFixed(2) + 'MB）';
+      } catch (error) {
+        imageInput.value = '';
+        showStatus(saveMessage, error.message, 'error');
       }
-    );
-
+    });
+    function collectFields() {
+      const titleJa = $('titleJa').value.trim();
+      const bodyJa = $('bodyJa').value.trim();
+      if (!titleJa || !bodyJa) throw new Error('日本語タイトルと日本語本文は必須です。');
+      return {
+        title_ja: titleJa,
+        title_en: $('titleEn').value.trim() || null,
+        summary_ja: $('summaryJa').value.trim() || null,
+        summary_en: $('summaryEn').value.trim() || null,
+        body_ja: bodyJa,
+        body_en: $('bodyEn').value.trim() || null,
+        category: $('category').value
+      };
+    }
+    async function createOrUpdateDraft(fields) {
+      if (draftId != null) {
+        const { error } = await supabaseClient.from('journal_posts')
+          .update(fields).eq('id', draftId);
+        if (error) throw error;
+        return draftId;
+      }
+      const { data, error } = await supabaseClient.from('journal_posts').insert({
+        ...fields, slug: makeSlug(), status: 'draft', published_at: null
+      }).select('id').single();
+      if (error) throw error;
+      draftId = data.id;
+      return draftId;
+    }
+    async function uploadImage(file) {
+      // 公開バケットへのアップロードでも、Storage側のINSERTポリシーが必要。
+      const safeExt = ({ 'image/jpeg': 'jpg', 'image/png': 'png',
+        'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'avif' })[file.type] ||
+        (file.name.split('.').pop() || 'image').replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toLowerCase();
+      const path = 'posts/' + draftId + '/' + crypto.randomUUID() + '.' + safeExt;
+      const { error } = await supabaseClient.storage.from(BUCKET)
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      imageStoragePath = path;
+      pendingImageUrl = supabaseClient.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    }
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (busy) return;
+      saveMessage.classList.add('hidden');
+      let fields, file;
+      try {
+        fields = collectFields();
+        file = imageInput.files?.[0] || null;
+        validateImage(file);
+        // 保存途中で画像を別の画像に変更していたら、新規下書きでやり直す必要がある。
+        if (draftId != null && imageStoragePath && file && file !== initialImage) {
+          throw new Error('画像アップロード済みです。この画面では画像変更せず再保存してください。');
+        }
+      } catch (error) {
+        showStatus(saveMessage, error.message, 'error');
+        return;
+      }
+      busy = true;
+      button.disabled = true;
+      button.textContent = '保存しています...';
+      try {
+        await requireAdmin();
+        await createOrUpdateDraft(fields);
+        // 先に下書きを作成。通信失敗時もIDを保持して同じ記事への再試行を行う。
+        if (file && !pendingImageUrl) {
+          initialImage = file;
+          await uploadImage(file);
+        }
+        if (pendingImageUrl) {
+          const { error } = await supabaseClient.from('journal_posts')
+            .update({ image_url: pendingImageUrl }).eq('id', draftId);
+          if (error) throw error;
+        }
+        showStatus(saveMessage,
+          '下書きを保存しました。ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
+        form.reset();
+        $('category').value = 'development';
+        clearPreview();
+        draftId = null;
+        imageStoragePath = null;
+        pendingImageUrl = null;
+        initialImage = null;
+      } catch (error) {
+        console.error(error);
+        showStatus(saveMessage,
+          '保存を完了できませんでした。' + (draftId != null ? ' 下書きID: ' + draftId + '。' : '') +
+          ' この画面を閉じず、同じ内容のまま再試行してください。詳細: ' +
+          (error?.message || '不明なエラー'), 'error');
+      } finally {
+        busy = false;
+        button.disabled = false;
+        button.textContent = '下書き保存';
+      }
+    });
     checkAdmin();
   </script>
 </body>
