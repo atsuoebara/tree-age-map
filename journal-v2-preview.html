@@ -47,6 +47,13 @@ html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
 .pageButtons button { color:white;background:#22354b;border:1px solid #48617b;padding:10px 16px;border-radius:9px;font-weight:bold; }
 .pageButtons button:disabled { opacity:.35; }
 .listNotice { color:#b9c6d6;font-size:12px;text-align:center;margin:14px 0; }
+
+/* Sharing controls for the staging Journal index. */
+.articleCard { margin-bottom:6px; }
+.shareRow { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+.shareRow button, .shareRow a { font:inherit; font-size:12px; font-weight:700; border:1px solid rgba(255,255,255,.24); border-radius:999px; padding:7px 12px; background:#23354b; color:#fff; cursor:pointer; text-decoration:none; line-height:1.4; }
+.shareRow button:focus-visible, .shareRow a:focus-visible { outline:2px solid #eaff00; outline-offset:2px; }
+.shareRow .shareStatus { width:100%; font-size:11px; color:#eaff00; min-height:1px; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -278,14 +285,43 @@ applyLanguage(savedLanguage);
     link.append(textElement('span','articleTag',post.category || 'Journal'));
     return link;
   }
+  function shareURL(href) { return new URL(href, location.href).href; }
+  async function copyURL(url, status, lang) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Older browsers: offer selectable text without a hidden, unreliable clipboard trick.
+        window.prompt(lang==='ja'?'記事URLをコピーしてください':'Copy this article URL', url);
+        return;
+      }
+      status.textContent=lang==='ja'?'URLをコピーしました':'Link copied';
+    } catch (_) { window.prompt(lang==='ja'?'記事URLをコピーしてください':'Copy this article URL',url); }
+  }
+  function makeShareRow(href, title, lang) {
+    const url=shareURL(href);
+    const row=document.createElement('div');row.className='shareRow';
+    const status=textElement('span','shareStatus','');status.setAttribute('role','status');
+    const copy=document.createElement('button');copy.type='button';copy.textContent=lang==='ja'?'リンクをコピー':'Copy link';
+    copy.addEventListener('click',()=>copyURL(url,status,lang));
+    row.append(copy);
+    if (navigator.share) {
+      const share=document.createElement('button');share.type='button';share.textContent=lang==='ja'?'共有':'Share';
+      share.addEventListener('click',async()=>{try{await navigator.share({title,text:title,url});}catch(err){if(err?.name!=='AbortError')status.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});
+      row.append(share);
+    }
+    const x=document.createElement('a');x.target='_blank';x.rel='noopener noreferrer';x.href='https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url}).toString();
+    x.textContent=lang==='ja'?'Xで共有':'Share to X';row.append(x,status);
+    return row;
+  }
   function render() {
     for (const [lang, section] of Object.entries(lists)) {
-      section.querySelectorAll('.pageButtons,.listNotice').forEach(el=>el.remove());
+      section.querySelectorAll('.pageButtons,.listNotice,.shareRow').forEach(el=>el.remove());
       dynamicCards[lang].forEach(el=>el.remove());
       dynamicCards[lang] = [];
       // Remove old cards from the DOM without recreating or changing their links/content.
-      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index}));
-      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i});});
+      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Runner’s Rings Journal'}));
+      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Runner’s Rings Journal'});});
       items.sort((a,b)=>b.date.localeCompare(a.date)||b.order-a.order);
       items.forEach(item=>item.node.remove());
       const total = Math.max(1,Math.ceil(items.length / PAGE_SIZE));
@@ -293,7 +329,7 @@ applyLanguage(savedLanguage);
       const anchor = section.querySelector('.lead');
       const visible=items.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
       let previous=anchor;
-      visible.forEach(item=>{previous.after(item.node);previous=item.node;});
+      visible.forEach(item=>{previous.after(item.node);const controls=makeShareRow(item.href,item.title,lang);item.node.after(controls);previous=controls;});
       const notice=textElement('p','listNotice', failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
       if(failed) previous.after(notice);
       const nav=document.createElement('div');nav.className='pageButtons';

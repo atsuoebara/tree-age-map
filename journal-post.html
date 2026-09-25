@@ -7,6 +7,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}header{background:#0f1d2f;border-bottom:1px solid #28364a;padding:18px 16px}header .inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:21px;margin:0}button{background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:8px 13px;cursor:pointer}button.active{background:#ff2bd6;border-color:#ff2bd6}main{max-width:760px;margin:auto;padding:35px 16px 70px}.date{font-size:12px;color:#9eadc0}.category{color:#eaff00;font-size:12px;font-weight:bold;margin-bottom:12px}h2{font-size:clamp(22px,5vw,31px);line-height:1.4;margin:12px 0 20px}.summary{color:#d6e0ee;line-height:1.8;font-size:16px}.body{white-space:pre-wrap;overflow-wrap:break-word;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 36px}.hero{max-width:100%;max-height:600px;object-fit:contain;border-radius:12px;display:block;margin:16px auto 28px}.back{display:inline-block;text-decoration:none;background:#ff2bd6;color:#fff;border-radius:30px;padding:11px 20px;font-size:13px;font-weight:bold}.notice{border:1px solid #4a5669;border-radius:12px;padding:16px;color:#c4d0e0}footer{text-align:center;padding:20px;border-top:1px solid #2b3543;color:#9ba8b9;font-size:12px}
+
+.shareRow { display:flex;flex-wrap:wrap;gap:9px;margin:26px 0 18px; }
+.shareRow button,.shareRow a { display:inline-block;text-decoration:none;font-size:13px;font-weight:700;color:#fff;background:#24384f;border:1px solid #64748b;border-radius:999px;padding:10px 13px;cursor:pointer; }
+.shareMessage { font-size:12px;color:#eaff00;min-height:18px;margin:0 0 12px; }
+.shareRow button:focus-visible,.shareRow a:focus-visible {outline:2px solid #eaff00;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -23,6 +28,7 @@ const back=document.getElementById('back');
 const slug=new URLSearchParams(location.search).get('slug');
 let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
 let post=null;
+const canonicalURL=location.origin+location.pathname+'?'+new URLSearchParams({slug}).toString();
 function item(tag, cls, val){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=val||'';return el;}
 function validImage(src){try{const u=new URL(src);return u.protocol==='https:'&&u.hostname==='fhwvntpzwyenendhcgbw.supabase.co'&&u.pathname.includes('/storage/v1/object/public/journal-images/')?u.href:null;}catch(_){return null;}}
 function draw(){
@@ -43,6 +49,22 @@ function draw(){
   if(img){const picture=document.createElement('img');picture.src=img;picture.className='hero';picture.alt='';root.append(picture);}
   if(desc)root.append(item('p','summary',desc));
   root.append(item('div','body',body));
+  const row=document.createElement('div');row.className='shareRow';
+  const msg=item('p','shareMessage','');msg.setAttribute('role','status');
+  const copy=item('button','',lang==='ja'?'リンクをコピー':'Copy link');copy.type='button';
+  copy.addEventListener('click',async()=>{
+    try {
+      if (!navigator.clipboard || !window.isSecureContext) {window.prompt(lang==='ja'?'記事URLをコピーしてください':'Copy article URL',canonicalURL);return;}
+      await navigator.clipboard.writeText(canonicalURL);
+      msg.textContent=lang==='ja'?'URLをコピーしました':'Link copied';
+    } catch(_) {window.prompt(lang==='ja'?'記事URLをコピーしてください':'Copy article URL',canonicalURL);}
+  });row.append(copy);
+  if(navigator.share){
+    const share=item('button','',lang==='ja'?'共有':'Share');share.type='button';
+    share.addEventListener('click',async()=>{try{await navigator.share({title,text:title,url:canonicalURL});}catch(error){if(error?.name!=='AbortError')msg.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});row.append(share);
+  }
+  const x=item('a','',lang==='ja'?'Xで共有':'Share to X');x.href='https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url:canonicalURL}).toString();x.target='_blank';x.rel='noopener noreferrer';row.append(x);
+  root.append(row,msg);
   document.title=title+' | Runner\'s Rings Journal';
 }
 ['ja','en'].forEach(code=>document.getElementById(code).addEventListener('click',()=>{lang=code;localStorage.setItem('runners-rings-language',lang);draw();}));
