@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Runner's Rings Journal。地域走破、地図、データ連携、開発の考え方など、Runner's Ringsならではの機能と背景を紹介します。">
+<title>Runner's Rings Journal｜開発・ランニングノート</title>
+<link rel="icon" type="image/png" href="icon.PNG">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}
+body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),radial-gradient(circle at 10% 28%,rgba(49,132,255,.08),transparent 30%),#0b1422}
+header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}
+header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}
+#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+main{width:min(760px,100%);margin:0 auto;padding:34px 16px 54px}
+.eyebrow{margin-bottom:10px;color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}
+h2{margin:0;font-size:30px;line-height:1.35}.meta{margin:12px 0 26px;color:#8796aa;font-size:12px}
+p{color:#b9c6d6;font-size:14px;line-height:1.9}a{color:#ff2bd6;text-decoration:none}
+h3{margin:34px 0 10px;font-size:20px;line-height:1.5}strong{color:#fff}
+.highlight{margin:24px 0;padding:16px 17px;border-left:3px solid #ff2bd6;border-radius:0 12px 12px 0;background:rgba(255,43,214,.05)}
+.note{margin:24px 0;padding:16px 17px;border-left:3px solid #eaff00;border-radius:0 12px 12px 0;background:rgba(234,255,0,.04)}
+.placeCard{margin:24px 0;padding:16px 17px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#132237}
+.placeCard p{margin:4px 0}.backArea{margin-top:32px;text-align:center}
+.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}
+.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}
+footer a{color:#cbd5e1;text-decoration:none}footer a:hover{color:#ff2bd6}
+[data-lang="en"]{display:none}html[lang="en"] [data-lang="ja"]{display:none}html[lang="en"] [data-lang="en"]{display:block}
+@media(max-width:520px){header h1{padding-right:98px;font-size:19px}h2{font-size:27px}main{padding-top:28px}}
+
+.lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
+.articleCard{display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none}
+.articleCard:hover{border-color:rgba(255,43,214,.55)}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
+.articleTag{display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800}
+.buttonArea{margin-top:34px;text-align:center}.mainButton{display:inline-block;padding:12px 24px;border-radius:12px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
+html[lang="ja"] .mainButton[data-lang="en"]{display:none!important}
+html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
+/* Journal 2.0 staging additions */
+.articleCard img.cardImage { display:block;max-height:220px;width:100%;object-fit:cover;border-radius:10px;margin:0 0 12px; }
+.pageButtons { display:flex;align-items:center;justify-content:center;gap:16px;margin:22px 0; }
+.pageButtons button { color:white;background:#22354b;border:1px solid #48617b;padding:10px 16px;border-radius:9px;font-weight:bold; }
+.pageButtons button:disabled { opacity:.35; }
+.listNotice { color:#b9c6d6;font-size:12px;text-align:center;margin:14px 0; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header>
+  <h1>Runner's Rings<span class="brandReading">（ランナーズリングス）</span></h1>
+  <p data-lang="ja">走った記録ではなく、走った人生を残す。</p>
+  <p data-lang="en">Map the life you run.</p>
+  <div id="languageSwitch" aria-label="Language">
+    <button class="languageButton" type="button" data-language="ja">日本語</button>
+    <button class="languageButton" type="button" data-language="en">EN</button>
+  </div>
+</header>
+<main>
+<section data-lang="ja">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>開発・ランニングノート</h2>
+  <p class="lead">Runner's Ringsの機能を作った理由、データ連携の考え方、走った地図から生まれた発見などを、開発者自身の言葉で残していきます。</p>
+  <a class="articleCard" href="./journal-001.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">地域走破を作った理由 ─ 「次はどこを走ろう」が生まれる地図へ</div>
+  <div class="articleText">都道府県や市町村を「何km走ったか」だけではなく、どこまで走破したかで見えるようにした理由。ALLと年別、走破率、未走破地域、共有画像まで含めて紹介します。</div>
+  <span class="articleTag">地域走破</span>
+</a><a class="articleCard" href="./journal-002.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">StravaとIntervals.icu、Runner's Ringsではどう使い分ける？</div>
+  <div class="articleText">Runner's RingsでStravaとIntervals.icuをどう使い分けるか。両方を同時に使わない方がよい理由と、重複防止の考え方をまとめます。</div>
+  <span class="articleTag">データ連携</span>
+</a><a class="articleCard" href="./journal-003.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">過去のランを地図に重ねると、何が見えてくるのか</div>
+  <div class="articleText">昔のGPXやFIT、過去のアクティビティを地図に重ねると何が見えるのか。Runner's Ringsが過去データを大切にする理由を紹介します。</div>
+  <span class="articleTag">過去データ</span>
+</a><a class="articleCard" href="./journal-004.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">「面」と「コース」を両方残す理由</div>
+  <div class="articleText">Runner's Ringsの地図で「面」と「コース」を切り替えられる理由。広がりと実際の道、どちらも残したい設計思想を紹介します。</div>
+  <span class="articleTag">地図表示</span>
+</a><a class="articleCard" href="./journal-005.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">走破画像を「その地域だけ」にした理由</div>
+  <div class="articleText">Runner's Ringsの走破共有画像で、隣県や周辺地域を出さず、対象地域だけを切り抜く理由を紹介します。</div>
+  <span class="articleTag">共有</span>
+</a><a class="articleCard" href="./journal-006.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Runner's Ringsは、なぜランキング中心にしないのか</div>
+  <div class="articleText">Runner's Ringsが他人との順位競争より、自分の過去・年別・地域走破を重視する理由を紹介します。</div>
+  <span class="articleTag">コンセプト</span>
+</a><a class="articleCard" href="./journal-007.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">地図を「自動・面・コース」で切り替えられるようにした理由</div>
+  <div class="articleText">地図の広がりを見る「面」と、実際に走った道を見る「コース」。どちらも残しながら、自分で表示を選べるようにした理由を紹介します。</div>
+  <span class="articleTag">地図表示</span>
+</a><a class="articleCard" href="./journal-008.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">走った地域がカードになる。制覇カードを作った理由</div>
+  <div class="articleText">市町村の初走破、都道府県・国の完全制覇をカードとして残す仕組み。自分の走行軌跡から、その人だけのカードを自動生成する考え方を紹介します。</div>
+  <span class="articleTag">制覇カード</span>
+</a><a class="articleCard" href="./journal-009.html">
+  <div class="articleDate">2026.09.17</div>
+  <div class="articleTitle">Stravaだけに頼らない道を探して、Intervals.icuにたどり着いた</div>
+  <div class="articleText">Stravaの接続枠がいっぱいになったことをきっかけに、より多くのランナーがRunner's Ringsへデータを取り込める道を探した開発記録です。</div>
+  <span class="articleTag">データ連携</span>
+</a><a class="articleCard" href="./journal-010.html">
+  <div class="articleDate">2026.09.17</div>
+  <div class="articleTitle">Runner's Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代</div>
+  <div class="articleText">Runner's Ringsは無料のまま。機能差を付けるためではなく、サーバーや開発を続けるための任意サポートを置いた理由を紹介します。</div>
+  <span class="articleTag">開発運営</span>
+</a><a class="articleCard" href="./journal-011.html">
+  <div class="articleDate">2026.09.19</div>
+  <div class="articleTitle">トレッドミルも、「走った人生」の積み重ねにしたい</div>
+  <div class="articleText">高崎の低酸素ランニングジムRUNGRYでの体験から、地図には描けないトレッドミルのランも「走った人生」として残したいと考えた日の記録です。</div>
+  <span class="articleTag">Running &amp; Development</span>
+</a><a class="articleCard" href="./journal-012.html">
+  <div class="articleDate">2026.09.23</div>
+  <div class="articleTitle">Runner's Rings Version 1.0をリリースしました ─ 「走った人生を残す」地図へ</div>
+  <div class="articleText">Runner's RingsがVersion 1.0へ。データ連携、地図、地域走破、制覇カード、海外対応など、正式リリースまでに形になったものと、ここから始まる未来をまとめます。</div>
+  <span class="articleTag">Version 1.0</span>
+</a>
+</section>
+<section data-lang="en">
+  <div class="eyebrow">RUNNER'S RINGS JOURNAL</div>
+  <h2>Development & Running Notes</h2>
+  <p class="lead">Notes from the creator of Runner's Rings about why features were built, how data connections are approached, and what running maps can reveal.</p>
+  <a class="articleCard" href="./journal-001.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why We Built Region Conquest — A Map That Makes You Ask, “Where Should I Run Next?”</div>
+  <div class="articleText">Why Runner's Rings shows not only distance, but how many prefectures and municipalities you have explored, together with ALL-time and yearly progress, remaining regions, and shareable images.</div>
+  <span class="articleTag">Region Conquest</span>
+</a><a class="articleCard" href="./journal-002.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Strava or Intervals.icu — Which Should You Use with Runner's Rings?</div>
+  <div class="articleText">How Runner's Rings approaches Strava and Intervals.icu as data sources, and why using one main source keeps duplicate handling simpler.</div>
+  <span class="articleTag">Data Connections</span>
+</a><a class="articleCard" href="./journal-003.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">What Happens When You Put Years of Running on One Map?</div>
+  <div class="articleText">Why Runner's Rings values old GPX, FIT, and past activity data as part of a runner's history.</div>
+  <span class="articleTag">History</span>
+</a><a class="articleCard" href="./journal-004.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why Runner's Rings Keeps Both Area and Route Views</div>
+  <div class="articleText">Why both the broad geographic spread and the exact roads you ran deserve a place on the map.</div>
+  <span class="articleTag">Map View</span>
+</a><a class="articleCard" href="./journal-005.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why Conquest Sharing Shows Only the Selected Region</div>
+  <div class="articleText">Why share images focus on the selected region instead of showing everything around it.</div>
+  <span class="articleTag">Sharing</span>
+</a><a class="articleCard" href="./journal-006.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why Runner's Rings Is Not Built Around Rankings</div>
+  <div class="articleText">Why Runner's Rings centers personal history and exploration instead of competition with other runners.</div>
+  <span class="articleTag">Concept</span>
+</a><a class="articleCard" href="./journal-007.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why Runner's Rings Lets You Switch Between Auto, Area, and Route</div>
+  <div class="articleText">Why the map keeps both a broad area view and the actual roads you ran, and why runners can now choose the view themselves.</div>
+  <span class="articleTag">Map View</span>
+</a><a class="articleCard" href="./journal-008.html">
+  <div class="articleDate">2026.09.14</div>
+  <div class="articleTitle">Why We Turned Conquered Regions into Collectible Cards</div>
+  <div class="articleText">How first-run municipality cards and COMPLETE cards are generated from region boundaries and each runner's own history.</div>
+  <span class="articleTag">Conquest Cards</span>
+</a><a class="articleCard" href="./journal-009.html">
+  <div class="articleDate">2026.09.17</div>
+  <div class="articleTitle">Looking Beyond Strava — How Runner's Rings Found Intervals.icu</div>
+  <div class="articleText">A development note about searching for another data path when Strava athlete capacity became full.</div>
+  <span class="articleTag">Data Connections</span>
+</a><a class="articleCard" href="./journal-010.html">
+  <div class="articleDate">2026.09.17</div>
+  <div class="articleTitle">Why Runner's Rings Added a Support Button — and Chappy's Snack Fund</div>
+  <div class="articleText">Why optional support was added while keeping Runner's Rings free and without feature differences.</div>
+  <span class="articleTag">Development</span>
+</a><a class="articleCard" href="./journal-011.html">
+  <div class="articleDate">2026.09.19</div>
+  <div class="articleTitle">Treadmill Runs Should Count as Part of the Life You Ran, Too</div>
+  <div class="articleText">A visit to RUNGRY in Takasaki led to a new thought: treadmill runs may not draw roads, but they still belong to a runner's accumulated history.</div>
+  <span class="articleTag">Running &amp; Development</span>
+</a><a class="articleCard" href="./journal-012.html">
+  <div class="articleDate">2026.09.23</div>
+  <div class="articleTitle">Runner's Rings Version 1.0 Is Here — A Map for the Life You Run</div>
+  <div class="articleText">Version 1.0 brings together data connections, maps, Region Conquest, Conquest Cards, overseas support, and the idea at the heart of Runner's Rings: Map the life you run.</div>
+  <span class="articleTag">Version 1.0</span>
+</a>
+</section>
+<div class="buttonArea">
+  <a class="mainButton" href="./index.html" data-lang="ja">Runner's Ringsへ戻る</a>
+  <a class="mainButton" href="./index.html" data-lang="en">Back to Runner's Rings</a>
+</div>
+</main>
+
+<footer>
+  <div class="footerLinks">
+    <a href="./index.html">Runner's Rings</a>
+    <a href="./about-runners-rings.html">Runner's Ringsとは？</a>
+    <a href="./developer-message.html">開発者からのメッセージ</a>
+    <a href="./how-to.html">使い方</a>
+    <a href="./faq.html">FAQ</a>
+    <a href="./journal.html">Journal</a>
+    <a href="./terms.html">利用規約</a>
+    <a href="./privacy.html">プライバシーポリシー</a>
+    <a href="./contact.html">お問い合わせ</a>
+  </div>
+  <div>© 2026 Runner's Rings</div>
+</footer>
+
+<script>
+const languageButtons=document.querySelectorAll('.languageButton');
+const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+function applyLanguage(language){
+  const nextLanguage=language==='en'?'en':'ja';
+  document.documentElement.lang=nextLanguage;
+  languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
+  localStorage.setItem('runners-rings-language',nextLanguage);
+}
+languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
+applyLanguage(savedLanguage);
+</script>
+<script>
+/* Preview only: does NOT change the production journal.html. */
+(() => {
+  'use strict';
+  const URL = 'https://fhwvntpzwyenendhcgbw.supabase.co';
+  const KEY = 'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
+  const PAGE_SIZE = 10;
+  const lists = { ja: document.querySelector('section[data-lang="ja"]'),
+                  en: document.querySelector('section[data-lang="en"]') };
+  const oldCards = {};
+  let published = [];
+  let failed = false;
+  let page = 0;
+  let dynamicCards = {ja:[],en:[]};
+  Object.entries(lists).forEach(([lang, el]) => {
+    oldCards[lang] = Array.from(el.querySelectorAll('a.articleCard')).map((node, index) => ({
+      element: node,
+      date: (node.querySelector('.articleDate')?.textContent || '').replace(/\./g, '-'),
+      index
+    }));
+  });
+  function textElement(tag, klass, value) {
+    const el = document.createElement(tag);
+    if (klass) el.className = klass;
+    el.textContent = value || '';
+    return el;
+  }
+  function formatDate(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.getUTCFullYear()+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+'.'+String(d.getUTCDate()).padStart(2,'0');
+  }
+  function safeImage(src) {
+    try {
+      const u = new URL(src);
+      if (u.protocol==='https:' && u.hostname==='fhwvntpzwyenendhcgbw.supabase.co'
+          && u.pathname.includes('/storage/v1/object/public/journal-images/')) return u.href;
+    } catch (_) {}
+    return null;
+  }
+  function makeCard(post, lang) {
+    const link = document.createElement('a');
+    link.className = 'articleCard';
+    link.href = './journal-post.html?slug=' + encodeURIComponent(post.slug);
+    const img = safeImage(post.image_url);
+    if (img) {const photo=document.createElement('img');photo.className='cardImage';photo.src=img;photo.alt='';photo.loading='lazy';link.append(photo);}
+    link.append(textElement('div','articleDate',formatDate(post.published_at)));
+    link.append(textElement('div','articleTitle',post['title_'+lang] || post.title_ja || post.title_en || 'Journal'));
+    link.append(textElement('div','articleText',post['summary_'+lang] || post.summary_ja || post.summary_en || ''));
+    link.append(textElement('span','articleTag',post.category || 'Journal'));
+    return link;
+  }
+  function render() {
+    for (const [lang, section] of Object.entries(lists)) {
+      section.querySelectorAll('.pageButtons,.listNotice').forEach(el=>el.remove());
+      dynamicCards[lang].forEach(el=>el.remove());
+      dynamicCards[lang] = [];
+      // Remove old cards from the DOM without recreating or changing their links/content.
+      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index}));
+      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i});});
+      items.sort((a,b)=>b.date.localeCompare(a.date)||b.order-a.order);
+      items.forEach(item=>item.node.remove());
+      const total = Math.max(1,Math.ceil(items.length / PAGE_SIZE));
+      page = Math.min(page,total-1);
+      const anchor = section.querySelector('.lead');
+      const visible=items.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
+      let previous=anchor;
+      visible.forEach(item=>{previous.after(item.node);previous=item.node;});
+      const notice=textElement('p','listNotice', failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
+      if(failed) previous.after(notice);
+      const nav=document.createElement('div');nav.className='pageButtons';
+      const prev=textElement('button','',lang==='ja'?'前へ':'Previous');prev.type='button';prev.disabled=page===0;
+      prev.addEventListener('click',()=>{page--;render();section.scrollIntoView({behavior:'smooth'});});
+      const indicator=textElement('span','',`${page+1} / ${total}`);
+      const next=textElement('button','',lang==='ja'?'次へ':'Next');next.type='button';next.disabled=page>=total-1;
+      next.addEventListener('click',()=>{page++;render();section.scrollIntoView({behavior:'smooth'});});
+      nav.append(prev,indicator,next);previous.after(nav);
+    }
+  }
+  render();
+  if(!window.supabase){failed=true;render();return;}
+  const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,image_url,category,published_at,status')
+    .eq('status','published').order('published_at',{ascending:false}).limit(200)
+    .then(({data,error})=>{ if(error){failed=true;console.error(error);} else {published=data||[];} render(); })
+    .catch(error=>{failed=true;console.error(error);render();});
+})();
+</script>
+</body>
+</html>

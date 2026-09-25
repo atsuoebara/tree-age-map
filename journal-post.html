@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Journal | Runner's Rings</title>
+<link rel="icon" href="icon.PNG" type="image/png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}header{background:#0f1d2f;border-bottom:1px solid #28364a;padding:18px 16px}header .inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:21px;margin:0}button{background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:8px 13px;cursor:pointer}button.active{background:#ff2bd6;border-color:#ff2bd6}main{max-width:760px;margin:auto;padding:35px 16px 70px}.date{font-size:12px;color:#9eadc0}.category{color:#eaff00;font-size:12px;font-weight:bold;margin-bottom:12px}h2{font-size:clamp(22px,5vw,31px);line-height:1.4;margin:12px 0 20px}.summary{color:#d6e0ee;line-height:1.8;font-size:16px}.body{white-space:pre-wrap;overflow-wrap:break-word;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 36px}.hero{max-width:100%;max-height:600px;object-fit:contain;border-radius:12px;display:block;margin:16px auto 28px}.back{display:inline-block;text-decoration:none;background:#ff2bd6;color:#fff;border-radius:30px;padding:11px 20px;font-size:13px;font-weight:bold}.notice{border:1px solid #4a5669;border-radius:12px;padding:16px;color:#c4d0e0}footer{text-align:center;padding:20px;border-top:1px solid #2b3543;color:#9ba8b9;font-size:12px}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>Runner's Rings Journal</h1><div><button id="ja" type="button">日本語</button> <button id="en" type="button">EN</button></div></div></header>
+<main><div id="content" class="notice">記事を読み込んでいます...</div><p><a class="back" href="./journal-v2-preview.html" id="back">Journal一覧へ戻る</a></p></main>
+<footer>© 2026 Runner's Rings</footer>
+<script>
+(() => {
+'use strict';
+const url='https://fhwvntpzwyenendhcgbw.supabase.co';
+const key='sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
+const root=document.getElementById('content');
+const back=document.getElementById('back');
+const slug=new URLSearchParams(location.search).get('slug');
+let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+let post=null;
+function item(tag, cls, val){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=val||'';return el;}
+function validImage(src){try{const u=new URL(src);return u.protocol==='https:'&&u.hostname==='fhwvntpzwyenendhcgbw.supabase.co'&&u.pathname.includes('/storage/v1/object/public/journal-images/')?u.href:null;}catch(_){return null;}}
+function draw(){
+  document.documentElement.lang=lang;
+  document.getElementById('ja').classList.toggle('active',lang==='ja');
+  document.getElementById('en').classList.toggle('active',lang==='en');
+  back.textContent=lang==='ja'?'Journal一覧へ戻る':'Back to Journal';
+  root.replaceChildren();root.className='';
+  if(!post){root.className='notice';root.textContent=lang==='ja'?'記事が見つからないか、まだ公開されていません。':'Article not found or not published.';return;}
+  const title=post['title_'+lang]||post.title_ja||post.title_en||'Journal';
+  const desc=post['summary_'+lang]||post.summary_ja||post.summary_en||'';
+  const body=post['body_'+lang]||post.body_ja||post.body_en||'';
+  root.append(item('div','category',post.category||'Journal'));
+  const date=new Date(post.published_at);
+  root.append(item('div','date',Number.isNaN(date.getTime())?'':date.toLocaleDateString(lang==='ja'?'ja-JP':'en-GB',{timeZone:'UTC',year:'numeric',month:'long',day:'numeric'})));
+  root.append(item('h2','',title));
+  const img=validImage(post.image_url);
+  if(img){const picture=document.createElement('img');picture.src=img;picture.className='hero';picture.alt='';root.append(picture);}
+  if(desc)root.append(item('p','summary',desc));
+  root.append(item('div','body',body));
+  document.title=title+' | Runner\'s Rings Journal';
+}
+['ja','en'].forEach(code=>document.getElementById(code).addEventListener('click',()=>{lang=code;localStorage.setItem('runners-rings-language',lang);draw();}));
+if(!slug||slug.length>220||!/^[-a-zA-Z0-9_]+$/.test(slug)){draw();return;}
+if(!window.supabase){root.className='notice';root.textContent='読み込みライブラリが利用できません。';return;}
+const db=window.supabase.createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,category,published_at').eq('slug',slug).eq('status','published').maybeSingle().then(({data,error})=>{if(error){console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';return;}post=data;draw();}).catch(error=>{console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';});
+})();
+</script>
+</body>
+</html>
