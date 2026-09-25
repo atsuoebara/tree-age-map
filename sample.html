@@ -97,8 +97,14 @@ const map=L.map('map',{worldCopyJump:true}).setView([24,110],2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:18}).addTo(map);
 const group=L.featureGroup().addTo(map), region=document.getElementById('region');
 function draw(focusLatest=false){
- group.clearLayers();document.getElementById('map').classList.toggle('world-view',region.value==='all');
- setTimeout(()=>map.invalidateSize({pan:false}),0);
+ group.clearLayers();
+ // The global view is useful only after overseas routes arrive.
+ // Keep local routes readable while the first 30 runs build up.
+ const automaticStage=region.value==='all' && year==='all';
+ const showWorld=automaticStage && imported>60;
+ document.getElementById('map').classList.toggle('world-view',showWorld);
+ map.closePopup();
+ map.invalidateSize({pan:false});
  const loaded=worldSamples.slice(0,imported);
  const selected=loaded.filter(s=>(year==='all'||s.year===Number(year))&&(region.value==='all'||s.country===region.value));
  const countries=new Set(selected.map(s=>s.country)).size;
@@ -111,14 +117,28 @@ function draw(focusLatest=false){
  document.getElementById('import-all').disabled=imported===worldSamples.length;
  const cards=document.getElementById('routes');cards.replaceChildren();let lastLine=null;
  const visible=expanded?selected:selected.slice(-5).reverse();
- for(const s of selected){const line=L.polyline(s.points,{color:'#ff4fa6',weight:6,opacity:1}).bindPopup('<b>'+routeName(s)+'</b><br>'+s.date+' · '+s.km+' km').addTo(group);if(s===loaded[loaded.length-1])lastLine=line;
+ for(const s of selected){const line=L.polyline(s.points,{color:'#ff4fa6',weight:6,opacity:1,demoCountry:s.country}).bindPopup('<b>'+routeName(s)+'</b><br>'+s.date+' · '+s.km+' km').addTo(group);if(s===loaded[loaded.length-1])lastLine=line;
  if(visible.includes(s)){const card=document.createElement('button');card.type='button';card.className='route';const strong=document.createElement('strong');strong.textContent=routeName(s);const desc=document.createElement('span');desc.textContent=s.date+' · '+s.km+' km';card.append(strong,desc);card.addEventListener('click',()=>{map.fitBounds(line.getBounds().pad(.55),{maxZoom:13});line.openPopup()});cards.append(card)} }
  const more=document.getElementById('show-more');more.hidden=selected.length<=5;more.textContent=expanded?(lang==='en'?'Show latest 5':'最新5件だけ表示'):(lang==='en'?'Show all '+selected.length+' runs':'全'+selected.length+'件を表示');
- if(!selected.length){cards.textContent=lang==='en'?(imported===0?'No runs yet. Use the buttons above!':'No imported runs match these filters.'):(imported===0?'まだ記録がありません。上のボタンから始めよう！':'この条件の取り込み済みランはありません。');const centers={all:[[24,110],2],JP:[[36.3,138],5],US:[[39,-98],4],GB:[[54,-3],6],AU:[[-25,134],4]};const target=centers[region.value]||centers.all;map.setView(target[0],target[1]);}
- else if(focusLatest&&lastLine){map.fitBounds(lastLine.getBounds().pad(.65),{maxZoom:12});lastLine.openPopup()}
- else if(selected.length===1){map.fitBounds(group.getBounds().pad(.65),{maxZoom:12})}
- else if(region.value==='all'){map.setView([16,5],window.innerWidth<650?1:2)}
- else{map.fitBounds(group.getBounds().pad(.25),{maxZoom:12})}
+ if(!selected.length){
+  cards.textContent=lang==='en'?(imported===0?'No runs yet. Use the buttons above!':'No imported runs match these filters.'):(imported===0?'まだ記録がありません。上のボタンから始めよう！':'この条件の取り込み済みランはありません。');
+  const centers={all:[[36.3895,139.0634],11],JP:[[36.3,138],5],US:[[39,-98],4],GB:[[54,-3],6],AU:[[-25,134],4]};
+  const target=centers[region.value]||centers.all;map.setView(target[0],target[1],{animate:false});
+ } else if(automaticStage && imported<=30){
+  // 1–30: show all the accumulated Maebashi streets, never the whole world.
+  map.fitBounds(group.getBounds().pad(.30),{maxZoom:12,animate:false});
+ } else if(automaticStage && imported<=60){
+  // 31–60: show the Japanese routes together as the footprint grows.
+  const japan=L.featureGroup(group.getLayers().filter(l=>l.options.demoCountry==='JP'));
+  map.fitBounds((japan.getLayers().length?japan:group).getBounds().pad(.18),{maxZoom:7,animate:false});
+ } else if(automaticStage){
+  // 61–100: only now switch to the world view.
+  map.setView([16,5],window.innerWidth<650?1:2,{animate:false});
+ } else if(focusLatest&&lastLine){
+  map.fitBounds(lastLine.getBounds().pad(.65),{maxZoom:12,animate:false});lastLine.openPopup();
+ } else{
+  map.fitBounds(group.getBounds().pad(.30),{maxZoom:12,animate:false});
+ }
 }
 function addWorld(n){if(imported>=worldSamples.length)return;imported=Math.min(worldSamples.length,imported+n);year='all';region.value='all';document.querySelectorAll('[data-year]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.year==='all')));draw(n===1)}
 document.getElementById('import-one').addEventListener('click',()=>addWorld(1));
