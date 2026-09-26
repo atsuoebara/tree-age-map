@@ -70,10 +70,11 @@
     <section class="card">
       <div id="authStatus" class="statusBox">ログイン状態を確認しています...</div>
       <div id="draftLoader" class="draftLoader hidden">
-        <label for="loadDraftId">保存済み下書きID（今回の記事は 4）</label>
-        <input id="loadDraftId" type="number" min="1" inputmode="numeric" value="4">
+        <label for="loadDraftId">保存済み下書きID（既存の下書きを編集するときだけ入力）</label>
+        <input id="loadDraftId" type="number" min="1" inputmode="numeric" placeholder="新規記事なら空欄">
         <button id="loadDraftButton" type="button">下書きを読み込む</button>
         <div id="loadMessage" class="statusBox hidden" aria-live="polite"></div>
+        <p class="help">新しい記事はIDを入力せず、そのまま下のフォームに記入してください。既存記事を編集するときだけIDを入力して「下書きを読み込む」を押します。</p>
       </div>
       <form id="journalForm" class="hidden">
         <div class="field">
@@ -372,7 +373,7 @@
           form.classList.add('hidden');
           loader.classList.add('hidden');
         } else {
-          showStatus(saveMessage, '下書きを保存しました。ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
+          showStatus(saveMessage, '下書き保存成功！新しい記事ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
           $('loadDraftId').value = draftId;
           showStatus(loadMessage, '編集中の下書き ID: ' + draftId + '（このまま再保存できます）', 'ok');
         }
