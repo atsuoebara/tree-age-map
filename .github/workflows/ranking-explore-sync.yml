@@ -1,0 +1,30 @@
+name: Verify EXPLORE regions (Japan)
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Year to verify'
+        required: true
+        default: '2026'
+  schedule:
+    - cron: '30 19 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: ranking-explore-sync
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import opted-in Japan GPS regions
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPLORE_YEAR: ${{ inputs.year || '2026' }}
+        run: node scripts/sync-ranking-explore.mjs
