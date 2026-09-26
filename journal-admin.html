@@ -38,6 +38,14 @@
     .preview { display: block; max-width: 100%; max-height: 340px;
       margin-top: 12px; border-radius: 12px; object-fit: contain; border: 1px solid #38516b; }
     .buttonRow { margin-top: 22px; }
+    .secondary { margin-top: 10px; background: #30445d; }
+    .previewPanel { margin-top: 18px; padding: 16px; background: #0b1422;
+      border: 1px solid #52657c; border-radius: 14px; overflow-wrap: anywhere; }
+    .previewPanel h2 { font-size: 20px; }
+    .previewPanel p { white-space: pre-wrap; line-height: 1.7; }
+    .previewPanel img { max-width: 100%; border-radius: 10px; }
+    .draftLoader { padding-bottom: 16px; border-bottom: 1px solid #38516b; }
+    .draftLoader button { margin-top: 8px; background: #30445d; }
     button { width: 100%; min-height: 50px; border: 0; border-radius: 13px;
       background: #ff2bd6; color: #fff; font: inherit; font-size: 15px;
       font-weight: 800; cursor: pointer; }
@@ -61,6 +69,12 @@
     </header>
     <section class="card">
       <div id="authStatus" class="statusBox">ログイン状態を確認しています...</div>
+      <div id="draftLoader" class="draftLoader hidden">
+        <label for="loadDraftId">保存済み下書きID（今回の記事は 4）</label>
+        <input id="loadDraftId" type="number" min="1" inputmode="numeric" value="4">
+        <button id="loadDraftButton" type="button">下書きを読み込む</button>
+        <div id="loadMessage" class="statusBox hidden" aria-live="polite"></div>
+      </div>
       <form id="journalForm" class="hidden">
         <div class="field">
           <label for="titleJa">日本語タイトル</label>
@@ -105,8 +119,10 @@
         </div>
         <div class="buttonRow">
           <button id="saveDraftButton" type="submit">下書き保存</button>
+          <button id="previewButton" type="button" class="secondary">公開前プレビュー（日英）</button>
         </div>
         <div id="saveMessage" class="statusBox hidden" aria-live="polite"></div>
+        <div id="articlePreview" class="previewPanel hidden" aria-live="polite"></div>
       </form>
     </section>
     <a class="backLink" href="./index.html">Runner's Ringsへ戻る</a>
@@ -129,6 +145,9 @@
     const imageInput = $('journalImage');
     const preview = $('imagePreview');
     const imageInfo = $('imageInfo');
+    const loader = $('draftLoader');
+    const loadMessage = $('loadMessage');
+    const articlePreview = $('articlePreview');
     let previewUrl = null;
     // 途中失敗した場合は同じ下書きを再利用し、重複記事を増やさない。
     let draftId = null;
@@ -161,11 +180,84 @@
         await requireAdmin();
         showStatus(authStatus, '管理者ログインを確認しました。', 'ok');
         form.classList.remove('hidden');
+        loader.classList.remove('hidden');
       } catch (error) {
         showStatus(authStatus, error.message, 'error');
         form.classList.add('hidden');
+        loader.classList.add('hidden');
       }
     }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    $('loadDraftButton').addEventListener('click', async () => {
+      const id = Number($('loadDraftId').value);
+      if (!Number.isSafeInteger(id) || id < 1) {
+        showStatus(loadMessage, '有効な下書きIDを入力してください。', 'error');
+        return;
+      }
+      if (busy) return;
+      busy = true;
+      $('loadDraftButton').disabled = true;
+      try {
+        await requireAdmin();
+        const { data, error } = await supabaseClient.from('journal_posts')
+          .select('id,status,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,category,image_url')
+          .eq('id', id).eq('status', 'draft').single();
+        if (error || !data) throw new Error('下書きを取得できません。IDと権限を確認してください。');
+        const names = ['titleJa','titleEn','summaryJa','summaryEn','bodyJa','bodyEn','category'];
+        const columns = ['title_ja','title_en','summary_ja','summary_en','body_ja','body_en','category'];
+        names.forEach((name, i) => { $(name).value = data[columns[i]] || (name === 'category' ? 'development' : ''); });
+        draftId = data.id;
+        pendingImageUrl = data.image_url || null;
+        imageStoragePath = null;
+        initialImage = null;
+        imageInput.value = '';
+        clearPreview();
+        if (pendingImageUrl) {
+          preview.src = pendingImageUrl;
+          preview.classList.remove('hidden');
+          imageInfo.textContent = '保存済み画像（変更しない場合はそのまま）';
+        }
+        articlePreview.classList.add('hidden');
+        saveMessage.classList.add('hidden');
+        showStatus(loadMessage, '下書き ID: ' + id + ' を読み込みました。', 'ok');
+      } catch (error) {
+        showStatus(loadMessage, error.message, 'error');
+      } finally {
+        busy = false;
+        $('loadDraftButton').disabled = false;
+      }
+    });
+
+    $('previewButton').addEventListener('click', () => {
+      let fields;
+      try { fields = collectFields(); }
+      catch (error) {
+        showStatus(saveMessage, error.message, 'error');
+        return;
+      }
+      const section = (lang, title, summary, body) =>
+        '<section><h2>' + lang + '</h2><h3>' + escapeHtml(title || '') + '</h3>' +
+        '<p>' + escapeHtml(summary || '') + '</p><p>' + escapeHtml(body || '') + '</p></section>';
+      articlePreview.innerHTML =
+        '<strong>管理者用プレビュー（未公開・この画面内のみ）</strong>' +
+        section('日本語', fields.title_ja, fields.summary_ja, fields.body_ja) +
+        '<hr>' + section('English', fields.title_en, fields.summary_en, fields.body_en);
+      const file = imageInput.files?.[0];
+      const url = file ? previewUrl : pendingImageUrl;
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '記事画像';
+        articlePreview.appendChild(img);
+      }
+      articlePreview.classList.remove('hidden');
+      articlePreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
     function clearPreview() {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       previewUrl = null;
@@ -210,9 +302,9 @@
     }
     async function createOrUpdateDraft(fields) {
       if (draftId != null) {
-        const { error } = await supabaseClient.from('journal_posts')
-          .update(fields).eq('id', draftId);
-        if (error) throw error;
+        const { data, error } = await supabaseClient.from('journal_posts')
+          .update(fields).eq('id', draftId).eq('status', 'draft').select('id').single();
+        if (error || !data) throw new Error('下書きの更新に失敗しました。公開済み記事は編集できません。');
         return draftId;
       }
       const { data, error } = await supabaseClient.from('journal_posts').insert({
@@ -258,24 +350,20 @@
         await requireAdmin();
         await createOrUpdateDraft(fields);
         // 先に下書きを作成。通信失敗時もIDを保持して同じ記事への再試行を行う。
-        if (file && !pendingImageUrl) {
+        if (file && !imageStoragePath) {
           initialImage = file;
           await uploadImage(file);
         }
         if (pendingImageUrl) {
           const { error } = await supabaseClient.from('journal_posts')
-            .update({ image_url: pendingImageUrl }).eq('id', draftId);
+            .update({ image_url: pendingImageUrl }).eq('id', draftId).eq('status', 'draft')
+            .select('id').single();
           if (error) throw error;
         }
         showStatus(saveMessage,
           '下書きを保存しました。ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
-        form.reset();
-        $('category').value = 'development';
-        clearPreview();
-        draftId = null;
-        imageStoragePath = null;
-        pendingImageUrl = null;
-        initialImage = null;
+        $('loadDraftId').value = draftId;
+        showStatus(loadMessage, '編集中の下書き ID: ' + draftId + '（このまま再保存できます）', 'ok');
       } catch (error) {
         console.error(error);
         showStatus(saveMessage,
