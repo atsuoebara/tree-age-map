@@ -62,7 +62,7 @@ function articlePage(post) {
         <button type="button" class="native-share" hidden>${language === 'ja' ? '共有' : 'Share'}</button>
         <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&amp;url=${encodeURIComponent(permalink)}" target="_blank" rel="noopener noreferrer">${language === 'ja' ? 'Xで共有' : 'Share to X'}</a>
       </div><p class="feedback" aria-live="polite"></p>
-      <a class="back" href="/journal-v2-preview.html">${language === 'ja' ? 'Journal一覧へ戻る' : 'Back to Journal'}</a>
+      <a class="back" href="/journal.html">${language === 'ja' ? 'Journal一覧へ戻る' : 'Back to Journal'}</a>
     </article>`;
   return `<!doctype html>
 <html lang="ja">
