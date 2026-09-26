@@ -1,60 +1,25 @@
-/** Runner's Rings EXPLORE verified importer. Server-side only; never publish service key. */
+/** Runner's Rings EXPLORE: verified ADM2 regions across supported countries.
+ * Requires GitHub Actions secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+ * Only opted-in runners are processed. Raw GPS never enters ranking tables.
+ */
 import fs from 'node:fs';
-const base = process.env.SUPABASE_URL;
-const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!base || !secret) throw Error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.');
-const headers = { apikey: secret, Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' };
-async function request(path, init={}) {
-  const r=await fetch(`${base.replace(/\/$/,'')}/rest/v1/${path}`, { ...init, headers:{...headers,...init.headers} });
-  if (!r.ok) throw Error(`${r.status} ${path.split('?')[0]}: ${(await r.text()).slice(0,300)}`);
-  const txt=await r.text(); return txt ? JSON.parse(txt) : null;
-}
-function bboxGeom(g){
-  let b=[Infinity,Infinity,-Infinity,-Infinity];
-  function walk(x){if(!Array.isArray(x))return; if(typeof x[0]==='number' && typeof x[1]==='number'){b[0]=Math.min(b[0],x[0]);b[1]=Math.min(b[1],x[1]);b[2]=Math.max(b[2],x[0]);b[3]=Math.max(b[3],x[1]);return;}for(const v of x)walk(v)}
-  walk(g.coordinates);return b;
-}
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const countries={JP:'runners-rings-japan-web.geojson',AU:'runners-rings-aus-adm2-simplified.geojson',CA:'runners-rings-can-adm2.geojson',DE:'runners-rings-deu-adm2-simplified.geojson',FR:'runners-rings-fra-adm2-simplified.geojson',GB:'runners-rings-gbr-adm2-simplified.geojson',ID:'runners-rings-idn-adm2.geojson',KH:'runners-rings-khm-adm2.geojson',KR:'runners-rings-kor-adm2.geojson',MY:'runners-rings-mys-adm2.geojson',NZ:'runners-rings-nzl-adm2-simplified.geojson',PH:'runners-rings-phl-adm2.geojson',SG:'runners-rings-sgp-adm2.geojson',TH:'runners-rings-tha-adm2.geojson',US:'runners-rings-usa-adm2-simplified.geojson',VN:'runners-rings-vnm-adm2.geojson'};
+function bboxGeom(g){const b=[Infinity,Infinity,-Infinity,-Infinity];function walk(v){if(!Array.isArray(v))return;if(typeof v[0]==='number'&&typeof v[1]==='number'){b[0]=Math.min(b[0],v[0]);b[1]=Math.min(b[1],v[1]);b[2]=Math.max(b[2],v[0]);b[3]=Math.max(b[3],v[1]);return;}for(const w of v)walk(w);}walk(g.coordinates);return b;}
 function ringContains(x,y,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
-function polygonContains(x,y,polygon){return polygon.length>0&&ringContains(x,y,polygon[0])&&!polygon.slice(1).some(hole=>ringContains(x,y,hole));}
+function polygonContains(x,y,p){return p.length>0&&ringContains(x,y,p[0])&&!p.slice(1).some(h=>ringContains(x,y,h));}
 function contains(x,y,g){return g.type==='Polygon'?polygonContains(x,y,g.coordinates):g.type==='MultiPolygon'&&g.coordinates.some(p=>polygonContains(x,y,p));}
-const jpn=JSON.parse(fs.readFileSync(new URL('../runners-rings-japan-web.geojson',import.meta.url),'utf8'));
-// Japanese boundaries may contain multiple polygon pieces per municipality; merge by stable official N03_007 code.
-const boundaries=jpn.features.map(f=>({code:String(f.properties.N03_007||''),name:[f.properties.N03_001,f.properties.N03_003,f.properties.N03_004].filter(Boolean).join(' '),geom:f.geometry,bbox:bboxGeom(f.geometry)})).filter(f=>f.code && f.geom);
-const year=Number(process.env.EXPLORE_YEAR || new Date().getUTCFullYear());
-if(!Number.isInteger(year)||year<2000||year>2099)throw Error('Invalid EXPLORE_YEAR');
-let offset=0,processed=0,written=0;
-// Only import people who explicitly opted into EXPLORE; never write their routes to ranking tables.
-while(true){
-  const users=await request(`ranking_settings?select=user_id&join_explore=eq.true&order=user_id&limit=100&offset=${offset}`);
-  if(!users.length)break;
-  for(const user of users){
-    let runOffset=0;
-    while(true){
-      const runs=await request(`runs?select=id,user_id,activity_date,route&user_id=eq.${encodeURIComponent(user.user_id)}&activity_date=gte.${year}-01-01&activity_date=lt.${year+1}-01-01&route=not.is.null&order=id&limit=50&offset=${runOffset}`);
-      if(!runs.length)break;
-      for(const run of runs){
-        if(!Array.isArray(run.route))continue;
-        const found=new Map();
-        // Stored route is [latitude,longitude]; GeoJSON is [longitude,latitude].
-        // Inspect every recorded GPS point rather than only start/end or sparse samples.
-        for(const p of run.route){
-          if(!Array.isArray(p)||p.length<2)continue;
-          const y=Number(p[0]),x=Number(p[1]);
-          if(!Number.isFinite(x)||!Number.isFinite(y)||y<20||y>46||x<122||x>154)continue;
-          for(const f of boundaries){
-            if(found.has(f.code))continue;
-            const b=f.bbox;
-            if(x<b[0]||x>b[2]||y<b[1]||y>b[3])continue;
-            if(contains(x,y,f.geom))found.set(f.code,f.name);
-          }
-        }
-        const rows=[...found].map(([region_code,region_name])=>({user_id:user.user_id,run_id:run.id,activity_year:year,run_country:'JP',region_code,region_name}));
-        if(rows.length){await request('ranking_explore_verified?on_conflict=run_id,run_country,region_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});written+=rows.length;}
-        processed++;
-      }
-      runOffset+=runs.length;if(runs.length<50)break;
-    }
-  }
-  offset+=users.length;if(users.length<100)break;
-}
-console.log(`EXPLORE ${year} JP: processed ${processed} opted-in runs, wrote ${written} verified run-region matches. Other countries are not imported by this version.`);
+const cellSize=1;const cellKey=(x,y)=>`${Math.floor(x/cellSize)},${Math.floor(y/cellSize)}`;
+function loadBoundaries(){const grid=new Map();let total=0;for(const [country,file] of Object.entries(countries)){const loc=path.join(root,file);if(!fs.existsSync(loc))throw Error(`Missing boundary file: ${file}`);const geo=JSON.parse(fs.readFileSync(loc,'utf8'));for(const f of geo.features){if(!f.geometry)continue;const p=f.properties||{};const code=country==='JP'?String(p.N03_007||''):String(p.shapeID||'');const name=country==='JP'?[p.N03_001,p.N03_003,p.N03_004].filter(Boolean).join(' '):String(p.shapeName||'');if(!code||!name)continue;const b=bboxGeom(f.geometry);if(!b.every(Number.isFinite))continue;const item={country,code,name,geom:f.geometry,bbox:b};total++;for(let ix=Math.floor(b[0]);ix<=Math.floor(b[2]);ix++)for(let iy=Math.floor(b[1]);iy<=Math.floor(b[3]);iy++){const k=`${ix},${iy}`;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}}console.log(`Loaded ${total} boundary features across ${Object.keys(countries).length} countries.`);return grid;}
+function matchRoute(route,grid){const found=new Map();for(const p of route){if(!Array.isArray(p)||p.length<2)continue;const y=Number(p[0]),x=Number(p[1]);if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(y)>90||Math.abs(x)>180)continue;for(const f of grid.get(cellKey(x,y))||[]){const k=`${f.country}:${f.code}`;if(found.has(k))continue;const b=f.bbox;if(x<b[0]||x>b[2]||y<b[1]||y>b[3])continue;if(contains(x,y,f.geom))found.set(k,f);}}return [...found.values()];}
+if(process.argv.includes('--self-test')){const sq={type:'Polygon',coordinates:[[[0,0],[1,0],[1,1],[0,1],[0,0]]]};const grid=new Map([['0,0',[{country:'XX',code:'1',name:'test',geom:sq,bbox:[0,0,1,1]}]]]);if(matchRoute([[0.5,0.5]],grid).length!==1||matchRoute([[2,2]],grid).length!==0)throw Error('Geometry self-test failed');const real=loadBoundaries();if(!real.size)throw Error('Empty boundary grid');console.log('Geometry and boundary-file self-tests passed');process.exit(0);}
+const base=process.env.SUPABASE_URL,secret=process.env.SUPABASE_SERVICE_ROLE_KEY;
+if(!base||!secret)throw Error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY as GitHub Actions secrets.');
+const year=Number(process.env.EXPLORE_YEAR||new Date().getUTCFullYear());if(!Number.isInteger(year)||year<2000||year>2099)throw Error('Invalid EXPLORE_YEAR');
+const headers={apikey:secret,Authorization:`Bearer ${secret}`,'Content-Type':'application/json'};
+async function request(uri,init={}){const r=await fetch(`${base.replace(/\/$/,'')}/rest/v1/${uri}`,{...init,headers:{...headers,...init.headers}});if(!r.ok)throw Error(`${r.status} ${uri.split('?')[0]}: ${(await r.text()).slice(0,300)}`);const txt=await r.text();return txt?JSON.parse(txt):null;}
+const grid=loadBoundaries();let userOffset=0,processed=0,written=0;
+while(true){const users=await request(`ranking_settings?select=user_id&join_explore=eq.true&order=user_id&limit=100&offset=${userOffset}`);if(!users.length)break;for(const user of users){let runOffset=0;while(true){const runs=await request(`runs?select=id,activity_date,route&user_id=eq.${encodeURIComponent(user.user_id)}&activity_date=gte.${year}-01-01&activity_date=lt.${year+1}-01-01&route=not.is.null&order=id&limit=50&offset=${runOffset}`);if(!runs.length)break;for(const run of runs){if(!Array.isArray(run.route))continue;const found=matchRoute(run.route,grid);const rows=found.map(f=>({user_id:user.user_id,run_id:run.id,activity_year:year,run_country:f.country,region_code:f.code,region_name:f.name}));if(rows.length){await request('ranking_explore_verified?on_conflict=run_id,run_country,region_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});written+=rows.length;}processed++;}runOffset+=runs.length;if(runs.length<50)break;}}userOffset+=users.length;if(users.length<100)break;}
+console.log(`EXPLORE ${year}: processed ${processed} opted-in runs, upserted ${written} verified run-region matches in ${Object.keys(countries).length} countries.`);
