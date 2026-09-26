@@ -8,16 +8,17 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
 const DRY_RUN = process.env.DRY_RUN !== 'false';
+const FIXTURE_PREVIEW = process.env.FIXTURE_PREVIEW === 'true';
 const API_URL = (process.env.JOURNAL_SUPABASE_URL || '').replace(/\/+$/, '');
 const API_KEY = process.env.JOURNAL_SUPABASE_PUBLISHABLE_KEY || '';
 const OUT_DIR = resolve('journal/articles');
 const SITE = 'https://runnersrings.com';
 const PER_PAGE = 500;
 
-if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(API_URL)) {
+if (!FIXTURE_PREVIEW && !/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(API_URL)) {
   throw new Error('JOURNAL_SUPABASE_URL is missing or not a Supabase HTTPS project URL');
 }
-if (!API_KEY) throw new Error('JOURNAL_SUPABASE_PUBLISHABLE_KEY is missing');
+if (!FIXTURE_PREVIEW && !API_KEY) throw new Error('JOURNAL_SUPABASE_PUBLISHABLE_KEY is missing');
 
 function html(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -137,7 +138,18 @@ async function fetchPublished() {
   return all;
 }
 
-const posts = await fetchPublished();
+// Fixture mode never queries Supabase. It generates an explicitly fictional article
+// into a separate preview folder and is never committed to the public site.
+const posts = FIXTURE_PREVIEW ? [{
+  slug: 'fictional-journal-preview',
+  title_ja: '【架空テスト】ランニング日記',
+  title_en: '[Fictional test] Running journal',
+  summary_ja: '公開されない記事別OGP検証用の架空記事です。',
+  summary_en: 'Fictional article for private per-article OGP testing.',
+  body_ja: 'これはテスト用の架空記事です。実在のランナーとは関係ありません。',
+  body_en: 'This is a fictional test article and does not describe a real runner.',
+  image_url: null, category: 'Test', published_at: '2026-09-26T00:00:00Z'
+}] : await fetchPublished();
 const seen = new Set();
 for (const post of posts) {
   const slug = String(post.slug ?? '');
@@ -147,10 +159,10 @@ for (const post of posts) {
   seen.add(slug);
   const contents = articlePage(post);
   if (!DRY_RUN) {
-    const directory = join(OUT_DIR, slug);
+    const directory = FIXTURE_PREVIEW ? resolve('journal-preview-artifact', slug) : join(OUT_DIR, slug);
     await mkdir(directory, { recursive: true });
     await writeFile(join(directory, 'index.html'), contents, 'utf8');
   }
   console.log(`${DRY_RUN ? '[DRY RUN] Validated' : 'Generated'}: ${slug}`);
 }
-console.log(`Journal pages: ${posts.length}. ${DRY_RUN ? 'No files written.' : 'Files generated in journal/articles/.'}`);
+console.log(`Journal pages: ${posts.length}. ${DRY_RUN ? 'No files written.' : FIXTURE_PREVIEW ? 'Private fixture artifact generated.' : 'Files generated in journal/articles/.'}`);
