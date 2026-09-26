@@ -1,4 +1,4 @@
-name: Verify EXPLORE regions (Japan)
+name: Verify EXPLORE regions (global)
 on:
   workflow_dispatch:
     inputs:
@@ -6,8 +6,7 @@ on:
         description: 'Year to verify'
         required: true
         default: '2026'
-  schedule:
-    - cron: '30 19 * * *'
+# Manual only until first successful validation; enable schedule afterward.
 permissions:
   contents: read
 concurrency:
@@ -22,7 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Import opted-in Japan GPS regions
+      - name: Check geometry and supported boundary files
+        run: node scripts/sync-ranking-explore.mjs --self-test
+      - name: Import opted-in GPS regions worldwide
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
