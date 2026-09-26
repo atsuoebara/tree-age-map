@@ -46,7 +46,7 @@ function articlePage(post) {
   const dateObj = new Date(post.published_at);
   if (!Number.isFinite(dateObj.getTime())) throw new Error(`Invalid published_at for ${slug}`);
   const pubDate = dateObj.toISOString().slice(0, 10);
-  const ogImage = img ? `\n  <meta property="og:image" content="${html(img)}">\n  <meta name="twitter:card" content="summary_large_image">` :
+  const ogImage = img ? `\n  <meta property="og:image" content="${html(img)}">\n  <meta name="twitter:image" content="${html(img)}">\n  <meta name="twitter:card" content="summary_large_image">` :
     '  <meta name="twitter:card" content="summary">';
   const visibleImage = img ? `<img class="hero" src="${html(img)}" alt="" loading="lazy">` : '';
   const article = (language, title, summary, body) => `
