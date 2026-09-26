@@ -3,6 +3,11 @@ name: Generate Journal article pages
 on:
   workflow_dispatch:
     inputs:
+      fixture_preview:
+        description: 'Generate fictional article as private workflow artifact (never publish)'
+        required: true
+        type: boolean
+        default: false
       dry_run:
         description: 'Preview generated pages without publishing'
         required: true
@@ -31,10 +36,18 @@ jobs:
         env:
           JOURNAL_SUPABASE_URL: ${{ secrets.JOURNAL_SUPABASE_URL }}
           JOURNAL_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.JOURNAL_SUPABASE_PUBLISHABLE_KEY }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          DRY_RUN: ${{ inputs.fixture_preview && 'false' || inputs.dry_run }}
+          FIXTURE_PREVIEW: ${{ inputs.fixture_preview }}
         run: node scripts/generate-journal.mjs
+      - name: Upload private fictional preview artifact
+        if: ${{ inputs.fixture_preview }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-fictional-preview
+          path: journal-preview-artifact/
+          retention-days: 1
       - name: Commit pages (only when approved)
-        if: ${{ inputs.dry_run == false }}
+        if: ${{ inputs.dry_run == false && inputs.fixture_preview == false }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
