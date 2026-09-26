@@ -39,3 +39,14 @@
 1. Journalの生成コードと記事取得条件を確認し、非公開のままテストできる修正を作る。
 2. ranking.html第3版で日本語/英語の完全分離とEXPLORE対応国の順次追加方針を確認する（本番index.htmlは触らない）。
 3. JournalとRankingを並行して進め、Rankingは同率処理・DB/RLS設計へ進む。
+
+## 2026-09-26 Journal 2.0 正式切替・自動公開
+- [x] Journal 2.0をjournal.htmlに切替。ログイン前後のindexにJournal入口を追加。PC・スマホ表示を確認。
+- [ ] journal-admin.htmlに管理者向け「記事を公開する」を追加（Supabase管理者RLS要実機検証）。
+- [ ] GitHub Actionsの15分間隔スケジュールで公開記事ページを自動生成（GitHubスケジュール遅延の可能性あり）。
+- [ ] 下書き→公開→自動生成→Journal一覧→SNS画像まで新規のテスト記事で一連動作を確認。
+- [ ] 生成記事の「一覧へ戻る」を正式journal.htmlへ統一。
+- [ ] 既存の下書きID 2/3は公開しない。Steveの記事ID 4は公開済み。
+
+## 確定した開発優先順位
+1. Journal完成（index含む） 2. Rings Ranking完成 3. キャラデザ保管完成 4. 国追加システム完成 5. 細かな修正。AdSenseは別枠で並行。

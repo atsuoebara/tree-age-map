@@ -119,6 +119,7 @@
         </div>
         <div class="buttonRow">
           <button id="saveDraftButton" type="submit">下書き保存</button>
+          <button id="publishButton" type="button" class="secondary">記事を公開する</button>
           <button id="previewButton" type="button" class="secondary">公開前プレビュー（日英）</button>
         </div>
         <div id="saveMessage" class="statusBox hidden" aria-live="polite"></div>
@@ -141,6 +142,7 @@
     const authStatus = $('authStatus');
     const form = $('journalForm');
     const button = $('saveDraftButton');
+    const publishButton = $('publishButton');
     const saveMessage = $('saveMessage');
     const imageInput = $('journalImage');
     const preview = $('imagePreview');
@@ -326,8 +328,8 @@
       imageStoragePath = path;
       pendingImageUrl = supabaseClient.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
+    // 公開時も必ず下書き保存と画像アップロードを完了させてから状態を変更する。
+    async function saveArticle(publish = false) {
       if (busy) return;
       saveMessage.classList.add('hidden');
       let fields, file;
@@ -335,21 +337,21 @@
         fields = collectFields();
         file = imageInput.files?.[0] || null;
         validateImage(file);
-        // 保存途中で画像を別の画像に変更していたら、新規下書きでやり直す必要がある。
         if (draftId != null && imageStoragePath && file && file !== initialImage) {
           throw new Error('画像アップロード済みです。この画面では画像変更せず再保存してください。');
         }
+        if (publish && !window.confirm('この記事を一般公開します。内容・画像・日英プレビューを確認しましたか？')) return;
       } catch (error) {
         showStatus(saveMessage, error.message, 'error');
         return;
       }
       busy = true;
       button.disabled = true;
-      button.textContent = '保存しています...';
+      publishButton.disabled = true;
+      button.textContent = publish ? '公開準備中...' : '保存しています...';
       try {
         await requireAdmin();
         await createOrUpdateDraft(fields);
-        // 先に下書きを作成。通信失敗時もIDを保持して同じ記事への再試行を行う。
         if (file && !imageStoragePath) {
           initialImage = file;
           await uploadImage(file);
@@ -360,22 +362,32 @@
             .select('id').single();
           if (error) throw error;
         }
-        showStatus(saveMessage,
-          '下書きを保存しました。ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
-        $('loadDraftId').value = draftId;
-        showStatus(loadMessage, '編集中の下書き ID: ' + draftId + '（このまま再保存できます）', 'ok');
+        if (publish) {
+          // 管理者であってもDB側RLSが公開操作を許可しなければ失敗する。
+          const { data, error } = await supabaseClient.from('journal_posts')
+            .update({ status: 'published', published_at: new Date().toISOString() })
+            .eq('id', draftId).eq('status', 'draft').select('slug').single();
+          if (error || !data) throw new Error('公開操作が拒否されました。Supabaseの管理者用RLSを確認してください。' + (error?.message || ''));
+          showStatus(saveMessage, '公開登録が完了しました。記事URL: https://runnersrings.com/journal/articles/' + data.slug + '/ （ページ生成は通常15分程度、GitHub Actionsの混雑時はさらに時間がかかります）', 'ok');
+          form.classList.add('hidden');
+          loader.classList.add('hidden');
+        } else {
+          showStatus(saveMessage, '下書きを保存しました。ID: ' + draftId + (pendingImageUrl ? '／画像も保存しました。' : ''), 'ok');
+          $('loadDraftId').value = draftId;
+          showStatus(loadMessage, '編集中の下書き ID: ' + draftId + '（このまま再保存できます）', 'ok');
+        }
       } catch (error) {
         console.error(error);
-        showStatus(saveMessage,
-          '保存を完了できませんでした。' + (draftId != null ? ' 下書きID: ' + draftId + '。' : '') +
-          ' この画面を閉じず、同じ内容のまま再試行してください。詳細: ' +
-          (error?.message || '不明なエラー'), 'error');
+        showStatus(saveMessage, '処理を完了できませんでした。' + (draftId != null ? ' 下書きID: ' + draftId + '。' : '') + ' この画面を閉じずに確認してください。詳細: ' + (error?.message || '不明なエラー'), 'error');
       } finally {
         busy = false;
         button.disabled = false;
+        publishButton.disabled = false;
         button.textContent = '下書き保存';
       }
-    });
+    }
+    form.addEventListener('submit', event => { event.preventDefault(); saveArticle(false); });
+    publishButton.addEventListener('click', () => saveArticle(true));
     checkAdmin();
   </script>
 </body>
