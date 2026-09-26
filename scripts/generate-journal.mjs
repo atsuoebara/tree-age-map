@@ -4,7 +4,7 @@
  * DRY_RUN=true (the workflow default) checks output without writing any files.
  * Only explicitly published rows are included.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readdir, readFile, rm } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
 const DRY_RUN = process.env.DRY_RUN !== 'false';
@@ -65,6 +65,7 @@ function articlePage(post) {
       <a class="back" href="/journal.html">${language === 'ja' ? 'Journal一覧へ戻る' : 'Back to Journal'}</a>
     </article>`;
   return `<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
 <html lang="ja">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -150,13 +151,33 @@ const posts = FIXTURE_PREVIEW ? [{
   body_en: 'This is a fictional test article and does not describe a real runner.',
   image_url: null, category: 'Test', published_at: '2026-09-26T00:00:00Z'
 }] : await fetchPublished();
+// Validate the entire response before changing public files.
 const seen = new Set();
 for (const post of posts) {
   const slug = String(post.slug ?? '');
-  if (!/^[a-z0-9][a-z0-9_-]{0,119}$/i.test(slug) || slug === '.' || slug === '..')
-    throw new Error(`Unsafe or missing article slug: ${slug}`);
+  if (!/^[a-z0-9][a-z0-9_-]{0,119}$/i.test(slug)) throw new Error(`Unsafe or missing article slug: ${slug}`);
   if (seen.has(slug)) throw new Error(`Duplicate slug: ${slug}`);
+  if (!Number.isFinite(new Date(post.published_at).getTime())) throw new Error(`Invalid date: ${slug}`);
   seen.add(slug);
+}
+if (!FIXTURE_PREVIEW && !DRY_RUN) {
+  // Delete ONLY directories containing our own generated-page marker. Never touch other files.
+  await mkdir(OUT_DIR, { recursive: true });
+  for (const entry of await readdir(OUT_DIR, { withFileTypes: true })) {
+    if (!entry.isDirectory() || seen.has(entry.name)) continue;
+    const page = join(OUT_DIR, entry.name, 'index.html');
+    const contents = await readFile(page, 'utf8').catch(() => '');
+    if (contents.includes('<!-- RR_JOURNAL_GENERATED_PAGE -->') || (contents.includes("Runner's Rings Journal") && contents.includes(`<link rel="canonical" href="${SITE}/journal/articles/${encodeURIComponent(entry.name)}/">`) && contents.includes("document.querySelectorAll('article')"))) {
+      await rm(page);
+      // Remove empty directory only; unexpected files remain untouched.
+      await (await import('node:fs/promises')).rmdir(join(OUT_DIR, entry.name)).catch(() => {});
+      console.log(`Removed unpublished article page: ${entry.name}`);
+    }
+  }
+}
+
+for (const post of posts) {
+  const slug = String(post.slug ?? '');
   const contents = articlePage(post);
   if (!DRY_RUN) {
     const directory = FIXTURE_PREVIEW ? resolve('journal-preview-artifact', slug) : join(OUT_DIR, slug);
