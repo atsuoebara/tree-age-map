@@ -3,6 +3,8 @@ name: Generate Journal article pages
 on:
   schedule:
     - cron: '7,22,37,52 * * * *'
+  repository_dispatch:
+    types: [journal-content-changed]
   workflow_dispatch:
     inputs:
       fixture_preview:
@@ -38,7 +40,7 @@ jobs:
         env:
           JOURNAL_SUPABASE_URL: ${{ secrets.JOURNAL_SUPABASE_URL }}
           JOURNAL_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.JOURNAL_SUPABASE_PUBLISHABLE_KEY }}
-          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || (inputs.fixture_preview && 'false' || inputs.dry_run) }}
+          DRY_RUN: ${{ (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') && 'false' || (inputs.fixture_preview && 'false' || inputs.dry_run) }}
           FIXTURE_PREVIEW: ${{ inputs.fixture_preview }}
         run: node scripts/generate-journal.mjs
       - name: Upload private fictional preview artifact
@@ -49,11 +51,11 @@ jobs:
           path: journal-preview-artifact/
           retention-days: 1
       - name: Commit pages (only when approved)
-        if: ${{ github.event_name == 'schedule' || (inputs.dry_run == false && inputs.fixture_preview == false) }}
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || (inputs.dry_run == false && inputs.fixture_preview == false) }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add journal/articles/
+          git add -A journal/articles/
           if ! git diff --cached --quiet; then
             git commit -m 'Generate published Journal article pages'
             git push origin HEAD:main
