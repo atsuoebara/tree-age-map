@@ -276,7 +276,7 @@ applyLanguage(savedLanguage);
   function makeCard(post, lang) {
     const link = document.createElement('a');
     link.className = 'articleCard';
-    link.href = './journal-post.html?slug=' + encodeURIComponent(post.slug);
+    link.href = './journal/articles/' + encodeURIComponent(post.slug) + '/';
     const img = safeImage(post.image_url);
     if (img) {const photo=document.createElement('img');photo.className='cardImage';photo.src=img;photo.alt='';photo.loading='lazy';link.append(photo);}
     link.append(textElement('div','articleDate',formatDate(post.published_at)));
