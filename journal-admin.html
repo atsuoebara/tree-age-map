@@ -73,6 +73,10 @@
         <label for="loadDraftId">保存済み下書きID（既存の下書きを編集するときだけ入力）</label>
         <input id="loadDraftId" type="number" min="1" inputmode="numeric" placeholder="新規記事なら空欄">
         <button id="loadDraftButton" type="button">下書きを読み込む</button>
+        <div class="help" style="margin-top:18px">公開済み記事の削除（IDとタイトルを必ず照合してください）</div>
+        <input id="deleteArticleId" type="number" min="1" placeholder="削除する記事ID">
+        <button id="deleteArticleButton" type="button" class="secondary">記事を確認して削除</button>
+        <div id="deleteMessage" class="statusBox hidden" aria-live="polite"></div>
         <div id="loadMessage" class="statusBox hidden" aria-live="polite"></div>
         <p class="help">新しい記事はIDを入力せず、そのまま下のフォームに記入してください。既存記事を編集するときだけIDを入力して「下書きを読み込む」を押します。</p>
       </div>
@@ -330,6 +334,37 @@
       pendingImageUrl = supabaseClient.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }
     // 公開時も必ず下書き保存と画像アップロードを完了させてから状態を変更する。
+    async function triggerGeneration() {
+      const { data, error } = await supabaseClient.functions.invoke('journal-trigger', { body: {} });
+      if (error || !data?.queued) throw new Error('GitHubの即時生成を開始できません。手動でActionsを実行してください。');
+    }
+    $('deleteArticleButton').addEventListener('click', async () => {
+      if (busy) return;
+      const id = Number($('deleteArticleId').value);
+      const output = $('deleteMessage');
+      if (!Number.isSafeInteger(id) || id < 1) return showStatus(output, '記事IDを入力してください。', 'error');
+      busy = true;
+      $('deleteArticleButton').disabled = true;
+      try {
+        await requireAdmin();
+        const { data: post, error: fetchError } = await supabaseClient.from('journal_posts')
+          .select('id,title_ja,title_en,status,slug').eq('id', id).single();
+        if (fetchError || !post) throw new Error('記事が見つかりません。');
+        const title = post.title_ja || post.title_en || '(無題)';
+        if (!window.confirm('削除対象を確認してください。\nID: ' + id + '\nタイトル: ' + title + '\n状態: ' + post.status + '\n\n本当に削除しますか？')) return;
+        if (window.prompt('最終確認：削除する記事ID ' + id + ' を入力してください。') !== String(id)) return;
+        const { data: removed, error } = await supabaseClient.from('journal_posts').delete().eq('id', id).select('id');
+        if (error || !removed?.length) throw new Error('DBの削除が拒否されました。管理者RLSを確認してください。' + (error?.message || ''));
+        $('deleteArticleId').value = '';
+        try {
+          await triggerGeneration();
+          showStatus(output, '記事ID ' + id + ' を削除し、公開ページの再生成を開始しました。', 'ok');
+        } catch (triggerError) {
+          showStatus(output, 'DB削除は完了しましたが、ページ削除の自動実行に失敗しました。GitHub Actionsを手動実行してください。' + triggerError.message, 'notice');
+        }
+      } catch (error) { showStatus(output, error.message, 'error'); }
+      finally { busy = false; $('deleteArticleButton').disabled = false; }
+    });
     async function saveArticle(publish = false) {
       if (busy) return;
       saveMessage.classList.add('hidden');
@@ -369,7 +404,12 @@
             .update({ status: 'published', published_at: new Date().toISOString() })
             .eq('id', draftId).eq('status', 'draft').select('slug').single();
           if (error || !data) throw new Error('公開操作が拒否されました。Supabaseの管理者用RLSを確認してください。' + (error?.message || ''));
-          showStatus(saveMessage, '公開登録が完了しました。記事URL: https://runnersrings.com/journal/articles/' + data.slug + '/ （ページ生成は通常15分程度、GitHub Actionsの混雑時はさらに時間がかかります）', 'ok');
+          try {
+            await triggerGeneration();
+            showStatus(saveMessage, '公開登録完了。ページ生成を開始しました。記事URL: https://runnersrings.com/journal/articles/' + data.slug + '/ （Actions完了後に表示されます）', 'ok');
+          } catch (triggerError) {
+            showStatus(saveMessage, 'DB公開は完了しましたが、ページ生成の起動に失敗しました。GitHub Actionsを手動実行してください。' + triggerError.message, 'notice');
+          }
           form.classList.add('hidden');
           loader.classList.add('hidden');
         } else {
