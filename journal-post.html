@@ -61,7 +61,7 @@ function draw(){
   });row.append(copy);
   if(navigator.share){
     const share=item('button','',lang==='ja'?'共有':'Share');share.type='button';
-    share.addEventListener('click',async()=>{try{await navigator.share({title,text:title,url:canonicalURL});}catch(error){if(error?.name!=='AbortError')msg.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});row.append(share);
+    share.addEventListener('click',async()=>{try{await navigator.share({title,text:title+"\n"+canonicalURL});}catch(error){if(error?.name!=='AbortError')msg.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});row.append(share);
   }
   const x=item('a','',lang==='ja'?'Xで共有':'Share to X');x.href='https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url:canonicalURL}).toString();x.target='_blank';x.rel='noopener noreferrer';row.append(x);
   root.append(row,msg);
