@@ -1,0 +1,35 @@
+name: Discover unsupported EXPLORE countries (private)
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Year to inspect (blank = current UTC year)'
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate world boundaries
+        run: node scripts/detect-explore-coverage.mjs --self-test
+      - name: Detect unsupported countries (no database writes)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REQUESTED_YEAR: ${{ inputs.year }}
+        run: |
+          export EXPLORE_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
+          node scripts/detect-explore-coverage.mjs
+      - name: Store private aggregate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: explore-coverage-private-report
+          path: explore-coverage-report.json
+          retention-days: 7
