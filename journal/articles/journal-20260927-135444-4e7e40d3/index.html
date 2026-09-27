@@ -222,7 +222,8 @@ https://runnersrings.com/ranking.html</div>
         try{if(!navigator.clipboard)throw new Error('No clipboard');await navigator.clipboard.writeText(permalink);feedback.textContent=labels[a.dataset.lang];}
         catch{window.prompt('Copy article URL',permalink);}
       });
-      if(navigator.share){const btn=a.querySelector('.native-share');btn.hidden=false;btn.addEventListener('click',async()=>{try{await navigator.share({title:a.querySelector('h1').textContent,text:a.querySelector('h1').textContent+'\n'+permalink});}catch(e){if(e.name!=='AbortError')feedback.textContent='Share failed';}});}
+      if(navigator.share){const btn=a.querySelector('.native-share');btn.hidden=false;btn.addEventListener('click',async()=>{try{await navigator.share({title:a.querySelector('h1').textContent,text:a.querySelector('h1').textContent+'
+'+permalink});}catch(e){if(e.name!=='AbortError')feedback.textContent='Share failed';}});}
     });
     show();
   })();
