@@ -3,10 +3,12 @@ on:
   workflow_dispatch:
     inputs:
       year:
-        description: 'Year to verify'
-        required: true
-        default: '2026'
-# Manual only until first successful validation; enable schedule afterward.
+        description: 'Year to verify (leave blank for current UTC year)'
+        required: false
+        type: string
+  schedule:
+    # 09:23 and 21:23 Japan time. GitHub scheduled runs can be delayed.
+    - cron: '23 0,12 * * *'
 permissions:
   contents: read
 concurrency:
@@ -27,5 +29,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          EXPLORE_YEAR: ${{ inputs.year || '2026' }}
-        run: node scripts/sync-ranking-explore.mjs
+          REQUESTED_YEAR: ${{ inputs.year }}
+        run: |
+          export EXPLORE_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
+          echo "EXPLORE sync year: $EXPLORE_YEAR"
+          node scripts/sync-ranking-explore.mjs
