@@ -68,6 +68,14 @@ function articlePage(post) {
 <!-- RR_JOURNAL_GENERATED_PAGE -->
 <html lang="ja">
 <head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${html(summaryJa.slice(0, 160))}">
   <title>${html(titleJa)} | Runner's Rings Journal</title>
