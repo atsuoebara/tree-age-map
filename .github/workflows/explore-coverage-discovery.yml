@@ -1,4 +1,3 @@
-
 name: Discover unsupported EXPLORE countries (private)
 
 on:
@@ -13,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   discover:
@@ -43,3 +43,17 @@ jobs:
           name: explore-coverage-private-report
           path: explore-coverage-report.json
           retention-days: 7
+
+      - name: Create Issue when unsupported countries are found
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COUNT=$(node -e "const r=require('./explore-coverage-report.json'); console.log((r.unsupported || []).length)")
+          if [ "$COUNT" -gt 0 ]; then
+            echo "Unsupported countries found: $COUNT"
+            gh issue create \
+              --title "🌍 EXPLORE: Unsupported country detected" \
+              --body-file explore-coverage-report.json
+          else
+            echo "No unsupported countries found. No Issue created."
+          fi
