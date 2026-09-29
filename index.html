@@ -16,7 +16,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Runner's Rings（ランナーズリングス）は、ランナーの努力を年輪として可視化するアプリです。走った道が地図に刻まれ、努力が年輪のように積み重なります。">
+  <meta name="description" content="Runner's Rings（ランナーズリングス）は、走った道や街を地図に積み重ね、距離・ラン数・訪れた地域を可視化するランニング記録アプリです。">
 
   <title>Runner's Rings（ランナーズリングス）｜走った人生を地図に残す</title>
 <link rel="icon" type="image/png" href="icon.PNG">
@@ -274,10 +274,6 @@
     .languageButton.isActive{
       background:#ff2bd6;
       color:#ffffff;
-    }
-
-    html[lang="en"] .stravaPauseNoticeEn{
-      display:none;
     }
 
     @media (max-width:520px){
@@ -2668,15 +2664,9 @@
       </h2>
 
       <p class="authHeroText">
-        <strong>ランナーの努力を、年輪として可視化するアプリ</strong>
-      </p>
-
-      <p class="authHeroText">
-        走った道が地図に刻まれ、努力が年輪のように積み重なる。
-      </p>
-
-      <p class="authHeroText">
-        <strong>走った年輪から、世界に仲間の輪を。</strong>
+        Runner's Rings（ランナーズリングス）は、
+        あなたが走った道や街を地図に積み重ねていく
+        ランニング記録アプリです。
       </p>
 
       <p class="authHeroText">
@@ -2998,13 +2988,6 @@
   <div id="conquestCardGrid"></div>
 </details>
 
-<div id="stravaPauseNotice" role="status">
-  <strong>Strava新規連携を一時停止しています</strong><br>
-  接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。
-  <span class="stravaPauseNoticeEn" lang="en">
-    New Strava connections are temporarily paused while our request for additional athlete capacity is under review. Existing connected users can continue using the service.
-  </span>
-</div>
 <details id="accountPanel" style="display:none;">
 
   <summary>アカウント設定</summary>
@@ -4589,15 +4572,6 @@ async function copyGarminLinkCode() {
 }
 
 async function connectStrava() {
-  if (
-    STRAVA_NEW_CONNECTIONS_PAUSED
-  ) {
-    alert(
-      'Stravaの新規連携は現在一時停止しています。\n利用枠の拡大を申請し、審査中です。'
-    );
-    return;
-  }
-
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
@@ -5654,16 +5628,6 @@ async function updateStravaConnectionStatus() {
       'Strava status error:',
       error
     );
-
-    if (
-      STRAVA_NEW_CONNECTIONS_PAUSED &&
-      stravaPauseNotice
-    ) {
-      stravaConnectButton.style.display =
-        'none';
-      stravaPauseNotice.style.display =
-        'block';
-    }
 
     return;
   }
@@ -24600,9 +24564,6 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['走った人生を、地図に残す。','Map the life you ran.'],
   ['走った記録ではなく、','Not just your running records—'],
   ['走った人生を残す。','preserve the life you ran.'],
-  ['ランナーの努力を、年輪として可視化するアプリ','Visualize Your Running Journey as Growth Rings.'],
-  ['走った道が地図に刻まれ、努力が年輪のように積み重なる。','Every road you run is etched onto the map, building up like growth rings.'],
-  ['走った年輪から、世界に仲間の輪を。','From your growth rings, expand your circle of runners around the world.'],
   ['走った道を、一枚の地図に。','Every road you ran, on one map.'],
   ['👀 地図を拡大すると、実際に走ったルートが表示されます','👀 Zoom in to see the routes you actually ran.'],
   ['Runner\'s Ringsを起動しています','Launching Runner\'s Rings'],
@@ -24631,8 +24592,6 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['ファイル取り込み','File import'],
   ['※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。','* As a rule, choose either Strava or Intervals.icu for automatic sync.'],
   ['詳しい手順を見る →','View detailed instructions →'],
-  ['Strava新規連携を一時停止しています','New Strava connections are temporarily paused'],
-  ['接続可能人数が上限に達したため、現在利用枠の拡大を申請し、審査中です。既に連携済みの方は引き続きご利用いただけます。','We have reached the connected-athlete limit and our capacity increase request is under review. Existing connected users can continue using the service.'],
   ['Runner\'s Ringsをはじめる','Get started with Runner\'s Rings'],
   ['ログインすると、あなたのランニングマップを表示します。','Log in to view your private running map.'],
   ['初めて使う場合は「新規登録」から。','New here? Create an account first.'],
