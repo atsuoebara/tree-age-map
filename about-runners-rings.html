@@ -7,7 +7,7 @@
   <title>Runner's Rings（ランナーズリングス）とは？</title>
   <meta
     name="description"
-    content="Runner's Rings（ランナーズリングス）は、走った道を地図に積み重ね、国・都道府県・市町村の地域走破、ALL・年別表示、面・コース切替、走破シェアを楽しめるランニング記録アプリです。"
+    content="Runner's Rings（ランナーズリングス）は、ランナーの努力を年輪として可視化するアプリです。走った道が地図に刻まれ、努力が年輪のように積み重なり、そこから世界のランナーとの仲間の輪が広がります。"
   >
 
   <style>
@@ -57,6 +57,42 @@
       margin:0 0 18px;
       color:#d5deea;
       font-size:15px;
+    }
+
+
+    .ringsMeaning{
+      margin:28px 0;
+      padding:22px 20px;
+      background:linear-gradient(135deg,rgba(255,43,214,.10),rgba(234,255,0,.05));
+      border:1px solid rgba(255,43,214,.28);
+      border-radius:16px;
+    }
+
+    .ringsMeaning h2{
+      margin:0 0 12px;
+      font-size:22px;
+      line-height:1.45;
+    }
+
+    .ringsMeaning p{
+      margin:10px 0 0;
+    }
+
+    .ringsMeaning .brandSubtitle{
+      color:#ffffff;
+      font-weight:800;
+    }
+
+    .ringsMeaning .ringsMessage{
+      color:#ffdc38;
+      font-weight:800;
+      font-size:17px;
+    }
+
+    .ringsMeaning .englishSubtitle{
+      color:#b8c4d3;
+      font-style:italic;
+      font-size:14px;
     }
 
     .origin{
@@ -315,6 +351,20 @@
     走った道を地図に積み重ねながら、
     その時、その場所で走っていた自分の時間まで残していくためのアプリです。
   </p>
+
+  <section class="ringsMeaning" aria-labelledby="ringsMeaningTitle">
+    <h2 id="ringsMeaningTitle">Runner's Rings ― 2つの「Rings」</h2>
+    <p class="brandSubtitle">ランナーの努力を、年輪として可視化するアプリ</p>
+    <p>
+      走った道が地図に刻まれ、努力が年輪のように積み重なる。
+      Runner's Ringsの「Rings」には、まずこの「年輪」という意味があります。
+    </p>
+    <p>
+      そして、もうひとつ。走った記録をきっかけに、国や距離を越えてランナー同士がつながっていく「仲間の輪」という意味も込めています。
+    </p>
+    <p class="ringsMessage">走った年輪から、世界に仲間の輪を。</p>
+    <p class="englishSubtitle">Visualize Your Running Journey as Growth Rings.</p>
+  </section>
 
   <div class="origin">
     <p>
@@ -600,6 +650,12 @@
     "走った記録ではなく、走った人生を残す。": "Preserve the life you ran, not just the records.",
     "Runner's Ringsは、走った距離やタイムだけを記録するためのアプリではありません。": "Runner's Rings is more than an app for recording distance and time.",
     "走った道を地図に積み重ねながら、 その時、その場所で走っていた自分の時間まで残していくためのアプリです。": "It builds a map from the roads you have run and preserves the moments of your life connected to those places.",
+    "Runner's Rings ― 2つの「Rings」": "Runner's Rings — Two Meanings of Rings",
+    "ランナーの努力を、年輪として可視化するアプリ": "Visualize Your Running Journey as Growth Rings.",
+    "走った道が地図に刻まれ、努力が年輪のように積み重なる。 Runner's Ringsの「Rings」には、まずこの「年輪」という意味があります。": "Every road you run is etched onto the map, and your effort builds up like growth rings. The first meaning of Rings in Runner's Rings is these growth rings.",
+    "そして、もうひとつ。走った記録をきっかけに、国や距離を越えてランナー同士がつながっていく「仲間の輪」という意味も込めています。": "And there is another meaning: a circle of runners, connecting people across countries and distances through the journeys they have run.",
+    "走った年輪から、世界に仲間の輪を。": "From your growth rings, expand your circle of runners around the world.",
+    "Visualize Your Running Journey as Growth Rings.": "Visualize Your Running Journey as Growth Rings.",
     "Runner's Rings（ランナーズリングス）は、群馬を走る一人のランナーから生まれた個人開発のWebアプリです。": "Runner's Rings is an independently developed web app created by a runner in Gunma, Japan.",
     "ランリングでできること": "What Runner's Rings can do",
     "これまでのランニングを、地図と数字で自分だけの歴史として振り返れます。": "Look back on your running history through your own maps and statistics.",
@@ -674,7 +730,7 @@
   document.querySelectorAll('[alt]').forEach((element) => { if (altTranslations[element.alt]) element.alt = altTranslations[element.alt]; });
   document.documentElement.lang = 'en';
   const description = document.querySelector('meta[name="description"]');
-  if (description) description.content = "Runner's Rings builds a personal map from your running routes, including region conquest, all-time and yearly views, area and route modes, and shareable conquest images.";
+  if (description) description.content = "Runner's Rings visualizes your running journey as growth rings: every road you run is etched onto the map, building a personal history and connecting runners around the world.";
   document.title = "About Runner's Rings";
 })();
 </script>
