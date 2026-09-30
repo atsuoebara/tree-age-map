@@ -1535,6 +1535,25 @@
       background:#e9eef6;
     }
 
+    .routeRunsPopupMore{
+      width:100%;
+      margin-top:6px;
+      padding:7px 9px;
+      border:1px solid rgba(15,29,47,.16);
+      border-radius:8px;
+      background:#ffffff;
+      color:#0b1422;
+      font:inherit;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+
+    .routeRunsPopupMore:hover{
+      background:#f4f7fb;
+    }
+
     .routeRunsPopupDate{
       display:inline;
       font-size:11px;
@@ -15768,104 +15787,173 @@ function createRouteRunsPopupContent(
   list.className =
     'routeRunsPopupList';
 
-  runs.forEach(
-    activity => {
-      const button =
-        document.createElement(
-          'button'
-        );
+  const moreButton =
+    document.createElement(
+      'button'
+    );
 
-      button.type =
-        'button';
+  moreButton.type =
+    'button';
 
-      button.className =
-        'routeRunsPopupButton';
+  moreButton.className =
+    'routeRunsPopupMore';
 
-      const date =
-        document.createElement(
-          'span'
-        );
+  const PAGE_SIZE =
+    20;
 
-      date.className =
-        'routeRunsPopupDate';
+  let visibleCount =
+    0;
 
-      date.textContent =
-        getRouteActivityDateText(
-          activity
-        );
+  function appendRunButton(
+    activity
+  ) {
+    const button =
+      document.createElement(
+        'button'
+      );
 
-      const meta =
-        document.createElement(
-          'span'
-        );
+    button.type =
+      'button';
 
-      meta.className =
-        'routeRunsPopupMeta';
+    button.className =
+      'routeRunsPopupButton';
 
-      const distance =
-        Number(
-          activity.distance
-        );
+    const date =
+      document.createElement(
+        'span'
+      );
 
-      const distanceText =
-        Number.isFinite(
-          distance
-        )
-          ? distance.toFixed(2) +
-            ' km'
-          : (
-              isRunnerRingsEnglish()
-                ? 'Distance unknown'
-                : '距離不明'
-            );
+    date.className =
+      'routeRunsPopupDate';
 
-      const name =
-        String(
-          activity.name ||
-          (
+    date.textContent =
+      getRouteActivityDateText(
+        activity
+      );
+
+    const meta =
+      document.createElement(
+        'span'
+      );
+
+    meta.className =
+      'routeRunsPopupMeta';
+
+    const distance =
+      Number(
+        activity.distance
+      );
+
+    const distanceText =
+      Number.isFinite(
+        distance
+      )
+        ? distance.toFixed(2) +
+          ' km'
+        : (
             isRunnerRingsEnglish()
-              ? 'Run'
-              : 'ラン'
-          )
+              ? 'Distance unknown'
+              : '距離不明'
+          );
+
+    const name =
+      String(
+        activity.name ||
+        (
+          isRunnerRingsEnglish()
+            ? 'Run'
+            : 'ラン'
         )
-        .replace(
-          /\.(gpx|fit|tcx)$/i,
-          ''
-        );
-
-      meta.textContent =
-        distanceText +
-        ' ・ ' +
-        name;
-
-      button.append(
-        date,
-        meta
+      )
+      .replace(
+        /\.(gpx|fit|tcx)$/i,
+        ''
       );
 
-      button.addEventListener(
-        'click',
-        () =>
-          focusActivityFromRoutePopup(
-            activity
-          )
+    meta.textContent =
+      distanceText +
+      ' ・ ' +
+      name;
+
+    button.append(
+      date,
+      meta
+    );
+
+    button.addEventListener(
+      'click',
+      () =>
+        focusActivityFromRoutePopup(
+          activity
+        )
+    );
+
+    list.appendChild(
+      button
+    );
+  }
+
+  function renderNextPage() {
+    const nextCount =
+      Math.min(
+        visibleCount +
+          PAGE_SIZE,
+        runs.length
       );
 
-      list.appendChild(
-        button
+    runs
+      .slice(
+        visibleCount,
+        nextCount
+      )
+      .forEach(
+        appendRunButton
       );
+
+    visibleCount =
+      nextCount;
+
+    if (
+      visibleCount <
+      runs.length
+    ) {
+      const remaining =
+        runs.length -
+        visibleCount;
+
+      moreButton.textContent =
+        isRunnerRingsEnglish()
+          ? 'Show 20 more (' +
+            remaining +
+            ' remaining)'
+          : 'さらに20件表示（残り' +
+            remaining +
+            '件）';
+
+      moreButton.hidden =
+        false;
+    } else {
+      moreButton.hidden =
+        true;
     }
+  }
+
+  moreButton.addEventListener(
+    'click',
+    renderNextPage
   );
 
   container.append(
     title,
     count,
-    list
+    list,
+    moreButton
   );
+
+  renderNextPage();
 
   return container;
 }
-
 
 function openRouteRunsPopup(
   cellKey,
