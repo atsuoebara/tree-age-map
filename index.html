@@ -1509,14 +1509,21 @@
       display:flex;
       flex-direction:column;
       gap:3px;
+      height:220px;
       max-height:220px;
       margin-top:6px;
       overflow-y:auto;
+      overflow-x:hidden;
       -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
 
     .routeRunsPopupButton{
+      display:block;
+      flex:0 0 auto;
+      box-sizing:border-box;
       width:100%;
+      min-height:30px;
       padding:5px 7px;
       border:1px solid rgba(15,29,47,.14);
       border-radius:7px;
@@ -15734,6 +15741,12 @@ function createRouteRunsPopupContent(
       'div'
     );
 
+  // Leaflet側の内容計測に任せきらず、
+  // 多数のランでもポップアップ自体が縦に伸びないよう固定する。
+  container.style.width = '250px';
+  container.style.maxWidth = '250px';
+  container.style.overflow = 'hidden';
+
   const title =
     document.createElement(
       'div'
@@ -15768,104 +15781,133 @@ function createRouteRunsPopupContent(
   list.className =
     'routeRunsPopupList';
 
-  runs.forEach(
-    activity => {
-      const button =
-        document.createElement(
-          'button'
-        );
+  // 画面には最大20件だけ生成する。
+  // 全件数は上の件数表示で確認できる。
+  runs
+    .slice(0, 20)
+    .forEach(
+      activity => {
+        const button =
+          document.createElement(
+            'button'
+          );
 
-      button.type =
-        'button';
+        button.type =
+          'button';
 
-      button.className =
-        'routeRunsPopupButton';
+        button.className =
+          'routeRunsPopupButton';
 
-      const date =
-        document.createElement(
-          'span'
-        );
+        const date =
+          document.createElement(
+            'span'
+          );
 
-      date.className =
-        'routeRunsPopupDate';
+        date.className =
+          'routeRunsPopupDate';
 
-      date.textContent =
-        getRouteActivityDateText(
-          activity
-        );
-
-      const meta =
-        document.createElement(
-          'span'
-        );
-
-      meta.className =
-        'routeRunsPopupMeta';
-
-      const distance =
-        Number(
-          activity.distance
-        );
-
-      const distanceText =
-        Number.isFinite(
-          distance
-        )
-          ? distance.toFixed(2) +
-            ' km'
-          : (
-              isRunnerRingsEnglish()
-                ? 'Distance unknown'
-                : '距離不明'
-            );
-
-      const name =
-        String(
-          activity.name ||
-          (
-            isRunnerRingsEnglish()
-              ? 'Run'
-              : 'ラン'
-          )
-        )
-        .replace(
-          /\.(gpx|fit|tcx)$/i,
-          ''
-        );
-
-      meta.textContent =
-        distanceText +
-        ' ・ ' +
-        name;
-
-      button.append(
-        date,
-        meta
-      );
-
-      button.addEventListener(
-        'click',
-        () =>
-          focusActivityFromRoutePopup(
+        date.textContent =
+          getRouteActivityDateText(
             activity
+          );
+
+        const meta =
+          document.createElement(
+            'span'
+          );
+
+        meta.className =
+          'routeRunsPopupMeta';
+
+        const distance =
+          Number(
+            activity.distance
+          );
+
+        const distanceText =
+          Number.isFinite(
+            distance
           )
+            ? distance.toFixed(2) +
+              ' km'
+            : (
+                isRunnerRingsEnglish()
+                  ? 'Distance unknown'
+                  : '距離不明'
+              );
+
+        const name =
+          String(
+            activity.name ||
+            (
+              isRunnerRingsEnglish()
+                ? 'Run'
+                : 'ラン'
+            )
+          )
+          .replace(
+            /\.(gpx|fit|tcx)$/i,
+            ''
+          );
+
+        meta.textContent =
+          distanceText +
+          ' ・ ' +
+          name;
+
+        button.append(
+          date,
+          meta
+        );
+
+        button.addEventListener(
+          'click',
+          () =>
+            focusActivityFromRoutePopup(
+              activity
+            )
+        );
+
+        list.appendChild(
+          button
+        );
+      }
+    );
+
+  if (runs.length > 20) {
+    const limited =
+      document.createElement(
+        'div'
       );
 
-      list.appendChild(
-        button
-      );
-    }
-  );
+    limited.className =
+      'popup-row';
 
-  container.append(
-    title,
-    count,
-    list
-  );
+    limited.style.marginTop = '7px';
+    limited.style.fontSize = '11px';
+    limited.style.color = '#526176';
+
+    limited.textContent =
+      isRunnerRingsEnglish()
+        ? 'Showing the latest 20 runs'
+        : '最新20件を表示';
+
+    container.append(
+      title,
+      count,
+      list,
+      limited
+    );
+  } else {
+    container.append(
+      title,
+      count,
+      list
+    );
+  }
 
   return container;
 }
-
 
 function openRouteRunsPopup(
   cellKey,
@@ -15880,41 +15922,20 @@ function openRouteRunsPopup(
     return;
   }
 
-  const popup =
-    L.popup(
-      {
-        maxWidth:330,
-        minWidth:250
-      }
-    )
-    .setLatLng(
-      latlng
-    )
-    .setContent(
-      content
-    )
-    .openOn(
-      map
-    );
-
-  // iPhone/Safariでは、ポップアップを開いた直後に
-  // Leafletのサイズ計測・描画が確定せず、内容が空欄のように
-  // 見えることがある。手動ズームで直るのと同じ再計測を、
-  // ポップアップ表示後に自動で行う。
-  requestAnimationFrame(
-    () => {
-      map.invalidateSize({
-        pan:false
-      });
-
-      popup.update();
-
-      requestAnimationFrame(
-        () => {
-          popup.update();
-        }
-      );
+  L.popup(
+    {
+      maxWidth:330,
+      minWidth:250
     }
+  )
+  .setLatLng(
+    latlng
+  )
+  .setContent(
+    content
+  )
+  .openOn(
+    map
   );
 }
 
