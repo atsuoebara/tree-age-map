@@ -947,6 +947,138 @@
       font-size:12px;
     }
 
+    #timelapseLaunchArea{
+      padding:0 10px 9px;
+      background:#0f1d2f;
+    }
+
+    #timelapseOpenButton{
+      width:100%;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;
+      padding:11px 14px;
+      background:linear-gradient(90deg,#ff2bd6,#ff7b71 52%,#ffe600);
+      color:#07101d;
+      font:inherit;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 7px 22px rgba(255,43,214,.16);
+    }
+
+    #timelapseOpenButton:focus-visible,
+    .timelapseActionButton:focus-visible{
+      outline:3px solid rgba(234,255,0,.82);
+      outline-offset:2px;
+    }
+
+    #timelapsePanel{
+      display:none;
+      margin:0 10px 10px;
+      padding:13px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      background:#132237;
+      box-shadow:0 12px 34px rgba(0,0,0,.20);
+    }
+
+    #timelapsePanel.isOpen{
+      display:block;
+    }
+
+    .timelapsePanelTitle{
+      margin:0 0 4px;
+      font-size:15px;
+      font-weight:900;
+    }
+
+    .timelapsePanelLead{
+      margin:0 0 12px;
+      color:#aebed0;
+      font-size:11px;
+      line-height:1.55;
+    }
+
+    .timelapseGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+
+    .timelapseField{
+      min-width:0;
+    }
+
+    .timelapseField label{
+      display:block;
+      margin:0 0 5px;
+      color:#cbd5e1;
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .timelapseField input,
+    .timelapseField select{
+      width:100%;
+      min-height:39px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:9px;
+      padding:7px 9px;
+      background:#0f1d2f;
+      color:#ffffff;
+      font:inherit;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .timelapseActions{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      margin-top:11px;
+    }
+
+    .timelapseActionButton{
+      border:0;
+      border-radius:10px;
+      padding:11px 13px;
+      font:inherit;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    #timelapsePlayButton{
+      background:#ff2bd6;
+      color:#ffffff;
+    }
+
+    #timelapseCloseButton{
+      border:1px solid rgba(255,255,255,.15);
+      background:#17283d;
+      color:#dce8f5;
+    }
+
+    #timelapseProgress{
+      min-height:1.4em;
+      margin-top:10px;
+      color:#eaff00;
+      font-size:11px;
+      font-weight:800;
+      line-height:1.45;
+    }
+
+    #map.timelapsePlaying .leaflet-control-zoom{
+      opacity:.42;
+      pointer-events:none;
+    }
+
+    @media (max-width:420px){
+      .timelapseGrid{
+        grid-template-columns:1fr;
+      }
+    }
+
     #mapDisplayHelp{
       margin:6px 10px 8px;
       color:#facc15;
@@ -2757,8 +2889,8 @@
 
         <nav class="authPublicLinks" aria-label="Runner's Ringsについて詳しく見る">
           <a class="authPublicLink" href="./sample.html" style="border:1px solid #ffdc38;background:linear-gradient(135deg,#fa3fb5,#d47715);color:#fff;font-weight:800">🌍 サンプルを読み込む（登録不要）</a>
-          <a class="authPublicLink" href="./journal.html" style="min-height:48px;padding:12px 16px;border:3px solid #ff2bd6;background:linear-gradient(135deg,rgba(255,43,214,.55),rgba(87,32,69,.96) 52%,#273c60);color:#fff;font-size:14px;font-weight:900;line-height:1.45">📖 Journal｜走った人生の物語を読む →</a>
-          <a class="authPublicLink" href="./ranking.html" style="min-height:48px;padding:12px 16px;border:3px solid #eaff00;background:linear-gradient(135deg,rgba(234,255,0,.38),#26324e 48%,#362345);color:#fff;font-size:14px;font-weight:900;line-height:1.45">🌍 Rings Ranking｜世界のランナーの記録を見る →</a>
+          <a class="authPublicLink" href="./journal.html" style="border:2px solid #ff2bd6;background:linear-gradient(135deg,#572045,#273c60);color:#fff;font-weight:800">📖 Journal｜走った人生の物語を読む →</a>
+          <a class="authPublicLink" href="./ranking.html" style="border:2px solid #eaff00;background:linear-gradient(135deg,#26324e,#362345);color:#fff;font-weight:800">🌍 Rings Ranking｜世界のランナーの記録を見る →</a>
           <a class="authPublicLink" href="./about-runners-rings.html">Runner's Ringsとは？</a>
           <a class="authPublicLink" href="./how-to.html">使い方を見る</a>
           <a class="authPublicLink" href="./developer-message.html">開発者からのメッセージ</a>
@@ -3253,6 +3385,42 @@
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
+  <div id="timelapseLaunchArea">
+    <button id="timelapseOpenButton" type="button">▶ 年輪タイムラプス</button>
+  </div>
+  <section id="timelapsePanel" aria-label="年輪タイムラプス設定">
+    <h3 class="timelapsePanelTitle">年輪タイムラプス</h3>
+    <p class="timelapsePanelLead">今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。</p>
+    <div class="timelapseGrid">
+      <div class="timelapseField">
+        <label for="timelapseStartMonth">開始年月</label>
+        <input id="timelapseStartMonth" type="month">
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseEndMonth">終了年月</label>
+        <input id="timelapseEndMonth" type="month">
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseStep">再生単位</label>
+        <select id="timelapseStep">
+          <option value="month">月ごと</option>
+          <option value="year">年ごと</option>
+        </select>
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseMode">表示</label>
+        <select id="timelapseMode">
+          <option value="area">面</option>
+          <option value="route">コース</option>
+        </select>
+      </div>
+    </div>
+    <div class="timelapseActions">
+      <button id="timelapsePlayButton" class="timelapseActionButton" type="button">▶ 再生</button>
+      <button id="timelapseCloseButton" class="timelapseActionButton" type="button">閉じる</button>
+    </div>
+    <div id="timelapseProgress" role="status" aria-live="polite"></div>
+  </section>
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
 
@@ -6282,6 +6450,14 @@ const routeGroup =
   L.layerGroup();
 
 const ringGroup =
+  L.layerGroup();
+
+// 年輪タイムラプス専用レイヤー。
+// 通常表示のレイヤーを壊さず、再生中だけ重ねる。
+const timelapseRouteGroup =
+  L.layerGroup();
+
+const timelapseAreaGroup =
   L.layerGroup();
 
 // 選択中の期間について、100mセルごとに
@@ -23256,6 +23432,1042 @@ document
 syncMapViewModeButtons();
 
 
+/* =====================================
+   年輪タイムラプス
+   ・開始時の中心位置 / ズームを固定
+   ・通常レイヤーを変更せず専用レイヤーで再生
+   ・最初は地図だけ（走行0）から開始
+   ・月ごと / 年ごとの累積表示
+===================================== */
+
+const timelapseOpenButton =
+  document.getElementById(
+    'timelapseOpenButton'
+  );
+
+const timelapsePanel =
+  document.getElementById(
+    'timelapsePanel'
+  );
+
+const timelapseStartMonth =
+  document.getElementById(
+    'timelapseStartMonth'
+  );
+
+const timelapseEndMonth =
+  document.getElementById(
+    'timelapseEndMonth'
+  );
+
+const timelapseStep =
+  document.getElementById(
+    'timelapseStep'
+  );
+
+const timelapseMode =
+  document.getElementById(
+    'timelapseMode'
+  );
+
+const timelapsePlayButton =
+  document.getElementById(
+    'timelapsePlayButton'
+  );
+
+const timelapseCloseButton =
+  document.getElementById(
+    'timelapseCloseButton'
+  );
+
+const timelapseProgress =
+  document.getElementById(
+    'timelapseProgress'
+  );
+
+let timelapsePlaying = false;
+let timelapseStopRequested = false;
+let timelapseViewState = null;
+
+function getTimelapseActivityDate(
+  activity
+) {
+  const candidate =
+    activity?.date instanceof Date
+      ? activity.date
+      : activity?.date
+        ? new Date(activity.date)
+        : activity?.startedAt
+          ? new Date(activity.startedAt)
+          : null;
+
+  if (
+    !candidate ||
+    Number.isNaN(
+      candidate.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  return candidate;
+}
+
+function formatTimelapseMonthValue(
+  date
+) {
+  return [
+    date.getFullYear(),
+    String(
+      date.getMonth() + 1
+    ).padStart(2, '0')
+  ].join('-');
+}
+
+function parseTimelapseMonthValue(
+  value
+) {
+  const match =
+    /^(\d{4})-(\d{2})$/
+      .exec(
+        String(value || '')
+      );
+
+  if (!match) {
+    return null;
+  }
+
+  const year =
+    Number(match[1]);
+  const month =
+    Number(match[2]);
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    month < 1 ||
+    month > 12
+  ) {
+    return null;
+  }
+
+  return new Date(
+    year,
+    month - 1,
+    1,
+    0,
+    0,
+    0,
+    0
+  );
+}
+
+function getTimelapseRangeFromActivities() {
+  const dates =
+    activities
+      .map(
+        getTimelapseActivityDate
+      )
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          a.getTime() -
+          b.getTime()
+      );
+
+  if (!dates.length) {
+    return null;
+  }
+
+  return {
+    start: dates[0],
+    end: dates[dates.length - 1]
+  };
+}
+
+function syncTimelapseDefaults() {
+  const range =
+    getTimelapseRangeFromActivities();
+
+  if (!range) {
+    return false;
+  }
+
+  const minValue =
+    formatTimelapseMonthValue(
+      range.start
+    );
+
+  const maxValue =
+    formatTimelapseMonthValue(
+      range.end
+    );
+
+  timelapseStartMonth.min =
+    minValue;
+  timelapseStartMonth.max =
+    maxValue;
+  timelapseEndMonth.min =
+    minValue;
+  timelapseEndMonth.max =
+    maxValue;
+
+  if (
+    !timelapseStartMonth.value ||
+    timelapseStartMonth.value < minValue ||
+    timelapseStartMonth.value > maxValue
+  ) {
+    timelapseStartMonth.value =
+      minValue;
+  }
+
+  if (
+    !timelapseEndMonth.value ||
+    timelapseEndMonth.value < minValue ||
+    timelapseEndMonth.value > maxValue
+  ) {
+    timelapseEndMonth.value =
+      maxValue;
+  }
+
+  if (
+    mapViewMode === 'route'
+  ) {
+    timelapseMode.value =
+      'route';
+  }
+  else if (
+    mapViewMode === 'area'
+  ) {
+    timelapseMode.value =
+      'area';
+  }
+  else {
+    timelapseMode.value =
+      map.getZoom() >= 12
+        ? 'route'
+        : 'area';
+  }
+
+  return true;
+}
+
+function setTimelapseMapInteraction(
+  enabled
+) {
+  const handlers = [
+    map.dragging,
+    map.touchZoom,
+    map.doubleClickZoom,
+    map.scrollWheelZoom,
+    map.boxZoom,
+    map.keyboard
+  ];
+
+  handlers.forEach(
+    handler => {
+      if (!handler) return;
+
+      if (enabled) {
+        handler.enable();
+      }
+      else {
+        handler.disable();
+      }
+    }
+  );
+
+  document
+    .getElementById('map')
+    ?.classList
+    .toggle(
+      'timelapsePlaying',
+      !enabled
+    );
+}
+
+function hideNormalLayersForTimelapse() {
+  const layers = [
+    routeGroup,
+    ringGroup,
+    municipalityLayer,
+    worldCountryLayer,
+    usaRegionLayer,
+    selectedRunLine,
+    ...Object.values(
+      worldAdminLayerGroups
+    )
+  ];
+
+  layers.forEach(
+    layer => {
+      if (
+        layer &&
+        map.hasLayer(layer)
+      ) {
+        map.removeLayer(layer);
+      }
+    }
+  );
+}
+
+function clearTimelapseLayers() {
+  timelapseRouteGroup.clearLayers();
+  timelapseAreaGroup.clearLayers();
+
+  if (
+    map.hasLayer(
+      timelapseRouteGroup
+    )
+  ) {
+    map.removeLayer(
+      timelapseRouteGroup
+    );
+  }
+
+  if (
+    map.hasLayer(
+      timelapseAreaGroup
+    )
+  ) {
+    map.removeLayer(
+      timelapseAreaGroup
+    );
+  }
+}
+
+function getTimelapseCumulativeActivities(
+  startDate,
+  cutoffDate
+) {
+  return activities.filter(
+    activity => {
+      const date =
+        getTimelapseActivityDate(
+          activity
+        );
+
+      return !!(
+        date &&
+        date >= startDate &&
+        date <= cutoffDate
+      );
+    }
+  );
+}
+
+function buildTimelapseDistanceStats(
+  selectedActivities
+) {
+  const municipalityDistance = {};
+  const countryDistance = {};
+  const admin1Distance = {};
+
+  selectedActivities.forEach(
+    activity => {
+      Object.entries(
+        activity.cityDistances || {}
+      ).forEach(
+        ([key, km]) => {
+          municipalityDistance[key] =
+            (
+              municipalityDistance[key] ||
+              0
+            ) +
+            (Number(km) || 0);
+        }
+      );
+
+      Object.entries(
+        activity.countryDistances || {}
+      ).forEach(
+        ([key, km]) => {
+          countryDistance[key] =
+            (
+              countryDistance[key] ||
+              0
+            ) +
+            (Number(km) || 0);
+        }
+      );
+
+      Object.entries(
+        activity.admin1Distances ||
+        activity.regionDistances ||
+        {}
+      ).forEach(
+        ([key, km]) => {
+          admin1Distance[key] =
+            (
+              admin1Distance[key] ||
+              0
+            ) +
+            (Number(km) || 0);
+        }
+      );
+    }
+  );
+
+  return {
+    municipalityDistance,
+    countryDistance,
+    admin1Distance
+  };
+}
+
+function drawTimelapseRoutes(
+  selectedActivities
+) {
+  const routes =
+    selectedActivities
+      .map(
+        activity =>
+          Array.isArray(
+            activity.latlngs
+          ) &&
+          activity.latlngs.length >= 2
+            ? activity.latlngs
+            : null
+      )
+      .filter(Boolean);
+
+  if (!routes.length) {
+    return;
+  }
+
+  timelapseRouteGroup.addLayer(
+    L.polyline(
+      routes,
+      {
+        color: ROUTE_COLOR,
+        weight: 2.8,
+        opacity: 0.72,
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: false
+      }
+    )
+  );
+
+  timelapseRouteGroup.addTo(
+    map
+  );
+}
+
+function drawTimelapseAreas(
+  selectedActivities
+) {
+  const stats =
+    buildTimelapseDistanceStats(
+      selectedActivities
+    );
+
+  const fixedZoom =
+    timelapseViewState?.zoom ??
+    map.getZoom();
+
+  if (
+    fixedZoom <= 3 &&
+    worldGeojsonData
+  ) {
+    timelapseAreaGroup.addLayer(
+      L.geoJSON(
+        worldGeojsonData,
+        {
+          filter: feature =>
+            Number(
+              stats.countryDistance[
+                getCountryCode(feature)
+              ] || 0
+            ) > 0.01,
+          style: {
+            color: AREA_COLOR,
+            weight: 1.2,
+            opacity: .8,
+            fillColor: AREA_COLOR,
+            fillOpacity: .28
+          },
+          interactive: false
+        }
+      )
+    );
+  }
+  else {
+    if (geojsonData) {
+      timelapseAreaGroup.addLayer(
+        L.geoJSON(
+          geojsonData,
+          {
+            renderer:
+              municipalityRenderer,
+            style: feature => {
+              const km =
+                Number(
+                  stats.municipalityDistance[
+                    getCityKey(feature)
+                  ] || 0
+                );
+
+              return {
+                color:
+                  km > 0
+                    ? BORDER_COLOR
+                    : 'transparent',
+                weight:
+                  km > 0
+                    ? .55
+                    : 0,
+                opacity:
+                  km > 0
+                    ? .35
+                    : 0,
+                fillColor:
+                  AREA_COLOR,
+                fillOpacity:
+                  getMunicipalityOpacity(
+                    km
+                  )
+              };
+            },
+            interactive: false
+          }
+        )
+      );
+    }
+
+    Object.entries(
+      worldAdminGeojsonData
+    ).forEach(
+      ([countryCode, byLevel]) => {
+        const data =
+          byLevel?.ADM1;
+
+        if (
+          !data ||
+          !Array.isArray(
+            data.features
+          )
+        ) {
+          return;
+        }
+
+        timelapseAreaGroup.addLayer(
+          L.geoJSON(
+            data,
+            {
+              filter: feature => {
+                const key =
+                  getWorldAdminKey(
+                    countryCode,
+                    'ADM1',
+                    feature
+                  );
+
+                return Number(
+                  stats.admin1Distance[key] ||
+                  0
+                ) > 0.01;
+              },
+              style: feature => {
+                const key =
+                  getWorldAdminKey(
+                    countryCode,
+                    'ADM1',
+                    feature
+                  );
+
+                const km =
+                  Number(
+                    stats.admin1Distance[key] ||
+                    0
+                  );
+
+                return {
+                  color: AREA_COLOR,
+                  weight: 1.2,
+                  opacity: .78,
+                  fillColor: AREA_COLOR,
+                  fillOpacity:
+                    Math.max(
+                      .16,
+                      getMunicipalityOpacity(
+                        km
+                      )
+                    )
+                };
+              },
+              interactive: false
+            }
+          )
+        );
+      }
+    );
+  }
+
+  if (
+    timelapseAreaGroup.getLayers().length
+  ) {
+    timelapseAreaGroup.addTo(
+      map
+    );
+  }
+}
+
+function drawTimelapseFrame(
+  selectedActivities,
+  mode
+) {
+  clearTimelapseLayers();
+
+  if (
+    timelapseViewState
+  ) {
+    map.setView(
+      timelapseViewState.center,
+      timelapseViewState.zoom,
+      {
+        animate:false
+      }
+    );
+  }
+
+  if (
+    mode === 'route'
+  ) {
+    drawTimelapseRoutes(
+      selectedActivities
+    );
+  }
+  else {
+    drawTimelapseAreas(
+      selectedActivities
+    );
+  }
+}
+
+function getTimelapseFrameSteps(
+  startDate,
+  endDate,
+  unit
+) {
+  const steps = [];
+
+  if (
+    unit === 'year'
+  ) {
+    for (
+      let year = startDate.getFullYear();
+      year <= endDate.getFullYear();
+      year++
+    ) {
+      const yearEnd =
+        new Date(
+          year,
+          11,
+          31,
+          23,
+          59,
+          59,
+          999
+        );
+
+      steps.push(
+        yearEnd > endDate
+          ? new Date(endDate)
+          : yearEnd
+      );
+    }
+  }
+  else {
+    let cursor =
+      new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        1
+      );
+
+    while (
+      cursor <= endDate
+    ) {
+      const monthEnd =
+        new Date(
+          cursor.getFullYear(),
+          cursor.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
+      steps.push(
+        monthEnd > endDate
+          ? new Date(endDate)
+          : monthEnd
+      );
+
+      cursor =
+        new Date(
+          cursor.getFullYear(),
+          cursor.getMonth() + 1,
+          1
+        );
+    }
+  }
+
+  return steps;
+}
+
+function formatTimelapseProgressLabel(
+  date,
+  unit
+) {
+  if (
+    unit === 'year'
+  ) {
+    return isRunnerRingsEnglish()
+      ? String(
+          date.getFullYear()
+        )
+      : date.getFullYear() +
+        '年';
+  }
+
+  return isRunnerRingsEnglish()
+    ? date.toLocaleDateString(
+        'en-US',
+        {
+          year:'numeric',
+          month:'short'
+        }
+      )
+    : date.getFullYear() +
+      '年' +
+      (date.getMonth() + 1) +
+      '月';
+}
+
+function waitTimelapse(
+  ms
+) {
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+}
+
+function restoreAfterTimelapse() {
+  clearTimelapseLayers();
+  setTimelapseMapInteraction(
+    true
+  );
+
+  if (
+    timelapseViewState
+  ) {
+    const restoreCenter =
+      timelapseViewState.center;
+    const restoreZoom =
+      timelapseViewState.zoom;
+    const restoreSelectedRun =
+      timelapseViewState.selectedRunWasVisible;
+
+    renderSelectedData();
+
+    map.setView(
+      restoreCenter,
+      restoreZoom,
+      {
+        animate:false
+      }
+    );
+
+    if (
+      restoreSelectedRun &&
+      selectedRunLine &&
+      !map.hasLayer(
+        selectedRunLine
+      )
+    ) {
+      selectedRunLine.addTo(
+        map
+      );
+      selectedRunLine.bringToFront();
+    }
+  }
+  else {
+    renderSelectedData();
+  }
+
+  timelapseViewState =
+    null;
+  timelapsePlaying =
+    false;
+  timelapseStopRequested =
+    false;
+
+  timelapsePlayButton.disabled =
+    false;
+  timelapsePlayButton.textContent =
+    isRunnerRingsEnglish()
+      ? '▶ Play'
+      : '▶ 再生';
+}
+
+async function playRingsTimelapse() {
+  if (
+    timelapsePlaying
+  ) {
+    timelapseStopRequested =
+      true;
+    timelapsePlayButton.textContent =
+      isRunnerRingsEnglish()
+        ? 'Stopping…'
+        : '停止中…';
+    return;
+  }
+
+  const startMonth =
+    parseTimelapseMonthValue(
+      timelapseStartMonth.value
+    );
+
+  const endMonth =
+    parseTimelapseMonthValue(
+      timelapseEndMonth.value
+    );
+
+  if (
+    !startMonth ||
+    !endMonth
+  ) {
+    alert(
+      isRunnerRingsEnglish()
+        ? 'Choose a start and end month.'
+        : '開始年月と終了年月を選んでください。'
+    );
+    return;
+  }
+
+  const rangeStart =
+    new Date(
+      startMonth.getFullYear(),
+      startMonth.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0
+    );
+
+  const rangeEnd =
+    new Date(
+      endMonth.getFullYear(),
+      endMonth.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
+  if (
+    rangeStart > rangeEnd
+  ) {
+    alert(
+      isRunnerRingsEnglish()
+        ? 'The start month must be before the end month.'
+        : '開始年月は終了年月以前にしてください。'
+    );
+    return;
+  }
+
+  const frameSteps =
+    getTimelapseFrameSteps(
+      rangeStart,
+      rangeEnd,
+      timelapseStep.value
+    );
+
+  if (!frameSteps.length) {
+    return;
+  }
+
+  timelapsePlaying = true;
+  timelapseStopRequested = false;
+
+  const currentCenter =
+    map.getCenter();
+
+  timelapseViewState = {
+    center:
+      L.latLng(
+        currentCenter.lat,
+        currentCenter.lng
+      ),
+    zoom:
+      map.getZoom(),
+    selectedRunWasVisible:
+      !!(
+        selectedRunLine &&
+        map.hasLayer(
+          selectedRunLine
+        )
+      )
+  };
+
+  timelapsePlayButton.textContent =
+    isRunnerRingsEnglish()
+      ? '■ Stop'
+      : '■ 停止';
+
+  setTimelapseMapInteraction(
+    false
+  );
+  hideNormalLayersForTimelapse();
+  clearTimelapseLayers();
+
+  map.setView(
+    timelapseViewState.center,
+    timelapseViewState.zoom,
+    {
+      animate:false
+    }
+  );
+
+  timelapseProgress.textContent =
+    isRunnerRingsEnglish()
+      ? 'START · No runs yet'
+      : 'START · まだ何も走っていない地図';
+
+  try {
+    await waitTimelapse(
+      800
+    );
+
+    for (
+      const cutoffDate of frameSteps
+    ) {
+      if (
+        timelapseStopRequested
+      ) {
+        break;
+      }
+
+      const selectedActivities =
+        getTimelapseCumulativeActivities(
+          rangeStart,
+          cutoffDate
+        );
+
+      drawTimelapseFrame(
+        selectedActivities,
+        timelapseMode.value
+      );
+
+      timelapseProgress.textContent =
+        formatTimelapseProgressLabel(
+          cutoffDate,
+          timelapseStep.value
+        ) +
+        ' · ' +
+        selectedActivities.length +
+        (
+          isRunnerRingsEnglish()
+            ? ' runs'
+            : ' RUN'
+        );
+
+      await waitTimelapse(
+        timelapseStep.value === 'year'
+          ? 1100
+          : 650
+      );
+    }
+
+    if (
+      !timelapseStopRequested
+    ) {
+      timelapseProgress.textContent =
+        isRunnerRingsEnglish()
+          ? 'Complete · Your rings have grown.'
+          : '完成 · あなたの年輪が育ちました。';
+
+      await waitTimelapse(
+        1200
+      );
+    }
+  }
+  finally {
+    restoreAfterTimelapse();
+  }
+}
+
+if (timelapseOpenButton) {
+  timelapseOpenButton.addEventListener(
+    'click',
+    () => {
+      if (
+        !syncTimelapseDefaults()
+      ) {
+        alert(
+          isRunnerRingsEnglish()
+            ? 'No dated runs are available for timelapse playback.'
+            : 'タイムラプスで再生できる日付付きランがありません。'
+        );
+        return;
+      }
+
+      timelapsePanel.classList.toggle(
+        'isOpen'
+      );
+
+      if (
+        timelapsePanel.classList.contains(
+          'isOpen'
+        )
+      ) {
+        timelapsePanel.scrollIntoView({
+          behavior:'smooth',
+          block:'nearest'
+        });
+      }
+    }
+  );
+}
+
+if (timelapseCloseButton) {
+  timelapseCloseButton.addEventListener(
+    'click',
+    () => {
+      if (
+        timelapsePlaying
+      ) {
+        timelapseStopRequested =
+          true;
+        return;
+      }
+
+      timelapsePanel.classList.remove(
+        'isOpen'
+      );
+      timelapseProgress.textContent =
+        '';
+    }
+  );
+}
+
+if (timelapsePlayButton) {
+  timelapsePlayButton.addEventListener(
+    'click',
+    playRingsTimelapse
+  );
+}
+
+
 function updateDisplay() {
   console.log('[RR-MAP-MODE] updateDisplay', { mapViewMode, zoom: map.getZoom() });
   const zoom =
@@ -24681,6 +25893,17 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  ['▶ 年輪タイムラプス','▶ Growth Rings Timelapse'],
+  ['年輪タイムラプス設定','Growth Rings Timelapse settings'],
+  ['年輪タイムラプス','Growth Rings Timelapse'],
+  ['今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。','Keep the current map position and zoom while your running rings grow from zero.'],
+  ['開始年月','Start month'],
+  ['終了年月','End month'],
+  ['再生単位','Playback step'],
+  ['月ごと','Monthly'],
+  ['年ごと','Yearly'],
+  ['▶ 再生','▶ Play'],
+  ['■ 停止','■ Stop'],
   ['🌍 サンプルを読み込む（登録不要）','🌍 Try the free demo (no sign-up)'],
   ['制覇カードコレクション','Conquest Card Collection'],
   ['走った地域から自動で生まれる、あなただけのカードです。ALLカードと年別カードを切り替えて見られます。','Your cards are generated automatically from the places you have run. Switch between all-time and yearly collections.'],
