@@ -1,0 +1,43 @@
+name: Sync Rings Territory (Japan)
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Year to sync (2026 or later; blank = current UTC year)'
+        required: false
+        type: string
+  schedule:
+    # 09:41 and 21:41 Japan time. GitHub scheduled runs can be delayed.
+    # Offset from EXPLORE sync to avoid both heavy geometry jobs starting together.
+    - cron: '41 0,12 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rings-territory-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check Territory geometry and boundary file
+        run: node scripts/sync-rings-territory.mjs --self-test
+
+      - name: Sync opted-in municipality distance
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REQUESTED_YEAR: ${{ inputs.year }}
+        run: |
+          export TERRITORY_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
+          echo "Rings Territory sync year: $TERRITORY_YEAR"
+          node scripts/sync-rings-territory.mjs
