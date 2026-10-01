@@ -1084,7 +1084,7 @@
     }
 
     #timelapseShareResult.isReady{display:block;}
-    #timelapseShareResult video{display:block;width:min(100%,280px);aspect-ratio:9/16;margin:0 auto 12px;border-radius:14px;background:#06111d;object-fit:contain;}
+    #timelapseShareResult video{display:block;width:min(100%,360px);aspect-ratio:4/5;margin:0 auto 12px;border-radius:14px;background:#06111d;object-fit:contain;}
     .timelapseShareActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
     .timelapseShareButton{min-height:42px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#17304a;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer;}
     #timelapseShareButton{border-color:rgba(255,43,214,.55);background:linear-gradient(135deg,rgba(255,43,214,.44),#273c60);}
@@ -3413,7 +3413,7 @@
   </div>
   <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
     <h3 class="timelapsePanelTitle">Growth Rings Timelapse</h3>
-    <p class="timelapsePanelLead">今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。</p>
+    <p class="timelapsePanelLead">共有動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、走った道がゼロから育つ動画を作ります。</p>
     <div class="timelapseGrid">
       <div class="timelapseField">
         <label for="timelapseStartMonth">開始年月</label>
@@ -24405,12 +24405,12 @@ function getTimelapseShareMapGeometry(outputCanvas) {
   const width = outputCanvas.width;
   const height = outputCanvas.height;
 
-  // 9:16は維持しつつ、上下の装飾余白を最小限にして地図を主役にする。
+  // Instagramの縦投稿 4:5。装飾より地図を主役にする。
   const mapFrame = {
     x:28,
-    y:132,
+    y:112,
     width:width - 56,
-    height:height - 278,
+    height:height - 250,
     radius:28
   };
 
@@ -24430,24 +24430,31 @@ function getTimelapseShareProjection(inner) {
 
   const center = timelapseViewState?.center || map.getCenter();
   const zoom = timelapseViewState?.zoom ?? map.getZoom();
-  const sourceWidth = Math.max(1, mapElement.clientWidth || 390);
+  const capturedSize = timelapseViewState?.mapSize;
+  const sourceWidth = Math.max(1, Number(capturedSize?.x) || mapElement.clientWidth || 390);
+  const sourceHeight = Math.max(1, Number(capturedSize?.y) || mapElement.clientHeight || 390);
 
-  // 現在の画面と同じLeaflet zoomを保つ。
-  // 出力解像度へ拡大するだけで、地理的な縮尺は変えない。
-  const scale = inner.width / sourceWidth;
-  const sourceHeight = inner.height / scale;
+  // 「共有動画を作る」を押した瞬間の通常地図を基準にする。
+  // 4:5側で余計な地域を勝手に広げず、中心を固定したまま
+  // 元の表示範囲を中央クロップして同じ見え方に近づける。
+  const scale = Math.max(
+    inner.width / sourceWidth,
+    inner.height / sourceHeight
+  );
+  const visibleSourceWidth = inner.width / scale;
+  const visibleSourceHeight = inner.height / scale;
   const centerPoint = map.project(center, zoom);
   const topLeft = L.point(
-    centerPoint.x - sourceWidth / 2,
-    centerPoint.y - sourceHeight / 2
+    centerPoint.x - visibleSourceWidth / 2,
+    centerPoint.y - visibleSourceHeight / 2
   );
 
   return {
     center,
     zoom,
     scale,
-    sourceWidth,
-    sourceHeight,
+    sourceWidth:visibleSourceWidth,
+    sourceHeight:visibleSourceHeight,
     topLeft,
     worldSize:256 * Math.pow(2, zoom)
   };
@@ -24732,48 +24739,58 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel) {
   const height = outputCanvas.height;
   const logo = await loadTimelapseBrandLogo();
   ctx.save();
+
   const background = ctx.createLinearGradient(0, 0, width, height);
   background.addColorStop(0, '#071827');
   background.addColorStop(.55, '#24132a');
   background.addColorStop(1, '#111c31');
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, width, height);
-  const ring = ctx.createLinearGradient(220, 480, 860, 1080);
+
+  const ringCenterY = Math.round(height * .39);
+  const outerRadius = Math.round(Math.min(width, height) * .19);
+  const innerRadius = Math.round(outerRadius * .78);
+  const ring = ctx.createLinearGradient(
+    width / 2 - outerRadius,
+    ringCenterY - outerRadius,
+    width / 2 + outerRadius,
+    ringCenterY + outerRadius
+  );
   ring.addColorStop(0, '#ff2bd6');
   ring.addColorStop(1, '#eaff00');
   ctx.strokeStyle = ring;
-  ctx.lineWidth = 18;
+  ctx.lineWidth = 16;
   ctx.beginPath();
-  ctx.arc(width / 2, 790, 260, 0, Math.PI * 2);
+  ctx.arc(width / 2, ringCenterY, outerRadius, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 7;
   ctx.globalAlpha = .55;
   ctx.beginPath();
-  ctx.arc(width / 2, 790, 205, 0, Math.PI * 2);
+  ctx.arc(width / 2, ringCenterY, innerRadius, 0, Math.PI * 2);
   ctx.stroke();
   ctx.globalAlpha = 1;
 
   if (logo) {
-    const size = 150;
+    const size = Math.round(outerRadius * .58);
     ctx.save();
-    drawRoundedRectPath(ctx, width / 2 - size / 2, 715, size, size, 34);
+    drawRoundedRectPath(ctx, width / 2 - size / 2, ringCenterY - size / 2, size, size, 28);
     ctx.clip();
-    ctx.drawImage(logo, width / 2 - size / 2, 715, size, size);
+    ctx.drawImage(logo, width / 2 - size / 2, ringCenterY - size / 2, size, size);
     ctx.restore();
   }
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
-  ctx.font = '900 68px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText("Runner's Rings", width / 2, 1180);
+  ctx.font = '900 64px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText("Runner's Rings", width / 2, Math.round(height * .70));
   ctx.fillStyle = '#eaff00';
-  ctx.font = '800 38px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Map the life you run.', width / 2, 1250);
+  ctx.font = '800 36px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
   ctx.fillStyle = '#b9c9d8';
-  drawTimelapseTextFit(ctx, rangeLabel, width / 2, 1330, width - 170, 31, 700);
+  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * .815), width - 170, 30, 700);
   ctx.fillStyle = '#ffffff';
-  ctx.font = '700 26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('runnersrings.com', width / 2, 1430);
+  ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('runnersrings.com', width / 2, Math.round(height * .885));
   ctx.restore();
 }
 
@@ -24818,11 +24835,11 @@ async function generateTimelapseShareVideo() {
   timelapseCloseButton.disabled = true;
   timelapseGenerateButton.textContent = isRunnerRingsEnglish() ? 'Creating…' : '動画作成中…';
   timelapseShareResult?.classList.add('isReady');
-  timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing the 9:16 share video…' : '9:16共有動画を準備しています…';
+  timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing the 4:5 Instagram share video…' : 'Instagram 4:5共有動画を準備しています…';
 
   const outputCanvas = document.createElement('canvas');
   outputCanvas.width = 1080;
-  outputCanvas.height = 1920;
+  outputCanvas.height = 1350;
   const stream = outputCanvas.captureStream(30);
   let recorder;
   const chunks = [];
@@ -24842,9 +24859,13 @@ async function generateTimelapseShareVideo() {
   });
 
   const currentCenter = map.getCenter();
+  const currentMapSize = map.getSize();
+  const currentBounds = map.getBounds();
   timelapseViewState = {
     center:L.latLng(currentCenter.lat, currentCenter.lng),
     zoom:map.getZoom(),
+    mapSize:L.point(currentMapSize.x, currentMapSize.y),
+    bounds:L.latLngBounds(currentBounds.getSouthWest(), currentBounds.getNorthEast()),
     selectedRunWasVisible:!!(selectedRunLine && map.hasLayer(selectedRunLine))
   };
   setTimelapseMapInteraction(false);
@@ -24857,8 +24878,8 @@ async function generateTimelapseShareVideo() {
     await waitTimelapse(150);
 
     // 共有動画ではLeaflet DOMをスクリーンショット化しない。
-    // 「共有動画を作る」を押した瞬間の中心・zoomを基準に、OSMタイルを
-    // 動画Canvasへ直接描画するため、iPhone Safariでも上下欠けやルート消失を防ぐ。
+    // 「共有動画を作る」を押した瞬間の通常地図の中心・zoom・表示サイズを固定し、
+    // 4:5動画側ではその表示を中央クロップして再現する。OSMタイルとルートはCanvasへ直接描画。
     timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing map…' : '地図を準備しています…';
     const shareBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
 
@@ -24908,7 +24929,7 @@ async function generateTimelapseShareVideo() {
     timelapseVideoFile = new File([timelapseVideoBlob], fileName, {type:finalType});
     timelapseVideoUrl = URL.createObjectURL(timelapseVideoBlob);
     timelapsePreview.src = timelapseVideoUrl;
-    timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? `Ready · ${extension.toUpperCase()} · 9:16` : `完成 · ${extension.toUpperCase()} · 9:16`;
+    timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? `Ready · ${extension.toUpperCase()} · 4:5` : `完成 · ${extension.toUpperCase()} · 4:5`;
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Share video ready.' : '共有動画ができました。';
   } catch (error) {
     console.error('Growth Rings Timelapse video error:', error);
@@ -26659,7 +26680,7 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
-  ['今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。','Keep the current map position and zoom while your running rings grow from zero.'],
+  ['共有動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、走った道がゼロから育つ動画を作ります。','Before creating a share video, set the map below to the center and zoom you want to show. The video will use that view while your running rings grow from zero.'],
   ['開始年月','Start month'],
   ['終了年月','End month'],
   ['再生単位','Playback step'],
