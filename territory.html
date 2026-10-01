@@ -202,6 +202,7 @@ let leaders=[];
 let leadersByCode=new Map();
 let municipalityLayer=null;
 let selectedMunicipalityCode=null;
+let selectedMunicipalityLayer=null;
 
 function lang(){return document.documentElement.lang==='en'?'en':'ja'}
 function flag(code){
@@ -255,6 +256,7 @@ function makeYears(){
       if(y===selectedYear)return;
       selectedYear=y;
       selectedMunicipalityCode=null;
+      clearSelectedMunicipalityStyle();
       document.querySelectorAll('.yearButton').forEach(x=>x.classList.toggle('active',Number(x.textContent)===y));
       $('municipalityRanking').innerHTML='<div class="empty">'+(lang()==='ja'?'地図から市町村を選んでください。':'Choose a municipality on the map.')+'</div>';
       $('municipalityTitle').textContent=lang()==='ja'?'市町村をタップ':'Tap a municipality';
@@ -318,6 +320,24 @@ function territoryStyle(feature){
   };
 }
 
+function applySelectedMunicipalityStyle(layer){
+  if(!layer)return;
+  layer.setStyle({
+    color:'#ff2bd6',
+    weight:4.5,
+    opacity:1,
+    fillOpacity:.72
+  });
+  if(layer.bringToFront)layer.bringToFront();
+}
+
+function clearSelectedMunicipalityStyle(){
+  if(selectedMunicipalityLayer&&municipalityLayer){
+    municipalityLayer.resetStyle(selectedMunicipalityLayer);
+  }
+  selectedMunicipalityLayer=null;
+}
+
 function updateStatus(){
   $('mapTitle').textContent=selectedYear+' · JAPAN';
   const status=$('mapStatus');
@@ -345,7 +365,10 @@ async function loadLeaders(){
     if(!leadersByCode.has(key))leadersByCode.set(key,[]);
     leadersByCode.get(key).push(row);
   }
-  if(municipalityLayer)municipalityLayer.setStyle(territoryStyle);
+  if(municipalityLayer){
+    municipalityLayer.setStyle(territoryStyle);
+    if(selectedMunicipalityLayer)applySelectedMunicipalityStyle(selectedMunicipalityLayer);
+  }
   updateStatus();
 }
 
@@ -423,12 +446,22 @@ async function loadMunicipalityMap(){
         if(!code)return;
         layer.on({
           click:()=>{
+            if(selectedMunicipalityLayer&&selectedMunicipalityLayer!==layer){
+              municipalityLayer.resetStyle(selectedMunicipalityLayer);
+            }
+            selectedMunicipalityLayer=layer;
+            applySelectedMunicipalityStyle(layer);
             loadMunicipalityRanking(code,feature);
           },
           mouseover:e=>{
+            if(e.target===selectedMunicipalityLayer)return;
             e.target.setStyle({weight:1.8,color:'#fff'});
           },
           mouseout:e=>{
+            if(e.target===selectedMunicipalityLayer){
+              applySelectedMunicipalityStyle(e.target);
+              return;
+            }
             municipalityLayer.resetStyle(e.target);
           }
         });
