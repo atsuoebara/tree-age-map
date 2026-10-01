@@ -349,6 +349,28 @@ function updateStatus(){
   }
 }
 
+function fitMapToActiveTerritories(){
+  if(!municipalityLayer||!leadersByCode.size)return;
+
+  const layers=[];
+  municipalityLayer.eachLayer(layer=>{
+    const code=featureCode(layer.feature);
+    if(leadersByCode.has(code))layers.push(layer);
+  });
+
+  if(!layers.length)return;
+
+  const group=L.featureGroup(layers);
+  const bounds=group.getBounds();
+  if(!bounds.isValid())return;
+
+  map.fitBounds(bounds,{
+    padding:[24,24],
+    maxZoom:9,
+    animate:false
+  });
+}
+
 async function loadLeaders(){
   const status=document.querySelector('#mapStatus');
   status.textContent=lang()==='ja'?'首位データを読み込み中…':'Loading leaders…';
@@ -368,6 +390,7 @@ async function loadLeaders(){
   if(municipalityLayer){
     municipalityLayer.setStyle(territoryStyle);
     if(selectedMunicipalityLayer)applySelectedMunicipalityStyle(selectedMunicipalityLayer);
+    fitMapToActiveTerritories();
   }
   updateStatus();
 }
@@ -470,7 +493,11 @@ async function loadMunicipalityMap(){
       }
     }).addTo(map);
 
-    map.fitBounds(municipalityLayer.getBounds(),{padding:[8,8]});
+    if(leadersByCode.size){
+      fitMapToActiveTerritories();
+    }else{
+      map.fitBounds(municipalityLayer.getBounds(),{padding:[8,8]});
+    }
   }catch(e){
     console.error(e);
     document.querySelector('#mapStatus').textContent=lang()==='ja'
