@@ -41,21 +41,33 @@
 <script>
 const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co','sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id), langKey='runners-rings-language';
-const RANKING_FIRST_YEAR=2026;
-let selectedRankingYear=Math.max(RANKING_FIRST_YEAR,new Date().getFullYear());
+const currentRankingYear=new Date().getFullYear();
+let selectedRankingYear=currentRankingYear;
+let availableRankingYears=[currentRankingYear];
 function lang(){return document.documentElement.lang==='en'?'en':'ja'}
 function updateRankingYearLabels(){
-  $('rankingHeroTitle').textContent='🌍 Rings Ranking '+selectedRankingYear;
+  $('rankingHeroTitle').textContent='🌍 Rings Ranking';
   $('distanceYearLabel').textContent=selectedRankingYear+' · WORLD';
   $('exploreYearLabel').textContent=selectedRankingYear+' · EXPLORE';
   $('nationsYearLabel').textContent=selectedRankingYear+' · NATIONS';
+}
+async function loadAvailableRankingYears(){
+  const {data,error}=await sb.rpc('ranking_years');
+  if(error){
+    console.warn('Ranking years:',error.message);
+    availableRankingYears=[currentRankingYear];
+    return;
+  }
+  const years=(data||[])
+    .map(row=>Number(row.year))
+    .filter(year=>Number.isInteger(year)&&year>=2000&&year<=currentRankingYear);
+  availableRankingYears=[...new Set([currentRankingYear,...years])].sort((a,b)=>b-a);
 }
 function renderRankingYearFilter(){
   const area=$('rankingYearFilter');
   if(!area)return;
   area.querySelectorAll('.rankingYearButton').forEach(node=>node.remove());
-  const currentYear=Math.max(RANKING_FIRST_YEAR,new Date().getFullYear());
-  for(let year=currentYear;year>=RANKING_FIRST_YEAR;year--){
+  availableRankingYears.forEach(year=>{
     const button=document.createElement('button');
     button.type='button';
     button.className='rankingYearButton'+(year===selectedRankingYear?' active':'');
@@ -70,7 +82,7 @@ function renderRankingYearFilter(){
       loadExplore();
     };
     area.append(button);
-  }
+  });
   updateRankingYearLabels();
 }
 function setLanguage(v){document.documentElement.lang=v==='en'?'en':'ja';localStorage.setItem(langKey,lang());document.querySelectorAll('.languageButton').forEach(b=>b.classList.toggle('isActive',b.dataset.language===lang()));loadBoards();if(exploreSelect){for(const opt of exploreSelect.options){opt.textContent=flagCountryLabel(opt.value,exploreCountries[opt.value])}loadExplore()}}
@@ -91,7 +103,7 @@ const safe=s=>{let x=document.createElement('span');x.textContent=String(s??'');
 const flag=c=>c&&/^[A-Z]{2}$/.test(c)?String.fromCodePoint(...[...c].map(v=>127397+v.charCodeAt(0))):'';
 function rows(id,arr,kind){const el=$(id);el.replaceChildren();if(!arr?.length){el.innerHTML='<p class="notice">'+(lang()==='ja'?'まだ参加者はいません':'No participants yet')+'</p>';return}arr.forEach((r,i)=>{const node=document.createElement('div');node.className='row';const name=kind==='nations'?(flag(r.country)+' '+(new Intl.DisplayNames([lang()],{type:'region'}).of(r.country)||r.country)):(r.show_flag?flag(r.country)+' ':'')+r.ranking_display_name;node.innerHTML='<div class="rank">'+(i+1)+'</div><div class="runner"><div class="runnerName">'+safe(name)+'</div><div class="runnerMeta">'+(kind==='nations'?safe(r.participants)+' runners':'DISTANCE')+'</div></div><div class="score">'+Number(r.km||0).toLocaleString(lang(),{maximumFractionDigits:1})+' <small>km</small></div>';el.append(node)})}
 async function loadBoards(){try{const [d,n]=await Promise.all([sb.rpc('ranking_distance',{p_year:selectedRankingYear}),sb.rpc('ranking_nations',{p_year:selectedRankingYear})]);if(d.error||n.error)throw d.error||n.error;rows('distanceRanking',d.data,'distance');rows('nationsRanking',n.data,'nations')}catch(e){['distanceRanking','nationsRanking'].forEach(id=>$(id).innerHTML='<p class="notice">'+(lang()==='ja'?'ランキングDB設定待ち':'Ranking database setup pending')+'</p>');console.warn('Ranking:',e.message)}}
-async function init(){renderRankingYearFilter();setLanguage(localStorage.getItem(langKey)||((navigator.language||'').startsWith('en')?'en':'ja'));const {data:{user}}=await sb.auth.getUser();currentUser=user;if(!user){$('rankingMessage').textContent=lang()==='ja'?'参加設定を保存するには本体からログインしてください':'Log in on Runner’s Rings to save participation';return}const {data,error}=await sb.from('ranking_settings').select('*').eq('user_id',user.id).maybeSingle();if(error){$('rankingMessage').textContent='Database setup pending';return}if(data){$('rankingName').value=data.ranking_display_name||'';countrySelect.value=data.country||'';for(const k of ['distance','explore','nations','flag','regions']){const col={distance:'join_distance',explore:'join_explore',nations:'join_nations',flag:'show_flag',regions:'show_regions'}[k];document.querySelector('[data-setting="'+k+'"]').checked=!!data[col]}}}
+async function init(){await loadAvailableRankingYears();selectedRankingYear=availableRankingYears[0]||currentRankingYear;renderRankingYearFilter();setLanguage(localStorage.getItem(langKey)||((navigator.language||'').startsWith('en')?'en':'ja'));const {data:{user}}=await sb.auth.getUser();currentUser=user;if(!user){$('rankingMessage').textContent=lang()==='ja'?'参加設定を保存するには本体からログインしてください':'Log in on Runner’s Rings to save participation';return}const {data,error}=await sb.from('ranking_settings').select('*').eq('user_id',user.id).maybeSingle();if(error){$('rankingMessage').textContent='Database setup pending';return}if(data){$('rankingName').value=data.ranking_display_name||'';countrySelect.value=data.country||'';for(const k of ['distance','explore','nations','flag','regions']){const col={distance:'join_distance',explore:'join_explore',nations:'join_nations',flag:'show_flag',regions:'show_regions'}[k];document.querySelector('[data-setting="'+k+'"]').checked=!!data[col]}}}
 $('saveRanking').onclick=async()=>{if(!currentUser){$('rankingMessage').textContent='Log in first / ログインしてください';return}const v=k=>document.querySelector('[data-setting="'+k+'"]').checked;const name=$('rankingName').value.trim(),country=countrySelect.value;if((v('distance')||v('explore')||v('nations'))&&(!name||!country)){$('rankingMessage').textContent='参加する場合は表示名と国を選択 / Choose a nickname and country';return}const {error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,join_distance:v('distance'),join_explore:v('explore'),join_nations:v('nations'),show_flag:v('flag'),show_regions:v('regions')},{onConflict:'user_id'});$('rankingMessage').textContent=error?('保存失敗 / Save failed: '+error.message):'保存しました / Saved';if(!error)loadBoards()};
 $('shareRanking').onclick=async()=>{const url=location.origin+'/ranking.html';const text=lang()==='ja'?'走った人生を一緒に讃えよう！Rings Ranking 🌍':'Celebrate the miles we run together! Rings Ranking 🌍';if(navigator.share){try{await navigator.share({title:'Rings Ranking',text,url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text+' '+url);alert(lang()==='ja'?'招待文とURLをコピーしました':'Invite link copied')}catch(e){prompt('Copy / コピー',text+' '+url)}};
 init();
