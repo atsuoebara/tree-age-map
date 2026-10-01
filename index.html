@@ -24381,65 +24381,145 @@ function drawTimelapseTextFit(ctx, text, x, y, maxWidth, startSize, weight = 800
   ctx.fillText(text, x, y);
 }
 
-async function captureTimelapseMapCanvas() {
-  if (typeof html2canvas !== 'function') throw new Error('html2canvas is unavailable');
-  const mapElement = document.getElementById('map');
-  if (!mapElement) throw new Error('Map element is unavailable');
-  return html2canvas(mapElement, {
-    backgroundColor:'#eef2f3',
-    useCORS:true,
-    allowTaint:false,
-    logging:false,
-    scale:Math.min(2, Math.max(1, window.devicePixelRatio || 1)),
-    ignoreElements: element =>
-      element.classList?.contains('leaflet-control-zoom') ||
-      element.classList?.contains('leaflet-control-scale')
+const timelapseTileImageCache = new Map();
+
+function loadTimelapseTileImage(url) {
+  if (timelapseTileImageCache.has(url)) {
+    return timelapseTileImageCache.get(url);
+  }
+
+  const promise = new Promise(resolve => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.decoding = 'async';
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = url;
   });
+
+  timelapseTileImageCache.set(url, promise);
+  return promise;
 }
 
 function getTimelapseShareMapGeometry(outputCanvas) {
   const width = outputCanvas.width;
   const height = outputCanvas.height;
 
-  // 9:16の中で地図を主役にする。上はブランド表示、下は年月表示だけに絞る。
+  // 9:16は維持しつつ、上下の装飾余白を最小限にして地図を主役にする。
   const mapFrame = {
-    x:36,
-    y:182,
-    width:width - 72,
-    height:height - 382,
-    radius:30
+    x:28,
+    y:132,
+    width:width - 56,
+    height:height - 278,
+    radius:28
   };
 
   const inner = {
-    x:mapFrame.x + 18,
-    y:mapFrame.y + 18,
-    width:mapFrame.width - 36,
-    height:mapFrame.height - 36
+    x:mapFrame.x + 14,
+    y:mapFrame.y + 14,
+    width:mapFrame.width - 28,
+    height:mapFrame.height - 28
   };
 
   return {mapFrame, inner};
 }
 
-function drawTimelapseShareRoutes(ctx, inner, selectedActivities) {
+function getTimelapseShareProjection(inner) {
+  const mapElement = document.getElementById('map');
+  if (!mapElement) throw new Error('Map element is unavailable');
+
+  const center = timelapseViewState?.center || map.getCenter();
+  const zoom = timelapseViewState?.zoom ?? map.getZoom();
+  const sourceWidth = Math.max(1, mapElement.clientWidth || 390);
+
+  // 現在の画面と同じLeaflet zoomを保つ。
+  // 出力解像度へ拡大するだけで、地理的な縮尺は変えない。
+  const scale = inner.width / sourceWidth;
+  const sourceHeight = inner.height / scale;
+  const centerPoint = map.project(center, zoom);
+  const topLeft = L.point(
+    centerPoint.x - sourceWidth / 2,
+    centerPoint.y - sourceHeight / 2
+  );
+
+  return {
+    center,
+    zoom,
+    scale,
+    sourceWidth,
+    sourceHeight,
+    topLeft,
+    worldSize:256 * Math.pow(2, zoom)
+  };
+}
+
+function projectTimelapseLatLngToShare(latlng, inner, projection) {
+  let point = map.project(latlng, projection.zoom);
+  let dx = point.x - projection.topLeft.x;
+
+  // 日付変更線付近でも中心に近い側へwrapする。
+  if (projection.worldSize > 0) {
+    const centerX = projection.sourceWidth / 2;
+    while (dx - centerX > projection.worldSize / 2) dx -= projection.worldSize;
+    while (dx - centerX < -projection.worldSize / 2) dx += projection.worldSize;
+  }
+
+  return {
+    x:inner.x + dx * projection.scale,
+    y:inner.y + (point.y - projection.topLeft.y) * projection.scale
+  };
+}
+
+async function renderTimelapseBaseMapCanvas(outputCanvas) {
+  const {inner} = getTimelapseShareMapGeometry(outputCanvas);
+  const projection = getTimelapseShareProjection(inner);
+  const baseCanvas = document.createElement('canvas');
+  baseCanvas.width = Math.round(inner.width);
+  baseCanvas.height = Math.round(inner.height);
+  const ctx = baseCanvas.getContext('2d');
+
+  ctx.fillStyle = '#eef2f3';
+  ctx.fillRect(0, 0, baseCanvas.width, baseCanvas.height);
+
+  const tileSize = 256;
+  const minTileX = Math.floor(projection.topLeft.x / tileSize);
+  const maxTileX = Math.floor((projection.topLeft.x + projection.sourceWidth) / tileSize);
+  const minTileY = Math.floor(projection.topLeft.y / tileSize);
+  const maxTileY = Math.floor((projection.topLeft.y + projection.sourceHeight) / tileSize);
+  const maxIndex = Math.pow(2, projection.zoom);
+  const jobs = [];
+
+  for (let ty = minTileY; ty <= maxTileY; ty++) {
+    if (ty < 0 || ty >= maxIndex) continue;
+
+    for (let tx = minTileX; tx <= maxTileX; tx++) {
+      const wrappedX = ((tx % maxIndex) + maxIndex) % maxIndex;
+      const url = `https://tile.openstreetmap.org/${projection.zoom}/${wrappedX}/${ty}.png`;
+      jobs.push((async () => {
+        const image = await loadTimelapseTileImage(url);
+        if (!image) return;
+
+        const x = (tx * tileSize - projection.topLeft.x) * projection.scale;
+        const y = (ty * tileSize - projection.topLeft.y) * projection.scale;
+        const size = tileSize * projection.scale;
+        ctx.drawImage(image, x, y, size + 1, size + 1);
+      })());
+    }
+  }
+
+  await Promise.all(jobs);
+  return {canvas:baseCanvas, projection};
+}
+
+function drawTimelapseShareRoutes(ctx, inner, selectedActivities, projection) {
   if (!Array.isArray(selectedActivities) || !selectedActivities.length) return;
 
-  const mapElement = document.getElementById('map');
-  if (!mapElement) return;
-
-  const mapWidth = Math.max(1, mapElement.clientWidth);
-  const mapHeight = Math.max(1, mapElement.clientHeight);
-  const coverScale = Math.max(inner.width / mapWidth, inner.height / mapHeight);
-  const drawWidth = mapWidth * coverScale;
-  const drawHeight = mapHeight * coverScale;
-  const drawX = inner.x + (inner.width - drawWidth) / 2;
-  const drawY = inner.y + (inner.height - drawHeight) / 2;
-
   ctx.save();
-  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 20);
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 18);
   ctx.clip();
   ctx.strokeStyle = ROUTE_COLOR;
-  ctx.lineWidth = Math.max(4, 2.8 * coverScale);
-  ctx.globalAlpha = .92;
+  ctx.lineWidth = Math.max(5, 3.2 * projection.scale);
+  ctx.globalAlpha = .94;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
@@ -24451,21 +24531,14 @@ function drawTimelapseShareRoutes(ctx, inner, selectedActivities) {
     ctx.beginPath();
 
     points.forEach(latlng => {
-      let point;
-      try {
-        point = map.latLngToContainerPoint(latlng);
-      } catch (_) {
-        return;
-      }
-
-      const x = drawX + point.x * coverScale;
-      const y = drawY + point.y * coverScale;
+      const point = projectTimelapseLatLngToShare(latlng, inner, projection);
+      if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
 
       if (!started) {
-        ctx.moveTo(x, y);
+        ctx.moveTo(point.x, point.y);
         started = true;
       } else {
-        ctx.lineTo(x, y);
+        ctx.lineTo(point.x, point.y);
       }
     });
 
@@ -24475,12 +24548,112 @@ function drawTimelapseShareRoutes(ctx, inner, selectedActivities) {
   ctx.restore();
 }
 
-async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount, selectedActivities = [], mode = 'route') {
+function drawTimelapseShareFeature(ctx, feature, inner, projection, fillAlpha = .28) {
+  const geometry = feature?.geometry;
+  if (!geometry) return;
+
+  const polygons =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : [];
+
+  if (!polygons.length) return;
+
+  ctx.save();
+  ctx.fillStyle = AREA_COLOR;
+  ctx.strokeStyle = AREA_COLOR;
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = Math.max(1.5, 1.1 * projection.scale);
+
+  polygons.forEach(polygon => {
+    ctx.beginPath();
+    polygon.forEach(ring => {
+      let started = false;
+      ring.forEach(coord => {
+        if (!Array.isArray(coord) || coord.length < 2) return;
+        const point = projectTimelapseLatLngToShare([coord[1], coord[0]], inner, projection);
+        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+        if (!started) {
+          ctx.moveTo(point.x, point.y);
+          started = true;
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+      if (started) ctx.closePath();
+    });
+    ctx.save();
+    ctx.globalAlpha = fillAlpha;
+    ctx.fill('evenodd');
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = .72;
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function drawTimelapseShareAreas(ctx, inner, selectedActivities, projection) {
+  const stats = buildTimelapseDistanceStats(selectedActivities);
+
+  ctx.save();
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 18);
+  ctx.clip();
+
+  if (projection.zoom <= 3 && worldGeojsonData?.features) {
+    worldGeojsonData.features.forEach(feature => {
+      const km = Number(stats.countryDistance[getCountryCode(feature)] || 0);
+      if (km > .01) drawTimelapseShareFeature(ctx, feature, inner, projection, .24);
+    });
+  } else {
+    if (geojsonData?.features) {
+      geojsonData.features.forEach(feature => {
+        const km = Number(stats.municipalityDistance[getCityKey(feature)] || 0);
+        if (km > .01) {
+          drawTimelapseShareFeature(
+            ctx,
+            feature,
+            inner,
+            projection,
+            Math.max(.16, getMunicipalityOpacity(km))
+          );
+        }
+      });
+    }
+
+    Object.entries(worldAdminGeojsonData).forEach(([countryCode, byLevel]) => {
+      const data = byLevel?.ADM1;
+      if (!data?.features) return;
+      data.features.forEach(feature => {
+        const key = getWorldAdminKey(countryCode, 'ADM1', feature);
+        const km = Number(stats.admin1Distance[key] || 0);
+        if (km > .01) {
+          drawTimelapseShareFeature(
+            ctx,
+            feature,
+            inner,
+            projection,
+            Math.max(.16, getMunicipalityOpacity(km))
+          );
+        }
+      });
+    });
+  }
+
+  ctx.restore();
+}
+
+async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route') {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
   const logo = await loadTimelapseBrandLogo();
   const {mapFrame, inner} = getTimelapseShareMapGeometry(outputCanvas);
+  const projection = baseMap.projection;
 
   ctx.save();
   ctx.clearRect(0, 0, width, height);
@@ -24494,49 +24667,38 @@ async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount,
 
   const frameGradient = ctx.createLinearGradient(mapFrame.x, mapFrame.y, mapFrame.x + mapFrame.width, mapFrame.y + mapFrame.height);
   frameGradient.addColorStop(0, '#ff2bd6');
-  frameGradient.addColorStop(.55, '#ff61c7');
+  frameGradient.addColorStop(.58, '#ff61c7');
   frameGradient.addColorStop(1, '#eaff00');
 
-  ctx.lineWidth = 10;
+  ctx.lineWidth = 9;
   ctx.strokeStyle = frameGradient;
   drawRoundedRectPath(ctx, mapFrame.x, mapFrame.y, mapFrame.width, mapFrame.height, mapFrame.radius);
   ctx.stroke();
 
   ctx.save();
-  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 20);
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 18);
   ctx.clip();
   ctx.fillStyle = '#eef2f3';
   ctx.fillRect(inner.x, inner.y, inner.width, inner.height);
-
-  if (mapCanvas) {
-    // containではなくcoverで描画し、上下の空白を作らない。
-    const scale = Math.max(inner.width / mapCanvas.width, inner.height / mapCanvas.height);
-    const drawWidth = mapCanvas.width * scale;
-    const drawHeight = mapCanvas.height * scale;
-    const drawX = inner.x + (inner.width - drawWidth) / 2;
-    const drawY = inner.y + (inner.height - drawHeight) / 2;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(mapCanvas, drawX, drawY, drawWidth, drawHeight);
-  }
+  ctx.drawImage(baseMap.canvas, inner.x, inner.y, inner.width, inner.height);
   ctx.restore();
 
-  // iPhone Safariではhtml2canvasがLeafletのCanvas/SVGルートを落とす場合があるため、
-  // コース表示時は動画Canvasへルートを直接重ね描きする。
   if (mode === 'route') {
-    drawTimelapseShareRoutes(ctx, inner, selectedActivities);
+    drawTimelapseShareRoutes(ctx, inner, selectedActivities, projection);
+  } else {
+    drawTimelapseShareAreas(ctx, inner, selectedActivities, projection);
   }
 
-  // ブランドロゴは動画の全フレームで左上に固定表示。
+  // 左上は大きすぎない固定ブランド。地図領域を削らない。
   if (logo) {
-    const logoSize = 108;
-    const logoX = 42;
-    const logoY = 42;
+    const logoSize = 82;
+    const logoX = 30;
+    const logoY = 24;
     ctx.save();
-    ctx.fillStyle = 'rgba(7,24,39,.82)';
-    drawRoundedRectPath(ctx, logoX - 6, logoY - 6, logoSize + 12, logoSize + 12, 24);
+    ctx.fillStyle = 'rgba(7,24,39,.88)';
+    drawRoundedRectPath(ctx, logoX - 5, logoY - 5, logoSize + 10, logoSize + 10, 20);
     ctx.fill();
-    drawRoundedRectPath(ctx, logoX, logoY, logoSize, logoSize, 20);
+    drawRoundedRectPath(ctx, logoX, logoY, logoSize, logoSize, 17);
     ctx.clip();
     ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
     ctx.restore();
@@ -24545,21 +24707,22 @@ async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount,
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = '900 50px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText("Runner's Rings", 174, 91);
+  ctx.font = '900 43px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText("Runner's Rings", 132, 62);
   ctx.fillStyle = '#eaff00';
-  ctx.font = '800 29px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Growth Rings Timelapse', 174, 132);
+  ctx.font = '800 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Growth Rings Timelapse', 132, 96);
 
+  // 年月とRUN数は下端へコンパクトにまとめ、余白を増やさない。
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
-  drawTimelapseTextFit(ctx, label, width / 2, height - 132, width - 120, 42, 900);
-  ctx.fillStyle = '#b9c9d8';
-  ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 88);
-  ctx.fillStyle = 'rgba(255,255,255,.72)';
-  ctx.font = '600 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Map the life you run. · © OpenStreetMap contributors', width / 2, height - 48);
+  drawTimelapseTextFit(ctx, label, width / 2, height - 76, width - 110, 38, 900);
+  ctx.fillStyle = '#c4d0db';
+  ctx.font = '700 22px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 42);
+  ctx.fillStyle = 'rgba(255,255,255,.62)';
+  ctx.font = '600 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('© OpenStreetMap contributors', width / 2, height - 17);
   ctx.restore();
 }
 
@@ -24692,10 +24855,16 @@ async function generateTimelapseShareVideo() {
   try {
     recorder.start(250);
     await waitTimelapse(150);
-    const startMapCanvas = await captureTimelapseMapCanvas();
+
+    // 共有動画ではLeaflet DOMをスクリーンショット化しない。
+    // 「共有動画を作る」を押した瞬間の中心・zoomを基準に、OSMタイルを
+    // 動画Canvasへ直接描画するため、iPhone Safariでも上下欠けやルート消失を防ぐ。
+    timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing map…' : '地図を準備しています…';
+    const shareBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
+
     await drawTimelapseShareFrame(
       outputCanvas,
-      startMapCanvas,
+      shareBaseMap,
       isRunnerRingsEnglish() ? 'START · No runs yet' : 'START · まだ何も走っていない地図',
       0,
       [],
@@ -24707,13 +24876,13 @@ async function generateTimelapseShareVideo() {
     for (let index = 0; index < frameSteps.length; index++) {
       const cutoffDate = frameSteps[index];
       const selectedActivities = getTimelapseCumulativeActivities(range.rangeStart, cutoffDate);
+      // 通常再生のLeaflet描画はそのまま残し、共有動画側は独立Canvasへ直接描画する。
       drawTimelapseFrame(selectedActivities, timelapseMode.value);
-      await waitTimelapse(110);
-      const mapCanvas = await captureTimelapseMapCanvas();
+      await waitTimelapse(80);
       const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
       await drawTimelapseShareFrame(
         outputCanvas,
-        mapCanvas,
+        shareBaseMap,
         label,
         selectedActivities.length,
         selectedActivities,
