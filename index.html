@@ -24555,6 +24555,74 @@ function drawTimelapseShareRoutes(ctx, inner, selectedActivities, projection) {
   ctx.restore();
 }
 
+
+function drawTimelapseShareRouteHighlight(ctx, inner, highlightActivities, projection, strength = 1) {
+  if (!Array.isArray(highlightActivities) || !highlightActivities.length) return;
+
+  const glowStrength = Math.max(0, Math.min(1, Number(strength) || 0));
+  if (glowStrength <= 0) return;
+
+  ctx.save();
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 18);
+  ctx.clip();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const drawPass = (strokeStyle, lineWidth, alpha, blur = 0) => {
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.globalAlpha = alpha * glowStrength;
+    ctx.shadowColor = '#eaff00';
+    ctx.shadowBlur = blur * glowStrength;
+
+    highlightActivities.forEach(activity => {
+      const points = Array.isArray(activity?.latlngs) ? activity.latlngs : [];
+      if (points.length < 2) return;
+
+      let started = false;
+      ctx.beginPath();
+
+      points.forEach(latlng => {
+        const point = projectTimelapseLatLngToShare(latlng, inner, projection);
+        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+
+        if (!started) {
+          ctx.moveTo(point.x, point.y);
+          started = true;
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+
+      if (started) ctx.stroke();
+    });
+  };
+
+  // その月／年に新しく加わったコースだけを短く発光させる。
+  drawPass('#ff2bd6', Math.max(13, 8.2 * projection.scale), .30, 26);
+  drawPass('#eaff00', Math.max(8, 5.0 * projection.scale), .88, 12);
+  drawPass('#ffffff', Math.max(3, 2.1 * projection.scale), .72, 5);
+
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function getTimelapseNewActivitiesForStep(rangeStart, previousCutoff, cutoffDate) {
+  const stepStart = previousCutoff
+    ? new Date(previousCutoff.getTime() + 1)
+    : rangeStart;
+
+  return activities.filter(activity => {
+    const date = getTimelapseActivityDate(activity);
+    return !!(
+      date &&
+      date >= stepStart &&
+      date <= cutoffDate
+    );
+  });
+}
+
 function drawTimelapseShareFeature(ctx, feature, inner, projection, fillAlpha = .28) {
   const geometry = feature?.geometry;
   if (!geometry) return;
@@ -24654,7 +24722,7 @@ function drawTimelapseShareAreas(ctx, inner, selectedActivities, projection) {
   ctx.restore();
 }
 
-async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route') {
+async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route', highlightActivities = [], highlightStrength = 0) {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
@@ -24692,6 +24760,13 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
 
   if (mode === 'route') {
     drawTimelapseShareRoutes(ctx, inner, selectedActivities, projection);
+    drawTimelapseShareRouteHighlight(
+      ctx,
+      inner,
+      highlightActivities,
+      projection,
+      highlightStrength
+    );
   } else {
     drawTimelapseShareAreas(ctx, inner, selectedActivities, projection);
   }
@@ -24780,6 +24855,10 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel) {
   }
 
   ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,.72)';
+  ctx.font = '800 23px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('YOUR GROWTH RINGS', width / 2, Math.round(height * .655));
+
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 64px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText("Runner's Rings", width / 2, Math.round(height * .70));
@@ -24894,13 +24973,40 @@ async function generateTimelapseShareVideo() {
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · START' : '動画作成中 · START';
     await waitTimelapse(900);
 
+    let previousCutoff = null;
+
     for (let index = 0; index < frameSteps.length; index++) {
       const cutoffDate = frameSteps[index];
       const selectedActivities = getTimelapseCumulativeActivities(range.rangeStart, cutoffDate);
-      // 通常再生のLeaflet描画はそのまま残し、共有動画側は独立Canvasへ直接描画する。
+      const newActivities = getTimelapseNewActivitiesForStep(
+        range.rangeStart,
+        previousCutoff,
+        cutoffDate
+      );
+
+      // 通常再生は変えず、共有動画だけに軽い発光演出を入れる。
       drawTimelapseFrame(selectedActivities, timelapseMode.value);
       await waitTimelapse(80);
       const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
+
+      // 新しく追加されたコースを短く発光。
+      await drawTimelapseShareFrame(
+        outputCanvas,
+        shareBaseMap,
+        label,
+        selectedActivities.length,
+        selectedActivities,
+        timelapseMode.value,
+        newActivities,
+        timelapseMode.value === 'route' ? 1 : 0
+      );
+
+      timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
+      timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
+
+      await waitTimelapse(timelapseStep.value === 'year' ? 260 : 190);
+
+      // 発光を通常線へ戻し、その月／年の完成状態を見せる。
       await drawTimelapseShareFrame(
         outputCanvas,
         shareBaseMap,
@@ -24909,9 +25015,9 @@ async function generateTimelapseShareVideo() {
         selectedActivities,
         timelapseMode.value
       );
-      timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
-      timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
-      await waitTimelapse(timelapseStep.value === 'year' ? 1150 : 700);
+
+      await waitTimelapse(timelapseStep.value === 'year' ? 940 : 560);
+      previousCutoff = cutoffDate;
     }
 
     const startLabel = formatTimelapseMonthValue(range.rangeStart);
