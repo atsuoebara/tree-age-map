@@ -24397,13 +24397,94 @@ async function captureTimelapseMapCanvas() {
   });
 }
 
-async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount) {
+function getTimelapseShareMapGeometry(outputCanvas) {
+  const width = outputCanvas.width;
+  const height = outputCanvas.height;
+
+  // 9:16の中で地図を主役にする。上はブランド表示、下は年月表示だけに絞る。
+  const mapFrame = {
+    x:36,
+    y:182,
+    width:width - 72,
+    height:height - 382,
+    radius:30
+  };
+
+  const inner = {
+    x:mapFrame.x + 18,
+    y:mapFrame.y + 18,
+    width:mapFrame.width - 36,
+    height:mapFrame.height - 36
+  };
+
+  return {mapFrame, inner};
+}
+
+function drawTimelapseShareRoutes(ctx, inner, selectedActivities) {
+  if (!Array.isArray(selectedActivities) || !selectedActivities.length) return;
+
+  const mapElement = document.getElementById('map');
+  if (!mapElement) return;
+
+  const mapWidth = Math.max(1, mapElement.clientWidth);
+  const mapHeight = Math.max(1, mapElement.clientHeight);
+  const coverScale = Math.max(inner.width / mapWidth, inner.height / mapHeight);
+  const drawWidth = mapWidth * coverScale;
+  const drawHeight = mapHeight * coverScale;
+  const drawX = inner.x + (inner.width - drawWidth) / 2;
+  const drawY = inner.y + (inner.height - drawHeight) / 2;
+
+  ctx.save();
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 20);
+  ctx.clip();
+  ctx.strokeStyle = ROUTE_COLOR;
+  ctx.lineWidth = Math.max(4, 2.8 * coverScale);
+  ctx.globalAlpha = .92;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  selectedActivities.forEach(activity => {
+    const points = Array.isArray(activity?.latlngs) ? activity.latlngs : [];
+    if (points.length < 2) return;
+
+    let started = false;
+    ctx.beginPath();
+
+    points.forEach(latlng => {
+      let point;
+      try {
+        point = map.latLngToContainerPoint(latlng);
+      } catch (_) {
+        return;
+      }
+
+      const x = drawX + point.x * coverScale;
+      const y = drawY + point.y * coverScale;
+
+      if (!started) {
+        ctx.moveTo(x, y);
+        started = true;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
+    if (started) ctx.stroke();
+  });
+
+  ctx.restore();
+}
+
+async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount, selectedActivities = [], mode = 'route') {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
   const logo = await loadTimelapseBrandLogo();
+  const {mapFrame, inner} = getTimelapseShareMapGeometry(outputCanvas);
+
   ctx.save();
   ctx.clearRect(0, 0, width, height);
+
   const background = ctx.createLinearGradient(0, 0, width, height);
   background.addColorStop(0, '#071827');
   background.addColorStop(.55, '#111c31');
@@ -24411,22 +24492,25 @@ async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount)
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, width, height);
 
-  const frameGradient = ctx.createLinearGradient(48, 160, width - 48, height - 190);
+  const frameGradient = ctx.createLinearGradient(mapFrame.x, mapFrame.y, mapFrame.x + mapFrame.width, mapFrame.y + mapFrame.height);
   frameGradient.addColorStop(0, '#ff2bd6');
-  frameGradient.addColorStop(.52, '#ff61c7');
+  frameGradient.addColorStop(.55, '#ff61c7');
   frameGradient.addColorStop(1, '#eaff00');
-  const mapFrame = {x:48, y:270, width:width - 96, height:height - 560, radius:34};
-  ctx.lineWidth = 12;
+
+  ctx.lineWidth = 10;
   ctx.strokeStyle = frameGradient;
   drawRoundedRectPath(ctx, mapFrame.x, mapFrame.y, mapFrame.width, mapFrame.height, mapFrame.radius);
   ctx.stroke();
+
+  ctx.save();
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 20);
+  ctx.clip();
   ctx.fillStyle = '#eef2f3';
-  drawRoundedRectPath(ctx, mapFrame.x + 12, mapFrame.y + 12, mapFrame.width - 24, mapFrame.height - 24, mapFrame.radius - 10);
-  ctx.fill();
+  ctx.fillRect(inner.x, inner.y, inner.width, inner.height);
 
   if (mapCanvas) {
-    const inner = {x:mapFrame.x + 22, y:mapFrame.y + 22, width:mapFrame.width - 44, height:mapFrame.height - 44};
-    const scale = Math.min(inner.width / mapCanvas.width, inner.height / mapCanvas.height);
+    // containではなくcoverで描画し、上下の空白を作らない。
+    const scale = Math.max(inner.width / mapCanvas.width, inner.height / mapCanvas.height);
     const drawWidth = mapCanvas.width * scale;
     const drawHeight = mapCanvas.height * scale;
     const drawX = inner.x + (inner.width - drawWidth) / 2;
@@ -24435,10 +24519,23 @@ async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount)
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(mapCanvas, drawX, drawY, drawWidth, drawHeight);
   }
+  ctx.restore();
 
+  // iPhone Safariではhtml2canvasがLeafletのCanvas/SVGルートを落とす場合があるため、
+  // コース表示時は動画Canvasへルートを直接重ね描きする。
+  if (mode === 'route') {
+    drawTimelapseShareRoutes(ctx, inner, selectedActivities);
+  }
+
+  // ブランドロゴは動画の全フレームで左上に固定表示。
   if (logo) {
-    const logoSize = 88, logoX = 54, logoY = 66;
+    const logoSize = 108;
+    const logoX = 42;
+    const logoY = 42;
     ctx.save();
+    ctx.fillStyle = 'rgba(7,24,39,.82)';
+    drawRoundedRectPath(ctx, logoX - 6, logoY - 6, logoSize + 12, logoSize + 12, 24);
+    ctx.fill();
     drawRoundedRectPath(ctx, logoX, logoY, logoSize, logoSize, 20);
     ctx.clip();
     ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
@@ -24448,24 +24545,21 @@ async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount)
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = '900 48px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText("Runner's Rings", 166, 108);
+  ctx.font = '900 50px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText("Runner's Rings", 174, 91);
   ctx.fillStyle = '#eaff00';
-  ctx.font = '800 27px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Growth Rings Timelapse', 166, 145);
+  ctx.font = '800 29px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Growth Rings Timelapse', 174, 132);
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
-  drawTimelapseTextFit(ctx, label, width / 2, height - 190, width - 150, 46, 900);
+  drawTimelapseTextFit(ctx, label, width / 2, height - 132, width - 120, 42, 900);
   ctx.fillStyle = '#b9c9d8';
-  ctx.font = '700 27px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 138);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '700 28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Map the life you run.', width / 2, height - 82);
-  ctx.fillStyle = 'rgba(255,255,255,.58)';
-  ctx.font = '500 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('© OpenStreetMap contributors', width / 2, height - 44);
+  ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 88);
+  ctx.fillStyle = 'rgba(255,255,255,.72)';
+  ctx.font = '600 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Map the life you run. · © OpenStreetMap contributors', width / 2, height - 48);
   ctx.restore();
 }
 
@@ -24603,7 +24697,9 @@ async function generateTimelapseShareVideo() {
       outputCanvas,
       startMapCanvas,
       isRunnerRingsEnglish() ? 'START · No runs yet' : 'START · まだ何も走っていない地図',
-      0
+      0,
+      [],
+      timelapseMode.value
     );
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · START' : '動画作成中 · START';
     await waitTimelapse(900);
@@ -24615,7 +24711,14 @@ async function generateTimelapseShareVideo() {
       await waitTimelapse(110);
       const mapCanvas = await captureTimelapseMapCanvas();
       const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
-      await drawTimelapseShareFrame(outputCanvas, mapCanvas, label, selectedActivities.length);
+      await drawTimelapseShareFrame(
+        outputCanvas,
+        mapCanvas,
+        label,
+        selectedActivities.length,
+        selectedActivities,
+        timelapseMode.value
+      );
       timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
       timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
       await waitTimelapse(timelapseStep.value === 'year' ? 1150 : 700);
