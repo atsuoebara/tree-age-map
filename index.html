@@ -3386,10 +3386,10 @@
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
   <div id="timelapseLaunchArea">
-    <button id="timelapseOpenButton" type="button">▶ 年輪タイムラプス</button>
+    <button id="timelapseOpenButton" type="button">▶ Growth Rings Timelapse</button>
   </div>
-  <section id="timelapsePanel" aria-label="年輪タイムラプス設定">
-    <h3 class="timelapsePanelTitle">年輪タイムラプス</h3>
+  <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
+    <h3 class="timelapsePanelTitle">Growth Rings Timelapse</h3>
     <p class="timelapsePanelLead">今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。</p>
     <div class="timelapseGrid">
       <div class="timelapseField">
@@ -23593,15 +23593,47 @@ function syncTimelapseDefaults() {
     return false;
   }
 
+  // Growth Rings Timelapseはランキングと同じ「暦年」の感覚で始める。
+  // 初期値は常に今年1月 → 現在月。過去年を見たい場合だけ手動で広げる。
+  const today =
+    new Date();
+
+  const currentYearStart =
+    new Date(
+      today.getFullYear(),
+      0,
+      1
+    );
+
+  const currentMonth =
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+  const earliestSelectableMonth =
+    range.start < currentYearStart
+      ? range.start
+      : currentYearStart;
+
   const minValue =
     formatTimelapseMonthValue(
-      range.start
+      earliestSelectableMonth
     );
 
   const maxValue =
     formatTimelapseMonthValue(
-      range.end
+      currentMonth
     );
+
+  const defaultStartValue =
+    formatTimelapseMonthValue(
+      currentYearStart
+    );
+
+  const defaultEndValue =
+    maxValue;
 
   timelapseStartMonth.min =
     minValue;
@@ -23618,7 +23650,7 @@ function syncTimelapseDefaults() {
     timelapseStartMonth.value > maxValue
   ) {
     timelapseStartMonth.value =
-      minValue;
+      defaultStartValue;
   }
 
   if (
@@ -23627,7 +23659,7 @@ function syncTimelapseDefaults() {
     timelapseEndMonth.value > maxValue
   ) {
     timelapseEndMonth.value =
-      maxValue;
+      defaultEndValue;
   }
 
   if (
@@ -25893,9 +25925,6 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
-  ['▶ 年輪タイムラプス','▶ Growth Rings Timelapse'],
-  ['年輪タイムラプス設定','Growth Rings Timelapse settings'],
-  ['年輪タイムラプス','Growth Rings Timelapse'],
   ['今見ている地図の位置と縮尺を固定したまま、走った道がゼロから育つ様子を再生します。','Keep the current map position and zoom while your running rings grow from zero.'],
   ['開始年月','Start month'],
   ['終了年月','End month'],
