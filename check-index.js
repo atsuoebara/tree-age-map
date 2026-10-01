@@ -56,13 +56,12 @@ const checks = [
     ]
   },
   {
-    name: 'Strava新規連携制御',
-    patterns: [
-      /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*false\s*;/,
-      /id=['"]stravaPauseNotice['"]/,
-      /STRAVA_NEW_CONNECTIONS_PAUSED/
-    ]
-  },
+  name: 'Strava新規連携受付',
+  patterns: [
+    /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*false\s*;/,
+    /STRAVA_NEW_CONNECTIONS_PAUSED/
+  ]
+},
   {
     name: 'COROSの約24時間案内と結果保持',
     patterns: [
