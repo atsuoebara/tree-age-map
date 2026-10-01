@@ -1068,6 +1068,29 @@
       line-height:1.45;
     }
 
+    #timelapseGenerateButton{
+      border:1px solid rgba(234,255,0,.58);
+      background:linear-gradient(135deg,rgba(255,43,214,.30),rgba(234,255,0,.18));
+      color:#ffffff;
+    }
+
+    #timelapseShareResult{
+      display:none;
+      margin-top:14px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:14px;
+      background:rgba(3,18,31,.78);
+    }
+
+    #timelapseShareResult.isReady{display:block;}
+    #timelapseShareResult video{display:block;width:min(100%,280px);aspect-ratio:9/16;margin:0 auto 12px;border-radius:14px;background:#06111d;object-fit:contain;}
+    .timelapseShareActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+    .timelapseShareButton{min-height:42px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#17304a;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer;}
+    #timelapseShareButton{border-color:rgba(255,43,214,.55);background:linear-gradient(135deg,rgba(255,43,214,.44),#273c60);}
+    #timelapseSaveButton{border-color:rgba(234,255,0,.45);background:linear-gradient(135deg,rgba(234,255,0,.18),#253b54);}
+    #timelapseGenerationStatus{min-height:20px;margin:0 0 10px;color:#d7e4ef;font-size:12px;line-height:1.5;text-align:center;}
+
     #map.timelapsePlaying .leaflet-control-zoom{
       opacity:.42;
       pointer-events:none;
@@ -3417,9 +3440,18 @@
     </div>
     <div class="timelapseActions">
       <button id="timelapsePlayButton" class="timelapseActionButton" type="button">▶ 再生</button>
+      <button id="timelapseGenerateButton" class="timelapseActionButton" type="button">🎬 共有動画を作る</button>
       <button id="timelapseCloseButton" class="timelapseActionButton" type="button">閉じる</button>
     </div>
     <div id="timelapseProgress" role="status" aria-live="polite"></div>
+    <div id="timelapseShareResult" aria-live="polite">
+      <p id="timelapseGenerationStatus"></p>
+      <video id="timelapsePreview" controls playsinline preload="metadata"></video>
+      <div class="timelapseShareActions">
+        <button id="timelapseShareButton" class="timelapseShareButton" type="button">共有</button>
+        <button id="timelapseSaveButton" class="timelapseShareButton" type="button">保存</button>
+      </div>
+    </div>
   </section>
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
@@ -3605,6 +3637,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="./runner_rings_archive.js"></script>
 <script type="module" src="./fit_importer.js"></script>
 
@@ -23485,9 +23518,44 @@ const timelapseProgress =
     'timelapseProgress'
   );
 
+const timelapseGenerateButton =
+  document.getElementById(
+    'timelapseGenerateButton'
+  );
+
+const timelapseShareResult =
+  document.getElementById(
+    'timelapseShareResult'
+  );
+
+const timelapseGenerationStatus =
+  document.getElementById(
+    'timelapseGenerationStatus'
+  );
+
+const timelapsePreview =
+  document.getElementById(
+    'timelapsePreview'
+  );
+
+const timelapseShareButton =
+  document.getElementById(
+    'timelapseShareButton'
+  );
+
+const timelapseSaveButton =
+  document.getElementById(
+    'timelapseSaveButton'
+  );
+
 let timelapsePlaying = false;
 let timelapseStopRequested = false;
 let timelapseViewState = null;
+let timelapseVideoBlob = null;
+let timelapseVideoFile = null;
+let timelapseVideoUrl = '';
+let timelapseRecording = false;
+let timelapseBrandLogoPromise = null;
 
 function getTimelapseActivityDate(
   activity
@@ -24249,6 +24317,379 @@ function restoreAfterTimelapse() {
       : '▶ 再生';
 }
 
+function getTimelapseValidatedRange() {
+  const startMonth = parseTimelapseMonthValue(timelapseStartMonth.value);
+  const endMonth = parseTimelapseMonthValue(timelapseEndMonth.value);
+  if (!startMonth || !endMonth) {
+    alert(isRunnerRingsEnglish() ? 'Choose a start and end month.' : '開始年月と終了年月を選んでください。');
+    return null;
+  }
+  const rangeStart = new Date(startMonth.getFullYear(), startMonth.getMonth(), 1, 0, 0, 0, 0);
+  const rangeEnd = new Date(endMonth.getFullYear(), endMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+  if (rangeStart > rangeEnd) {
+    alert(isRunnerRingsEnglish() ? 'The start month must be before the end month.' : '開始年月は終了年月以前にしてください。');
+    return null;
+  }
+  return {startMonth, endMonth, rangeStart, rangeEnd};
+}
+
+function getTimelapseRecorderMimeType() {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const candidates = [
+    'video/mp4;codecs=avc1.42E01E',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+  ];
+  return candidates.find(type => !MediaRecorder.isTypeSupported || MediaRecorder.isTypeSupported(type)) || '';
+}
+
+function getTimelapseVideoExtension(mimeType) {
+  return String(mimeType || '').includes('mp4') ? 'mp4' : 'webm';
+}
+
+function loadTimelapseBrandLogo() {
+  if (timelapseBrandLogoPromise) return timelapseBrandLogoPromise;
+  timelapseBrandLogoPromise = new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = 'icon.PNG';
+  });
+  return timelapseBrandLogoPromise;
+}
+
+function drawRoundedRectPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function drawTimelapseTextFit(ctx, text, x, y, maxWidth, startSize, weight = 800) {
+  let size = startSize;
+  while (size > 22) {
+    ctx.font = `${weight} ${size}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  }
+  ctx.fillText(text, x, y);
+}
+
+async function captureTimelapseMapCanvas() {
+  if (typeof html2canvas !== 'function') throw new Error('html2canvas is unavailable');
+  const mapElement = document.getElementById('map');
+  if (!mapElement) throw new Error('Map element is unavailable');
+  return html2canvas(mapElement, {
+    backgroundColor:'#eef2f3',
+    useCORS:true,
+    allowTaint:false,
+    logging:false,
+    scale:Math.min(2, Math.max(1, window.devicePixelRatio || 1)),
+    ignoreElements: element =>
+      element.classList?.contains('leaflet-control-zoom') ||
+      element.classList?.contains('leaflet-control-scale')
+  });
+}
+
+async function drawTimelapseShareFrame(outputCanvas, mapCanvas, label, runCount) {
+  const ctx = outputCanvas.getContext('2d');
+  const width = outputCanvas.width;
+  const height = outputCanvas.height;
+  const logo = await loadTimelapseBrandLogo();
+  ctx.save();
+  ctx.clearRect(0, 0, width, height);
+  const background = ctx.createLinearGradient(0, 0, width, height);
+  background.addColorStop(0, '#071827');
+  background.addColorStop(.55, '#111c31');
+  background.addColorStop(1, '#24132a');
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+
+  const frameGradient = ctx.createLinearGradient(48, 160, width - 48, height - 190);
+  frameGradient.addColorStop(0, '#ff2bd6');
+  frameGradient.addColorStop(.52, '#ff61c7');
+  frameGradient.addColorStop(1, '#eaff00');
+  const mapFrame = {x:48, y:270, width:width - 96, height:height - 560, radius:34};
+  ctx.lineWidth = 12;
+  ctx.strokeStyle = frameGradient;
+  drawRoundedRectPath(ctx, mapFrame.x, mapFrame.y, mapFrame.width, mapFrame.height, mapFrame.radius);
+  ctx.stroke();
+  ctx.fillStyle = '#eef2f3';
+  drawRoundedRectPath(ctx, mapFrame.x + 12, mapFrame.y + 12, mapFrame.width - 24, mapFrame.height - 24, mapFrame.radius - 10);
+  ctx.fill();
+
+  if (mapCanvas) {
+    const inner = {x:mapFrame.x + 22, y:mapFrame.y + 22, width:mapFrame.width - 44, height:mapFrame.height - 44};
+    const scale = Math.min(inner.width / mapCanvas.width, inner.height / mapCanvas.height);
+    const drawWidth = mapCanvas.width * scale;
+    const drawHeight = mapCanvas.height * scale;
+    const drawX = inner.x + (inner.width - drawWidth) / 2;
+    const drawY = inner.y + (inner.height - drawHeight) / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(mapCanvas, drawX, drawY, drawWidth, drawHeight);
+  }
+
+  if (logo) {
+    const logoSize = 88, logoX = 54, logoY = 66;
+    ctx.save();
+    drawRoundedRectPath(ctx, logoX, logoY, logoSize, logoSize, 20);
+    ctx.clip();
+    ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+    ctx.restore();
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '900 48px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText("Runner's Rings", 166, 108);
+  ctx.fillStyle = '#eaff00';
+  ctx.font = '800 27px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Growth Rings Timelapse', 166, 145);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  drawTimelapseTextFit(ctx, label, width / 2, height - 190, width - 150, 46, 900);
+  ctx.fillStyle = '#b9c9d8';
+  ctx.font = '700 27px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 138);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Map the life you run.', width / 2, height - 82);
+  ctx.fillStyle = 'rgba(255,255,255,.58)';
+  ctx.font = '500 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('© OpenStreetMap contributors', width / 2, height - 44);
+  ctx.restore();
+}
+
+async function drawTimelapseEndCard(outputCanvas, rangeLabel) {
+  const ctx = outputCanvas.getContext('2d');
+  const width = outputCanvas.width;
+  const height = outputCanvas.height;
+  const logo = await loadTimelapseBrandLogo();
+  ctx.save();
+  const background = ctx.createLinearGradient(0, 0, width, height);
+  background.addColorStop(0, '#071827');
+  background.addColorStop(.55, '#24132a');
+  background.addColorStop(1, '#111c31');
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+  const ring = ctx.createLinearGradient(220, 480, 860, 1080);
+  ring.addColorStop(0, '#ff2bd6');
+  ring.addColorStop(1, '#eaff00');
+  ctx.strokeStyle = ring;
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.arc(width / 2, 790, 260, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 8;
+  ctx.globalAlpha = .55;
+  ctx.beginPath();
+  ctx.arc(width / 2, 790, 205, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  if (logo) {
+    const size = 150;
+    ctx.save();
+    drawRoundedRectPath(ctx, width / 2 - size / 2, 715, size, size, 34);
+    ctx.clip();
+    ctx.drawImage(logo, width / 2 - size / 2, 715, size, size);
+    ctx.restore();
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 68px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText("Runner's Rings", width / 2, 1180);
+  ctx.fillStyle = '#eaff00';
+  ctx.font = '800 38px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Map the life you run.', width / 2, 1250);
+  ctx.fillStyle = '#b9c9d8';
+  drawTimelapseTextFit(ctx, rangeLabel, width / 2, 1330, width - 170, 31, 700);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('runnersrings.com', width / 2, 1430);
+  ctx.restore();
+}
+
+function resetTimelapseShareResult() {
+  timelapseVideoBlob = null;
+  timelapseVideoFile = null;
+  if (timelapseVideoUrl) {
+    URL.revokeObjectURL(timelapseVideoUrl);
+    timelapseVideoUrl = '';
+  }
+  if (timelapsePreview) {
+    timelapsePreview.removeAttribute('src');
+    timelapsePreview.load();
+  }
+  timelapseShareResult?.classList.remove('isReady');
+}
+
+async function generateTimelapseShareVideo() {
+  if (timelapsePlaying || timelapseRecording) return;
+  const range = getTimelapseValidatedRange();
+  if (!range) return;
+  const frameSteps = getTimelapseFrameSteps(range.rangeStart, range.rangeEnd, timelapseStep.value);
+  if (!frameSteps.length) return;
+
+  if (typeof HTMLCanvasElement === 'undefined' || !HTMLCanvasElement.prototype.captureStream || typeof MediaRecorder === 'undefined') {
+    alert(isRunnerRingsEnglish()
+      ? 'This browser cannot create a share video. Please try Safari or Chrome on a recent device.'
+      : 'このブラウザでは共有動画を作成できません。新しいSafariまたはChromeで試してください。');
+    return;
+  }
+
+  const mimeType = getTimelapseRecorderMimeType();
+  if (!mimeType) {
+    alert(isRunnerRingsEnglish() ? 'No supported video format was found in this browser.' : 'このブラウザで使える動画形式が見つかりませんでした。');
+    return;
+  }
+
+  resetTimelapseShareResult();
+  timelapseRecording = true;
+  timelapseGenerateButton.disabled = true;
+  timelapsePlayButton.disabled = true;
+  timelapseCloseButton.disabled = true;
+  timelapseGenerateButton.textContent = isRunnerRingsEnglish() ? 'Creating…' : '動画作成中…';
+  timelapseShareResult?.classList.add('isReady');
+  timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing the 9:16 share video…' : '9:16共有動画を準備しています…';
+
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = 1080;
+  outputCanvas.height = 1920;
+  const stream = outputCanvas.captureStream(30);
+  let recorder;
+  const chunks = [];
+
+  try {
+    recorder = new MediaRecorder(stream, {mimeType, videoBitsPerSecond:4500000});
+  } catch (error) {
+    recorder = new MediaRecorder(stream);
+  }
+
+  recorder.addEventListener('dataavailable', event => {
+    if (event.data && event.data.size) chunks.push(event.data);
+  });
+  const stopped = new Promise((resolve, reject) => {
+    recorder.addEventListener('stop', resolve, {once:true});
+    recorder.addEventListener('error', event => reject(event.error || new Error('MediaRecorder error')), {once:true});
+  });
+
+  const currentCenter = map.getCenter();
+  timelapseViewState = {
+    center:L.latLng(currentCenter.lat, currentCenter.lng),
+    zoom:map.getZoom(),
+    selectedRunWasVisible:!!(selectedRunLine && map.hasLayer(selectedRunLine))
+  };
+  setTimelapseMapInteraction(false);
+  hideNormalLayersForTimelapse();
+  clearTimelapseLayers();
+  map.setView(timelapseViewState.center, timelapseViewState.zoom, {animate:false});
+
+  try {
+    recorder.start(250);
+    await waitTimelapse(150);
+    const startMapCanvas = await captureTimelapseMapCanvas();
+    await drawTimelapseShareFrame(
+      outputCanvas,
+      startMapCanvas,
+      isRunnerRingsEnglish() ? 'START · No runs yet' : 'START · まだ何も走っていない地図',
+      0
+    );
+    timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · START' : '動画作成中 · START';
+    await waitTimelapse(900);
+
+    for (let index = 0; index < frameSteps.length; index++) {
+      const cutoffDate = frameSteps[index];
+      const selectedActivities = getTimelapseCumulativeActivities(range.rangeStart, cutoffDate);
+      drawTimelapseFrame(selectedActivities, timelapseMode.value);
+      await waitTimelapse(110);
+      const mapCanvas = await captureTimelapseMapCanvas();
+      const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
+      await drawTimelapseShareFrame(outputCanvas, mapCanvas, label, selectedActivities.length);
+      timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
+      timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
+      await waitTimelapse(timelapseStep.value === 'year' ? 1150 : 700);
+    }
+
+    const startLabel = formatTimelapseMonthValue(range.rangeStart);
+    const endLabel = formatTimelapseMonthValue(range.rangeEnd);
+    await drawTimelapseEndCard(outputCanvas, `${startLabel} → ${endLabel}`);
+    timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · Finish' : '動画作成中 · FINISH';
+    await waitTimelapse(1700);
+    recorder.stop();
+    await stopped;
+
+    const finalType = recorder.mimeType || mimeType || 'video/webm';
+    timelapseVideoBlob = new Blob(chunks, {type:finalType});
+    const extension = getTimelapseVideoExtension(finalType);
+    const fileName = `runners-rings-timelapse-${startLabel}-to-${endLabel}.${extension}`;
+    timelapseVideoFile = new File([timelapseVideoBlob], fileName, {type:finalType});
+    timelapseVideoUrl = URL.createObjectURL(timelapseVideoBlob);
+    timelapsePreview.src = timelapseVideoUrl;
+    timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? `Ready · ${extension.toUpperCase()} · 9:16` : `完成 · ${extension.toUpperCase()} · 9:16`;
+    timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Share video ready.' : '共有動画ができました。';
+  } catch (error) {
+    console.error('Growth Rings Timelapse video error:', error);
+    try {
+      if (recorder && recorder.state !== 'inactive') recorder.stop();
+    } catch (_) {}
+    timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Video creation failed. Please try again.' : '動画を作成できませんでした。もう一度試してください。';
+    alert(isRunnerRingsEnglish()
+      ? 'Could not create the share video. Please reload the page and try again.'
+      : '共有動画を作成できませんでした。ページを再読み込みして、もう一度試してください。');
+  } finally {
+    stream.getTracks().forEach(track => track.stop());
+    restoreAfterTimelapse();
+    timelapseRecording = false;
+    timelapseGenerateButton.disabled = false;
+    timelapsePlayButton.disabled = false;
+    timelapseCloseButton.disabled = false;
+    timelapseGenerateButton.textContent = isRunnerRingsEnglish() ? '🎬 Create share video' : '🎬 共有動画を作る';
+  }
+}
+
+async function shareTimelapseVideo() {
+  if (!timelapseVideoFile) return;
+  const shareData = {
+    title:"Runner's Rings — Growth Rings Timelapse",
+    text:'Map the life you run.',
+    files:[timelapseVideoFile]
+  };
+  if (!navigator.share || (navigator.canShare && !navigator.canShare({files:[timelapseVideoFile]}))) {
+    alert(isRunnerRingsEnglish()
+      ? 'File sharing is not available in this browser. Use Save, then share the saved video.'
+      : 'このブラウザでは動画ファイルの直接共有ができません。「保存」してから共有してください。');
+    return;
+  }
+  try {
+    await navigator.share(shareData);
+  } catch (error) {
+    if (error?.name !== 'AbortError') console.warn('Timelapse share error:', error);
+  }
+}
+
+function saveTimelapseVideo() {
+  if (!timelapseVideoBlob || !timelapseVideoFile) return;
+  const link = document.createElement('a');
+  link.href = timelapseVideoUrl || URL.createObjectURL(timelapseVideoBlob);
+  link.download = timelapseVideoFile.name;
+  link.rel = 'noopener';
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+
 async function playRingsTimelapse() {
   if (
     timelapsePlaying
@@ -24496,6 +24937,27 @@ if (timelapsePlayButton) {
   timelapsePlayButton.addEventListener(
     'click',
     playRingsTimelapse
+  );
+}
+
+if (timelapseGenerateButton) {
+  timelapseGenerateButton.addEventListener(
+    'click',
+    generateTimelapseShareVideo
+  );
+}
+
+if (timelapseShareButton) {
+  timelapseShareButton.addEventListener(
+    'click',
+    shareTimelapseVideo
+  );
+}
+
+if (timelapseSaveButton) {
+  timelapseSaveButton.addEventListener(
+    'click',
+    saveTimelapseVideo
   );
 }
 
