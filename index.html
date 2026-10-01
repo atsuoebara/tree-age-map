@@ -15890,6 +15890,9 @@ function createRouteRunsPopupContent(
   }
 
   function updateFooter() {
+    // 「さらに20件を見る」も履歴スクロール領域の中に置く。
+    // これにより、地図の「−」を押さなくても一番下まで到達できる。
+    footer.remove();
     footer.replaceChildren();
 
     if (
@@ -15903,6 +15906,7 @@ function createRouteRunsPopupContent(
             ' runs'
           : runs.length +
             '件すべて表示';
+      list.appendChild(footer);
       return;
     }
 
@@ -15961,6 +15965,7 @@ function createRouteRunsPopupContent(
     footer.appendChild(
       moreButton
     );
+    list.appendChild(footer);
   }
 
   function renderNextPage() {
@@ -15989,15 +15994,6 @@ function createRouteRunsPopupContent(
     count,
     list
   );
-
-  if (
-    runs.length >
-    PAGE_SIZE
-  ) {
-    container.appendChild(
-      footer
-    );
-  }
 
   renderNextPage();
 
