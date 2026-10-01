@@ -46,13 +46,26 @@ main{width:min(920px,100%);margin:0 auto;padding:28px 14px 54px}
 .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:11px 14px;color:#93a3b7;font-size:11px}
 .legendDot{width:13px;height:13px;border-radius:4px;background:#334155;border:1px solid rgba(255,255,255,.2)}
 .legendDot.owned{background:linear-gradient(135deg,#ff2bd6,#eaff00)}
+.leaderLegend{padding:0 14px 13px;border-top:1px solid rgba(255,255,255,.06)}
+.leaderLegendTitle{padding-top:10px;color:#c8d3df;font-size:11px;font-weight:900}
+.leaderChips{display:flex;gap:8px;overflow-x:auto;padding-top:8px;scrollbar-width:none}
+.leaderChips::-webkit-scrollbar{display:none}
+.leaderChip{display:flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:#132237;color:#e7edf5;font-size:11px}
+.leaderColor{width:12px;height:12px;flex:0 0 12px;border-radius:4px;box-shadow:0 0 0 1px rgba(255,255,255,.3)}
+.leaderCount{color:#8798ad;font-size:10px}
 .infoPanel{margin-top:16px;padding:17px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#101e31}
 .infoPanel h3{margin:0 0 5px;font-size:19px}
 .infoPanel .sub{margin:0 0 12px;color:#8fa0b5;font-size:12px}
 .ranking{overflow:hidden;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:#0e1929}
-.row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:8px;align-items:center;padding:13px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.row{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:8px;align-items:center;padding:13px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
 .row:last-child{border-bottom:0}
-.rank{font-weight:900;text-align:center}
+.row.place1{background:linear-gradient(90deg,rgba(255,43,214,.16),rgba(255,43,214,.025));box-shadow:inset 4px 0 0 #ff2bd6}
+.row.place2{background:linear-gradient(90deg,rgba(203,213,225,.09),transparent)}
+.row.place3{background:linear-gradient(90deg,rgba(245,158,11,.08),transparent)}
+.rank{font-weight:900;text-align:center;white-space:nowrap}
+.rank.place1{color:#ff7be7}
+.rank.place2{color:#d8e0ea}
+.rank.place3{color:#f6b85d}
 .runnerName{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .runnerMeta{margin-top:3px;color:#8091a7;font-size:11px}
 .score{text-align:right;font-size:17px;font-weight:900}
@@ -90,7 +103,7 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   .hero h2{font-size:28px}
   #territoryMap{height:58vh;min-height:390px}
   .mapTop{align-items:flex-start}
-  .row{grid-template-columns:36px minmax(0,1fr) auto;padding:12px 9px}
+  .row{grid-template-columns:46px minmax(0,1fr) auto;padding:12px 9px}
   .score{font-size:15px}
 }
 </style>
@@ -131,11 +144,16 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
     <div id="territoryMap" aria-label="Rings Territory map"></div>
     <div class="legend">
       <span class="legendDot owned"></span>
-      <span data-lang="ja">色付き：その年に首位ランナーがいる市町村</span>
-      <span data-lang="en">Colored: municipality with an annual leader</span>
+      <span data-lang="ja">色＝その市町村の首位ランナー</span>
+      <span data-lang="en">Color = municipality leader</span>
       <span class="legendDot"></span>
-      <span data-lang="ja">グレー：参加記録なし</span>
-      <span data-lang="en">Gray: no participating record</span>
+      <span data-lang="ja">グレー＝参加記録なし</span>
+      <span data-lang="en">Gray = no participating record</span>
+    </div>
+    <div class="leaderLegend">
+      <div class="leaderLegendTitle" data-lang="ja">首位ランナーの色</div>
+      <div class="leaderLegendTitle" data-lang="en">Leader colors</div>
+      <div id="leaderChips" class="leaderChips"></div>
     </div>
   </section>
 
@@ -238,6 +256,7 @@ function setLanguage(v){
   );
   updateStatus();
   renderDynamicCopy();
+  renderLeaderLegend();
   if(selectedMunicipalityCode) loadMunicipalityRanking(selectedMunicipalityCode);
 }
 document.querySelectorAll('.languageButton').forEach(
@@ -269,12 +288,73 @@ function makeYears(){
   }
 }
 
+const TERRITORY_COLORS=[
+  '#ff5ac8','#ffd84d','#4aa8ff','#a970ff',
+  '#ff7a45','#42d5e6','#ff4d67','#8bd450',
+  '#f5a623','#3ddc97','#7dd3fc','#d946ef'
+];
+
 function colorForUser(userId){
   const s=String(userId||'');
   let h=0;
   for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
-  const hue=h%360;
-  return `hsl(${hue} 78% 56%)`;
+  return TERRITORY_COLORS[h%TERRITORY_COLORS.length];
+}
+
+function renderLeaderLegend(){
+  const box=$('leaderChips');
+  if(!box)return;
+  box.replaceChildren();
+
+  const byUser=new Map();
+  for(const row of leaders){
+    const id=String(row.user_id||'');
+    if(!id)continue;
+    if(!byUser.has(id)){
+      byUser.set(id,{
+        user_id:id,
+        name:row.ranking_display_name||'Runner',
+        country:row.country||'',
+        show_flag:!!row.show_flag,
+        municipalities:new Set()
+      });
+    }
+    byUser.get(id).municipalities.add(normalizeCode(row.municipality_code));
+  }
+
+  const items=[...byUser.values()].sort((a,b)=>
+    b.municipalities.size-a.municipalities.size ||
+    a.name.localeCompare(b.name)
+  );
+
+  if(!items.length){
+    const empty=document.createElement('span');
+    empty.className='leaderCount';
+    empty.textContent=lang()==='ja'?'まだ首位ランナーはいません':'No leaders yet';
+    box.append(empty);
+    return;
+  }
+
+  for(const item of items){
+    const chip=document.createElement('div');
+    chip.className='leaderChip';
+
+    const dot=document.createElement('span');
+    dot.className='leaderColor';
+    dot.style.background=colorForUser(item.user_id);
+
+    const name=document.createElement('span');
+    name.textContent=(item.show_flag?flag(item.country)+' ':'')+item.name;
+
+    const count=document.createElement('span');
+    count.className='leaderCount';
+    count.textContent=lang()==='ja'
+      ?`${item.municipalities.size}市町村`
+      :`${item.municipalities.size} municipalities`;
+
+    chip.append(dot,name,count);
+    box.append(chip);
+  }
 }
 
 function normalizeCode(v){
@@ -392,6 +472,7 @@ async function loadLeaders(){
     if(selectedMunicipalityLayer)applySelectedMunicipalityStyle(selectedMunicipalityLayer);
     fitMapToActiveTerritories();
   }
+  renderLeaderLegend();
   updateStatus();
 }
 
@@ -424,20 +505,22 @@ async function loadMunicipalityRanking(code,feature){
   }
   board.replaceChildren();
   data.slice(0,3).forEach(r=>{
+    const place=Number(r.place||0)||0;
     const row=document.createElement('div');
-    row.className='row';
+    row.className='row'+(place>=1&&place<=3?' place'+place:'');
     const rank=document.createElement('div');
-    rank.className='rank';
-    rank.textContent=Number(r.place||0)||'';
+    rank.className='rank'+(place>=1&&place<=3?' place'+place:'');
+    const medal=place===1?'🥇':place===2?'🥈':place===3?'🥉':'';
+    rank.textContent=(medal?medal+' ':'')+place;
     const runner=document.createElement('div');
     const name=document.createElement('div');
     name.className='runnerName';
     name.textContent=(r.show_flag?flag(r.country)+' ':'')+(r.ranking_display_name||'Runner');
     const meta=document.createElement('div');
     meta.className='runnerMeta';
-    meta.textContent=Number(r.place)===1
+    meta.textContent=place===1
       ?(lang()==='ja'?'この市町村の先頭':'Municipality leader')
-      :(lang()==='ja'?'年間距離':'Annual distance');
+      :(lang()==='ja'?`${place}位・年間距離`:`#${place} · annual distance`);
     runner.append(name,meta);
     const score=document.createElement('div');
     score.className='score';
