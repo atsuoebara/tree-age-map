@@ -45,3 +45,21 @@ revoke all on function public.ranking_distance(integer) from public;
 revoke all on function public.ranking_nations(integer) from public;
 grant execute on function public.ranking_distance(integer) to anon,authenticated;
 grant execute on function public.ranking_nations(integer) to anon,authenticated;
+
+-- Return ranking years that contain saved runs for users currently opted into
+-- at least one Rings Ranking category. Participation is not year-specific, so
+-- the same current opt-in settings apply to historical years.
+create or replace function public.ranking_years()
+returns table(year integer)
+language sql stable security definer set search_path=public as $$
+  select distinct extract(year from r.activity_date)::integer as year
+  from public.ranking_settings s
+  join public.runs r on r.user_id=s.user_id
+  where (s.join_distance or s.join_explore or s.join_nations)
+    and r.activity_date is not null
+    and r.activity_date >= date '2000-01-01'
+    and r.activity_date < make_date(extract(year from current_date)::integer + 1,1,1)
+  order by year desc;
+$$;
+revoke all on function public.ranking_years() from public;
+grant execute on function public.ranking_years() to anon,authenticated;
