@@ -15741,8 +15741,6 @@ function createRouteRunsPopupContent(
       'div'
     );
 
-  // Leaflet側の内容計測に任せきらず、
-  // 多数のランでもポップアップ自体が縦に伸びないよう固定する。
   container.style.width = '250px';
   container.style.maxWidth = '250px';
   container.style.overflow = 'hidden';
@@ -15781,130 +15779,227 @@ function createRouteRunsPopupContent(
   list.className =
     'routeRunsPopupList';
 
-  // 画面には最大20件だけ生成する。
-  // 全件数は上の件数表示で確認できる。
-  runs
-    .slice(0, 20)
-    .forEach(
-      activity => {
-        const button =
-          document.createElement(
-            'button'
+  // ポップアップ全体を地図より大きくしない。
+  // 履歴部分だけをスクロールできるようにする。
+  list.style.maxHeight =
+    'min(42vh, 300px)';
+  list.style.overflowY = 'auto';
+  list.style.overflowX = 'hidden';
+  list.style.webkitOverflowScrolling =
+    'touch';
+  list.style.paddingRight = '2px';
+
+  const footer =
+    document.createElement(
+      'div'
+    );
+
+  footer.className = 'popup-row';
+  footer.style.marginTop = '7px';
+  footer.style.fontSize = '11px';
+  footer.style.color = '#526176';
+
+  const PAGE_SIZE = 20;
+  let visibleCount = 0;
+
+  function appendRunButton(
+    activity
+  ) {
+    const button =
+      document.createElement(
+        'button'
+      );
+
+    button.type = 'button';
+    button.className =
+      'routeRunsPopupButton';
+
+    const date =
+      document.createElement(
+        'span'
+      );
+
+    date.className =
+      'routeRunsPopupDate';
+
+    date.textContent =
+      getRouteActivityDateText(
+        activity
+      );
+
+    const meta =
+      document.createElement(
+        'span'
+      );
+
+    meta.className =
+      'routeRunsPopupMeta';
+
+    const distance =
+      Number(
+        activity.distance
+      );
+
+    const distanceText =
+      Number.isFinite(
+        distance
+      )
+        ? distance.toFixed(2) +
+          ' km'
+        : (
+            isRunnerRingsEnglish()
+              ? 'Distance unknown'
+              : '距離不明'
           );
 
-        button.type =
-          'button';
+    const name =
+      String(
+        activity.name ||
+        (
+          isRunnerRingsEnglish()
+            ? 'Run'
+            : 'ラン'
+        )
+      )
+      .replace(
+        /\.(gpx|fit|tcx)$/i,
+        ''
+      );
 
-        button.className =
-          'routeRunsPopupButton';
+    meta.textContent =
+      distanceText +
+      ' ・ ' +
+      name;
 
-        const date =
-          document.createElement(
-            'span'
-          );
+    button.append(
+      date,
+      meta
+    );
 
-        date.className =
-          'routeRunsPopupDate';
+    button.addEventListener(
+      'click',
+      () =>
+        focusActivityFromRoutePopup(
+          activity
+        )
+    );
 
-        date.textContent =
-          getRouteActivityDateText(
-            activity
-          );
+    list.appendChild(
+      button
+    );
+  }
 
-        const meta =
-          document.createElement(
-            'span'
-          );
+  function updateFooter() {
+    footer.replaceChildren();
 
-        meta.className =
-          'routeRunsPopupMeta';
+    if (
+      visibleCount >=
+      runs.length
+    ) {
+      footer.textContent =
+        isRunnerRingsEnglish()
+          ? 'Showing all ' +
+            runs.length +
+            ' runs'
+          : runs.length +
+            '件すべて表示';
+      return;
+    }
 
-        const distance =
-          Number(
-            activity.distance
-          );
+    const remaining =
+      runs.length -
+      visibleCount;
 
-        const distanceText =
-          Number.isFinite(
-            distance
-          )
-            ? distance.toFixed(2) +
-              ' km'
-            : (
-                isRunnerRingsEnglish()
-                  ? 'Distance unknown'
-                  : '距離不明'
-              );
+    const nextCount =
+      Math.min(
+        PAGE_SIZE,
+        remaining
+      );
 
-        const name =
-          String(
-            activity.name ||
-            (
-              isRunnerRingsEnglish()
-                ? 'Run'
-                : 'ラン'
-            )
-          )
-          .replace(
-            /\.(gpx|fit|tcx)$/i,
-            ''
-          );
+    const moreButton =
+      document.createElement(
+        'button'
+      );
 
-        meta.textContent =
-          distanceText +
-          ' ・ ' +
-          name;
+    moreButton.type = 'button';
+    moreButton.textContent =
+      isRunnerRingsEnglish()
+        ? 'Show ' +
+          nextCount +
+          ' more'
+        : 'さらに' +
+          nextCount +
+          '件を見る';
 
-        button.append(
-          date,
-          meta
-        );
+    moreButton.style.width = '100%';
+    moreButton.style.border =
+      '1px solid #cbd3df';
+    moreButton.style.borderRadius =
+      '8px';
+    moreButton.style.background =
+      '#ffffff';
+    moreButton.style.color =
+      '#334155';
+    moreButton.style.fontSize =
+      '12px';
+    moreButton.style.fontWeight =
+      '700';
+    moreButton.style.padding =
+      '8px 10px';
+    moreButton.style.cursor =
+      'pointer';
 
-        button.addEventListener(
-          'click',
-          () =>
-            focusActivityFromRoutePopup(
-              activity
-            )
-        );
-
-        list.appendChild(
-          button
-        );
+    moreButton.addEventListener(
+      'click',
+      event => {
+        event.preventDefault();
+        event.stopPropagation();
+        renderNextPage();
       }
     );
 
-  if (runs.length > 20) {
-    const limited =
-      document.createElement(
-        'div'
-      );
-
-    limited.className =
-      'popup-row';
-
-    limited.style.marginTop = '7px';
-    limited.style.fontSize = '11px';
-    limited.style.color = '#526176';
-
-    limited.textContent =
-      isRunnerRingsEnglish()
-        ? 'Showing the latest 20 runs'
-        : '最新20件を表示';
-
-    container.append(
-      title,
-      count,
-      list,
-      limited
-    );
-  } else {
-    container.append(
-      title,
-      count,
-      list
+    footer.appendChild(
+      moreButton
     );
   }
+
+  function renderNextPage() {
+    const end =
+      Math.min(
+        visibleCount +
+        PAGE_SIZE,
+        runs.length
+      );
+
+    runs
+      .slice(
+        visibleCount,
+        end
+      )
+      .forEach(
+        appendRunButton
+      );
+
+    visibleCount = end;
+    updateFooter();
+  }
+
+  container.append(
+    title,
+    count,
+    list
+  );
+
+  if (
+    runs.length >
+    PAGE_SIZE
+  ) {
+    container.appendChild(
+      footer
+    );
+  }
+
+  renderNextPage();
 
   return container;
 }
