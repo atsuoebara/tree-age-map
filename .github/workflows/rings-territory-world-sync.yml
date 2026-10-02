@@ -1,0 +1,52 @@
+name: Sync Rings Territory (World Pilot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      country:
+        description: 'Country code (Stage 1: KOR)'
+        required: true
+        default: 'KOR'
+        type: string
+      year:
+        description: 'Year to sync (2026 or later; blank = current UTC year)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rings-territory-world-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check international Territory geometry and boundary file
+        env:
+          REQUESTED_COUNTRY: ${{ inputs.country }}
+        run: |
+          export TERRITORY_COUNTRY="${REQUESTED_COUNTRY:-KOR}"
+          node scripts/sync-rings-territory-world.mjs --self-test
+
+      - name: Sync opted-in international Territory distance
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REQUESTED_COUNTRY: ${{ inputs.country }}
+          REQUESTED_YEAR: ${{ inputs.year }}
+        run: |
+          export TERRITORY_COUNTRY="${REQUESTED_COUNTRY:-KOR}"
+          export TERRITORY_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
+          echo "Rings Territory world pilot: $TERRITORY_COUNTRY / $TERRITORY_YEAR"
+          node scripts/sync-rings-territory-world.mjs
