@@ -42,7 +42,8 @@ main{width:min(920px,100%);margin:0 auto;padding:28px 14px 54px}
 .mapTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
 .mapTop strong{font-size:14px}
 .mapTop span{color:#8fa0b5;font-size:11px;text-align:right}
-#territoryMap{height:min(66vh,610px);min-height:430px;background:#152236}
+#territoryMap{height:min(66vh,610px);min-height:430px;background:#152236;opacity:0;transition:opacity .18s ease}
+#territoryMap.isReady{opacity:1}
 .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:11px 14px;color:#93a3b7;font-size:11px}
 .legendDot{width:13px;height:13px;border-radius:4px;background:#334155;border:1px solid rgba(255,255,255,.2)}
 .legendDot.owned{background:linear-gradient(135deg,#ff2bd6,#eaff00)}
@@ -651,30 +652,28 @@ async function init(){
   setLanguage(localStorage.getItem(LANG_KEY)||((navigator.language||'').toLowerCase().startsWith('en')?'en':'ja'));
   makeYears();
 
-  await Promise.all([
-    loadLeaders(),
-    loadMunicipalityMap(),
-    initSettings()
-  ]);
+  // 初回表示は順番を固定する。
+  // 首位データを先に確定してから市町村地図を作り、
+  // 仮の日本全体表示が見える前に活動範囲へフィットする。
+  await loadLeaders();
+  await loadMunicipalityMap();
+  await initSettings();
 
-  // iPhone Safari対策：
-  // 初回表示でLeafletの表示サイズが確定する前にfitBoundsが走ると、
-  // 日本全体表示のまま残ることがある。
-  // データと市町村GeoJSONが揃ったあとにサイズを再計算し、
-  // 参加記録のある市町村へ確実にフィットさせる。
+  map.invalidateSize(false);
+
   requestAnimationFrame(()=>{
-    map.invalidateSize(false);
+    if(leadersByCode.size){
+      fitMapToActiveTerritories();
+    }else if(municipalityLayer){
+      map.fitBounds(municipalityLayer.getBounds(),{
+        padding:[8,8],
+        animate:false
+      });
+    }
 
-    setTimeout(()=>{
-      if(leadersByCode.size){
-        fitMapToActiveTerritories();
-      }else if(municipalityLayer){
-        map.fitBounds(municipalityLayer.getBounds(),{
-          padding:[8,8],
-          animate:false
-        });
-      }
-    },120);
+    requestAnimationFrame(()=>{
+      $('territoryMap').classList.add('isReady');
+    });
   });
 }
 init();
