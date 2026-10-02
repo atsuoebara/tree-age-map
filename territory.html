@@ -158,8 +158,8 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
   <section class="philosophy">
     <strong data-lang="ja">陣取りだけど、勝ち負けだけじゃない。</strong>
     <strong data-lang="en">Territory, without making winning the point.</strong>
-    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。まず日本・韓国・アメリカから世界へ広げます。</p>
-    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally, starting with Japan, South Korea, and the United States.</p>
+    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。日本・韓国・アメリカに続き、対応国を世界へ広げています。</p>
+    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally across more countries.</p>
   </section>
 
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
@@ -306,6 +306,36 @@ const TERRITORY_COUNTRIES={
     unitJa:'郡・独立市',
     unitEn:'county / independent city',
     unitPluralEn:'regions'
+  },
+  GBR:{
+    code:'GBR',flag:'🇬🇧',labelJa:'イギリス',labelEn:'United Kingdom',mapLabel:'UNITED KINGDOM',
+    boundaryFile:'./runners-rings-gbr-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'カウンティ・単一自治体',unitEn:'county / unitary authority',unitPluralEn:'regions'
+  },
+  AUS:{
+    code:'AUS',flag:'🇦🇺',labelJa:'オーストラリア',labelEn:'Australia',mapLabel:'AUSTRALIA',
+    boundaryFile:'./runners-rings-aus-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'地方自治体',unitEn:'local government area',unitPluralEn:'regions'
+  },
+  CAN:{
+    code:'CAN',flag:'🇨🇦',labelJa:'カナダ',labelEn:'Canada',mapLabel:'CANADA',
+    boundaryFile:'./runners-rings-can-adm2.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'国勢調査区分',unitEn:'census division',unitPluralEn:'regions'
+  },
+  FRA:{
+    code:'FRA',flag:'🇫🇷',labelJa:'フランス',labelEn:'France',mapLabel:'FRANCE',
+    boundaryFile:'./runners-rings-fra-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'県',unitEn:'department',unitPluralEn:'regions'
+  },
+  DEU:{
+    code:'DEU',flag:'🇩🇪',labelJa:'ドイツ',labelEn:'Germany',mapLabel:'GERMANY',
+    boundaryFile:'./runners-rings-deu-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'行政管区',unitEn:'government district',unitPluralEn:'regions'
+  },
+  NZL:{
+    code:'NZL',flag:'🇳🇿',labelJa:'ニュージーランド',labelEn:'New Zealand',mapLabel:'NEW ZEALAND',
+    boundaryFile:'./runners-rings-nzl-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
+    unitJa:'地方自治体',unitEn:'territorial authority',unitPluralEn:'regions'
   }
 };
 
@@ -514,12 +544,12 @@ function territoryStyle(feature){
     return {color:'rgba(183,199,219,.34)',weight:.55,fillColor:'#334155',fillOpacity:.16};
   }
   const color=colorForUser(top[0].user_id);
-  return {color:'rgba(255,255,255,.46)',weight:.72,fillColor:color,fillOpacity:.58};
+  return {color:'rgba(255,255,255,.46)',weight:.72,fillColor:color,fillOpacity:.75};
 }
 
 function applySelectedMunicipalityStyle(layer){
   if(!layer)return;
-  layer.setStyle({color:'#ff2bd6',weight:4.5,opacity:1,fillOpacity:.72});
+  layer.setStyle({color:'#ff2bd6',weight:4.5,opacity:1,fillOpacity:.85});
   if(layer.bringToFront)layer.bringToFront();
 }
 function clearSelectedMunicipalityStyle(){
