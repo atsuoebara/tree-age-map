@@ -650,11 +650,32 @@ $('saveTerritory').onclick=async()=>{
 async function init(){
   setLanguage(localStorage.getItem(LANG_KEY)||((navigator.language||'').toLowerCase().startsWith('en')?'en':'ja'));
   makeYears();
+
   await Promise.all([
     loadLeaders(),
     loadMunicipalityMap(),
     initSettings()
   ]);
+
+  // iPhone Safari対策：
+  // 初回表示でLeafletの表示サイズが確定する前にfitBoundsが走ると、
+  // 日本全体表示のまま残ることがある。
+  // データと市町村GeoJSONが揃ったあとにサイズを再計算し、
+  // 参加記録のある市町村へ確実にフィットさせる。
+  requestAnimationFrame(()=>{
+    map.invalidateSize(false);
+
+    setTimeout(()=>{
+      if(leadersByCode.size){
+        fitMapToActiveTerritories();
+      }else if(municipalityLayer){
+        map.fitBounds(municipalityLayer.getBounds(),{
+          padding:[8,8],
+          animate:false
+        });
+      }
+    },120);
+  });
 }
 init();
 </script>
