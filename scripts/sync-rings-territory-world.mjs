@@ -1,7 +1,7 @@
 /**
  * Runner's Rings Rings Territory international sync — Stage 1.
  *
- * Pilot targets: KOR / ADM2 and USA / ADM2.
+ * Supported Territory countries are defined in COUNTRY_CONFIG.
  * Existing Japan sync is intentionally kept separate and unchanged.
  *
  * Required environment variables for live sync:
@@ -30,7 +30,8 @@ const COUNTRY_CONFIG = {
     regionNameProps: ['shapeName', 'NAME_2', 'name'],
     parentNameProps: ['NAME_1', 'parentName'],
     selfTestPoint: [37.5665, 126.9780],
-    selfTestLabel: 'Seoul'
+    selfTestLabel: 'Seoul',
+    minFeatures: 100
   },
   USA: {
     countryCode: 'USA',
@@ -40,7 +41,56 @@ const COUNTRY_CONFIG = {
     regionNameProps: ['shapeName', 'NAME_2', 'name'],
     parentNameProps: ['NAME_1', 'parentName'],
     selfTestPoint: [37.7749, -122.4194],
-    selfTestLabel: 'San Francisco'
+    selfTestLabel: 'San Francisco',
+    minFeatures: 100
+  },
+  GBR: {
+    countryCode: 'GBR', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-gbr-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [51.5074,-0.1278], selfTestLabel: 'London', minFeatures: 50
+  },
+  AUS: {
+    countryCode: 'AUS', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-aus-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [-33.8688,151.2093], selfTestLabel: 'Sydney', minFeatures: 50
+  },
+  CAN: {
+    countryCode: 'CAN', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-can-adm2.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [43.6532,-79.3832], selfTestLabel: 'Toronto', minFeatures: 50
+  },
+  FRA: {
+    countryCode: 'FRA', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-fra-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [48.8566,2.3522], selfTestLabel: 'Paris', minFeatures: 50
+  },
+  DEU: {
+    countryCode: 'DEU', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-deu-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [52.5200,13.4050], selfTestLabel: 'Berlin', minFeatures: 20
+  },
+  NZL: {
+    countryCode: 'NZL', adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-nzl-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID','shapeISO','GID_2','code','id'],
+    regionNameProps: ['shapeName','NAME_2','name'],
+    parentNameProps: ['NAME_1','parentName'],
+    selfTestPoint: [-36.8485,174.7633], selfTestLabel: 'Auckland', minFeatures: 20
   }
 };
 
@@ -234,8 +284,9 @@ if (process.argv.includes('--self-test')) {
   if (Math.abs(distanceKm(0, 0, 0, 1) - 111.195) > 0.2) {
     throw Error('Distance self-test failed');
   }
-  if (loaded < 100) {
-    throw Error(`Boundary self-test failed: only ${loaded} features loaded.`);
+  const minFeatures = Number(config.minFeatures || 1);
+  if (loaded < minFeatures) {
+    throw Error(`Boundary self-test failed: only ${loaded} features loaded; expected at least ${minFeatures}.`);
   }
 
   // A known coordinate must resolve inside the selected country's ADM2 boundary.
