@@ -62,6 +62,29 @@ html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
 .shareRow button, .shareRow a { font:inherit; font-size:12px; font-weight:700; border:1px solid rgba(255,255,255,.24); border-radius:999px; padding:7px 12px; background:#23354b; color:#fff; cursor:pointer; text-decoration:none; line-height:1.4; }
 .shareRow button:focus-visible, .shareRow a:focus-visible { outline:2px solid #eaff00; outline-offset:2px; }
 .shareRow .shareStatus { width:100%; font-size:11px; color:#eaff00; min-height:1px; }
+
+/* Runner's Rings three-pillar navigation */
+.featureNav{margin:28px 0 0}
+.featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
+.featureNavGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.featureNavCard{display:block;min-width:0;padding:15px 14px;border:2px solid;border-radius:15px;color:#fff;text-decoration:none;font-weight:900;line-height:1.35;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.featureNavCard:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.featureNavCard:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.featureNavCard .featureNavName{display:block;font-size:14px}
+.featureNavCard .featureNavText{display:block;margin-top:5px;font-size:10px;font-weight:650;line-height:1.5;opacity:.92}
+.featureNavCard.journal{border-color:#ff2bd6;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55)}
+.featureNavCard.rankingLink{border-color:#eaff00;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644)}
+.featureNavCard.territoryLink{border-color:#5cff9d;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55)}
+.featureNavCard.isCurrent{box-shadow:0 0 0 2px rgba(255,255,255,.25) inset}
+.featureNavCard.isCurrent .featureNavName:after{content:" · NOW";font-size:9px;opacity:.72}
+html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現在"}
+@media(max-width:620px){
+  .featureNavGrid{grid-template-columns:1fr}
+  .featureNavCard{padding:15px 16px}
+  .featureNavCard .featureNavName{font-size:15px}
+  .featureNavCard .featureNavText{font-size:11px}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -208,6 +231,31 @@ html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
   <span class="articleTag">Version 1.0</span>
 </a>
 </section>
+
+  <nav class="featureNav" aria-label="Runner's Rings features">
+    <div class="featureNavTitle">
+      <span data-lang="ja">RUNNER'S RINGS FEATURES</span>
+      <span data-lang="en">RUNNER'S RINGS FEATURES</span>
+    </div>
+    <div class="featureNavGrid">
+    <a class="featureNavCard journal isCurrent" href="./journal.html" aria-current="page">
+      <span class="featureNavName">📖 Runner’s Rings Journal</span>
+      <span class="featureNavText" data-lang="ja">走った人生の物語・開発の裏側を読む</span>
+      <span class="featureNavText" data-lang="en">Stories from the running journey and behind the scenes</span>
+    </a>
+    <a class="featureNavCard rankingLink" href="./ranking.html">
+      <span class="featureNavName">🌍 Rings Ranking</span>
+      <span class="featureNavText" data-lang="ja">世界のランナーとつながる・ランキングを見る</span>
+      <span class="featureNavText" data-lang="en">Connect with runners around the world</span>
+    </a>
+    <a class="featureNavCard territoryLink" href="./territory.html">
+      <span class="featureNavName">🗾 Rings Territory</span>
+      <span class="featureNavText" data-lang="ja">地域ごとの年間走行距離で“陣取り”を見る</span>
+      <span class="featureNavText" data-lang="en">Explore annual running territory by region</span>
+    </a>
+    </div>
+  </nav>
+
 <div class="buttonArea">
   <a class="mainButton" href="./index.html" data-lang="ja">Runner's Ringsへ戻る</a>
   <a class="mainButton" href="./index.html" data-lang="en">Back to Runner's Rings</a>
