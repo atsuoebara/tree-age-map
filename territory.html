@@ -11,7 +11,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Rings Territory。日本の市町村ごとに、その年に最も長い距離を走った参加ランナーを地図で見るRunner's Ringsの年間企画です。">
+<meta name="description" content="Rings Territory。日本や海外の地域ごとに、その年に最も長い距離を走った参加ランナーを地図で見るRunner's Ringsの年間企画です。">
 <title>Rings Territory | Runner's Rings</title>
 <link rel="icon" type="image/png" href="icon.PNG">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -38,6 +38,10 @@ main{width:min(920px,100%);margin:0 auto;padding:28px 14px 54px}
 .yearBar::-webkit-scrollbar{display:none}
 .yearButton{flex:0 0 auto;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 15px;background:#132237;color:#aeb9c8;font-weight:900;cursor:pointer}
 .yearButton.active{border-color:#eaff00;background:#eaff00;color:#101722}
+.countryBar{display:flex;gap:8px;overflow-x:auto;padding:0 0 14px;scrollbar-width:none}
+.countryBar::-webkit-scrollbar{display:none}
+.countryButton{flex:0 0 auto;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 14px;background:#132237;color:#c2cedc;font-weight:900;cursor:pointer}
+.countryButton.active{border-color:#5cff9d;background:rgba(92,255,157,.16);color:#eafff2;box-shadow:inset 0 0 0 1px rgba(92,255,157,.18)}
 .mapCard{overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#101e31;box-shadow:0 18px 48px rgba(0,0,0,.18)}
 .mapTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
 .mapTop strong{font-size:14px}
@@ -124,18 +128,19 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   <section class="hero">
     <div class="eyebrow">RINGS TERRITORY</div>
     <h2>🗾 Rings Territory</h2>
-    <p data-lang="ja">その街を、いちばん走ったのは誰だ。市町村ごとの年間走行距離を地図で楽しむ、任意参加のRunner's Rings企画です。</p>
-    <p data-lang="en">Who ran each city the most? An opt-in annual map based on distance run inside each Japanese municipality.</p>
+    <p data-lang="ja">その街・地域を、いちばん走ったのは誰だ。年間走行距離を地図で楽しむ、任意参加のRunner's Rings企画です。</p>
+    <p data-lang="en">Who ran each city or region the most? An opt-in annual Territory map based on distance run inside each area.</p>
   </section>
 
   <section class="philosophy">
     <strong data-lang="ja">陣取りだけど、勝ち負けだけじゃない。</strong>
     <strong data-lang="en">Territory, without making winning the point.</strong>
-    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、市町村内で最も長い距離を走った人を地図に表示します。過去の年も振り返れます。</p>
-    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted, and each municipality shows the runner with the greatest distance inside it.</p>
+    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。まず日本と韓国から世界へ広げます。</p>
+    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally, starting with Japan and South Korea.</p>
   </section>
 
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
+  <div id="countryBar" class="countryBar" aria-label="Country"></div>
 
   <section class="mapCard">
     <div class="mapTop">
@@ -145,8 +150,8 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
     <div id="territoryMap" aria-label="Rings Territory map"></div>
     <div class="legend">
       <span class="legendDot owned"></span>
-      <span data-lang="ja">色＝その市町村の首位ランナー</span>
-      <span data-lang="en">Color = municipality leader</span>
+      <span data-lang="ja">色＝その地域の首位ランナー</span>
+      <span data-lang="en">Color = region leader</span>
       <span class="legendDot"></span>
       <span data-lang="ja">グレー＝参加記録なし</span>
       <span data-lang="en">Gray = no participating record</span>
@@ -159,23 +164,23 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   </section>
 
   <section class="infoPanel">
-    <h3 id="municipalityTitle">市町村をタップ</h3>
+    <h3 id="municipalityTitle">地域をタップ</h3>
     <p id="municipalitySub" class="sub">首位ランナーと上位記録を表示します。</p>
     <div id="municipalityRanking" class="ranking">
-      <div class="empty">地図から市町村を選んでください。</div>
+      <div class="empty">地図から地域を選んでください。</div>
     </div>
   </section>
 
   <section class="settings">
     <h3 data-lang="ja">Rings Territory 参加設定</h3>
     <h3 data-lang="en">Rings Territory participation</h3>
-    <p data-lang="ja">初期OFF。参加すると、2026年以降の対象ランが市町村別の年間距離に集計されます。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
-    <p data-lang="en">OFF by default. When enabled, eligible runs from 2026 onward are included in annual municipality distance totals. Turning it off does not delete your runs.</p>
+    <p data-lang="ja">初期OFF。参加すると、2026年以降の対象ランが日本・対応国の地域別年間距離に集計されます。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
+    <p data-lang="en">OFF by default. When enabled, eligible runs from 2026 onward are included in annual Territory totals for supported countries. Turning it off does not delete your runs.</p>
     <div class="settingRow">
       <div class="settingText">
         <b>🗾 Rings Territory</b>
-        <span data-lang="ja">日本の市町村別・年間走行距離</span>
-        <span data-lang="en">Annual distance by Japanese municipality</span>
+        <span data-lang="ja">日本・対応国の地域別年間走行距離</span>
+        <span data-lang="en">Annual distance by region in supported countries</span>
       </div>
       <label class="switch">
         <input id="joinTerritory" type="checkbox">
@@ -214,7 +219,38 @@ const $=id=>document.getElementById(id);
 const LANG_KEY='runners-rings-language';
 const START_YEAR=2026;
 const CURRENT_YEAR=new Date().getFullYear();
+
+const TERRITORY_COUNTRIES={
+  JPN:{
+    code:'JPN',
+    flag:'🇯🇵',
+    labelJa:'日本',
+    labelEn:'Japan',
+    mapLabel:'JAPAN',
+    boundaryFile:'./runners-rings-japan-web.geojson',
+    kind:'japan',
+    adminLevel:'MUNICIPALITY',
+    unitJa:'市町村',
+    unitEn:'municipality',
+    unitPluralEn:'municipalities'
+  },
+  KOR:{
+    code:'KOR',
+    flag:'🇰🇷',
+    labelJa:'韓国',
+    labelEn:'South Korea',
+    mapLabel:'SOUTH KOREA',
+    boundaryFile:'./runners-rings-kor-adm2.geojson',
+    kind:'world',
+    adminLevel:'ADM2',
+    unitJa:'市・郡・区',
+    unitEn:'city / county / district',
+    unitPluralEn:'regions'
+  }
+};
+
 let selectedYear=Math.max(START_YEAR,CURRENT_YEAR);
+let selectedCountry='JPN';
 let currentUser=null;
 let settingsRow=null;
 let leaders=[];
@@ -222,23 +258,40 @@ let leadersByCode=new Map();
 let municipalityLayer=null;
 let selectedMunicipalityCode=null;
 let selectedMunicipalityLayer=null;
+let selectedRegionFeature=null;
+const boundaryCache=new Map();
 
 function lang(){return document.documentElement.lang==='en'?'en':'ja'}
+function config(){return TERRITORY_COUNTRIES[selectedCountry]||TERRITORY_COUNTRIES.JPN}
 function flag(code){
   return code&&/^[A-Z]{2}$/.test(code)
     ?String.fromCodePoint(...[...code].map(c=>127397+c.charCodeAt(0)))
     :'';
 }
+function regionPrompt(){
+  const c=config();
+  return lang()==='ja'
+    ?`${c.unitJa}をタップ`
+    :`Tap a ${c.unitEn}`;
+}
+function chooseRegionText(){
+  const c=config();
+  return lang()==='ja'
+    ?`地図から${c.unitJa}を選んでください。`
+    :`Choose a ${c.unitEn} on the map.`;
+}
+function resetRegionPanel(){
+  selectedMunicipalityCode=null;
+  selectedRegionFeature=null;
+  clearSelectedMunicipalityStyle();
+  $('municipalityTitle').textContent=regionPrompt();
+  $('municipalitySub').textContent=lang()==='ja'
+    ?'首位ランナーと上位記録を表示します。'
+    :'See the leader and top runners.';
+  $('municipalityRanking').innerHTML='<div class="empty">'+chooseRegionText()+'</div>';
+}
 function renderDynamicCopy(){
-  if(!selectedMunicipalityCode){
-    $('municipalityTitle').textContent=lang()==='ja'?'市町村をタップ':'Tap a municipality';
-    $('municipalitySub').textContent=lang()==='ja'
-      ?'首位ランナーと上位記録を表示します。'
-      :'See the leader and top runners.';
-    $('municipalityRanking').innerHTML='<div class="empty">'+
-      (lang()==='ja'?'地図から市町村を選んでください。':'Choose a municipality on the map.')+
-      '</div>';
-  }
+  if(!selectedMunicipalityCode)resetRegionPanel();
   if(currentUser){
     $('settingsMessage').textContent=settingsRow?.join_territory
       ?(lang()==='ja'?'Rings Territoryに参加中です。':'You are participating in Rings Territory.')
@@ -255,10 +308,11 @@ function setLanguage(v){
   document.querySelectorAll('.languageButton').forEach(
     b=>b.classList.toggle('isActive',b.dataset.language===lang())
   );
+  makeCountries();
   updateStatus();
   renderDynamicCopy();
   renderLeaderLegend();
-  if(selectedMunicipalityCode) loadMunicipalityRanking(selectedMunicipalityCode);
+  if(selectedMunicipalityCode)loadMunicipalityRanking(selectedMunicipalityCode,selectedRegionFeature);
 }
 document.querySelectorAll('.languageButton').forEach(
   b=>b.onclick=()=>setLanguage(b.dataset.language)
@@ -275,15 +329,29 @@ function makeYears(){
     b.onclick=async()=>{
       if(y===selectedYear)return;
       selectedYear=y;
-      selectedMunicipalityCode=null;
-      clearSelectedMunicipalityStyle();
       document.querySelectorAll('.yearButton').forEach(x=>x.classList.toggle('active',Number(x.textContent)===y));
-      $('municipalityRanking').innerHTML='<div class="empty">'+(lang()==='ja'?'地図から市町村を選んでください。':'Choose a municipality on the map.')+'</div>';
-      $('municipalityTitle').textContent=lang()==='ja'?'市町村をタップ':'Tap a municipality';
-      $('municipalitySub').textContent=lang()==='ja'
-        ?'首位ランナーと上位記録を表示します。'
-        :'See the leader and top runners.';
-      await loadLeaders();
+      resetRegionPanel();
+      await refreshTerritoryMap();
+    };
+    bar.append(b);
+  }
+}
+
+function makeCountries(){
+  const bar=$('countryBar');
+  if(!bar)return;
+  bar.replaceChildren();
+  for(const c of Object.values(TERRITORY_COUNTRIES)){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='countryButton'+(c.code===selectedCountry?' active':'');
+    b.textContent=`${c.flag} ${lang()==='ja'?c.labelJa:c.labelEn}`;
+    b.onclick=async()=>{
+      if(c.code===selectedCountry)return;
+      selectedCountry=c.code;
+      makeCountries();
+      resetRegionPanel();
+      await refreshTerritoryMap();
     };
     bar.append(b);
   }
@@ -302,6 +370,10 @@ function colorForUser(userId){
   return TERRITORY_COLORS[h%TERRITORY_COLORS.length];
 }
 
+function leaderRegionCode(row){
+  return normalizeCode(config().kind==='japan'?row.municipality_code:row.region_code);
+}
+
 function renderLeaderLegend(){
   const box=$('leaderChips');
   if(!box)return;
@@ -317,15 +389,14 @@ function renderLeaderLegend(){
         name:row.ranking_display_name||'Runner',
         country:row.country||'',
         show_flag:!!row.show_flag,
-        municipalities:new Set()
+        regions:new Set()
       });
     }
-    byUser.get(id).municipalities.add(normalizeCode(row.municipality_code));
+    byUser.get(id).regions.add(leaderRegionCode(row));
   }
 
   const items=[...byUser.values()].sort((a,b)=>
-    b.municipalities.size-a.municipalities.size ||
-    a.name.localeCompare(b.name)
+    b.regions.size-a.regions.size || a.name.localeCompare(b.name)
   );
 
   if(!items.length){
@@ -339,79 +410,58 @@ function renderLeaderLegend(){
   for(const item of items){
     const chip=document.createElement('div');
     chip.className='leaderChip';
-
     const dot=document.createElement('span');
     dot.className='leaderColor';
     dot.style.background=colorForUser(item.user_id);
-
     const name=document.createElement('span');
     name.textContent=(item.show_flag?flag(item.country)+' ':'')+item.name;
-
     const count=document.createElement('span');
     count.className='leaderCount';
     count.textContent=lang()==='ja'
-      ?`${item.municipalities.size}市町村`
-      :`${item.municipalities.size} municipalities`;
-
+      ?`${item.regions.size}${config().kind==='japan'?'市町村':'地域'}`
+      :`${item.regions.size} ${item.regions.size===1?'region':'regions'}`;
     chip.append(dot,name,count);
     box.append(chip);
   }
 }
 
-function normalizeCode(v){
-  return String(v??'').trim();
-}
-
-function leaderForCode(code){
-  const rows=leadersByCode.get(normalizeCode(code))||[];
-  return rows;
-}
+function normalizeCode(v){return String(v??'').trim()}
+function leaderForCode(code){return leadersByCode.get(normalizeCode(code))||[]}
 
 function featureCode(feature){
   const p=feature?.properties||{};
-  return normalizeCode(p.N03_007||p.municipality_code||p.code||'');
+  if(config().kind==='japan'){
+    return normalizeCode(p.N03_007||p.municipality_code||p.code||'');
+  }
+  return normalizeCode(p.shapeID||p.shapeISO||p.GID_2||p.code||p.id||'');
 }
-
 function featureName(feature){
   const p=feature?.properties||{};
-  return [p.N03_003,p.N03_004].filter(Boolean).join(' ')||p.municipality_name||'';
+  if(config().kind==='japan'){
+    return [p.N03_003,p.N03_004].filter(Boolean).join(' ')||p.municipality_name||'';
+  }
+  return p.shapeName||p.NAME_2||p.name||'';
 }
-
 function featurePrefecture(feature){
   const p=feature?.properties||{};
-  return p.N03_001||p.prefecture_name||'';
+  if(config().kind==='japan')return p.N03_001||p.prefecture_name||'';
+  return p.NAME_1||p.parentName||'';
 }
 
 function territoryStyle(feature){
   const top=leaderForCode(featureCode(feature));
   if(!top.length){
-    return {
-      color:'rgba(183,199,219,.34)',
-      weight:.55,
-      fillColor:'#334155',
-      fillOpacity:.16
-    };
+    return {color:'rgba(183,199,219,.34)',weight:.55,fillColor:'#334155',fillOpacity:.16};
   }
   const color=colorForUser(top[0].user_id);
-  return {
-    color:'rgba(255,255,255,.46)',
-    weight:.72,
-    fillColor:color,
-    fillOpacity:.58
-  };
+  return {color:'rgba(255,255,255,.46)',weight:.72,fillColor:color,fillOpacity:.58};
 }
 
 function applySelectedMunicipalityStyle(layer){
   if(!layer)return;
-  layer.setStyle({
-    color:'#ff2bd6',
-    weight:4.5,
-    opacity:1,
-    fillOpacity:.72
-  });
+  layer.setStyle({color:'#ff2bd6',weight:4.5,opacity:1,fillOpacity:.72});
   if(layer.bringToFront)layer.bringToFront();
 }
-
 function clearSelectedMunicipalityStyle(){
   if(selectedMunicipalityLayer&&municipalityLayer){
     municipalityLayer.resetStyle(selectedMunicipalityLayer);
@@ -420,92 +470,105 @@ function clearSelectedMunicipalityStyle(){
 }
 
 function updateStatus(){
-  $('mapTitle').textContent=selectedYear+' · JAPAN';
+  const c=config();
+  $('mapTitle').textContent=selectedYear+' · '+c.mapLabel;
   const status=$('mapStatus');
-  if(status){
-    const municipalities=leadersByCode.size;
-    status.textContent=lang()==='ja'
-      ?`${municipalities}市町村に参加記録`
-      :`${municipalities} municipalities with records`;
-  }
+  if(!status)return;
+  const count=leadersByCode.size;
+  status.textContent=lang()==='ja'
+    ?`${count}${c.kind==='japan'?'市町村':'地域'}に参加記録`
+    :`${count} ${count===1?'region':'regions'} with records`;
 }
 
 function fitMapToActiveTerritories(){
-  if(!municipalityLayer||!leadersByCode.size)return;
-
+  if(!municipalityLayer||!leadersByCode.size)return false;
   const layers=[];
   municipalityLayer.eachLayer(layer=>{
     const code=featureCode(layer.feature);
     if(leadersByCode.has(code))layers.push(layer);
   });
-
-  if(!layers.length)return;
-
-  const group=L.featureGroup(layers);
-  const bounds=group.getBounds();
-  if(!bounds.isValid())return;
-
-  map.fitBounds(bounds,{
-    padding:[24,24],
-    maxZoom:9,
-    animate:false
-  });
+  if(!layers.length)return false;
+  const bounds=L.featureGroup(layers).getBounds();
+  if(!bounds.isValid())return false;
+  map.fitBounds(bounds,{padding:[24,24],maxZoom:9,animate:false});
+  return true;
 }
 
 async function loadLeaders(){
-  const status=document.querySelector('#mapStatus');
+  const status=$('mapStatus');
   status.textContent=lang()==='ja'?'首位データを読み込み中…':'Loading leaders…';
-  const {data,error}=await sb.rpc('territory_leaders',{p_year:selectedYear});
-  if(error){
-    console.error(error);
+  const c=config();
+  const result=c.kind==='japan'
+    ?await sb.rpc('territory_leaders',{p_year:selectedYear})
+    :await sb.rpc('territory_region_leaders',{
+        p_year:selectedYear,
+        p_country_code:c.code,
+        p_admin_level:c.adminLevel
+      });
+  if(result.error){
+    console.error(result.error);
+    leaders=[];
+    leadersByCode=new Map();
     status.textContent=lang()==='ja'?'首位データを読み込めませんでした':'Unable to load leaders';
-    return;
+    renderLeaderLegend();
+    return false;
   }
-  leaders=Array.isArray(data)?data:[];
+  leaders=Array.isArray(result.data)?result.data:[];
   leadersByCode=new Map();
   for(const row of leaders){
-    const key=normalizeCode(row.municipality_code);
+    const key=leaderRegionCode(row);
+    if(!key)continue;
     if(!leadersByCode.has(key))leadersByCode.set(key,[]);
     leadersByCode.get(key).push(row);
   }
-  if(municipalityLayer){
-    municipalityLayer.setStyle(territoryStyle);
-    if(selectedMunicipalityLayer)applySelectedMunicipalityStyle(selectedMunicipalityLayer);
-    fitMapToActiveTerritories();
-  }
   renderLeaderLegend();
   updateStatus();
+  return true;
 }
 
 async function loadMunicipalityRanking(code,feature){
   selectedMunicipalityCode=normalizeCode(code);
+  selectedRegionFeature=feature||selectedRegionFeature;
+  const c=config();
   const top=leaderForCode(selectedMunicipalityCode);
   const fallbackName=feature?featureName(feature):'';
   const fallbackPref=feature?featurePrefecture(feature):'';
-  const displayName=top[0]?.municipality_name||fallbackName||selectedMunicipalityCode;
-  const pref=top[0]?.prefecture_name||fallbackPref||'';
+  const displayName=c.kind==='japan'
+    ?(top[0]?.municipality_name||fallbackName||selectedMunicipalityCode)
+    :(top[0]?.region_name||fallbackName||selectedMunicipalityCode);
+  const pref=c.kind==='japan'
+    ?(top[0]?.prefecture_name||fallbackPref||'')
+    :(top[0]?.parent_region_name||fallbackPref||'');
   $('municipalityTitle').textContent=`${pref} ${displayName}`.trim();
   $('municipalitySub').textContent=lang()==='ja'
-    ?`${selectedYear}年・市町村内の年間走行距離`
-    :`${selectedYear} · annual distance inside this municipality`;
+    ?`${selectedYear}年・${c.unitJa}内の年間走行距離`
+    :`${selectedYear} · annual distance inside this ${c.unitEn}`;
   const board=$('municipalityRanking');
   board.innerHTML='<div class="empty">'+(lang()==='ja'?'ランキングを読み込み中…':'Loading ranking…')+'</div>';
 
-  const {data,error}=await sb.rpc('territory_municipality_ranking',{
-    p_year:selectedYear,
-    p_municipality_code:selectedMunicipalityCode
-  });
-  if(error){
-    console.error(error);
+  const result=c.kind==='japan'
+    ?await sb.rpc('territory_municipality_ranking',{
+        p_year:selectedYear,
+        p_municipality_code:selectedMunicipalityCode
+      })
+    :await sb.rpc('territory_region_ranking',{
+        p_year:selectedYear,
+        p_country_code:c.code,
+        p_admin_level:c.adminLevel,
+        p_region_code:selectedMunicipalityCode
+      });
+
+  if(result.error){
+    console.error(result.error);
     board.innerHTML='<div class="empty">'+(lang()==='ja'?'ランキングを読み込めませんでした。':'Unable to load ranking.')+'</div>';
     return;
   }
-  if(!data?.length){
+  if(!result.data?.length){
     board.innerHTML='<div class="empty">'+(lang()==='ja'?'この年の参加記録はまだありません。':'No participating records for this year.')+'</div>';
     return;
   }
   board.replaceChildren();
-  data.slice(0,3).forEach(r=>{
+  result.data.slice(0,3).forEach(r=>{
     const place=Number(r.place||0)||0;
     const row=document.createElement('div');
     row.className='row'+(place>=1&&place<=3?' place'+place:'');
@@ -520,7 +583,7 @@ async function loadMunicipalityRanking(code,feature){
     const meta=document.createElement('div');
     meta.className='runnerMeta';
     meta.textContent=place===1
-      ?(lang()==='ja'?'この市町村の先頭':'Municipality leader')
+      ?(lang()==='ja'?'この地域の先頭':'Region leader')
       :(lang()==='ja'?`${place}位・年間距離`:`#${place} · annual distance`);
     runner.append(name,meta);
     const score=document.createElement('div');
@@ -540,53 +603,83 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+async function getBoundaryGeojson(){
+  const c=config();
+  if(boundaryCache.has(c.code))return boundaryCache.get(c.code);
+  const response=await fetch(c.boundaryFile,{cache:'force-cache'});
+  if(!response.ok)throw new Error(`GeoJSON ${response.status}: ${c.boundaryFile}`);
+  const geo=await response.json();
+  boundaryCache.set(c.code,geo);
+  return geo;
+}
+
 async function loadMunicipalityMap(){
-  try{
-    const response=await fetch('./runners-rings-japan-web.geojson',{cache:'force-cache'});
-    if(!response.ok)throw new Error('GeoJSON '+response.status);
-    const geo=await response.json();
+  const geo=await getBoundaryGeojson();
+  if(municipalityLayer){
+    map.removeLayer(municipalityLayer);
+    municipalityLayer=null;
+  }
+  selectedMunicipalityLayer=null;
 
-    municipalityLayer=L.geoJSON(geo,{
-      style:territoryStyle,
-      onEachFeature:(feature,layer)=>{
-        const code=featureCode(feature);
-        if(!code)return;
-        layer.on({
-          click:()=>{
-            if(selectedMunicipalityLayer&&selectedMunicipalityLayer!==layer){
-              municipalityLayer.resetStyle(selectedMunicipalityLayer);
-            }
-            selectedMunicipalityLayer=layer;
-            applySelectedMunicipalityStyle(layer);
-            loadMunicipalityRanking(code,feature);
-          },
-          mouseover:e=>{
-            if(e.target===selectedMunicipalityLayer)return;
-            e.target.setStyle({weight:1.8,color:'#fff'});
-          },
-          mouseout:e=>{
-            if(e.target===selectedMunicipalityLayer){
-              applySelectedMunicipalityStyle(e.target);
-              return;
-            }
-            municipalityLayer.resetStyle(e.target);
+  municipalityLayer=L.geoJSON(geo,{
+    style:territoryStyle,
+    onEachFeature:(feature,layer)=>{
+      const code=featureCode(feature);
+      if(!code)return;
+      layer.on({
+        click:()=>{
+          if(selectedMunicipalityLayer&&selectedMunicipalityLayer!==layer){
+            municipalityLayer.resetStyle(selectedMunicipalityLayer);
           }
-        });
-        const name=`${featurePrefecture(feature)} ${featureName(feature)}`.trim();
-        layer.bindTooltip(name,{sticky:true,direction:'top'});
-      }
-    }).addTo(map);
-
-    if(leadersByCode.size){
-      fitMapToActiveTerritories();
-    }else{
-      map.fitBounds(municipalityLayer.getBounds(),{padding:[8,8]});
+          selectedMunicipalityLayer=layer;
+          applySelectedMunicipalityStyle(layer);
+          loadMunicipalityRanking(code,feature);
+        },
+        mouseover:e=>{
+          if(e.target===selectedMunicipalityLayer)return;
+          e.target.setStyle({weight:1.8,color:'#fff'});
+        },
+        mouseout:e=>{
+          if(e.target===selectedMunicipalityLayer){
+            applySelectedMunicipalityStyle(e.target);
+            return;
+          }
+          municipalityLayer.resetStyle(e.target);
+        }
+      });
+      const label=`${featurePrefecture(feature)} ${featureName(feature)}`.trim();
+      layer.bindTooltip(label,{sticky:true,direction:'top'});
     }
+  }).addTo(map);
+}
+
+function finalizeMapView(){
+  map.invalidateSize(false);
+  requestAnimationFrame(()=>{
+    const fitted=fitMapToActiveTerritories();
+    if(!fitted&&municipalityLayer){
+      const bounds=municipalityLayer.getBounds();
+      if(bounds.isValid())map.fitBounds(bounds,{padding:[8,8],maxZoom:9,animate:false});
+    }
+    requestAnimationFrame(()=>$('territoryMap').classList.add('isReady'));
+  });
+}
+
+async function refreshTerritoryMap(){
+  $('territoryMap').classList.remove('isReady');
+  try{
+    if(municipalityLayer){
+      map.removeLayer(municipalityLayer);
+      municipalityLayer=null;
+    }
+    await loadLeaders();
+    await loadMunicipalityMap();
+    updateStatus();
+    finalizeMapView();
   }catch(e){
     console.error(e);
-    document.querySelector('#mapStatus').textContent=lang()==='ja'
-      ?'市町村地図を読み込めませんでした'
-      :'Unable to load municipality map';
+    $('mapStatus').textContent=lang()==='ja'?'地域地図を読み込めませんでした':'Unable to load Territory map';
+    $('territoryMap').classList.add('isReady');
   }
 }
 
@@ -604,11 +697,8 @@ async function initSettings(){
   const {data,error}=await sb.from('ranking_settings').select(
     'ranking_display_name,country,join_territory'
   ).eq('user_id',user.id).maybeSingle();
-
   if(error){
-    $('settingsMessage').textContent=lang()==='ja'
-      ?'参加設定を読み込めませんでした。'
-      :'Unable to load participation settings.';
+    $('settingsMessage').textContent=lang()==='ja'?'参加設定を読み込めませんでした。':'Unable to load participation settings.';
     return;
   }
   settingsRow=data||null;
@@ -629,9 +719,7 @@ $('saveTerritory').onclick=async()=>{
   }
   $('saveTerritory').disabled=true;
   $('settingsMessage').textContent=lang()==='ja'?'保存中…':'Saving…';
-  const {error}=await sb.from('ranking_settings')
-    .update({join_territory:joining})
-    .eq('user_id',currentUser.id);
+  const {error}=await sb.from('ranking_settings').update({join_territory:joining}).eq('user_id',currentUser.id);
   $('saveTerritory').disabled=false;
   if(error){
     console.error(error);
@@ -640,41 +728,20 @@ $('saveTerritory').onclick=async()=>{
   }
   settingsRow={...(settingsRow||{}),join_territory:joining};
   $('settingsMessage').textContent=joining
-    ?(lang()==='ja'
-      ?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。'
-      :'Participation is ON. Results appear after the next verification/sync run.')
-    :(lang()==='ja'
-      ?'参加OFFにしました。Runner’s Ringsのラン記録は削除されません。'
-      :'Participation is OFF. Your Runner’s Rings run records are not deleted.');
+    ?(lang()==='ja'?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。':'Participation is ON. Results appear after the next verification/sync run.')
+    :(lang()==='ja'?'参加OFFにしました。Runner’s Ringsのラン記録は削除されません。':'Participation is OFF. Your Runner’s Rings run records are not deleted.');
 };
 
 async function init(){
-  setLanguage(localStorage.getItem(LANG_KEY)||((navigator.language||'').toLowerCase().startsWith('en')?'en':'ja'));
+  document.documentElement.lang=(localStorage.getItem(LANG_KEY)==='en'||(!localStorage.getItem(LANG_KEY)&&(navigator.language||'').toLowerCase().startsWith('en')))?'en':'ja';
+  document.querySelectorAll('.languageButton').forEach(
+    b=>b.classList.toggle('isActive',b.dataset.language===lang())
+  );
   makeYears();
-
-  // 初回表示は順番を固定する。
-  // 首位データを先に確定してから市町村地図を作り、
-  // 仮の日本全体表示が見える前に活動範囲へフィットする。
-  await loadLeaders();
-  await loadMunicipalityMap();
+  makeCountries();
+  resetRegionPanel();
+  await refreshTerritoryMap();
   await initSettings();
-
-  map.invalidateSize(false);
-
-  requestAnimationFrame(()=>{
-    if(leadersByCode.size){
-      fitMapToActiveTerritories();
-    }else if(municipalityLayer){
-      map.fitBounds(municipalityLayer.getBounds(),{
-        padding:[8,8],
-        animate:false
-      });
-    }
-
-    requestAnimationFrame(()=>{
-      $('territoryMap').classList.add('isReady');
-    });
-  });
 }
 init();
 </script>
