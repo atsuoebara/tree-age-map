@@ -1,7 +1,7 @@
 /**
  * Runner's Rings Rings Territory international sync — Stage 1.
  *
- * Pilot target: KOR / ADM2 (City / County / District).
+ * Pilot targets: KOR / ADM2 and USA / ADM2.
  * Existing Japan sync is intentionally kept separate and unchanged.
  *
  * Required environment variables for live sync:
@@ -28,7 +28,19 @@ const COUNTRY_CONFIG = {
     boundaryFile: 'runners-rings-kor-adm2.geojson',
     regionCodeProps: ['shapeID', 'shapeISO', 'GID_2', 'code', 'id'],
     regionNameProps: ['shapeName', 'NAME_2', 'name'],
-    parentNameProps: ['NAME_1', 'parentName']
+    parentNameProps: ['NAME_1', 'parentName'],
+    selfTestPoint: [37.5665, 126.9780],
+    selfTestLabel: 'Seoul'
+  },
+  USA: {
+    countryCode: 'USA',
+    adminLevel: 'ADM2',
+    boundaryFile: 'runners-rings-usa-adm2-simplified.geojson',
+    regionCodeProps: ['shapeID', 'shapeISO', 'GID_2', 'code', 'id'],
+    regionNameProps: ['shapeName', 'NAME_2', 'name'],
+    parentNameProps: ['NAME_1', 'parentName'],
+    selfTestPoint: [37.7749, -122.4194],
+    selfTestLabel: 'San Francisco'
   }
 };
 
@@ -206,7 +218,7 @@ function analyseRoute(route, targetDistanceKm, grid) {
 const requestedCountry = String(process.env.TERRITORY_COUNTRY || 'KOR').toUpperCase();
 const config = COUNTRY_CONFIG[requestedCountry];
 if (!config) {
-  throw Error(`Unsupported TERRITORY_COUNTRY: ${requestedCountry}. Stage 1 supports KOR only.`);
+  throw Error(`Unsupported TERRITORY_COUNTRY: ${requestedCountry}. Supported pilot countries: ${Object.keys(COUNTRY_CONFIG).join(', ')}.`);
 }
 
 const { grid, loaded } = loadRegionGrid(config);
@@ -226,13 +238,23 @@ if (process.argv.includes('--self-test')) {
     throw Error(`Boundary self-test failed: only ${loaded} features loaded.`);
   }
 
-  // A known Seoul-area coordinate must resolve to a KOR ADM2 region.
-  const seoul = findRegion(37.5665, 126.9780, grid);
-  if (!seoul?.regionCode || !seoul?.regionName) {
-    throw Error('KOR ADM2 point-in-polygon self-test failed for Seoul.');
+  // A known coordinate must resolve inside the selected country's ADM2 boundary.
+  const [testLat, testLon] = config.selfTestPoint || [];
+  const resolved = Number.isFinite(testLat) && Number.isFinite(testLon)
+    ? findRegion(testLat, testLon, grid)
+    : null;
+
+  if (!resolved?.regionCode || !resolved?.regionName) {
+    throw Error(
+      `${config.countryCode} ${config.adminLevel} point-in-polygon self-test failed for ${config.selfTestLabel || 'test coordinate'}.`
+    );
   }
 
-  console.log(`KOR ADM2 self-test resolved Seoul to: ${seoul.regionName} (${seoul.regionCode})`);
+  console.log(
+    `${config.countryCode} ${config.adminLevel} self-test resolved ` +
+    `${config.selfTestLabel || 'test coordinate'} to: ` +
+    `${resolved.regionName} (${resolved.regionCode})`
+  );
   console.log('International Territory geometry, distance, and boundary-file self-tests passed.');
   process.exit(0);
 }
