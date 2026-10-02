@@ -335,7 +335,8 @@ const TERRITORY_COUNTRIES={
   NZL:{
     code:'NZL',flag:'🇳🇿',labelJa:'ニュージーランド',labelEn:'New Zealand',mapLabel:'NEW ZEALAND',
     boundaryFile:'./runners-rings-nzl-adm2-simplified.geojson',kind:'world',adminLevel:'ADM2',
-    unitJa:'地方自治体',unitEn:'territorial authority',unitPluralEn:'regions'
+    unitJa:'地方自治体',unitEn:'territorial authority',unitPluralEn:'regions',
+    fallbackBounds:[[-47.6,166.0],[-34.0,179.9]]
   }
 };
 
@@ -747,10 +748,32 @@ function finalizeMapView(){
   map.invalidateSize(false);
   requestAnimationFrame(()=>{
     const fitted=fitMapToActiveTerritories();
+
     if(!fitted&&municipalityLayer){
-      const bounds=municipalityLayer.getBounds();
-      if(bounds.isValid())map.fitBounds(bounds,{padding:[8,8],maxZoom:9,animate:false});
+      const c=config();
+
+      // New Zealand's ADM2 data includes islands on both sides of the
+      // antimeridian. Leaflet's raw GeoJSON bounds therefore span almost
+      // the whole world. Use a stable country viewport when there are
+      // no active Territory records yet.
+      if(Array.isArray(c.fallbackBounds)){
+        map.fitBounds(c.fallbackBounds,{
+          padding:[8,8],
+          maxZoom:9,
+          animate:false
+        });
+      }else{
+        const bounds=municipalityLayer.getBounds();
+        if(bounds.isValid()){
+          map.fitBounds(bounds,{
+            padding:[8,8],
+            maxZoom:9,
+            animate:false
+          });
+        }
+      }
     }
+
     requestAnimationFrame(()=>$('territoryMap').classList.add('isReady'));
   });
 }
