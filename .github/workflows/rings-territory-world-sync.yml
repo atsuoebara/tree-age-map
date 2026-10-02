@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       country:
-        description: 'Country code (pilot: KOR or USA)'
+        description: 'Country code (KOR, USA, GBR, AUS, CAN, FRA, DEU, NZL)'
         required: true
         default: 'KOR'
         type: string
