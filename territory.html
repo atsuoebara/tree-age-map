@@ -264,6 +264,7 @@ const sb=window.supabase.createClient(
 
 const $=id=>document.getElementById(id);
 const LANG_KEY='runners-rings-language';
+const LAST_COUNTRY_KEY='RunnerRingsLastCountry';
 const START_YEAR=2026;
 const CURRENT_YEAR=new Date().getFullYear();
 
@@ -341,7 +342,16 @@ const TERRITORY_COUNTRIES={
 };
 
 let selectedYear=Math.max(START_YEAR,CURRENT_YEAR);
-let selectedCountry='JPN';
+const TERRITORY_TO_ISO2={
+  JPN:'JP',KOR:'KR',USA:'US',GBR:'GB',AUS:'AU',CAN:'CA',FRA:'FR',DEU:'DE',NZL:'NZ'
+};
+const ISO2_TO_TERRITORY=Object.fromEntries(
+  Object.entries(TERRITORY_TO_ISO2).map(([territoryCode,iso2])=>[iso2,territoryCode])
+);
+const savedTerritoryCountry=ISO2_TO_TERRITORY[localStorage.getItem(LAST_COUNTRY_KEY)]||'JPN';
+let selectedCountry=Object.prototype.hasOwnProperty.call(TERRITORY_COUNTRIES,savedTerritoryCountry)
+  ?savedTerritoryCountry
+  :'JPN';
 let currentUser=null;
 let settingsRow=null;
 let leaders=[];
@@ -440,6 +450,10 @@ function makeCountries(){
     b.onclick=async()=>{
       if(c.code===selectedCountry)return;
       selectedCountry=c.code;
+      localStorage.setItem(
+        LAST_COUNTRY_KEY,
+        TERRITORY_TO_ISO2[selectedCountry]||'JP'
+      );
       makeCountries();
       resetRegionPanel();
       await refreshTerritoryMap();
