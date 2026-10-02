@@ -135,8 +135,8 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   <section class="philosophy">
     <strong data-lang="ja">陣取りだけど、勝ち負けだけじゃない。</strong>
     <strong data-lang="en">Territory, without making winning the point.</strong>
-    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。まず日本と韓国から世界へ広げます。</p>
-    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally, starting with Japan and South Korea.</p>
+    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。まず日本・韓国・アメリカから世界へ広げます。</p>
+    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally, starting with Japan, South Korea, and the United States.</p>
   </section>
 
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
@@ -245,6 +245,19 @@ const TERRITORY_COUNTRIES={
     adminLevel:'ADM2',
     unitJa:'市・郡・区',
     unitEn:'city / county / district',
+    unitPluralEn:'regions'
+  },
+  USA:{
+    code:'USA',
+    flag:'🇺🇸',
+    labelJa:'アメリカ',
+    labelEn:'United States',
+    mapLabel:'UNITED STATES',
+    boundaryFile:'./runners-rings-usa-adm2-simplified.geojson',
+    kind:'world',
+    adminLevel:'ADM2',
+    unitJa:'郡・独立市',
+    unitEn:'county / independent city',
     unitPluralEn:'regions'
   }
 };
