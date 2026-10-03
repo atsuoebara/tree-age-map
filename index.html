@@ -1203,6 +1203,63 @@
       body.mapFullscreenActive #monthFilter{min-width:58px;width:58px;}
     }
 
+    /* =====================================
+       地図プライバシー強調表示
+       地図直下で「本人だけに表示」を明確に伝える。
+    ===================================== */
+    #mapPrivacyNotice{
+      margin:18px 16px 18px;
+      padding:18px 18px 17px;
+      border:3px solid #ffe600;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(255,230,0,.20), transparent 34%),
+        linear-gradient(135deg, rgba(255,43,214,.28), rgba(255,123,113,.18) 48%, rgba(234,255,0,.12)),
+        #132237;
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.28),
+        0 0 0 1px rgba(255,255,255,.05) inset;
+    }
+
+    #mapPrivacyNotice .mapPrivacyTitle{
+      margin:0 0 9px;
+      color:#fff36a;
+      font-size:20px;
+      font-weight:900;
+      line-height:1.4;
+      letter-spacing:.01em;
+    }
+
+    #mapPrivacyNotice .mapPrivacyText{
+      margin:0;
+      color:#ffffff;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.75;
+    }
+
+    #mapPrivacyNotice .mapPrivacyStrong{
+      color:#eaff00;
+      font-weight:900;
+    }
+
+    @media (max-width:520px){
+      #mapPrivacyNotice{
+        margin:14px 14px 16px;
+        padding:16px 15px;
+        border-radius:16px;
+      }
+
+      #mapPrivacyNotice .mapPrivacyTitle{
+        font-size:18px;
+      }
+
+      #mapPrivacyNotice .mapPrivacyText{
+        font-size:15px;
+        line-height:1.7;
+      }
+    }
+
     #dashboard{
       padding:18px 16px 32px;
     }
@@ -3498,6 +3555,14 @@
     </div>
 
   </div>
+  <section id="mapPrivacyNotice" role="note" aria-label="プライバシーについて">
+    <h2 class="mapPrivacyTitle">🔒 この地図は、あなただけの表示です</h2>
+    <p class="mapPrivacyText">
+      この地図に表示されるコースや面は、<span class="mapPrivacyStrong">本人のみ</span>が確認できます。<br>
+      <span class="mapPrivacyStrong">ご自身で共有しない限り、他のユーザーに見られることはありません。</span>
+    </p>
+  </section>
+
   <section id="dashboard">
 
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Runner’s Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">走った人生の物語・開発の裏側を読む →</span></a>
@@ -26939,6 +27004,12 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['ランニング記録アプリです。','A running history app.'],
   ['距離・ラン数・地図は、登録した本人だけに表示されます。','Your distance, runs, and map are visible only to you.'],
   ['シェアするかどうかは、自分で選べます。','You decide whether to share anything.'],
+  ['プライバシーについて','Privacy'],
+  ['🔒 この地図は、あなただけの表示です','🔒 This map is visible only to you'],
+  ['この地図に表示されるコースや面は、','Routes and filled areas shown on this map are '],
+  ['本人のみ','visible only to you'],
+  ['が確認できます。','.' ],
+  ['ご自身で共有しない限り、他のユーザーに見られることはありません。','Other users cannot see them unless you choose to share them.'],
   ['ログイン後のあなたの記録例','A preview of your private history'],
   ['あなたの総距離','Your total distance'],
   ['あなたのラン数','Your runs'],
