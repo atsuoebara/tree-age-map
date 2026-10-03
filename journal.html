@@ -363,7 +363,7 @@ applyLanguage(savedLanguage);
     row.append(copy);
     if (navigator.share) {
       const share=document.createElement('button');share.type='button';share.textContent=lang==='ja'?'共有':'Share';
-      share.addEventListener('click',async()=>{try{await navigator.share({title,text:title,url});}catch(err){if(err?.name!=='AbortError')status.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});
+      share.addEventListener('click',async()=>{try{await navigator.share({title,text:title+'\n'+url});}catch(err){if(err?.name!=='AbortError')status.textContent=lang==='ja'?'共有できませんでした':'Could not share';}});
       row.append(share);
     }
     const x=document.createElement('a');x.target='_blank';x.rel='noopener noreferrer';x.href='https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url}).toString();
