@@ -474,7 +474,15 @@ const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
 function updateTerritoryParticipationPrompt(){
   const nudge=$('territoryParticipationNudge');
   if(!nudge)return;
-  nudge.classList.toggle('isVisible',!settingsRow?.join_territory);
+  const visible=!settingsRow?.join_territory;
+  nudge.classList.toggle('isVisible',visible);
+  const button=$('territoryNudgeButton');
+  if(button){
+    const ja=button.querySelector('[data-lang="ja"]');
+    const en=button.querySelector('[data-lang="en"]');
+    if(ja)ja.textContent=currentUser?'参加設定へ':'ログインして参加する';
+    if(en)en.textContent=currentUser?'Participation settings':'Log in to participate';
+  }
 }
 function closeTerritoryParticipationGuide(){
   $('territoryParticipationGuide')?.classList.remove('isVisible');

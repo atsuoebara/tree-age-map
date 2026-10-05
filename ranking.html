@@ -281,7 +281,15 @@ function rankingIsParticipating(){
 function updateRankingParticipationPrompt(){
   const nudge=$('rankingParticipationNudge');
   if(!nudge)return;
-  nudge.classList.toggle('isVisible',!rankingIsParticipating());
+  const visible=!rankingIsParticipating();
+  nudge.classList.toggle('isVisible',visible);
+  const button=$('rankingNudgeButton');
+  if(button){
+    const ja=button.querySelector('[data-lang="ja"]');
+    const en=button.querySelector('[data-lang="en"]');
+    if(ja)ja.textContent=currentUser?'参加設定へ':'ログインして参加する';
+    if(en)en.textContent=currentUser?'Participation settings':'Log in to participate';
+  }
 }
 function closeRankingParticipationGuide(){
   $('rankingParticipationGuide')?.classList.remove('isVisible');
