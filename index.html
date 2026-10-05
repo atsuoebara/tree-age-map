@@ -17973,8 +17973,9 @@ function updateCountryDetailFlow(
     );
   }
 
-  flow.innerHTML = '';
-
+  // 日本セクションは前回描画時に countryDetailFlow 配下へ移動している。
+  // flow.innerHTML を先に空にすると、prefectureSection / citySection 自体が
+  // DOM から消えてしまうため、必ず先に参照を保持してから再構築する。
   const regionSection =
     document.getElementById(
       'regionSection'
@@ -17985,9 +17986,6 @@ function updateCountryDetailFlow(
       'admin2Section'
     );
 
-  regionSection.hidden = true;
-  admin2Section.hidden = true;
-
   const prefectureSection =
     document.getElementById(
       'prefectureSection'
@@ -17997,6 +17995,11 @@ function updateCountryDetailFlow(
     document.getElementById(
       'citySection'
     );
+
+  flow.innerHTML = '';
+
+  regionSection.hidden = true;
+  admin2Section.hidden = true;
 
   const countryOrder =
     Object.entries(
