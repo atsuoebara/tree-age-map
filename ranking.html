@@ -9,6 +9,85 @@
 <style>
 *{box-sizing:border-box}html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#fff}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),radial-gradient(circle at 10% 28%,rgba(49,132,255,.08),transparent 30%),#0b1422}button,select{font:inherit}header{position:relative;background:#0f1d2f;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}header h1{margin:0;font-size:22px}.brandReading{margin-left:4px;font-size:12px;font-weight:600;opacity:.78}header p{margin:4px 0 0;color:#aeb9c8;font-size:13px}#languageSwitch{position:absolute;top:14px;right:14px;display:flex;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}.languageButton{min-width:38px;padding:6px 9px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font-size:11px;font-weight:700;cursor:pointer}.languageButton.isActive{background:#ff2bd6;color:#fff}main{width:min(780px,100%);margin:0 auto;padding:28px 14px 54px}.eyebrow{color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.8px}.hero h2{margin:7px 0 7px;font-size:31px}.hero p{margin:0;color:#b9c6d6;font-size:14px;line-height:1.8}.philosophy{margin:20px 0;padding:16px;border-left:3px solid #eaff00;border-radius:0 14px 14px 0;background:rgba(234,255,0,.04)}.philosophy strong{display:block;margin-bottom:6px;color:#eaff00}.philosophy p{margin:0;color:#c5cfdb;font-size:13px;line-height:1.75}.rankingYearFilter{display:flex;align-items:center;gap:7px;margin:18px 0 0;padding:8px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}.rankingYearLabel{flex:0 0 auto;margin-right:2px;color:#8fa0b4;font-size:11px;font-weight:800}.rankingYearButton{flex:0 0 auto;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 13px;background:#17283d;color:#dce8f5;font-size:12px;font-weight:800;cursor:pointer}.rankingYearButton.active{border-color:#ff2bd6;background:#ff2bd6;color:#fff}.rankingYearButton:focus-visible{outline:3px solid rgba(234,255,0,.8);outline-offset:2px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:22px 0 14px}.tab{border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:11px 5px;background:#132237;color:#aeb9c8;font-size:11px;font-weight:800;cursor:pointer}.tab b{display:block;margin-bottom:3px;color:#fff;font-size:13px}.tab.active{border-color:#ff2bd6;background:rgba(255,43,214,.13)}.panel{display:none}.panel.active{display:block}.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0 0 10px}.toolbar select{max-width:58%;padding:9px 30px 9px 10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#132237;color:#fff}.year{font-size:13px;font-weight:900}.ranking{overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#101e31}.row{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:8px;align-items:center;padding:14px 13px;border-bottom:1px solid rgba(255,255,255,.06)}.row:last-child{border-bottom:0}.rank{font-size:17px;font-weight:900;text-align:center}.runner{min-width:0}.runnerName{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.runnerMeta{margin-top:3px;color:#8796aa;font-size:11px}.score{text-align:right;font-size:18px;font-weight:900}.score small{font-size:10px;color:#9aa9bb}.sample{margin:9px 3px 0;color:#718096;font-size:10px}.settings{margin-top:26px;padding:17px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#132237}.settings h3{margin:0 0 4px;font-size:18px}.settingsLead{margin:0 0 15px;color:#9cabbc;font-size:12px;line-height:1.6}.settingRow{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}.settingText b{display:block;font-size:13px}.settingText span{display:block;margin-top:3px;color:#8796aa;font-size:11px;line-height:1.45}.switch{position:relative;flex:0 0 46px;width:46px;height:26px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;border-radius:99px;background:#334155;cursor:pointer;transition:.2s}.slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}.switch input:checked+.slider{background:#ff2bd6}.switch input:checked+.slider:before{transform:translateX(20px)}.countryPick{width:100%;margin-top:10px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#0f1d2f;color:#fff}.notice{margin-top:12px;padding:11px;border-radius:11px;background:rgba(49,132,255,.08);color:#aebbd0;font-size:11px;line-height:1.6}.exploreDelayNote{margin:2px 0 8px;padding:9px 11px;border-radius:10px;background:rgba(234,255,0,.05);color:#aeb9c8;font-size:11px;line-height:1.55}.exploreDelayNote strong{color:#eaff00}.backArea{margin-top:30px;text-align:center}.backButton{display:inline-block;padding:12px 20px;border-radius:999px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}footer{border-top:1px solid rgba(255,255,255,.08);background:#0f1d2f;padding:22px 14px 28px;text-align:center;color:#8f9bac;font-size:12px}.footerLinks{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:10px}footer a{color:#cbd5e1;text-decoration:none}html[lang="ja"] [data-lang="ja"]{display:revert!important}html[lang="ja"] [data-lang="en"]{display:none!important}html[lang="en"] [data-lang="ja"]{display:none!important}html[lang="en"] [data-lang="en"]{display:revert!important}@media(max-width:520px){header h1{padding-right:98px;font-size:19px}.hero h2{font-size:28px}.tab{padding:10px 3px;font-size:10px}.tab b{font-size:11px}.row{grid-template-columns:38px minmax(0,1fr) auto;padding:13px 10px}.score{font-size:16px}}
 
+
+/* First-visit participation guide */
+.participationNudge{
+  display:none;
+  margin:16px 0 0;
+  padding:14px 15px;
+  border:1px solid rgba(234,255,0,.42);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(234,255,0,.08),rgba(255,43,214,.07));
+}
+.participationNudge.isVisible{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.participationNudgeText strong{display:block;color:#eaff00;font-size:13px}
+.participationNudgeText span{display:block;margin-top:4px;color:#c0ccda;font-size:11px;line-height:1.55}
+.participationNudgeButton{
+  flex:0 0 auto;
+  border:0;
+  border-radius:999px;
+  padding:9px 12px;
+  background:#eaff00;
+  color:#101722;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+.participationGuideOverlay{
+  position:fixed;
+  inset:0;
+  z-index:20000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(4,10,18,.82);
+  backdrop-filter:blur(8px);
+}
+.participationGuideOverlay.isVisible{display:flex}
+.participationGuideCard{
+  width:min(92vw,520px);
+  padding:24px 21px 20px;
+  border:2px solid #eaff00;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(234,255,0,.15),transparent 30%),
+    radial-gradient(circle at 10% 88%,rgba(255,43,214,.17),transparent 35%),
+    #132237;
+  box-shadow:0 24px 70px rgba(0,0,0,.48);
+}
+.participationGuideEyebrow{color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.6px}
+.participationGuideCard h2{margin:8px 0 10px;font-size:25px;line-height:1.35}
+.participationGuideCard p{margin:0;color:#c2cedc;font-size:13px;line-height:1.75}
+.participationGuidePrivacy{
+  margin-top:14px!important;
+  padding:12px 13px;
+  border:1px solid rgba(92,255,157,.34);
+  border-radius:12px;
+  background:rgba(92,255,157,.06);
+  color:#eafff2!important;
+}
+.participationGuideActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+.participationGuideAction{
+  min-height:44px;
+  border:0;
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+.participationGuidePrimary{background:#eaff00;color:#101722}
+.participationGuideLater{border:1px solid rgba(255,255,255,.16);background:#17283d;color:#fff}
+@media(max-width:520px){
+  .participationNudge.isVisible{align-items:flex-start;flex-direction:column}
+  .participationNudgeButton{width:100%}
+  .participationGuideCard{padding:22px 17px 18px}
+  .participationGuideCard h2{font-size:22px}
+  .participationGuideActions{grid-template-columns:1fr}
+}
+
 /* Runner's Rings three-pillar navigation */
 .featureNav{margin:28px 0 0}
 .featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
@@ -42,12 +121,25 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 <main>
 <section class="hero"><div class="eyebrow">RINGS RANKING</div><h2 id="rankingHeroTitle">🌍 Rings Ranking</h2><p data-lang="ja">世界のランナーから刺激をもらい、走るきっかけにつなげる。参加するランキングは自分で選べます。</p><p data-lang="en">Find motivation from runners around the world. You choose which rankings to join.</p></section>
 <section class="philosophy"><strong data-lang="ja">走った年輪から、世界に仲間の輪を。</strong><strong data-lang="en">From your growth rings, expand your circle of runners around the world.</strong><br><strong data-lang="ja">順位よりも、走った人生を。</strong><strong data-lang="en">Your running life matters more than your rank.</strong><p data-lang="ja">1位でも50位でも表彰はありません。順位がすべてではないからです。仲間の記録が「今日はもう少し走ろう」という刺激になれば、それがRings Rankingの役割です。</p><p data-lang="en">There are no awards for 1st or 50th place. Ranking is not the goal. Rings Ranking exists to turn another runner's effort into motivation for your next run.</p></section>
+
+<section id="rankingParticipationNudge" class="participationNudge" aria-live="polite">
+  <div class="participationNudgeText">
+    <strong data-lang="ja">🌍 まだRings Rankingに参加していません</strong>
+    <strong data-lang="en">🌍 You are not participating in Rings Ranking yet</strong>
+    <span data-lang="ja">参加は任意です。参加する部門だけを選べます。</span>
+    <span data-lang="en">Participation is optional. Choose only the categories you want to join.</span>
+  </div>
+  <button id="rankingNudgeButton" class="participationNudgeButton" type="button">
+    <span data-lang="ja">参加設定へ</span><span data-lang="en">Participation settings</span>
+  </button>
+</section>
+
 <div id="rankingYearFilter" class="rankingYearFilter" aria-label="Ranking year"><span class="rankingYearLabel"><span data-lang="ja">年</span><span data-lang="en">YEAR</span></span></div>
 <div class="tabs" role="tablist"><button class="tab active" data-panel="distance"><b>🏃 DISTANCE</b><span data-lang="ja">年間距離</span><span data-lang="en">Annual distance</span></button><button class="tab" data-panel="explore"><b>🗺️ EXPLORE</b><span data-lang="ja">国別走破</span><span data-lang="en">Explore by country</span></button><button class="tab" data-panel="nations"><b>🌎 NATIONS</b><span data-lang="ja">国対抗</span><span data-lang="en">Nation vs Nation</span></button></div>
 <section id="distance" class="panel active"><div class="toolbar"><span id="distanceYearLabel" class="year">WORLD</span></div><div id="distanceRanking" class="ranking"><p class="notice">読み込み中 / Loading</p></div></section>
 <section id="explore" class="panel"><div class="toolbar"><span id="exploreYearLabel" class="year">EXPLORE</span><select id="exploreCountry" aria-label="Country where runs occurred"></select></div><div id="exploreRanking" class="ranking"><p class="notice">読み込み中 / Loading</p></div><p class="sample" data-lang="ja">走った国ごとに市町村・ADM2の異なる地域数を集計。参加者の自己申告国籍とは無関係です。検証済みの記録のみ表示します。</p><p class="sample" data-lang="en">Distinct municipalities / ADM2 by country actually visited, independent of nationality. Only verified records appear.</p></section>
 <section id="nations" class="panel"><div class="toolbar"><span id="nationsYearLabel" class="year">NATIONS</span></div><div id="nationsRanking" class="ranking"><p class="notice">読み込み中 / Loading</p></div></section>
-<div class="settings"><h3 data-lang="ja">ランキング参加設定</h3><h3 data-lang="en">Ranking settings</h3><p class="settingsLead" data-lang="ja">初期OFF。ログインして保存すると参加できます。閲覧は誰でも可能です。</p><p class="settingsLead" data-lang="en">OFF by default. Log in and save to participate. Anyone can view.</p>
+<div id="rankingSettings" class="settings"><h3 data-lang="ja">ランキング参加設定</h3><h3 data-lang="en">Ranking settings</h3><p class="settingsLead" data-lang="ja">初期OFF。ログインして保存すると参加できます。閲覧は誰でも可能です。</p><p class="settingsLead" data-lang="en">OFF by default. Log in and save to participate. Anyone can view.</p>
 <label data-lang="ja">ランキング表示名</label><label data-lang="en">Ranking nickname</label><input id="rankingName" maxlength="32" class="countryPick" placeholder="Runner name" autocomplete="off">
 <div class="settingRow"><div class="settingText"><b>🏃 DISTANCE</b></div><label class="switch"><input type="checkbox" data-setting="distance"><span class="slider"></span></label></div>
 <div class="settingRow"><div class="settingText"><b>🗺️ EXPLORE</b><span data-lang="ja">参加すると検証済みの走破地域がランキングに表示されます</span><span data-lang="en">Verified visited regions appear when you join</span></div><label class="switch"><input type="checkbox" data-setting="explore"><span class="slider"></span></label></div>
@@ -88,6 +180,29 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 
 <div class="backArea"><a class="backButton" href="./index.html"><span data-lang="ja">Runner's Ringsへ戻る</span><span data-lang="en">Back to Runner's Rings</span></a></div>
 </main>
+
+<div id="rankingParticipationGuide" class="participationGuideOverlay" role="dialog" aria-modal="true" aria-labelledby="rankingParticipationGuideTitle">
+  <div class="participationGuideCard">
+    <div class="participationGuideEyebrow">RINGS RANKING</div>
+    <h2 id="rankingParticipationGuideTitle">
+      <span data-lang="ja">🌍 世界のランナーと記録を楽しもう</span>
+      <span data-lang="en">🌍 Share the journey with runners worldwide</span>
+    </h2>
+    <p data-lang="ja">DISTANCE・EXPLORE・NATIONSから、参加したい部門だけを選べます。参加はいつでもOFFに戻せます。</p>
+    <p data-lang="en">Choose DISTANCE, EXPLORE, and NATIONS independently. You can turn participation off at any time.</p>
+    <p class="participationGuidePrivacy" data-lang="ja">🔒 参加しても、あなたの走行コースや個人の地図そのものが他のユーザーに公開されることはありません。ランキングには設定した表示名と、公開を許可した情報だけが表示されます。</p>
+    <p class="participationGuidePrivacy" data-lang="en">🔒 Joining does not publish your running routes or personal map. Only your ranking nickname and information you choose to make public are shown.</p>
+    <div class="participationGuideActions">
+      <button id="rankingGuideJoin" class="participationGuideAction participationGuidePrimary" type="button">
+        <span data-lang="ja">参加設定を見る</span><span data-lang="en">View participation settings</span>
+      </button>
+      <button id="rankingGuideLater" class="participationGuideAction participationGuideLater" type="button">
+        <span data-lang="ja">あとで</span><span data-lang="en">Maybe later</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <footer><div class="footerLinks"><a href="./about-runners-rings.html">Runner's Rings</a><a href="./journal.html"><span data-lang="ja">ジャーナル</span><span data-lang="en">Journal</span></a><a href="./privacy.html"><span data-lang="ja">プライバシー</span><span data-lang="en">Privacy</span></a></div><div>© 2026 Runner's Rings</div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -157,12 +272,40 @@ exploreSelect.onchange=()=>{
 function exploreRows(data){const el=$('exploreRanking');el.replaceChildren();if(!data?.length){el.innerHTML='<p class="notice">'+(lang()==='ja'?'この国の検証済み参加記録はまだありません':'No verified participant records for this country yet')+'</p>';return}data.forEach((r,i)=>{const node=document.createElement('div');node.className='row';const rank=document.createElement('div');rank.className='rank';rank.textContent=i+1;const runner=document.createElement('div');runner.className='runner';const name=document.createElement('div');name.className='runnerName';name.textContent=(r.show_flag?flag(r.country)+' ':'')+r.ranking_display_name;const meta=document.createElement('div');meta.className='runnerMeta';meta.textContent=r.show_regions&&Array.isArray(r.region_names)?r.region_names.join(' · '):(lang()==='ja'?'地域名は非公開':'Region names private');runner.append(name,meta);const score=document.createElement('div');score.className='score';score.textContent=Number(r.regions||0).toLocaleString(lang())+' ';const unit=document.createElement('small');unit.textContent=lang()==='ja'?'地域':'regions';score.append(unit);node.append(rank,runner,score);el.append(node)})}
 async function loadExplore(){const el=$('exploreRanking');el.innerHTML='<p class="notice">'+(lang()==='ja'?'読み込み中':'Loading')+'</p>';const {data,error}=await sb.rpc('ranking_explore',{p_year:selectedRankingYear,p_country:exploreSelect.value});if(error){console.warn('EXPLORE:',error.message);el.innerHTML='<p class="notice">'+(lang()==='ja'?'EXPLOREを読み込めませんでした':'Unable to load EXPLORE')+'</p>';return}exploreRows(data)}
 let currentUser=null;
+const rankingIntroKey=userId=>'RunnerRingsRankingIntroSeen:'+userId;
+function rankingIsParticipating(){
+  return ['distance','explore','nations'].some(
+    key=>!!document.querySelector('[data-setting="'+key+'"]')?.checked
+  );
+}
+function updateRankingParticipationPrompt(){
+  const nudge=$('rankingParticipationNudge');
+  if(!nudge)return;
+  nudge.classList.toggle('isVisible',!!currentUser&&!rankingIsParticipating());
+}
+function closeRankingParticipationGuide(){
+  $('rankingParticipationGuide')?.classList.remove('isVisible');
+}
+function showRankingParticipationGuideIfNeeded(){
+  if(!currentUser||rankingIsParticipating())return;
+  const key=rankingIntroKey(currentUser.id);
+  if(localStorage.getItem(key)==='1')return;
+  localStorage.setItem(key,'1');
+  $('rankingParticipationGuide')?.classList.add('isVisible');
+}
+function openRankingSettings(){
+  closeRankingParticipationGuide();
+  $('rankingSettings')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('rankingNudgeButton').onclick=openRankingSettings;
+$('rankingGuideJoin').onclick=openRankingSettings;
+$('rankingGuideLater').onclick=closeRankingParticipationGuide;
 const safe=s=>{let x=document.createElement('span');x.textContent=String(s??'');return x.innerHTML};
 const flag=c=>c&&/^[A-Z]{2}$/.test(c)?String.fromCodePoint(...[...c].map(v=>127397+v.charCodeAt(0))):'';
 function rows(id,arr,kind){const el=$(id);el.replaceChildren();if(!arr?.length){el.innerHTML='<p class="notice">'+(lang()==='ja'?'まだ参加者はいません':'No participants yet')+'</p>';return}arr.forEach((r,i)=>{const node=document.createElement('div');node.className='row';const name=kind==='nations'?(flag(r.country)+' '+(new Intl.DisplayNames([lang()],{type:'region'}).of(r.country)||r.country)):(r.show_flag?flag(r.country)+' ':'')+r.ranking_display_name;node.innerHTML='<div class="rank">'+(i+1)+'</div><div class="runner"><div class="runnerName">'+safe(name)+'</div><div class="runnerMeta">'+(kind==='nations'?safe(r.participants)+' runners':'DISTANCE')+'</div></div><div class="score">'+Number(r.km||0).toLocaleString(lang(),{maximumFractionDigits:1})+' <small>km</small></div>';el.append(node)})}
 async function loadBoards(){try{const [d,n]=await Promise.all([sb.rpc('ranking_distance',{p_year:selectedRankingYear}),sb.rpc('ranking_nations',{p_year:selectedRankingYear})]);if(d.error||n.error)throw d.error||n.error;rows('distanceRanking',d.data,'distance');rows('nationsRanking',n.data,'nations')}catch(e){['distanceRanking','nationsRanking'].forEach(id=>$(id).innerHTML='<p class="notice">'+(lang()==='ja'?'ランキングDB設定待ち':'Ranking database setup pending')+'</p>');console.warn('Ranking:',e.message)}}
-async function init(){await loadAvailableRankingYears();selectedRankingYear=availableRankingYears[0]||currentRankingYear;renderRankingYearFilter();setLanguage(localStorage.getItem(langKey)||((navigator.language||'').startsWith('en')?'en':'ja'));const {data:{user}}=await sb.auth.getUser();currentUser=user;if(!user){$('rankingMessage').textContent=lang()==='ja'?'参加設定を保存するには本体からログインしてください':'Log in on Runner’s Rings to save participation';return}const {data,error}=await sb.from('ranking_settings').select('*').eq('user_id',user.id).maybeSingle();if(error){$('rankingMessage').textContent='Database setup pending';return}if(data){$('rankingName').value=data.ranking_display_name||'';countrySelect.value=data.country||'';for(const k of ['distance','explore','nations','flag','regions']){const col={distance:'join_distance',explore:'join_explore',nations:'join_nations',flag:'show_flag',regions:'show_regions'}[k];document.querySelector('[data-setting="'+k+'"]').checked=!!data[col]}}}
-$('saveRanking').onclick=async()=>{if(!currentUser){$('rankingMessage').textContent='Log in first / ログインしてください';return}const v=k=>document.querySelector('[data-setting="'+k+'"]').checked;const name=$('rankingName').value.trim(),country=countrySelect.value;if((v('distance')||v('explore')||v('nations'))&&(!name||!country)){$('rankingMessage').textContent='参加する場合は表示名と国を選択 / Choose a nickname and country';return}const {error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,join_distance:v('distance'),join_explore:v('explore'),join_nations:v('nations'),show_flag:v('flag'),show_regions:v('regions')},{onConflict:'user_id'});$('rankingMessage').textContent=error?('保存失敗 / Save failed: '+error.message):'保存しました / Saved';if(!error)loadBoards()};
+async function init(){await loadAvailableRankingYears();selectedRankingYear=availableRankingYears[0]||currentRankingYear;renderRankingYearFilter();setLanguage(localStorage.getItem(langKey)||((navigator.language||'').startsWith('en')?'en':'ja'));const {data:{user}}=await sb.auth.getUser();currentUser=user;if(!user){$('rankingMessage').textContent=lang()==='ja'?'参加設定を保存するには本体からログインしてください':'Log in on Runner’s Rings to save participation';updateRankingParticipationPrompt();return}const {data,error}=await sb.from('ranking_settings').select('*').eq('user_id',user.id).maybeSingle();if(error){$('rankingMessage').textContent='Database setup pending';return}if(data){$('rankingName').value=data.ranking_display_name||'';countrySelect.value=data.country||'';for(const k of ['distance','explore','nations','flag','regions']){const col={distance:'join_distance',explore:'join_explore',nations:'join_nations',flag:'show_flag',regions:'show_regions'}[k];document.querySelector('[data-setting="'+k+'"]').checked=!!data[col]}}updateRankingParticipationPrompt();showRankingParticipationGuideIfNeeded()}
+$('saveRanking').onclick=async()=>{if(!currentUser){$('rankingMessage').textContent='Log in first / ログインしてください';return}const v=k=>document.querySelector('[data-setting="'+k+'"]').checked;const name=$('rankingName').value.trim(),country=countrySelect.value;if((v('distance')||v('explore')||v('nations'))&&(!name||!country)){$('rankingMessage').textContent='参加する場合は表示名と国を選択 / Choose a nickname and country';return}const {error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,join_distance:v('distance'),join_explore:v('explore'),join_nations:v('nations'),show_flag:v('flag'),show_regions:v('regions')},{onConflict:'user_id'});$('rankingMessage').textContent=error?('保存失敗 / Save failed: '+error.message):'保存しました / Saved';if(!error){loadBoards();updateRankingParticipationPrompt()}};
 $('shareRanking').onclick=async()=>{const url=location.origin+'/ranking.html';const text=lang()==='ja'?'走った人生を一緒に讃えよう！Rings Ranking 🌍':'Celebrate the miles we run together! Rings Ranking 🌍';if(navigator.share){try{await navigator.share({title:'Rings Ranking',text,url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text+' '+url);alert(lang()==='ja'?'招待文とURLをコピーしました':'Invite link copied')}catch(e){prompt('Copy / コピー',text+' '+url)}};
 init();
 </script></body></html>

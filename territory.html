@@ -112,6 +112,85 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   .score{font-size:15px}
 }
 
+
+/* First-visit participation guide */
+.participationNudge{
+  display:none;
+  margin:16px 0 0;
+  padding:14px 15px;
+  border:1px solid rgba(92,255,157,.42);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(92,255,157,.08),rgba(255,43,214,.07));
+}
+.participationNudge.isVisible{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.participationNudgeText strong{display:block;color:#5cff9d;font-size:13px}
+.participationNudgeText span{display:block;margin-top:4px;color:#c0ccda;font-size:11px;line-height:1.55}
+.participationNudgeButton{
+  flex:0 0 auto;
+  border:0;
+  border-radius:999px;
+  padding:9px 12px;
+  background:#5cff9d;
+  color:#101722;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+.participationGuideOverlay{
+  position:fixed;
+  inset:0;
+  z-index:20000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(4,10,18,.82);
+  backdrop-filter:blur(8px);
+}
+.participationGuideOverlay.isVisible{display:flex}
+.participationGuideCard{
+  width:min(92vw,520px);
+  padding:24px 21px 20px;
+  border:2px solid #5cff9d;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(92,255,157,.15),transparent 30%),
+    radial-gradient(circle at 10% 88%,rgba(255,43,214,.17),transparent 35%),
+    #132237;
+  box-shadow:0 24px 70px rgba(0,0,0,.48);
+}
+.participationGuideEyebrow{color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.6px}
+.participationGuideCard h2{margin:8px 0 10px;font-size:25px;line-height:1.35}
+.participationGuideCard p{margin:0;color:#c2cedc;font-size:13px;line-height:1.75}
+.participationGuidePrivacy{
+  margin-top:14px!important;
+  padding:12px 13px;
+  border:1px solid rgba(92,255,157,.34);
+  border-radius:12px;
+  background:rgba(92,255,157,.06);
+  color:#eafff2!important;
+}
+.participationGuideActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+.participationGuideAction{
+  min-height:44px;
+  border:0;
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+.participationGuidePrimary{background:#5cff9d;color:#101722}
+.participationGuideLater{border:1px solid rgba(255,255,255,.16);background:#17283d;color:#fff}
+@media(max-width:520px){
+  .participationNudge.isVisible{align-items:flex-start;flex-direction:column}
+  .participationNudgeButton{width:100%}
+  .participationGuideCard{padding:22px 17px 18px}
+  .participationGuideCard h2{font-size:22px}
+  .participationGuideActions{grid-template-columns:1fr}
+}
+
 /* Runner's Rings three-pillar navigation */
 .featureNav{margin:28px 0 0}
 .featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
@@ -162,6 +241,19 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
     <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally across more countries.</p>
   </section>
 
+
+<section id="territoryParticipationNudge" class="participationNudge" aria-live="polite">
+  <div class="participationNudgeText">
+    <strong data-lang="ja">🗾 まだRings Territoryに参加していません</strong>
+    <strong data-lang="en">🗾 You are not participating in Rings Territory yet</strong>
+    <span data-lang="ja">参加すると、走った地域にあなたの記録が加わります。</span>
+    <span data-lang="en">Join to add your running distance to the regions you have run.</span>
+  </div>
+  <button id="territoryNudgeButton" class="participationNudgeButton" type="button">
+    <span data-lang="ja">参加設定へ</span><span data-lang="en">Participation settings</span>
+  </button>
+</section>
+
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
   <div id="countryBar" class="countryBar" aria-label="Country"></div>
 
@@ -194,7 +286,7 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
     </div>
   </section>
 
-  <section class="settings">
+  <section id="territorySettings" class="settings">
     <h3 data-lang="ja">Rings Territory 参加設定</h3>
     <h3 data-lang="en">Rings Territory participation</h3>
     <p data-lang="ja">初期OFF。参加すると、2026年以降の対象ランが日本・対応国の地域別年間距離に集計されます。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
@@ -243,6 +335,30 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
     <a class="backButton" href="./index.html"><span data-lang="ja">Runner's Ringsへ戻る</span><span data-lang="en">Back to Runner's Rings</span></a>
   </div>
 </main>
+
+
+<div id="territoryParticipationGuide" class="participationGuideOverlay" role="dialog" aria-modal="true" aria-labelledby="territoryParticipationGuideTitle">
+  <div class="participationGuideCard">
+    <div class="participationGuideEyebrow">RINGS TERRITORY</div>
+    <h2 id="territoryParticipationGuideTitle">
+      <span data-lang="ja">🗾 走った街に、あなたの色を。</span>
+      <span data-lang="en">🗾 Put your color on the places you run.</span>
+    </h2>
+    <p data-lang="ja">参加すると、2026年以降の対象ランが地域ごとの年間走行距離に加わります。参加はいつでもOFFに戻せます。</p>
+    <p data-lang="en">When you join, eligible runs from 2026 onward count toward annual distance in each supported region. You can opt out at any time.</p>
+    <p class="participationGuidePrivacy" data-lang="ja">🔒 Territoryに参加しても、あなたの走行コースや個人の地図そのものは公開されません。地図に表示されるのは地域ごとの集計結果です。</p>
+    <p class="participationGuidePrivacy" data-lang="en">🔒 Joining Territory does not publish your running routes or personal map. The public map shows aggregated results by region.</p>
+    <div class="participationGuideActions">
+      <button id="territoryGuideJoin" class="participationGuideAction participationGuidePrimary" type="button">
+        <span data-lang="ja">参加設定を見る</span><span data-lang="en">View participation settings</span>
+      </button>
+      <button id="territoryGuideLater" class="participationGuideAction participationGuideLater" type="button">
+        <span data-lang="ja">あとで</span><span data-lang="en">Maybe later</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 
 <footer>
   <div class="footerLinks">
@@ -354,6 +470,29 @@ let selectedCountry=Object.prototype.hasOwnProperty.call(TERRITORY_COUNTRIES,sav
   :'JPN';
 let currentUser=null;
 let settingsRow=null;
+const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
+function updateTerritoryParticipationPrompt(){
+  const nudge=$('territoryParticipationNudge');
+  if(!nudge)return;
+  nudge.classList.toggle('isVisible',!!currentUser&&!settingsRow?.join_territory);
+}
+function closeTerritoryParticipationGuide(){
+  $('territoryParticipationGuide')?.classList.remove('isVisible');
+}
+function showTerritoryParticipationGuideIfNeeded(){
+  if(!currentUser||settingsRow?.join_territory)return;
+  const key=territoryIntroKey(currentUser.id);
+  if(localStorage.getItem(key)==='1')return;
+  localStorage.setItem(key,'1');
+  $('territoryParticipationGuide')?.classList.add('isVisible');
+}
+function openTerritorySettings(){
+  closeTerritoryParticipationGuide();
+  $('territorySettings')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('territoryNudgeButton').onclick=openTerritorySettings;
+$('territoryGuideJoin').onclick=openTerritorySettings;
+$('territoryGuideLater').onclick=closeTerritoryParticipationGuide;
 let leaders=[];
 let leadersByCode=new Map();
 let municipalityLayer=null;
@@ -819,6 +958,7 @@ async function initSettings(){
     $('settingsMessage').textContent=lang()==='ja'
       ?'参加設定を変更するにはRunner’s Rings本体からログインしてください。'
       :'Log in through Runner’s Rings to change participation.';
+    updateTerritoryParticipationPrompt();
     return;
   }
   const {data,error}=await sb.from('ranking_settings').select(
@@ -833,6 +973,8 @@ async function initSettings(){
   $('settingsMessage').textContent=data?.join_territory
     ?(lang()==='ja'?'Rings Territoryに参加中です。':'You are participating in Rings Territory.')
     :(lang()==='ja'?'現在は参加OFFです。':'Participation is currently OFF.');
+  updateTerritoryParticipationPrompt();
+  showTerritoryParticipationGuideIfNeeded();
 }
 
 $('saveTerritory').onclick=async()=>{
@@ -857,6 +999,7 @@ $('saveTerritory').onclick=async()=>{
   $('settingsMessage').textContent=joining
     ?(lang()==='ja'?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。':'Participation is ON. Results appear after the next verification/sync run.')
     :(lang()==='ja'?'参加OFFにしました。Runner’s Ringsのラン記録は削除されません。':'Participation is OFF. Your Runner’s Rings run records are not deleted.');
+  updateTerritoryParticipationPrompt();
 };
 
 async function init(){
