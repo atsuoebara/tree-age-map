@@ -474,20 +474,33 @@ const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
 function updateTerritoryParticipationPrompt(){
   const nudge=$('territoryParticipationNudge');
   if(!nudge)return;
-  nudge.classList.toggle('isVisible',!!currentUser&&!settingsRow?.join_territory);
+  nudge.classList.toggle('isVisible',!settingsRow?.join_territory);
 }
 function closeTerritoryParticipationGuide(){
   $('territoryParticipationGuide')?.classList.remove('isVisible');
 }
 function showTerritoryParticipationGuideIfNeeded(){
-  if(!currentUser||settingsRow?.join_territory)return;
-  const key=territoryIntroKey(currentUser.id);
+  if(settingsRow?.join_territory)return;
+  const key=currentUser
+    ? territoryIntroKey(currentUser.id)
+    : 'RunnerRingsTerritoryIntroSeen:guest';
   if(localStorage.getItem(key)==='1')return;
   localStorage.setItem(key,'1');
+  const joinButton=$('territoryGuideJoin');
+  if(joinButton){
+    const ja=joinButton.querySelector('[data-lang="ja"]');
+    const en=joinButton.querySelector('[data-lang="en"]');
+    if(ja)ja.textContent=currentUser?'参加設定を見る':'ログインして参加する';
+    if(en)en.textContent=currentUser?'View participation settings':'Log in to participate';
+  }
   $('territoryParticipationGuide')?.classList.add('isVisible');
 }
 function openTerritorySettings(){
   closeTerritoryParticipationGuide();
+  if(!currentUser){
+    location.href='https://runnersrings.com';
+    return;
+  }
   $('territorySettings')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 $('territoryNudgeButton').onclick=openTerritorySettings;
@@ -959,6 +972,7 @@ async function initSettings(){
       ?'参加設定を変更するにはRunner’s Rings本体からログインしてください。'
       :'Log in through Runner’s Rings to change participation.';
     updateTerritoryParticipationPrompt();
+    showTerritoryParticipationGuideIfNeeded();
     return;
   }
   const {data,error}=await sb.from('ranking_settings').select(
