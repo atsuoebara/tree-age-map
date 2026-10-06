@@ -2751,6 +2751,11 @@
     grid-template-columns:repeat(3,minmax(0,1fr));
   }
 }
+
+.mapBoundaryNotice{margin:8px 0;padding:10px 12px;color:#c5ceda;background:#132237;border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:12px;line-height:1.65;overflow-wrap:anywhere}
+.mapBoundaryNotice a{color:#8ed8ff;text-decoration:underline}
+html:not([lang="en"]) .mapBoundaryNotice [data-boundary-lang="en"]{display:none}
+html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 </style>
 </head>
 
@@ -3524,6 +3529,11 @@
       </div>
     </div>
   </section>
+
+  <div class="mapBoundaryNotice" role="note">
+    <span data-boundary-lang="ja">国・地域名や境界線は地図データに基づきます。領土・領有権について特定の立場を示すものではありません。 <a href="./faq.html#map-boundaries">地図・地域集計について（Q&amp;A）</a></span>
+    <span data-boundary-lang="en">Names and boundaries follow the map data and do not express a position on territorial claims or sovereignty. <a href="./faq.html#map-boundaries">Map and regional statistics FAQ</a></span>
+  </div>
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
 
