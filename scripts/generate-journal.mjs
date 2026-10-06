@@ -1,5 +1,5 @@
 /**
- * Runner's Rings Journal static-page generator.
+ * Rings Journal static-page generator.
  * Run by .github/workflows/journal-generate.yml.
  * DRY_RUN=true (the workflow default) checks output without writing any files.
  * Only explicitly published rows are included.
@@ -78,11 +78,11 @@ function articlePage(post) {
   </script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${html(summaryJa.slice(0, 160))}">
-  <title>${html(titleJa)} | Runner's Rings Journal</title>
+  <title>${html(titleJa)} | Rings Journal</title>
   <link rel="canonical" href="${html(permalink)}">
   <link rel="icon" href="/icon.PNG" type="image/png">
   <meta property="og:type" content="article">
-  <meta property="og:site_name" content="Runner's Rings Journal">
+  <meta property="og:site_name" content="Rings Journal">
   <meta property="og:locale" content="ja_JP">
   <meta property="og:url" content="${html(permalink)}">
   <meta property="og:title" content="${html(titleJa)}">
@@ -97,7 +97,7 @@ function articlePage(post) {
   </style>
 </head>
 <body>
-  <header><div class="inner"><strong>Runner's Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
   <main>${article('ja',titleJa,summaryJa,bodyJa)}${article('en',titleEn,summaryEn,bodyEn)}</main>
   <footer>© 2026 Runner's Rings</footer>
   <script>
@@ -175,7 +175,7 @@ if (!FIXTURE_PREVIEW && !DRY_RUN) {
     if (!entry.isDirectory() || seen.has(entry.name)) continue;
     const page = join(OUT_DIR, entry.name, 'index.html');
     const contents = await readFile(page, 'utf8').catch(() => '');
-    if (contents.includes('<!-- RR_JOURNAL_GENERATED_PAGE -->') || (contents.includes("Runner's Rings Journal") && contents.includes(`<link rel="canonical" href="${SITE}/journal/articles/${encodeURIComponent(entry.name)}/">`) && contents.includes("document.querySelectorAll('article')"))) {
+    if (contents.includes('<!-- RR_JOURNAL_GENERATED_PAGE -->') || ((contents.includes("Rings Journal") || contents.includes("Runner's Rings Journal")) && contents.includes(`<link rel="canonical" href="${SITE}/journal/articles/${encodeURIComponent(entry.name)}/">`) && contents.includes("document.querySelectorAll('article')"))) {
       await rm(page);
       // Remove empty directory only; unexpected files remain untouched.
       await (await import('node:fs/promises')).rmdir(join(OUT_DIR, entry.name)).catch(() => {});
