@@ -398,6 +398,10 @@ const TERRITORY_COUNTRIES={
     unitEn:'municipality',
     unitPluralEn:'municipalities'
   },
+  THA:{code:'THA',flag:'🇹🇭',labelJa:'タイ',labelEn:'Thailand',mapLabel:'THAILAND',boundaryFile:'./runners-rings-tha-adm2.geojson',kind:'world',adminLevel:'ADM2',unitJa:'郡・区',unitEn:'district',unitPluralEn:'regions'},
+  MYS:{code:'MYS',flag:'🇲🇾',labelJa:'マレーシア',labelEn:'Malaysia',mapLabel:'MALAYSIA',boundaryFile:'./runners-rings-mys-adm2.geojson',kind:'world',adminLevel:'ADM2',unitJa:'郡・地区',unitEn:'district',unitPluralEn:'regions'},
+  SLB:{code:'SLB',flag:'🇸🇧',labelJa:'ソロモン諸島',labelEn:'Solomon Islands',mapLabel:'SOLOMON ISLANDS',boundaryFile:'./runners-rings-slb-adm2.geojson',kind:'world',adminLevel:'ADM2',unitJa:'選挙区',unitEn:'constituency',unitPluralEn:'regions'},
+  RUS:{code:'RUS',flag:'🇷🇺',labelJa:'ロシア',labelEn:'Russia',mapLabel:'RUSSIA',boundaryFile:'./runners-rings-rus-adm2.geojson',kind:'world',adminLevel:'ADM2',unitJa:'地区・市',unitEn:'district / city',unitPluralEn:'regions'},
   KOR:{
     code:'KOR',
     flag:'🇰🇷',
@@ -459,7 +463,7 @@ const TERRITORY_COUNTRIES={
 
 let selectedYear=Math.max(START_YEAR,CURRENT_YEAR);
 const TERRITORY_TO_ISO2={
-  JPN:'JP',KOR:'KR',USA:'US',GBR:'GB',AUS:'AU',CAN:'CA',FRA:'FR',DEU:'DE',NZL:'NZ'
+  JPN:'JP',KOR:'KR',USA:'US',GBR:'GB',AUS:'AU',CAN:'CA',FRA:'FR',DEU:'DE',NZL:'NZ',THA:'TH',MYS:'MY',SLB:'SB',RUS:'RU'
 };
 const ISO2_TO_TERRITORY=Object.fromEntries(
   Object.entries(TERRITORY_TO_ISO2).map(([territoryCode,iso2])=>[iso2,territoryCode])
