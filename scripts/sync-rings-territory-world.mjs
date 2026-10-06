@@ -22,6 +22,10 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const COUNTRY_CONFIG = {
+  THA: {countryCode:'THA',adminLevel:'ADM2',boundaryFile:'runners-rings-tha-adm2.geojson',regionCodeProps:['shapeID','shapeISO','GID_2','code','id'],regionNameProps:['shapeName','NAME_2','name'],parentNameProps:['NAME_1','parentName'],selfTestPoint:[13.7563, 100.5018],selfTestLabel:'Thailand',minFeatures:900},
+  MYS: {countryCode:'MYS',adminLevel:'ADM2',boundaryFile:'runners-rings-mys-adm2.geojson',regionCodeProps:['shapeID','shapeISO','GID_2','code','id'],regionNameProps:['shapeName','NAME_2','name'],parentNameProps:['NAME_1','parentName'],selfTestPoint:[3.139, 101.6869],selfTestLabel:'Malaysia',minFeatures:150},
+  SLB: {countryCode:'SLB',adminLevel:'ADM2',boundaryFile:'runners-rings-slb-adm2.geojson',regionCodeProps:['shapeID','shapeISO','GID_2','code','id'],regionNameProps:['shapeName','NAME_2','name'],parentNameProps:['NAME_1','parentName'],selfTestPoint:[-9.4456, 159.9729],selfTestLabel:'Solomon Islands',minFeatures:50},
+  RUS: {countryCode:'RUS',adminLevel:'ADM2',boundaryFile:'runners-rings-rus-adm2.geojson',regionCodeProps:['shapeID','shapeISO','GID_2','code','id'],regionNameProps:['shapeName','NAME_2','name'],parentNameProps:['NAME_1','parentName'],selfTestPoint:[55.7558, 37.6173],selfTestLabel:'Russia',minFeatures:2300},
   KOR: {
     countryCode: 'KOR',
     adminLevel: 'ADM2',
@@ -361,7 +365,7 @@ while (true) {
         `runs?select=id,activity_date,route,distance_km` +
         `&user_id=eq.${encodeURIComponent(user.user_id)}` +
         `&activity_date=gte.${year}-01-01&activity_date=lt.${year + 1}-01-01` +
-        `&route=not.is.null&distance_km=gt.0&order=id&limit=50&offset=${runOffset}`
+        `&deleted_at=is.null&route=not.is.null&distance_km=gt.0&order=id&limit=50&offset=${runOffset}`
       );
       if (!runs.length) break;
 
