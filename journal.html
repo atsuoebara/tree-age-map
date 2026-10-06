@@ -11,8 +11,8 @@
 </script>  
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Runner's Rings Journal。地域走破、地図、データ連携、開発の考え方など、Runner's Ringsならではの機能と背景を紹介します。">
-<title>Runner's Rings Journal｜開発・ランニングノート</title>
+<meta name="description" content="Rings Journal。地域走破、地図、データ連携、開発の考え方など、Runner's Ringsならではの機能と背景を紹介します。">
+<title>Rings Journal｜開発・ランニングノート</title>
 <link rel="icon" type="image/png" href="icon.PNG">
 <style>
 *{box-sizing:border-box}
@@ -239,7 +239,7 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
     </div>
     <div class="featureNavGrid">
     <a class="featureNavCard journal isCurrent" href="./journal.html" aria-current="page">
-      <span class="featureNavName">📖 Runner’s Rings Journal</span>
+      <span class="featureNavName">📖 Rings Journal</span>
       <span class="featureNavText" data-lang="ja">走った人生の物語・開発の裏側を読む</span>
       <span class="featureNavText" data-lang="en">Stories from the running journey and behind the scenes</span>
     </a>
@@ -376,8 +376,8 @@ applyLanguage(savedLanguage);
       dynamicCards[lang].forEach(el=>el.remove());
       dynamicCards[lang] = [];
       // Remove old cards from the DOM without recreating or changing their links/content.
-      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Runner’s Rings Journal'}));
-      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Runner’s Rings Journal'});});
+      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Rings Journal'}));
+      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Rings Journal'});});
       items.sort((a,b)=>b.date.localeCompare(a.date)||b.order-a.order);
       items.forEach(item=>item.node.remove());
       const total = Math.max(1,Math.ceil(items.length / PAGE_SIZE));
