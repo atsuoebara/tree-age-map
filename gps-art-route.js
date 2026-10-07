@@ -22,6 +22,7 @@ const errors={
 };
 const en=()=>document.documentElement.lang==='en',state=()=>window.runnerRingsArtAuth?.getState()||'unavailable';
 function render(){
+ button.classList.toggle('is-pressed',busy||Boolean(result)||Boolean(errorCode));
  button.disabled=busy||state()!=='signedIn'||!preferences||preferences.material!=='template';
  let text='';
  if(errorCode)text=(errors[errorCode]||errors.failed)[en()?1:0];
