@@ -31,10 +31,10 @@
 <p class="muted" data-lang="ja">今は出発点と制作条件を試せる段階です。ルート生成・保存・投稿は準備中。生成機能の公開時はログインが必要です。</p><p class="muted" data-lang="en">Try choosing your start and preferences. Route generation, saving and posting are not available yet. Generation will require signing in when released.</p>
 <h3 class="studioHeading"><span data-lang="ja">1. 出発点を選ぶ</span><span data-lang="en">1. Choose your start</span></h3>
 <form id="placeSearchForm" class="placeSearch" role="search">
-<label for="placeQuery"><span data-lang="ja">名称・住所から探す</span><span data-lang="en">Search by place name or address</span></label>
+<label for="placeQuery"><span data-lang="ja">地名・駅名・施設名から探す</span><span data-lang="en">Search by town, station or landmark</span></label>
 <div class="searchRow"><input id="placeQuery" type="search" maxlength="160" autocomplete="off" placeholder="例：高崎駅、前橋市大手町" aria-describedby="searchPrivacy"><button id="placeSearchButton" class="button primary" type="submit"><span data-lang="ja">検索</span><span data-lang="en">Search</span></button></div>
 <p id="searchStatus" class="status" role="status" aria-live="polite"></p><div id="searchResults" class="searchResults"></div>
-<p id="searchPrivacy" class="muted"><span data-lang="ja">検索時のみ入力した名称・住所を外部のPhoton検索サービスへ送信します。個人名などの機密情報は入力しないでください。番地が見つからない場合は町名・駅名などで探し、ピンで調整してください。</span><span data-lang="en">When you search, your entered place name or address is sent to the external Photon service. Do not enter confidential information such as personal names. If a house number is not found, search a nearby town or station and adjust the pin.</span> <a href="https://photon.komoot.io/" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+<p id="searchPrivacy" class="muted"><span data-lang="ja">地名・駅名・施設名で近くの場所を検索し、地図上でピンを動かして出発点を選んでください。番地検索には対応していません。検索時のみ入力した検索語を外部のPhoton検索サービスへ送信します。個人名などの機密情報は入力しないでください。</span><span data-lang="en">Search for a nearby town, station or landmark, then move the pin on the map to choose your start. House-number search is not supported. Your search text is sent to the external Photon service only when you search. Do not enter confidential information such as personal names.</span> <a href="https://photon.komoot.io/" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
 </form>
 <p class="muted" data-lang="ja">地図をタップしてピンを置き、ドラッグで調整できます。初期表示は日本全体です。地図を移動して海外の出発点も選べます。</p><p class="muted" data-lang="en">Tap the map to place a pin and drag to adjust it. The initial view shows Japan; pan the map to choose a start anywhere in the world.</p>
 <div id="startMap" class="mapBox" aria-label="出発点選択 / Choose a starting point"></div>
@@ -97,3 +97,4 @@ $('review').addEventListener('click',()=>{reviewKey=!start||!confirmed?'needStar
 </script>
 <script src="./gps-art-search.js"></script>
 </body></html>
+

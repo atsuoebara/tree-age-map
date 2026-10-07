@@ -6,7 +6,7 @@ if(!form)return;
 const endpoint='https://photon.komoot.io/api/';
 const cache=new Map();
 let busy=false,lastRequest=0,statusKey='',results=[],selected=-1,revision=0;
-const messages={empty:['名称や住所を入力してください。','Enter a place name or address.'],loading:['検索しています…','Searching…'],found:['候補を選ぶと近くまでズームします。ピンを調整して「ここから出発」を押してください。','Select a result to zoom nearby. Adjust the pin and confirm your start.'],none:['見つかりませんでした。市区町村を加えるか、近くの駅・施設名で試してください。','No results. Add a city or try a nearby station or landmark.'],failed:['検索できませんでした。少し待って再検索するか、現在地・地図から選んでください。','Search is unavailable. Try again later or select using your location or the map.'],wait:['連続検索は少し間隔を空けてください。','Please wait briefly before searching again.'],selected:['候補に移動しました。ピンを調整して出発点を確定してください。','Moved to the result. Adjust the pin and confirm your start.'],map:['地図が読み込まれていません。ページを再読み込みしてください。','The map has not loaded. Reload the page.']};
+const messages={empty:['地名・駅名・施設名を入力してください。','Enter a town, station or landmark.'],loading:['検索しています…','Searching…'],found:['候補を選ぶと近くまでズームします。ピンを調整して「ここから出発」を押してください。','Select a result to zoom nearby. Adjust the pin and confirm your start.'],none:['見つかりませんでした。市区町村を加えるか、近くの駅・施設名で試してください。','No results. Add a city or try a nearby station or landmark.'],failed:['検索できませんでした。少し待って再検索するか、現在地・地図から選んでください。','Search is unavailable. Try again later or select using your location or the map.'],wait:['連続検索は少し間隔を空けてください。','Please wait briefly before searching again.'],selected:['候補に移動しました。ピンを調整して出発点を確定してください。','Moved to the result. Adjust the pin and confirm your start.'],map:['地図が読み込まれていません。ページを再読み込みしてください。','The map has not loaded. Reload the page.']};
 const en=()=>document.documentElement.lang==='en';
 function render(){
  $('placeQuery').placeholder=en()?'e.g. Takasaki Station, Maebashi Otemachi':'例：高崎駅、前橋市大手町';
@@ -42,3 +42,4 @@ $('placeQuery').addEventListener('input',()=>{revision++;results=[];selected=-1;
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 render();
 })();
+
