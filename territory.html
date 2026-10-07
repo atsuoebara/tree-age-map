@@ -218,6 +218,8 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 .mapBoundaryNotice a{color:#8ed8ff;text-decoration:underline}
 html:not([lang="en"]) .mapBoundaryNotice [data-boundary-lang="en"]{display:none}
 html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
+
+.publicIdentityField{display:block;margin:15px 0 7px;font-size:13px;font-weight:700}.publicIdentityInput{width:100%;padding:12px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:#101e31;color:#fff;font:inherit}.publicIdentityHelp{font-size:12px;color:#aebbd0;line-height:1.7}
 </style>
 </head>
 <body>
@@ -301,6 +303,13 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
     <h3 data-lang="en">Rings Territory participation</h3>
     <p data-lang="ja">初期OFF。参加すると、2026年以降の対象ランが日本・対応国の地域別年間距離に集計されます。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
     <p data-lang="en">OFF by default. When enabled, eligible runs from 2026 onward are included in annual Territory totals for supported countries. Turning it off does not delete your runs.</p>
+    <p class="publicIdentityHelp" data-lang="ja">Rankingに参加しなくても、Territoryだけに参加できます。</p>
+    <p class="publicIdentityHelp" data-lang="en">You can join Territory without joining Ranking.</p>
+    <label for="territoryName" class="publicIdentityField"><span data-lang="ja">公開表示名（Ranking / Territory共通）</span><span data-lang="en">Public display name (shared by Ranking / Territory)</span></label>
+    <input id="territoryName" class="publicIdentityInput" maxlength="32" autocomplete="off" aria-describedby="territoryNameHelp">
+    <div id="territoryNameHelp" class="publicIdentityHelp"><p data-lang="ja">アカウント名とは違う名前でOKです。この公開表示名はRankingとTerritoryで共通です。どちらのページで変更・保存しても、両方に反映されます。アカウント名は変更されません。</p><p data-lang="en">You can use a name different from your account name. Ranking and Territory share this public display name. Saving it on either page updates both; your account name stays unchanged.</p></div>
+    <label for="territoryIdentityCountry" class="publicIdentityField"><span data-lang="ja">所属国・地域（自己申告・Rankingと共通）</span><span data-lang="en">Country / region (self-selected, shared with Ranking)</span></label>
+    <select id="territoryIdentityCountry" class="publicIdentityInput"></select>
     <div class="settingRow">
       <div class="settingText">
         <b>🗾 Rings Territory</b>
@@ -590,6 +599,7 @@ function setLanguage(v){
     b=>b.classList.toggle('isActive',b.dataset.language===lang())
   );
   makeCountries();
+  makeIdentityCountries($('territoryIdentityCountry').value);
   updateStatus();
   renderDynamicCopy();
   renderLeaderLegend();
@@ -990,10 +1000,24 @@ async function refreshTerritoryMap(){
   }
 }
 
+function makeIdentityCountries(value=''){
+  const select=$('territoryIdentityCountry');
+  select.replaceChildren();
+  const empty=document.createElement('option');empty.value='';empty.textContent=lang()==='ja'?'国・地域を選択':'Choose a country / region';select.append(empty);
+  const names=new Intl.DisplayNames([lang()],{type:'region'});
+  const identityCodes=['JP','US','GB','AU','KR','CA','FR','DE','NZ','IN','CN','TW','SG','TH','PH','MY','ID','VN','BR','AR','MX','ES','IT','NL','BE','SE','NO','DK','FI','IE','CH','AT','PL','PT','ZA','KE','ET','AE','SA','TR','IL','EG','NG','CO','CL','PE','CZ','GR','RO','UA','PK','BD'];
+  if(value&&!identityCodes.includes(value))identityCodes.push(value);
+  for(const code of identityCodes){const option=document.createElement('option');option.value=code;option.textContent=flag(code)+' '+names.of(code);select.append(option)}
+  select.value=value;
+}
+
 async function initSettings(){
+  makeIdentityCountries();
   const {data:{user}}=await sb.auth.getUser();
   currentUser=user;
   if(!user){
+    $('territoryName').disabled=true;
+    $('territoryIdentityCountry').disabled=true;
     $('joinTerritory').disabled=true;
     $('saveTerritory').disabled=true;
     $('settingsMessage').textContent=lang()==='ja'
@@ -1011,6 +1035,8 @@ async function initSettings(){
     return;
   }
   settingsRow=data||null;
+  $('territoryName').value=data?.ranking_display_name||'';
+  makeIdentityCountries(data?.country||'');
   $('joinTerritory').checked=!!data?.join_territory;
   $('settingsMessage').textContent=data?.join_territory
     ?(lang()==='ja'?'Rings Territoryに参加中です。':'You are participating in Rings Territory.')
@@ -1022,26 +1048,29 @@ async function initSettings(){
 $('saveTerritory').onclick=async()=>{
   if(!currentUser)return;
   const joining=$('joinTerritory').checked;
-  if(joining&&(!settingsRow?.ranking_display_name||!settingsRow?.country)){
-    $('settingsMessage').innerHTML=lang()==='ja'
-      ?'参加するには、先に <a href="./ranking.html" style="color:#eaff00">Rings Ranking</a> で表示名と国を設定してください。'
-      :'Set your nickname and country in <a href="./ranking.html" style="color:#eaff00">Rings Ranking</a> first.';
+  const name=$('territoryName').value.trim(),country=$('territoryIdentityCountry').value;
+  if(name.length>32){$('settingsMessage').textContent=lang()==='ja'?'公開表示名は32文字以内で入力してください。':'Use up to 32 characters for the public display name.';return}
+  const {data:latest,error:readError}=await sb.from('ranking_settings').select('join_distance,join_explore,join_nations').eq('user_id',currentUser.id).maybeSingle();
+  if(readError){$('settingsMessage').textContent=lang()==='ja'?'参加設定の確認に失敗しました。':'Unable to check participation settings.';return}
+  if((joining||latest?.join_distance||latest?.join_explore||latest?.join_nations)&&(!name||!country)){
+    $('settingsMessage').textContent=lang()==='ja'?'参加する場合は公開表示名と所属国・地域を設定してください。':'Choose a public display name and country / region to participate.';
     return;
   }
   $('saveTerritory').disabled=true;
   $('settingsMessage').textContent=lang()==='ja'?'保存中…':'Saving…';
-  const {error}=await sb.from('ranking_settings').update({join_territory:joining}).eq('user_id',currentUser.id);
+  const {data:saved,error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,join_territory:joining},{onConflict:'user_id'}).select('ranking_display_name,country,join_territory').single();
   $('saveTerritory').disabled=false;
   if(error){
     console.error(error);
     $('settingsMessage').textContent=(lang()==='ja'?'保存失敗：':'Save failed: ')+error.message;
     return;
   }
-  settingsRow={...(settingsRow||{}),join_territory:joining};
+  settingsRow=saved;
   $('settingsMessage').textContent=joining
     ?(lang()==='ja'?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。':'Participation is ON. Results appear after the next verification/sync run.')
     :(lang()==='ja'?'参加OFFにしました。Runner’s Ringsのラン記録は削除されません。':'Participation is OFF. Your Runner’s Rings run records are not deleted.');
   updateTerritoryParticipationPrompt();
+  await refreshTerritoryMap();
 };
 
 async function init(){
