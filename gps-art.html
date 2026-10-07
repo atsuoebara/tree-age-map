@@ -13,6 +13,9 @@
 <style>
 :root{--orange:#ff9b45}button.button{font-size:14px;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #23d9e8;outline-offset:3px}[hidden]{display:none!important}.mapBox{height:340px;border-radius:14px;border:1px solid #41556e;margin:16px 0;background:#162539;z-index:0}.startPin{background:#ff9b45;border:3px solid white;border-radius:50%;box-shadow:0 0 0 5px #ff9b4540}.notice{background:#ff9b4512;border-left:3px solid #ff9b45;padding:16px;border-radius:10px;font-size:14px;margin:18px 0}.checkLabel{display:flex;gap:10px;align-items:flex-start;font-size:14px}.checkLabel input{width:20px;height:20px;margin:3px 0;flex-shrink:0}.status{color:#23d9e8;font-size:14px;min-height:24px;overflow-wrap:anywhere}.summary{white-space:pre-line;background:#162539;padding:16px;border-radius:12px}.studioHeading{margin-top:24px}.leaflet-container{font-family:inherit}.leaflet-control-attribution{font-size:10px}@media(max-width:640px){.mapBox{height:300px}.actions button{flex-grow:1}}
 </style>
+<style>
+.placeSearch{margin:16px 0}.searchRow{display:flex;gap:10px;align-items:center}.searchRow input{min-width:0;flex:1}.searchRow button{margin-top:7px;white-space:nowrap}.searchResults{display:grid;gap:8px}.searchResult{width:100%;text-align:left;overflow-wrap:anywhere}.placeSearch a{color:#23d9e8}.searchResults button:disabled{cursor:wait}
+</style>
 </head>
 <body>
 <header><a href="./index.html">Runner's Rings</a><div class="languages" aria-label="Language"><button type="button" data-language="ja">日本語</button><button type="button" data-language="en">EN</button></div></header>
@@ -27,6 +30,12 @@
 <div class="sectionLabel">STUDIO · SETTINGS PREVIEW</div><h2 data-lang="ja">自分のGPS Artをつくる</h2><h2 data-lang="en">Create your GPS Art</h2>
 <p class="muted" data-lang="ja">今は出発点と制作条件を試せる段階です。ルート生成・保存・投稿は準備中。生成機能の公開時はログインが必要です。</p><p class="muted" data-lang="en">Try choosing your start and preferences. Route generation, saving and posting are not available yet. Generation will require signing in when released.</p>
 <h3 class="studioHeading"><span data-lang="ja">1. 出発点を選ぶ</span><span data-lang="en">1. Choose your start</span></h3>
+<form id="placeSearchForm" class="placeSearch" role="search">
+<label for="placeQuery"><span data-lang="ja">名称・住所から探す</span><span data-lang="en">Search by place name or address</span></label>
+<div class="searchRow"><input id="placeQuery" type="search" maxlength="160" autocomplete="off" placeholder="例：高崎駅、前橋市大手町" aria-describedby="searchPrivacy"><button id="placeSearchButton" class="button primary" type="submit"><span data-lang="ja">検索</span><span data-lang="en">Search</span></button></div>
+<p id="searchStatus" class="status" role="status" aria-live="polite"></p><div id="searchResults" class="searchResults"></div>
+<p id="searchPrivacy" class="muted"><span data-lang="ja">検索時のみ入力した名称・住所を外部のPhoton検索サービスへ送信します。個人名などの機密情報は入力しないでください。番地が見つからない場合は町名・駅名などで探し、ピンで調整してください。</span><span data-lang="en">When you search, your entered place name or address is sent to the external Photon service. Do not enter confidential information such as personal names. If a house number is not found, search a nearby town or station and adjust the pin.</span> <a href="https://photon.komoot.io/" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+</form>
 <p class="muted" data-lang="ja">地図をタップしてピンを置き、ドラッグで調整できます。初期表示は日本全体です。地図を移動して海外の出発点も選べます。</p><p class="muted" data-lang="en">Tap the map to place a pin and drag to adjust it. The initial view shows Japan; pan the map to choose a start anywhere in the world.</p>
 <div id="startMap" class="mapBox" aria-label="出発点選択 / Choose a starting point"></div>
 <div class="actions"><button id="locate" type="button" class="button"><span data-lang="ja">現在地を使う</span><span data-lang="en">Use my location</span></button><button id="centerPin" type="button" class="button"><span data-lang="ja">地図の中心にピンを置く</span><span data-lang="en">Place pin at map center</span></button><button id="confirmStart" type="button" class="button primary" disabled><span data-lang="ja">ここから出発</span><span data-lang="en">Confirm this start</span></button></div>
@@ -79,10 +88,12 @@ let initial='ja';try{initial=localStorage.getItem(key)||'ja'}catch{}apply(initia
 document.querySelectorAll('[data-language]').forEach(b=>b.addEventListener('click',()=>apply(b.dataset.language)));
 try{if(!window.L)throw new Error('Leaflet unavailable');map=L.map('startMap',{scrollWheelZoom:false,worldCopyJump:true}).setView([36.2,138.2],5);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).on('tileerror',()=>{locationKey='tileError';$('locationStatus').textContent=t(locationKey);}).addTo(map);map.on('click',e=>choose(e.latlng));}catch{locationKey='mapError';$('locationStatus').textContent=t(locationKey);$('locate').disabled=true;$('centerPin').disabled=true;}
 $('centerPin').addEventListener('click',()=>{if(map)choose(map.getCenter());});
+$('startMap').addEventListener('gps-art-place',event=>{if(!map)return;const p=event.detail;choose({lat:p.lat,lng:p.lng});map.setView(start,16);});
 $('confirmStart').addEventListener('click',()=>{if(start){confirmed=true;invalidate();startText();}});
 $('locate').addEventListener('click',()=>{if(!navigator.geolocation||!window.isSecureContext){locationKey='unsupported';$('locationStatus').textContent=t(locationKey);return;}locationKey='loading';$('locationStatus').textContent=t(locationKey);$('locate').disabled=true;navigator.geolocation.getCurrentPosition(p=>{choose({lat:p.coords.latitude,lng:p.coords.longitude});map.setView(start,15);locationKey='';$('locationStatus').textContent='';$('locate').disabled=false;},error=>{locationKey=error.code===1?'denied':'unavailable';$('locationStatus').textContent=t(locationKey);$('locate').disabled=false;},{enableHighAccuracy:false,timeout:10000,maximumAge:60000});});
 ['direction','distance','material','template','theme','safety'].forEach(id=>$(id).addEventListener(id==='theme'?'input':'change',()=>{invalidate();materialUI();}));
 $('review').addEventListener('click',()=>{reviewKey=!start||!confirmed?'needStart':$('material').value==='licensed'?'needMaterial':$('material').value==='free'&&!$('theme').value.trim()?'needTheme':!$('safety').checked?'needSafety':'ready';$('reviewStatus').textContent=t(reviewKey);$('summary').hidden=reviewKey!=='ready';if(reviewKey==='ready')renderSummary();});
 })();
 </script>
+<script src="./gps-art-search.js"></script>
 </body></html>
