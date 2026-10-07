@@ -5,6 +5,8 @@ const source=document.getElementById('startMap');
 if(!source||!window.L)return;
 const en=()=>document.documentElement.lang==='en';
 const words={
+ both:['重ねて見る','Overlay'],sketch:['下絵だけ','Outline only'],route:['ルートだけ','Route only'],
+ legend:['シアン点線＝下絵（通行ルートではありません）／オレンジ＝道路候補','Cyan dashed: outline, not a walkable route. Orange: road candidate.'],
  open:['全画面でルートを確認','View route full screen'],play:['再生','Play'],pause:['一時停止','Pause'],
  restart:['最初から','Restart'],overview:['全体図','Overview'],close:['閉じる','Close'],
  title:['ルートの事前確認 · 北が上','Route preview · North up'],
@@ -34,14 +36,15 @@ document.head.appendChild(css);
 const open=document.createElement('button');open.type='button';open.className='button primary artViewerOpen';open.hidden=true;
 source.insertAdjacentElement('afterend',open);
 const panel=document.createElement('div');panel.className='artViewer';panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
-panel.innerHTML='<header><h2 id="artViewerTitle"></h2><button type="button" class="button" data-control="close"></button></header><div class="artViewerMap"></div><div class="artViewerControls"><button type="button" class="button primary" data-control="play"></button><button type="button" class="button" data-control="restart"></button><button type="button" class="button" data-control="overview"></button><select data-control="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select><input data-control="seek" type="range" min="0" max="1000" value="0"><span class="artViewerProgress" role="status" aria-live="off"></span></div><p data-control="note"></p><p data-control="error" role="status"></p>';
+panel.innerHTML='<header><h2 id="artViewerTitle"></h2><button type="button" class="button" data-control="close"></button></header><div class="artViewerMap"></div><div class="artViewerControls"><button type="button" class="button primary" data-control="play"></button><button type="button" class="button" data-control="restart"></button><button type="button" class="button" data-control="overview"></button><button type="button" class="button" data-control="both"></button><button type="button" class="button" data-control="sketch"></button><button type="button" class="button" data-control="route"></button><select data-control="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select><input data-control="seek" type="range" min="0" max="1000" value="0"><span class="artViewerProgress" role="status" aria-live="off"></span></div><p data-control="legend"></p><p data-control="note"></p><p data-control="error" role="status"></p>';
 panel.setAttribute('aria-labelledby','artViewerTitle');document.body.appendChild(panel);
 const q=k=>panel.querySelector('[data-control="'+k+'"]'),display=panel.querySelector('.artViewerProgress');
-let candidate=null,map=null,outline=null,trail=null,dot=null,startTag=null,finishTag=null;
+let candidate=null,map=null,outline=null,trail=null,dot=null,startTag=null,finishTag=null,sketch=null,compare="both";
 let points=[],lengths=[],total=0,distance=0,playing=false,frame=0,lastTime=0,overview=false,previousFocus=null,oldOverflow='',lastFollow=0;
 function labels(){
  open.textContent=text('open');panel.querySelector('h2').textContent=text('title');
- for(const k of ['restart','overview','close','note'])q(k).textContent=text(k);
+ for(const k of ['restart','overview','close','note','both','sketch','route','legend'])q(k).textContent=text(k);
+ for(const k of ['both','sketch','route'])q(k).setAttribute('aria-pressed',String(compare===k));
  q('play').textContent=text(playing?'pause':'play');q('play').setAttribute('aria-pressed',String(playing));
  q('seek').setAttribute('aria-label',text('progress'));q('speed').setAttribute('aria-label',text('speed'));
  display.textContent=overview&&distance>=total?text('complete'):((total?distance/total:0)*100).toFixed(0)+'% · '+(distance/1000).toFixed(2)+' km';
@@ -75,8 +78,15 @@ function tick(now){
  draw(now-lastFollow>=200);if(now-lastFollow>=200)lastFollow=now;
  if(distance>=total){whole();return;}frame=requestAnimationFrame(tick);
 }
+function mode(value){
+ compare=value;if(!map||!sketch)return;
+ for(const layer of [outline,trail,dot,startTag,finishTag]){if(value==='sketch'){if(map.hasLayer(layer))map.removeLayer(layer);}else if(!map.hasLayer(layer))layer.addTo(map);}
+ if(value==='route'){if(map.hasLayer(sketch))map.removeLayer(sketch);}else{if(!map.hasLayer(sketch))sketch.addTo(map);sketch.bringToFront();}
+ if(value==='sketch'){whole();map.fitBounds(sketch.getBounds(),{padding:[30,30],maxZoom:17,animate:false});}labels();
+}
 function play(){
  if(!map||!total)return;
+ if(compare==='sketch')mode('both');
  if(distance>=total)distance=0;
  overview=false;map.setView(position(distance).p,Math.max(17,map.getZoom()),{animate:false});draw();
  playing=true;lastTime=0;lastFollow=0;labels();frame=requestAnimationFrame(tick);
@@ -101,10 +111,12 @@ function show(){
   dot=L.marker(points[0],{icon:L.divIcon({className:'artViewerDot',iconSize:[20,20],iconAnchor:[10,10]}),interactive:false}).addTo(map);
   startTag=L.circleMarker(points[0],{radius:5,color:'#163025',fillColor:'#4aff9b',fillOpacity:1}).addTo(map).bindTooltip(en()?'Start':'スタート',{permanent:true,direction:'left',className:'artViewerTag'});
   finishTag=L.circleMarker(points[points.length-1],{radius:5,color:'#163025',fillColor:'#4aff9b',fillOpacity:1}).addTo(map).bindTooltip(en()?'Finish':'ゴール',{permanent:true,direction:'right',className:'artViewerTag'});
+  sketch=L.polyline(candidate.template.coordinates.map(p=>[p[1],p[0]]),{color:'#23d9e8',weight:4,dashArray:'7 7',opacity:1,interactive:false}).addTo(map);compare='both';sketch.bringToFront();
   map.invalidateSize();map.setView(points[0],17,{animate:false});draw();q('close').focus();play();
  }catch{close();}
 }
 open.addEventListener('click',show);
+for(const k of ['both','sketch','route'])q(k).addEventListener('click',()=>mode(k));
 q('close').addEventListener('click',close);
 q('play').addEventListener('click',()=>playing?pause():play());
 q('restart').addEventListener('click',()=>{pause();distance=0;play();});
@@ -127,3 +139,4 @@ source.addEventListener('gps-art-clear-route',()=>{close();candidate=null;open.h
 new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 labels();
 })();
+
