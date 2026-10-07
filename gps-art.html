@@ -29,6 +29,13 @@
 <section id="create" class="panel">
 <div class="sectionLabel">STUDIO · SETTINGS PREVIEW</div><h2 data-lang="ja">自分のGPS Artをつくる</h2><h2 data-lang="en">Create your GPS Art</h2>
 <p class="muted" data-lang="ja">今は出発点と制作条件を試せる段階です。ルート生成・保存・投稿は準備中。生成機能の公開時はログインが必要です。</p><p class="muted" data-lang="en">Try choosing your start and preferences. Route generation, saving and posting are not available yet. Generation will require signing in when released.</p>
+<div class="notice" id="artAuthPanel">
+<strong data-lang="ja">制作時のログイン</strong><strong data-lang="en">Sign-in for generation</strong>
+<p id="artAuthStatus" class="status" role="status" aria-live="polite"><span data-lang="ja">ログイン状態を確認しています…</span><span data-lang="en">Checking sign-in status…</span></p>
+<div class="actions"><a id="artLoginLink" class="button primary" href="./index.html#authCard" target="_blank" rel="noopener"><span data-lang="ja">ログイン・新規登録（別タブ）</span><span data-lang="en">Sign in / register (new tab)</span></a><button id="artCheckAuth" class="button" type="button"><span data-lang="ja">ログイン状態を確認</span><span data-lang="en">Check sign-in status</span></button></div>
+<p class="muted" data-lang="ja">地図と制作条件はログインなしで試せます。生成にはRunner's Ringsのログインが必要です。別タブでログインしたら、この画面に戻ってください。</p>
+<p class="muted" data-lang="en">You can try the map and preferences without signing in. Generation will require your Runner's Rings sign-in. After signing in in the other tab, return to this screen.</p>
+</div>
 <h3 class="studioHeading"><span data-lang="ja">1. 出発点を選ぶ</span><span data-lang="en">1. Choose your start</span></h3>
 <form id="placeSearchForm" class="placeSearch" role="search">
 <label for="placeQuery"><span data-lang="ja">地名・駅名・施設名から探す</span><span data-lang="en">Search by town, station or landmark</span></label>
@@ -96,5 +103,8 @@ $('review').addEventListener('click',()=>{reviewKey=!start||!confirmed?'needStar
 })();
 </script>
 <script src="./gps-art-search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script src="./gps-art-auth.js"></script>
 </body></html>
+
 
