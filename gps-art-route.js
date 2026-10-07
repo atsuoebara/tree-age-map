@@ -5,9 +5,13 @@ const $=id=>document.getElementById(id),button=$('generateRoute');
 if(!button)return;
 let preferences=null,result=null,busy=false,requestId=0,controller=null,message='',errorCode='';
 const errors={
+ AI_NOT_CONFIGURED:['Geminiの設定が必要です。デフォルト素材は使えます。','Gemini needs configuration. Default shapes are available.'],
+ AI_UNAVAILABLE:['Geminiから下絵を取得できませんでした。時間を置いてお試しください。','Could not obtain an outline from Gemini. Try again later.'],
+ AI_LIMIT:['Geminiの利用上限に達しました。時間を置いてお試しください。','Gemini reached its usage limit. Try again later.'],
+ AI_SHAPE_INVALID:['一筆でたどれる下絵にできませんでした。シンプルな輪郭になる説明でお試しください。','Could not make a usable single contour. Try describing a simpler silhouette.'],
  AUTH_REQUIRED:['ログインしてから、もう一度お試しください。','Sign in and try again.'],
  SAFETY_REQUIRED:['安全確認をチェックし、制作条件を確認してください。','Acknowledge safety and review your preferences.'],
- TEMPLATE_ONLY:['自由入力と許可済み素材の生成は準備中です。まずはデフォルト素材を選んでください。','Free-text and licensed materials are not ready. Choose a default shape.'],
+ TEMPLATE_ONLY:['許可済み素材は準備中です。デフォルト素材か自由入力を選んでください。','Licensed materials are not ready. Choose a default shape or your own idea.'],
  SERVICE_NOT_CONFIGURED:['生成サービスの設定がまだ完了していません。','The generation service has not been configured yet.'],
  RATE_LIMITED:['連続生成は30秒以上間隔を空けてください。','Wait at least 30 seconds before generating again.'],
  PROVIDER_LIMIT:['経路サービスの利用上限に達しました。時間を置いてお試しください。','The routing service reached its limit. Try again later.'],
@@ -23,15 +27,15 @@ const errors={
 const en=()=>document.documentElement.lang==='en',state=()=>window.runnerRingsArtAuth?.getState()||'unavailable';
 function render(){
  button.classList.toggle('is-pressed',busy||Boolean(result)||Boolean(errorCode));
- button.disabled=busy||state()!=='signedIn'||!preferences||preferences.material!=='template';
+ button.disabled=busy||state()!=='signedIn'||!preferences||!['template','free'].includes(preferences.material);
  let text='';
  if(errorCode)text=(errors[errorCode]||errors.failed)[en()?1:0];
- else if(message==='loading')text=en()?'Calculating a road-based candidate…':'道路に沿った候補を計算しています…';
+ else if(message==='loading')text=preferences?.material==='free'?(en()?'Creating an outline with Gemini and calculating a road candidate…':'Geminiで下絵を作り、道路に沿った候補を計算しています…'):(en()?'Calculating a road-based candidate…':'道路に沿った候補を計算しています…');
  else if(result)text=en()?'Candidate shown on the map. Check the shape, actual distance and access before running.':'地図に候補を表示しました。形・実際の距離・通行可否を走る前に確認してください。';
  else if(state()!=='signedIn')text=en()?'Sign in to generate a candidate.':'候補生成にはログインが必要です。';
  else if(!preferences)text=en()?'Confirm your start, acknowledge safety and review preferences first.':'出発点を確定し、安全確認をチェックして「制作条件を確認」を押してください。';
- else if(preferences.material!=='template')text=errors.TEMPLATE_ONLY[en()?1:0];
- else text=en()?'Ready to try a default-shape candidate.':'デフォルト素材の候補生成を試せます。';
+ else if(!['template','free'].includes(preferences.material))text=errors.TEMPLATE_ONLY[en()?1:0];
+ else text=preferences.material==='free'?(en()?'Ready to create a candidate from your idea.':'自由入力から候補生成を試せます。'):(en()?'Ready to try a default-shape candidate.':'デフォルト素材の候補生成を試せます。');
  $('routeStatus').textContent=text;
  $('routeDetails').hidden=!result;
  if(result){
@@ -49,13 +53,13 @@ window.addEventListener('gps-art-preferences',event=>{preferences=event.detail;c
 window.addEventListener('gps-art-auth',event=>{if(event.detail.state==='signedOut'||event.detail.state==='unavailable'){clear();}else render();});
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 button.addEventListener('click',async()=>{
- if(busy||!preferences||preferences.material!=='template'||state()!=='signedIn')return;
+ if(busy||!preferences||!['template','free'].includes(preferences.material)||state()!=='signedIn')return;
  const input=JSON.parse(JSON.stringify(preferences)),ticket=++requestId;
  const client=window.runnerRingsArtAuth?.getClient();
  if(!client){errorCode='AUTH_REQUIRED';render();return;}
  result=null;busy=true;message='loading';errorCode='';$('startMap').dispatchEvent(new CustomEvent('gps-art-clear-route'));render();
  const requestController=new AbortController();controller=requestController;
- const timer=setTimeout(()=>requestController.abort(),45000);
+ const timer=setTimeout(()=>requestController.abort(),70000);
  try{
   const {data,error}=await client.auth.getSession();if(ticket!==requestId)return;
   if(error||!data?.session?.access_token){errorCode='AUTH_REQUIRED';return;}
