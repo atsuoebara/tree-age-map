@@ -8,15 +8,17 @@ if(!status||!login||!button)return;
 const messages={
  checking:['ログイン状態を確認しています…','Checking sign-in status…'],
  signedOut:['未ログインです。地図と制作条件はこのまま試せます。','You are signed out. You can still try the map and preferences.'],
- signedIn:['ログイン済みです。ルート生成機能は準備中です。','You are signed in. Route generation is still in preparation.'],
+ signedIn:['ログイン済みです。制作条件を確認すると、デフォルト素材の候補生成を試せます。','You are signed in. Review your preferences to try a candidate for a default shape.'],
  failed:['ログイン状態を確認できませんでした。通信状況を確認し、もう一度お試しください。','Could not check sign-in status. Check your connection and try again.'],
  unavailable:['ログイン機能を読み込めませんでした。ページを再読み込みしてください。','Sign-in could not load. Please reload this page.']
 };
 let state='checking',sequence=0,client=null,scheduled=null;
+window.runnerRingsArtAuth={getState:()=>state,getClient:()=>client};
 function render(){
  status.textContent=messages[state][document.documentElement.lang==='en'?1:0];
  login.hidden=state==='signedIn';
  button.disabled=state==='checking'||state==='unavailable';
+ window.dispatchEvent(new CustomEvent('gps-art-auth',{detail:{state}}));
 }
 function setState(next){state=next;render();}
 function scheduleCheck(){
@@ -60,4 +62,5 @@ try{
  scheduleCheck();
 }catch{sequence++;clearTimeout(scheduled);setState('unavailable');}
 })();
+
 
