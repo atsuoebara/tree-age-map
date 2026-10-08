@@ -1,16 +1,18 @@
-# 差し替え手順
+# 4兄弟ナビゲーション差し替え
 
-GitHub の最新 index.html、gps-art.html、ROADMAP.md を取得して作成しました。
+GitHub atsuoebara/tree-age-map の main に、次の5ファイルを全文差し替えしてください。
 
-1. index.html と gps-art.html を同名ファイルへ全文差し替えします。
-2. ROADMAP.md を差し替えます。
-3. ページを更新し、ログイン前・ログイン後の入口、日本語・ENの表示を確認します。
+- journal.html
+- ranking.html
+- territory.html
+- gps-art.html
+- ROADMAP.md
 
-別スレでこの取得後に index.html を更新した場合は、古いファイルへ戻さず、最新版との統合が必要です。
-今回の index.html はスクリプトを変更していません。
+SETUP.md は手順書です。アップロード不要です。
+index.html と Supabase の変更はありません。
 
-Supabase の追加操作は不要です。診断と交差補正の v17 は反映済みです。
-supabase/gps-art-generate.ts は、反映済みサーバーコードの保管用です。再デプロイ不要です。
-保存・投稿・コメント機能は追加していません。
+コミットメッセージ: Unify four feature navigation cards
 
-Commit message: Add GPS art beta entry and generation notices
+反映後は4ページの下部で、Journal → Ranking → Territory → GPS Art の順番、色、現在位置を確認してください。日本語・英語の切り替えと各リンクも確認してください。
+PCは2列、幅620px以下は1列です。
+生成、認証、集計、ギャラリーの機能変更はありません。

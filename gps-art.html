@@ -23,6 +23,29 @@
 .button:active:not(:disabled){background:var(--route-neon);color:#101820}
 .gpsArtRoute{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #07101d)}
 </style>
+<style>
+.featureNav{margin:28px 0 0}
+.featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
+.featureNavGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.featureNavCard{display:block;min-width:0;padding:15px 14px;border:2px solid;border-radius:15px;color:#fff;text-decoration:none;font-weight:900;line-height:1.35;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.featureNavCard:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.featureNavCard:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.featureNavCard .featureNavName{display:block;font-size:14px}
+.featureNavCard .featureNavText{display:block;margin-top:5px;font-size:10px;font-weight:650;line-height:1.5;opacity:.92}
+.featureNavCard.journal{border-color:#ff2bd6;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55)}
+.featureNavCard.rankingLink{border-color:#eaff00;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644)}
+.featureNavCard.territoryLink{border-color:#5cff9d;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55)}
+.featureNavCard.artLink{border-color:#ff9b45;background:linear-gradient(135deg,rgba(255,155,69,.42),#4b3328 52%,#203a55)}
+.featureNavCard.isCurrent{box-shadow:0 0 0 2px rgba(255,255,255,.25) inset}
+.featureNavCard.isCurrent .featureNavName:after{content:" · NOW";font-size:9px;opacity:.72}
+html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現在"}
+@media(max-width:620px){
+  .featureNavGrid{grid-template-columns:1fr}
+  .featureNavCard{padding:15px 16px}
+  .featureNavCard .featureNavName{font-size:15px}
+  .featureNavCard .featureNavText{font-size:11px}
+}
+</style>
 </head>
 <body>
 <header><a href="./index.html">Runner's Rings</a><div class="languages" aria-label="Language"><button type="button" data-language="ja">日本語</button><button type="button" data-language="en">EN</button></div></header>
@@ -95,6 +118,35 @@
 <p class="muted" data-lang="ja">生成ボタンを押したときだけ、出発点・方角・距離・形・入力したイメージ・安全確認をRunner's Ringsのサーバーへ送ります。自由入力のイメージと距離の目安はGoogleのGeminiへ送って元絵を作ります。個人情報は入力しないでください。Geminiに出発点の座標は送りません。その後、形の経由点を外部のopenrouteserviceへ送信して経路を計算します。現在の版はルートを保存・公開しません。外部サービスの混雑や利用上限で生成できない場合があります。</p>
 <p class="muted" data-lang="en">Only when you press Generate, your start, direction, distance, shape, idea and safety acknowledgment are sent to Runner's Rings. For free-text ideas, your description and target distance are sent to Google's Gemini to create a reference. Do not enter personal information. Your start coordinates are not sent to Gemini. Shape waypoints are sent to openrouteservice for routing. This version does not save or publish routes. Service congestion or limits may prevent generation.</p>
 </section>
+  <nav class="featureNav" aria-label="Runner's Rings features">
+    <div class="featureNavTitle">
+      <span data-lang="ja">RUNNER'S RINGS FEATURES</span>
+      <span data-lang="en">RUNNER'S RINGS FEATURES</span>
+    </div>
+    <div class="featureNavGrid">
+    <a class="featureNavCard journal" href="./journal.html">
+      <span class="featureNavName">📖 Rings Journal</span>
+      <span class="featureNavText" data-lang="ja">走った人生の物語・開発の裏側を読む</span>
+      <span class="featureNavText" data-lang="en">Stories from the running journey and behind the scenes</span>
+    </a>
+    <a class="featureNavCard rankingLink" href="./ranking.html">
+      <span class="featureNavName">🌍 Rings Ranking</span>
+      <span class="featureNavText" data-lang="ja">世界のランナーとつながる・ランキングを見る</span>
+      <span class="featureNavText" data-lang="en">Connect with runners around the world</span>
+    </a>
+    <a class="featureNavCard territoryLink" href="./territory.html">
+      <span class="featureNavName">🗾 Rings Territory</span>
+      <span class="featureNavText" data-lang="ja">地域ごとの年間走行距離で“陣取り”を見る</span>
+      <span class="featureNavText" data-lang="en">Explore annual running territory by region</span>
+    </a>
+    <a class="featureNavCard artLink isCurrent" href="./gps-art.html" aria-current="page">
+      <span class="featureNavName" data-lang="ja">🎨 下手ウマ画伯のGPSアート（β）</span>
+      <span class="featureNavName" data-lang="en">🎨 Charming cartoon GPS art (beta)</span>
+      <span class="featureNavText" data-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう</span>
+      <span class="featureNavText" data-lang="en">Play with the artist—no run needed</span>
+    </a>
+    </div>
+  </nav>
 <div class="back"><a class="button" href="./index.html"><span data-lang="ja">Runner's Ringsへ戻る</span><span data-lang="en">Back to Runner's Rings</span></a></div>
 </main><footer>
   <div class="footerLinks">
@@ -174,6 +226,7 @@ $('review').addEventListener('click',()=>{$('review').classList.add('is-pressed'
 <script src="./gps-art-auth.js"></script>
 <script src="./gps-art-route.js"></script>
 </body></html>
+
 
 
 

@@ -66,7 +66,7 @@ html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
 /* Runner's Rings three-pillar navigation */
 .featureNav{margin:28px 0 0}
 .featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
-.featureNavGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.featureNavGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .featureNavCard{display:block;min-width:0;padding:15px 14px;border:2px solid;border-radius:15px;color:#fff;text-decoration:none;font-weight:900;line-height:1.35;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
 .featureNavCard:hover{transform:translateY(-1px);filter:brightness(1.06)}
 .featureNavCard:focus-visible{outline:3px solid #fff;outline-offset:3px}
@@ -75,6 +75,7 @@ html[lang="en"] .mainButton[data-lang="ja"]{display:none!important}
 .featureNavCard.journal{border-color:#ff2bd6;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55)}
 .featureNavCard.rankingLink{border-color:#eaff00;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644)}
 .featureNavCard.territoryLink{border-color:#5cff9d;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55)}
+.featureNavCard.artLink{border-color:#ff9b45;background:linear-gradient(135deg,rgba(255,155,69,.42),#4b3328 52%,#203a55)}
 .featureNavCard.isCurrent{box-shadow:0 0 0 2px rgba(255,255,255,.25) inset}
 .featureNavCard.isCurrent .featureNavName:after{content:" · NOW";font-size:9px;opacity:.72}
 html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現在"}
@@ -253,6 +254,12 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
       <span class="featureNavText" data-lang="ja">地域ごとの年間走行距離で“陣取り”を見る</span>
       <span class="featureNavText" data-lang="en">Explore annual running territory by region</span>
     </a>
+    <a class="featureNavCard artLink" href="./gps-art.html">
+      <span class="featureNavName" data-lang="ja">🎨 下手ウマ画伯のGPSアート（β）</span>
+      <span class="featureNavName" data-lang="en">🎨 Charming cartoon GPS art (beta)</span>
+      <span class="featureNavText" data-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう</span>
+      <span class="featureNavText" data-lang="en">Play with the artist—no run needed</span>
+    </a>
     </div>
   </nav>
 
@@ -408,3 +415,4 @@ applyLanguage(savedLanguage);
 </script>
 </body>
 </html>
+
