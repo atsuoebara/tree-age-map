@@ -70,6 +70,7 @@ function showOutline(o){
  const svg=$('outlineSvg'),path=document.createElementNS('http://www.w3.org/2000/svg','polygon');
  path.setAttribute('points',o.points.map(p=>p.x+','+(-p.y)).join(' '));path.setAttribute('fill','none');path.setAttribute('stroke','#23d9e8');path.setAttribute('stroke-width','0.025');path.setAttribute('stroke-linejoin','round');
  svg.replaceChildren(path);
+ window.runnerRingsArtIllustration?.decorate(svg,o);
 }
 $('generateOutline').addEventListener('click',async()=>{
  if(busy||preferences?.material!=='free'||state()!=='signedIn')return;
@@ -101,16 +102,17 @@ button.addEventListener('click',async()=>{
  try{
   const {data,error}=await client.auth.getSession();if(ticket!==requestId)return;
   if(error||!data?.session?.access_token){errorCode='AUTH_REQUIRED';return;}
-  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'route',...(input.material==='free'?{outline}: {})})});
+  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'route',...(input.material==='free'?{outline:{points:outline.points}}: {})})});
   const payload=await response.json();if(ticket!==requestId)return;
   if(!response.ok){errorCode=payload?.error|| (response.status===401?'AUTH_REQUIRED':'failed');return;}
   if(!valid(payload))throw new Error('Invalid candidate');
-  result=payload;message='';$('startMap').dispatchEvent(new CustomEvent('gps-art-route',{detail:result}));
+  result={...payload,...(input.material==='free'?{artwork:outline}: {})};message='';$('startMap').dispatchEvent(new CustomEvent('gps-art-route',{detail:result}));
  }catch{if(ticket===requestId)errorCode='failed';}
  finally{clearTimeout(timer);if(ticket===requestId){busy=false;controller=null;message='';render();}}
 });
 render();
 })();
+
 
 
 

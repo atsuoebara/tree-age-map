@@ -39,7 +39,7 @@ const panel=document.createElement('div');panel.className='artViewer';panel.hidd
 panel.innerHTML='<header><h2 id="artViewerTitle"></h2><button type="button" class="button" data-control="close"></button></header><div class="artViewerMap"></div><div class="artViewerControls"><button type="button" class="button primary" data-control="play"></button><button type="button" class="button" data-control="restart"></button><button type="button" class="button" data-control="overview"></button><button type="button" class="button" data-control="both"></button><button type="button" class="button" data-control="sketch"></button><button type="button" class="button" data-control="route"></button><select data-control="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select><input data-control="seek" type="range" min="0" max="1000" value="0"><span class="artViewerProgress" role="status" aria-live="off"></span></div><p data-control="legend"></p><p data-control="note"></p><p data-control="error" role="status"></p>';
 panel.setAttribute('aria-labelledby','artViewerTitle');document.body.appendChild(panel);
 const q=k=>panel.querySelector('[data-control="'+k+'"]'),display=panel.querySelector('.artViewerProgress');
-let candidate=null,map=null,outline=null,trail=null,dot=null,startTag=null,finishTag=null,sketch=null,compare="both";
+let candidate=null,map=null,outline=null,trail=null,dot=null,startTag=null,finishTag=null,sketch=null,reference=null,compare="both";
 let points=[],lengths=[],total=0,distance=0,playing=false,frame=0,lastTime=0,overview=false,previousFocus=null,oldOverflow='',lastFollow=0;
 function labels(){
  open.textContent=text('open');panel.querySelector('h2').textContent=text('title');
@@ -78,8 +78,10 @@ function tick(now){
  draw(now-lastFollow>=200);if(now-lastFollow>=200)lastFollow=now;
  if(distance>=total){whole();return;}frame=requestAnimationFrame(tick);
 }
+function syncReference(){if(!map||!reference)return;const show=compare!=='route'&&window.runnerRingsArtIllustration?.isVisible();if(show){if(!map.hasLayer(reference))reference.addTo(map);}else if(map.hasLayer(reference))map.removeLayer(reference);if(sketch&&map.hasLayer(sketch))sketch.bringToFront();}
+window.addEventListener('gps-art-reference',syncReference);
 function mode(value){
- compare=value;if(!map||!sketch)return;
+ compare=value;if(!map||!sketch)return;syncReference();
  for(const layer of [outline,trail,dot,startTag,finishTag]){if(value==='sketch'){if(map.hasLayer(layer))map.removeLayer(layer);}else if(!map.hasLayer(layer))layer.addTo(map);}
  if(value==='route'){if(map.hasLayer(sketch))map.removeLayer(sketch);}else{if(!map.hasLayer(sketch))sketch.addTo(map);sketch.bringToFront();}
  if(value==='sketch'){whole();map.fitBounds(sketch.getBounds(),{padding:[30,30],maxZoom:17,animate:false});}labels();
@@ -104,7 +106,8 @@ function show(){
    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).on('tileerror',()=>{q('error').textContent=text('tiles');}).addTo(map);
    map.on('dragstart',()=>{pause();overview=false;});
   }
-  for(const layer of [outline,trail,dot,startTag,finishTag])if(layer)map.removeLayer(layer);
+  for(const layer of [outline,trail,dot,startTag,finishTag,sketch,reference])if(layer)map.removeLayer(layer);
+  refButton.hidden=!window.runnerRingsArtIllustration?.valid(candidate.artwork);
   prepare();
   outline=L.polyline(points,{color:'#ff6a00',weight:5,opacity:0.28,interactive:false}).addTo(map);
   trail=L.polyline([points[0]],{color:'#ff6a00',weight:7,opacity:1,className:'gpsArtRoute',interactive:false}).addTo(map);
@@ -112,9 +115,11 @@ function show(){
   startTag=L.circleMarker(points[0],{radius:5,color:'#163025',fillColor:'#4aff9b',fillOpacity:1}).addTo(map).bindTooltip(en()?'Start':'スタート',{permanent:true,direction:'left',className:'artViewerTag'});
   finishTag=L.circleMarker(points[points.length-1],{radius:5,color:'#163025',fillColor:'#4aff9b',fillOpacity:1}).addTo(map).bindTooltip(en()?'Finish':'ゴール',{permanent:true,direction:'right',className:'artViewerTag'});
   sketch=L.polyline(candidate.template.coordinates.map(p=>[p[1],p[0]]),{color:'#23d9e8',weight:4,dashArray:'7 7',opacity:1,interactive:false}).addTo(map);compare='both';sketch.bringToFront();
+  reference=window.runnerRingsArtIllustration?.mapLayer(candidate)||null;syncReference();
   map.invalidateSize();map.setView(points[0],17,{animate:false});draw();q('close').focus();play();
  }catch{close();}
 }
+const refButton=document.createElement('button');refButton.type='button';refButton.className='button';panel.querySelector('.artViewerControls').appendChild(refButton);window.runnerRingsArtIllustration?.control(refButton);
 open.addEventListener('click',show);
 for(const k of ['both','sketch','route'])q(k).addEventListener('click',()=>mode(k));
 q('close').addEventListener('click',close);
@@ -139,4 +144,5 @@ source.addEventListener('gps-art-clear-route',()=>{close();candidate=null;open.h
 new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 labels();
 })();
+
 
