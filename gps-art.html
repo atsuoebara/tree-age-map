@@ -72,6 +72,16 @@
 <button id="review" type="button" class="button primary"><span data-lang="ja">制作条件を確認</span><span data-lang="en">Review preferences</span></button>
 <p id="reviewStatus" class="status" role="status" aria-live="polite"></p><div id="summary" class="summary" hidden></div>
 <h3 class="studioHeading"><span data-lang="ja">3. 候補ルートを作る（β）</span><span data-lang="en">3. Generate a candidate route (beta)</span></h3>
+<aside class="notice" aria-label="画伯からのごあいさつ / A note from the artist">
+<strong data-lang="ja">下手ウマ画伯は、まだまだ修行中。</strong><strong data-lang="en">Our charmingly clumsy artist is still learning.</strong>
+<p data-lang="ja">「猫を頼んだのに、誰ですかあなた？」なんて作品も生まれます。下手ウマ画伯の絵に、ぜひ温かいツッコミを！</p>
+<p data-lang="en">“I asked for a cat… who are you?” Sometimes the artwork takes a surprising turn. A little friendly teasing is welcome!</p>
+<p data-lang="ja">走らなくても、下絵を作って眺めるだけで楽しめます。無料で気軽に遊べる場所を目指して、絵のわかりやすさも少しずつ改善していきます。</p>
+<p data-lang="en">You can enjoy making and looking at an outline without going for a run. We aim to keep this a free, playful space while gradually making the artwork easier to recognize.</p>
+<p class="muted" data-lang="ja">下絵の作成にも、ログインと制作条件の確認が必要です。ツッコミの投稿機能はまだありません。</p>
+<p class="muted" data-lang="en">Creating an outline still requires signing in and reviewing your preferences. There is no comment-posting feature yet.</p>
+</aside>
+<p class="muted"><strong data-lang="ja">走る前の確認：</strong><strong data-lang="en">Before running: </strong><span data-lang="ja">下絵は走行ルートではありません。道路候補も通行可否・安全を保証しません。走る場合は、現地の標識・交通ルールと実際の通行可否・安全を必ず確認してください。</span><span data-lang="en">An outline is not a running route. Road candidates do not guarantee access or safety. Before running, check actual access and safety, and follow local signs and traffic rules.</span></p>
 <p class="muted" data-lang="ja">星・ハート・円・三角に加え、自由入力ではGeminiが曲線の元絵を描き、その外周を道路用の下絵に整理します。細かな目や文字などの再現には対応しません。道路事情で形が崩れたり、距離が目安と異なる場合があります。「おまかせ」はまず北側で試します。作れない場合は、出発点・方角・距離を変えてお試しください。</p>
 <p class="muted" data-lang="en">Choose a star, heart, circle or triangle, or use Gemini to draw a curved reference and simplify its outer contour for roads. Fine details such as eyes or lettering are not supported. Roads may distort the shape or change the distance. Any direction initially tries north. If no candidate can be made, try another start, direction or distance.</p>
 <div id="outlineStep" class="notice" hidden><strong data-lang="ja">先に下絵を確認</strong><strong data-lang="en">Review the outline first</strong><p data-lang="ja">自由入力は下絵を作り、形が気に入ったら「候補ルートを作る」を押してください。下絵は道路とは無関係の輪郭です。説明を変更すると下絵を作り直せます。取得には最大60秒ほど待つ場合があります。</p><p data-lang="en">Generate an outline first. If you like it, generate the road candidate. The outline is not a road route. Change your description to make a different outline. Retrieval may take up to 60 seconds.</p><button id="generateOutline" type="button" class="button primary" disabled><span data-lang="ja">下絵を作る</span><span data-lang="en">Generate outline</span></button><div id="outlinePreview" hidden><p><strong data-lang="ja">下手ウマ画伯のGPSアート</strong><strong data-lang="en">Charming cartoon GPS art</strong></p><button type="button" class="button" data-art-reference>元絵：あり</button><p class="muted"><span data-lang="ja">薄い色は曲線の元絵、シアンの線は道路用に整理した外周です。目・羽などは走行ルートに含まれません。</span><span data-lang="en">The faint cartoon is the curved reference; the cyan line is its simplified outer contour. Eyes, wings and other details are not part of the running route.</span></p><svg id="outlineSvg" viewBox="-1.15 -1.15 2.3 2.3" role="img" aria-label="下絵 / Outline" style="display:block;width:100%;max-width:300px;height:260px;margin:12px auto;background:#0b1422;border-radius:12px"></svg><p data-lang="ja">これでよければ、下の「候補ルートを作る」へ。道路に合わせると形が変わることがあります。</p><p data-lang="en">If this shape looks good, generate the candidate below. Roads may distort it.</p></div></div>
@@ -160,6 +170,7 @@ $('review').addEventListener('click',()=>{$('review').classList.add('is-pressed'
 <script src="./gps-art-auth.js"></script>
 <script src="./gps-art-route.js"></script>
 </body></html>
+
 
 
 
