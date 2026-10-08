@@ -7,11 +7,16 @@ create table if not exists public.map_photos (
   lng double precision not null check (lng between -180 and 180),
   storage_path text not null unique,
   caption text not null default '' check (char_length(caption) <= 160),
+  author_display_name text not null default 'ランナー' check (char_length(author_display_name) <= 60),
   status text not null default 'pending' check (status in ('pending','approved','rejected')),
   consent_at timestamptz not null,
   created_at timestamptz not null default now(),
   reviewed_at timestamptz
 );
+
+alter table public.map_photos
+  add column if not exists author_display_name text not null default 'ランナー'
+    check (char_length(author_display_name) <= 60);
 
 create index if not exists map_photos_status_created_idx
   on public.map_photos(status, created_at desc);
@@ -19,9 +24,9 @@ create index if not exists map_photos_status_created_idx
 alter table public.map_photos enable row level security;
 
 revoke all on public.map_photos from anon, authenticated;
-grant select (id, lat, lng, storage_path, caption, status, created_at)
+grant select (id, lat, lng, storage_path, caption, author_display_name, status, created_at)
   on public.map_photos to anon, authenticated;
-grant insert (id, lat, lng, storage_path, caption, consent_at)
+grant insert (id, lat, lng, storage_path, caption, author_display_name, consent_at)
   on public.map_photos to authenticated;
 grant update (status, reviewed_at)
   on public.map_photos to authenticated;

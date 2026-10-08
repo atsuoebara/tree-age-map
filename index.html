@@ -2774,6 +2774,9 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 #mapPhotoCaption{box-sizing:border-box;width:100%;max-width:520px;padding:10px;border-radius:8px;border:1px solid #8792a3;background:#0a1422;color:#fff}
 #mapPhotoStatus{font-size:13px;min-height:1.4em;color:#ffe4b2}
 .photoRules{padding-left:20px;margin:8px 0;font-size:13px}
+.photoPublicNameNote,.photoPublicNameNotice,#mapPhotoPublicNamePreview{padding:8px 10px;border-left:3px solid #ff9b45;background:rgba(255,155,69,.08);border-radius:4px;font-size:12px;line-height:1.6;color:#e7edf5}
+#mapPhotoPublicNamePreview{font-weight:800}
+.photoReviewAuthor{font-weight:800}
 #mapPhotoReviewQueue{display:none;margin-top:14px;padding-top:12px;border-top:1px solid #566176}
 .photoReviewCard{display:grid;grid-template-columns:minmax(130px,220px) 1fr;gap:12px;padding:10px;margin:10px 0;background:#0a1422;border-radius:10px}
 .photoReviewCard img{width:100%;max-height:190px;object-fit:contain;background:#05080d}
@@ -3283,8 +3286,10 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   <input
     id="accountDisplayNameInput"
     type="text"
+    maxlength="60"
     placeholder="表示名"
   >
+  <p class="photoPublicNameNote"><span data-photo-lang="ja">写真を投稿すると、この表示名は承認後に写真と撮影場所とともに公開されます。名前を公開したくない場合は空欄でOKです。写真では「ランナー」と表示されます。</span><span data-photo-lang="en">When you submit a photo, this display name appears with the photo and location after approval. Leave it blank if you do not want to publish a name; the photo will show “ランナー”.</span></p>
 
   <label>現在のメールアドレス</label>
   <div id="accountCurrentEmail"></div>
@@ -3582,6 +3587,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <li><span data-photo-lang="ja">自宅・勤務先など個人の生活場所が分かる写真は送らないでください。公共の景色や自然、ランドマークを対象にしてください。</span><span data-photo-lang="en">Do not submit images that reveal a home, workplace, or other private location. Share public scenery, nature, or landmarks.</span></li>
       <li><span data-photo-lang="ja">写真に記録された撮影時GPSをピンに使います。承認後はその位置が地図で公開されます。画像ファイルからGPSなどのメタデータは削除します。</span><span data-photo-lang="en">The pin uses GPS recorded in the photo when it was taken. That location appears on the map after approval. GPS and other metadata are removed from the image file.</span></li>
     </ul>
+    <p class="photoPublicNameNotice"><span data-photo-lang="ja">投稿者名はアカウント設定の「表示名」です。公開したくない場合は空欄でOK（「ランナー」と表示）。承認後は写真と撮影時GPSの位置とともに公開されます。</span><span data-photo-lang="en">The photo uses your account display name. Leave it blank if you do not want to publish a name (it will show “ランナー”). After approval, the name appears with the photo and capture-time GPS location.</span></p>
+    <p id="mapPhotoPublicNamePreview" aria-live="polite"><span data-photo-lang="ja">ログイン後に写真の公開名を確認できます。</span><span data-photo-lang="en">Sign in to see the name that will appear with your photo.</span></p>
     <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
     <div class="photoActions">
@@ -4483,6 +4490,7 @@ const {
   }
 
   currentUser = data.user;
+  updatePhotoPublicNamePreview(data.user);
 
   document.getElementById(
     'accountDisplayName'
@@ -6585,6 +6593,24 @@ function setPhotoStatus(ja, en) {
   if (photoStatus) photoStatus.textContent = photoText(ja, en);
 }
 
+function getPhotoPublicName(user) {
+  const displayName = String(user?.user_metadata?.display_name || '').trim();
+  return displayName || 'ランナー';
+}
+
+function updatePhotoPublicNamePreview(user) {
+  const preview = document.getElementById('mapPhotoPublicNamePreview');
+  if (!preview) return;
+  if (!user) {
+    preview.textContent = photoText('ログイン後に写真の公開名を確認できます。','Sign in to see the name that will appear with your photo.');
+    return;
+  }
+  preview.textContent = photoText(
+    '今回の投稿者名：「' + getPhotoPublicName(user) + '」',
+    'Public name for this photo: “' + getPhotoPublicName(user) + '”'
+  );
+}
+
 function makePhotoPopup(photo) {
   const box = document.createElement('div');
   box.className = 'map-photo-popup';
@@ -6593,6 +6619,10 @@ function makePhotoPopup(photo) {
   image.alt = photo.caption || photoText('共有された写真', 'Community photo');
   image.loading = 'lazy';
   box.appendChild(image);
+  const author = document.createElement('p');
+  author.className = 'photoReviewAuthor';
+  author.textContent = photoText('投稿者：','By: ') + (photo.author_display_name || 'ランナー');
+  box.appendChild(author);
   if (photo.caption) {
     const caption = document.createElement('p');
     caption.textContent = photo.caption;
@@ -6656,7 +6686,7 @@ async function loadApprovedMapPhotos() {
   setPhotoStatus('承認済み写真を読み込み中…','Loading approved photos…');
   try {
     const {data, error} = await supabaseClient.from('map_photos')
-      .select('id,lat,lng,storage_path,caption,created_at')
+      .select('id,lat,lng,storage_path,caption,author_display_name,created_at')
       .eq('status','approved')
       .order('created_at',{ascending:false})
       .limit(500);
@@ -6747,12 +6777,16 @@ photoFileInput?.addEventListener('change', async () => {
   try {
     const {data:{session}} = await supabaseClient.auth.getSession();
     if (!session?.user) throw new Error(photoText('写真の送信にはログインが必要です。','Sign in to submit a photo.'));
+    const authorDisplayName = getPhotoPublicName(session.user);
+    if (authorDisplayName.length > 60) {
+      throw new Error(photoText('写真の公開名は60文字以内にしてください。アカウント設定の表示名を短くして保存してください。','The public name must be 60 characters or fewer. Shorten and save the display name in account settings.'));
+    }
     setPhotoStatus('撮影時の位置を写真から確認しています…','Reading the photo’s capture location…');
     const location = await getPhotoCaptureLocation(file);
     const coordinates = location.lat.toFixed(5) + ', ' + location.lng.toFixed(5);
     if (!window.confirm(photoText(
-      '写真は掲載基準に沿って審査され、承認まで非公開です。承認後は撮影時GPSの位置（' + coordinates + '）とともに地図で公開されます。人物・顔・子ども・車などの乗り物・個人情報や自宅等が写っていないこと、この場所で共有してよいことを確認しましたか？',
-      'Photos are private until reviewed and approved. After approval, this photo will appear on the map at its capture GPS location (' + coordinates + '). Confirm there are no people/faces, children, vehicles, personal information, or identifiable private places, and that you intend to share this place.'
+      '投稿者名：「' + authorDisplayName + '」\n写真は掲載基準に沿って審査され、承認まで非公開です。承認後はこの名前と撮影時GPSの位置（' + coordinates + '）が写真とともに地図で公開されます。名前を公開したくない場合は、送信をキャンセルしてアカウント設定の表示名を空欄にしてください（「ランナー」と表示）。人物・顔・子ども・車などの乗り物・ナンバープレート・個人情報や自宅等が写っていないこと、この場所で共有してよいことを確認しましたか？',
+      'Public name: “' + authorDisplayName + '”\nPhotos are private until reviewed and approved. After approval, this name and the capture GPS location (' + coordinates + ') will appear with the photo on the map. If you do not want to publish a name, cancel and leave the account display name blank in account settings (the photo will show “ランナー”). Confirm there are no people/faces, children, vehicles, license plates, personal information, or identifiable private places, and that you intend to share this place.'
     ))) return;
     setPhotoStatus('画像のメタデータを削除しています…','Removing image metadata…');
     const cleanFile = await compressPhotoWithoutMetadata(file);
@@ -6767,6 +6801,7 @@ photoFileInput?.addEventListener('change', async () => {
       lng:location.lng,
       storage_path:path,
       caption:(photoCaption?.value || '').trim(),
+      author_display_name:authorDisplayName,
       consent_at:new Date().toISOString()
     });
     if (insertError) throw insertError;
@@ -6789,7 +6824,7 @@ async function loadPendingPhotoReviews() {
   photoQueue.style.display = 'block';
   photoQueueItems.textContent = photoText('確認待ちを読み込み中…','Loading pending photos…');
   const {data, error} = await supabaseClient.from('map_photos')
-    .select('id,lat,lng,storage_path,caption,created_at')
+    .select('id,lat,lng,storage_path,caption,author_display_name,created_at')
     .eq('status','pending').order('created_at',{ascending:true}).limit(100);
   if (error) {
     photoQueueItems.textContent = photoText('審査待ちを読み込めませんでした。','Could not load pending photos.');
@@ -6808,6 +6843,10 @@ async function loadPendingPhotoReviews() {
     image.alt = photoText('掲載前の確認用写真','Photo awaiting review');
     card.appendChild(image);
     const details = document.createElement('div');
+    const author = document.createElement('p');
+    author.className = 'photoReviewAuthor';
+    author.textContent = photoText('投稿者：','By: ') + (row.author_display_name || 'ランナー');
+    details.appendChild(author);
     const caption = document.createElement('p');
     caption.textContent = row.caption || photoText('説明なし','No caption');
     details.appendChild(caption);
@@ -6880,10 +6919,17 @@ photoQueueItems?.addEventListener('click',async event => {
     await loadApprovedMapPhotos();
   }
 });
-supabaseClient.auth.onAuthStateChange(() => {
-  window.setTimeout(() => loadPendingPhotoReviews(),0);
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  window.setTimeout(() => {
+    updatePhotoPublicNamePreview(session?.user || null);
+    loadPendingPhotoReviews();
+  },0);
 });
-window.setTimeout(() => loadPendingPhotoReviews(),0);
+window.setTimeout(async () => {
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  updatePhotoPublicNamePreview(session?.user || null);
+  await loadPendingPhotoReviews();
+},0);
 
 
 
