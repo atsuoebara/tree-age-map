@@ -1,0 +1,231 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Runner’s Ringsに「下手ウマ画伯のGPSアート（β）」が登場。AIに絵を描いてもらい、道路のルート候補を作る機能です。ところが、猫も犬もなかなかの個性派。笑いながら開発するうちに、GPSアートの師匠の凄さをあらためて実感しました。">
+  <title>ニワトリを頼んだら、卵に戻った。GPSアートの師匠はやっぱり凄い。 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261009-000907-3e3dcf84/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261009-000907-3e3dcf84/">
+  <meta property="og:title" content="ニワトリを頼んだら、卵に戻った。GPSアートの師匠はやっぱり凄い。">
+  <meta property="og:description" content="Runner’s Ringsに「下手ウマ画伯のGPSアート（β）」が登場。AIに絵を描いてもらい、道路のルート候補を作る機能です。ところが、猫も犬もなかなかの個性派。笑いながら開発するうちに、GPSアートの師匠の凄さをあらためて実感しました。">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/16/b60a47e4-fea6-47d8-b58d-1cffb2139fd1.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/16/b60a47e4-fea6-47d8-b58d-1cffb2139fd1.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-10-08T15:15:05.654Z">
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-10-08">2026-10-08</time>
+      <h1>ニワトリを頼んだら、卵に戻った。GPSアートの師匠はやっぱり凄い。</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/16/b60a47e4-fea6-47d8-b58d-1cffb2139fd1.png" alt="" loading="lazy">
+      <p class="summary">Runner’s Ringsに「下手ウマ画伯のGPSアート（β）」が登場。AIに絵を描いてもらい、道路のルート候補を作る機能です。ところが、猫も犬もなかなかの個性派。笑いながら開発するうちに、GPSアートの師匠の凄さをあらためて実感しました。</p>
+      <div class="body">「ニワトリを描いて」
+
+そうお願いしたら、画面に出てきたのは、丸い輪郭に小さな目とくちばし。
+
+……卵に戻った？
+
+Runner’s Ringsに追加した「下手ウマ画伯のGPSアート（β）」は、そんな画伯と遊べる新機能です。
+
+描いてほしいものを入力すると、AIが元絵を作ります。その外周を道路用の下絵に整理し、出発点や距離などの条件に合わせて、道路に沿ったルート候補を探します。
+
+言葉で説明すると簡単そうですが、作ってみると、これがなかなか難しい。
+
+■ 猫を頼んだのに、頭に何かある
+
+犬をお願いすると、犬……かもしれないもの。
+猫をお願いすると、頭から謎の突起。
+車も飛行機も、画伯なりの解釈が入ります。
+
+さらに、下絵ができても、道路に合わせると形が崩れることがあります。距離や方角の条件が合わず、ルート候補を出せない場合もあります。
+
+ニワトリは、5kmの設定で下絵を作り、ルートは10kmに変えて生成できました。犬は10kmでもうまくいかず、場所を変えたら候補が出たことも。
+
+絵を描くことと、その絵を道路で描くことは、別の難しさがあるんですね。
+
+■ GPSアートの師匠は、やっぱり凄い
+
+ここで、私のGPSアートの師匠の凄さをあらためて感じました。
+
+地図の道路を見ながら、描きたいものの特徴を残し、つながったルートとして成立させる。そして、実際に自分の足で走って作品にする。
+
+完成した作品を見て「凄い」と思っていましたが、自分で仕組みを作ってみて、その「凄い」の中身が少し分かった気がします。
+
+AIが絵を出しても、それだけではGPSアートになりません。
+
+道路の制約の中で、何を残して、何を省くか。どこを通れば、そのものらしく見えるか。
+
+そこには、人の観察力と工夫とセンスがあります。今回の開発は、師匠への尊敬が深まる時間にもなりました。
+
+■ 上達は目指す。でも、失敗も楽しみたい
+
+もちろん、「下手ウマだから」で品質向上を諦めるつもりはありません。
+
+短い距離なら全身より顔を中心にするなど、条件に合わせて描き方を工夫すること。輪郭を簡単にしても、そのものらしい特徴を残すこと。改善できるところは、これからも直していきます。
+
+ただ、思いどおりにいかない絵を、みんなで笑えるアプリもいいなと思っています。
+
+「猫って言ったのに、何これ？」
+「画伯、今日は調子悪い？」
+「ニワトリになる前から描いたの？」
+
+下手ウマ画伯の絵に、ぜひツッコミを入れてください。
+
+■ 走らなくても、遊べます
+
+この機能は、下絵を作るだけでも楽しめます。
+
+思いついたものを描いてもらう。
+予想外の絵が出てきて笑う。
+気に入ったら、道路のルート候補も試してみる。
+
+走った人生を残すRunner’s Ringsに、走る前から遊べる入口が増えました。
+
+現在は無料のβ版で、生成にはログインが必要です。外部サービスの混雑や利用上限、絵や道路の条件によって、生成できない場合があります。
+
+表示するルートは候補です。実際に走る際は、現地の通行可否や交通状況、安全を確認してください。
+
+まだまだ修業中の画伯ですが、少しずつ育てていきます。
+
+さて、あなたなら何を描かせますか？
+
+https://runnersrings.com/gps-art.html</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=%E3%83%8B%E3%83%AF%E3%83%88%E3%83%AA%E3%82%92%E9%A0%BC%E3%82%93%E3%81%A0%E3%82%89%E3%80%81%E5%8D%B5%E3%81%AB%E6%88%BB%E3%81%A3%E3%81%9F%E3%80%82GPS%E3%82%A2%E3%83%BC%E3%83%88%E3%81%AE%E5%B8%AB%E5%8C%A0%E3%81%AF%E3%82%84%E3%81%A3%E3%81%B1%E3%82%8A%E5%87%84%E3%81%84%E3%80%82&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261009-000907-3e3dcf84%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-10-08">2026-10-08</time>
+      <h1>Asked for a Chicken, Got an Egg: A New Appreciation for My GPS Art Mentor</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/16/b60a47e4-fea6-47d8-b58d-1cffb2139fd1.png" alt="" loading="lazy">
+      <p class="summary">Runner’s Rings now has a GPS Art beta that turns an AI sketch into a possible road route. The drawings have plenty of personality—and sometimes very little resemblance to the request. Building it brought plenty of laughs and a renewed appreciation for my GPS art mentor.</p>
+      <div class="body">“Draw me a chicken.”
+
+The result was a round outline with a tiny eye and beak.
+
+Had it gone back to being an egg?
+
+Meet the wonderfully awkward artist behind Runner’s Rings’ new GPS Art beta.
+
+Enter what you want to draw, and AI creates a sketch. The app then simplifies its outer contour and looks for a possible road route using your starting point, target distance, and other settings.
+
+It sounds straightforward. Building it was another story.
+
+A cat with something growing out of its head
+
+Ask for a dog, and you get something that might be a dog. Ask for a cat, and mysterious spikes appear on its head. Cars and airplanes receive equally creative interpretations.
+
+Even when the sketch works, fitting it to roads can change its shape. Sometimes the distance or direction constraints prevent a suitable route from being shown.
+
+I created a chicken sketch with a 5 km setting, then changed the route setting to 10 km before getting a candidate. A dog failed at 10 km, while moving the starting point helped in another attempt.
+
+Drawing a picture and drawing that picture with roads are two different challenges.
+
+A renewed appreciation for my GPS art mentor
+
+This experience reminded me just how impressive my GPS art mentor’s work is.
+
+Looking at a map, keeping the subject’s recognizable features, connecting everything into a route—and then actually running it to create the artwork.
+
+I already admired the finished results. Trying to build this feature helped me understand a little more of the skill behind them.
+
+An AI drawing alone is not GPS art.
+
+Working within a road network means deciding what to keep, what to leave out, and which roads will make the subject recognizable.
+
+That takes observation, creativity, and judgment. This project gave me even more respect for my mentor.
+
+Keep improving—and enjoy the mistakes
+
+Calling it a quirky artist does not mean giving up on quality.
+
+There is still room to adapt the drawing to the target distance, focus on a face rather than a whole body when appropriate, and preserve recognizable features while simplifying the outline.
+
+We will keep improving what we can.
+
+But I also like the idea of an app where unexpected results can make people laugh.
+
+“I asked for a cat. What is this?”
+“Having an off day, artist?”
+“Did you draw the chicken before it hatched?”
+
+Feel free to give our artist some friendly teasing.
+
+You can play without running
+
+You can enjoy this feature simply by making sketches.
+
+Request something, laugh at the unexpected result, and try a road route if you like the drawing.
+
+Runner’s Rings is about preserving the life you run. Now it also has something to enjoy before you head out.
+
+The beta is free, and creating sketches or routes requires login. Service congestion, usage limits, and drawing or road constraints may prevent generation.
+
+Routes are suggestions. Before running, check local access, traffic conditions, and safety.
+
+Our artist is still learning. We will keep helping it grow.
+
+What would you ask it to draw?
+
+https://runnersrings.com/gps-art.html</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=Asked%20for%20a%20Chicken%2C%20Got%20an%20Egg%3A%20A%20New%20Appreciation%20for%20My%20GPS%20Art%20Mentor&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261009-000907-3e3dcf84%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261009-000907-3e3dcf84/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        try{if(!navigator.clipboard)throw new Error('No clipboard');await navigator.clipboard.writeText(permalink);feedback.textContent=labels[a.dataset.lang];}
+        catch{window.prompt('Copy article URL',permalink);}
+      });
+      if(navigator.share){const btn=a.querySelector('.native-share');btn.hidden=false;btn.addEventListener('click',async()=>{try{await navigator.share({title:a.querySelector('h1').textContent,text:a.querySelector('h1').textContent+'
+'+permalink});}catch(e){if(e.name!=='AbortError')feedback.textContent='Share failed';}});}
+    });
+    show();
+  })();
+  </script>
+</body>
+</html>
