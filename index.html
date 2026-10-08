@@ -2778,6 +2778,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 #mapPhotoPublicNamePreview{font-weight:800}
 .photoReviewAuthor{font-weight:800}
 #mapPhotoReviewQueue{display:none;margin-top:14px;padding-top:12px;border-top:1px solid #566176}
+#mapPhotosToggle[aria-pressed="true"]{background:#66e6a2;color:#102518}
 .photoReviewCard{display:grid;grid-template-columns:minmax(130px,220px) 1fr;gap:12px;padding:10px;margin:10px 0;background:#0a1422;border-radius:10px}
 .photoReviewCard img{width:100%;max-height:190px;object-fit:contain;background:#05080d}
 .photoReviewActions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
@@ -3595,10 +3596,11 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
     <div class="photoActions">
-      <button id="mapPhotosToggle" type="button" aria-pressed="false"><span data-photo-lang="ja">写真を地図に表示：OFF</span><span data-photo-lang="en">Show photos on map: OFF</span></button>
+      <button id="mapPhotosToggle" type="button" aria-pressed="false"><span data-photo-lang="ja">写真は非表示（タップして表示）</span><span data-photo-lang="en">Photos are hidden (tap to show)</span></button>
       <button id="mapPhotoChoose" type="button"><span data-photo-lang="ja">写真を送る</span><span data-photo-lang="en">Submit a photo</span></button>
-      <input id="mapPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
+      <input id="mapPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
     </div>
+    <p class="photoPublicNameNote"><span data-photo-lang="ja">iPhoneで撮影する場合は、標準のカメラアプリで撮って写真アプリに保存した写真を選んでください。写真を開いて上にスワイプし、地図が表示されれば撮影地情報があります。ブラウザーから直接撮影した写真は端末に保存されない場合があります。</span><span data-photo-lang="en">On iPhone, take the photo with the Camera app, then choose the saved original from Photos. Open it and swipe up; a map means capture location is present. A photo taken directly in the browser may not be saved on your device.</span></p>
     <p id="mapPhotoStatus" role="status" aria-live="polite"></p>
     <section id="mapPhotoReviewQueue" aria-label="Photo review queue">
       <h3><span data-photo-lang="ja">掲載前の確認</span><span data-photo-lang="en">Pre-publication review</span></h3>
@@ -6728,8 +6730,8 @@ photoToggle?.addEventListener('click', async () => {
   photoToggle.querySelectorAll('[data-photo-lang]').forEach(node => {
     const isOn = photoLayerEnabled;
     node.textContent = node.dataset.photoLang === 'en'
-      ? (isOn ? 'Show photos on map: ON' : 'Show photos on map: OFF')
-      : (isOn ? '地図の写真表示：ON' : '写真を地図に表示：OFF');
+      ? (isOn ? 'Photos are visible (tap to hide)' : 'Photos are hidden (tap to show)')
+      : (isOn ? '写真を表示中（タップして非表示）' : '写真は非表示（タップして表示）');
   });
   if (photoLayerEnabled) {
     if (!map.hasLayer(photoMarkerLayer)) photoMarkerLayer.addTo(map);
@@ -6737,7 +6739,7 @@ photoToggle?.addEventListener('click', async () => {
   } else {
     photoMarkerLayer.clearLayers();
     if (map.hasLayer(photoMarkerLayer)) map.removeLayer(photoMarkerLayer);
-    setPhotoStatus('写真表示をOFFにしました。','Photo markers are off.');
+    setPhotoStatus('写真を地図に表示しない状態にしました。','Photos are hidden from the map.');
   }
 });
 map.on('zoomend',drawPhotoMarkers);
@@ -6779,7 +6781,7 @@ async function getPhotoCaptureLocation(file) {
   const lat = Number(gps?.latitude);
   const lng = Number(gps?.longitude);
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-    throw new Error(photoText('写真に撮影時のGPS位置がありません。カメラの位置情報をONにして撮り直してください。','This photo has no GPS location from capture time. Enable location for your camera and take the photo again.'));
+    throw new Error(photoText('選んだ写真から撮影時GPSを読み取れません。写真アプリで写真を開き、上にスワイプして地図が出るか確認してください。地図が出ない場合は、カメラの位置情報をONにして新しく撮影してください。','Could not read capture-time GPS from this photo. Open it in Photos and swipe up to check for a map. If no map appears, enable camera location and take a new photo.'));
   }
   return {lat,lng};
 }
