@@ -2,7 +2,7 @@
 
 This bundle adds a collapsible photo panel and photo layer to the existing index map. The panel starts collapsed, and the layer starts OFF. Photo submissions require sign-in and remain private until the designated account approves them.
 
-The photo's public author name is copied from the account's saved `display_name` when submitted. A blank account display name is shown as 「ランナー」. The send confirmation shows the public name and exact capture GPS coordinates before upload. Changing the account display name later affects future submissions; an existing photo keeps the name saved with that submission. Contributors who do not want to publish a personal name should leave the account display name blank.
+The photo's public author name is copied from the separately saved account setting `photo_public_name` when submitted. This is independent of the account's ordinary `display_name`. A blank photo public name is shown as 「ランナー」. The send confirmation shows the public name and exact capture GPS coordinates before upload. Changing the photo public name later affects future submissions; an existing photo keeps the name saved with that submission. Contributors who do not want to publish a name should leave the photo public name blank. The `author_display_name` column in `map_photos` stores the submission-time snapshot; no additional SQL change is needed for this setting.
 
 ## Included files
 

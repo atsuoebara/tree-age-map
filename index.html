@@ -3289,7 +3289,9 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     maxlength="60"
     placeholder="表示名"
   >
-  <p class="photoPublicNameNote"><span data-photo-lang="ja">写真を投稿すると、この表示名は承認後に写真と撮影場所とともに公開されます。名前を公開したくない場合は空欄でOKです。写真では「ランナー」と表示されます。</span><span data-photo-lang="en">When you submit a photo, this display name appears with the photo and location after approval. Leave it blank if you do not want to publish a name; the photo will show “ランナー”.</span></p>
+  <label for="photoPublicNameInput"><span data-photo-lang="ja">写真の公開名</span><span data-photo-lang="en">Public name for photos</span></label>
+  <input id="photoPublicNameInput" type="text" maxlength="60" autocomplete="nickname" placeholder="写真の公開名 / Public name for photos">
+  <p class="photoPublicNameNote"><span data-photo-lang="ja">写真の投稿者名として使う名前です。名前を公開したくなければ空欄でOK。空欄なら「ランナー」と表示されます。保存後もいつでも変更できます。</span><span data-photo-lang="en">This name is shown as the photo contributor. Leave it blank if you do not want to publish a name; blank names appear as “ランナー”. You can change it any time.</span></p>
 
   <label>現在のメールアドレス</label>
   <div id="accountCurrentEmail"></div>
@@ -3587,8 +3589,9 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <li><span data-photo-lang="ja">自宅・勤務先など個人の生活場所が分かる写真は送らないでください。公共の景色や自然、ランドマークを対象にしてください。</span><span data-photo-lang="en">Do not submit images that reveal a home, workplace, or other private location. Share public scenery, nature, or landmarks.</span></li>
       <li><span data-photo-lang="ja">写真に記録された撮影時GPSをピンに使います。承認後はその位置が地図で公開されます。画像ファイルからGPSなどのメタデータは削除します。</span><span data-photo-lang="en">The pin uses GPS recorded in the photo when it was taken. That location appears on the map after approval. GPS and other metadata are removed from the image file.</span></li>
     </ul>
-    <p class="photoPublicNameNotice"><span data-photo-lang="ja">投稿者名はアカウント設定の「表示名」です。公開したくない場合は空欄でOK（「ランナー」と表示）。承認後は写真と撮影時GPSの位置とともに公開されます。</span><span data-photo-lang="en">The photo uses your account display name. Leave it blank if you do not want to publish a name (it will show “ランナー”). After approval, the name appears with the photo and capture-time GPS location.</span></p>
+    <p class="photoPublicNameNotice"><span data-photo-lang="ja">写真の公開名はアカウント設定で保存・変更できます。名前を公開したくなければ空欄でOK（「ランナー」と表示）。承認後は公開名が写真と撮影時GPSの位置とともに公開されます。</span><span data-photo-lang="en">Set or change your photo public name in account settings. Leave it blank if you do not want to publish a name (it will show “ランナー”). After approval, the name appears with the photo and capture-time GPS location.</span></p>
     <p id="mapPhotoPublicNamePreview" aria-live="polite"><span data-photo-lang="ja">ログイン後に写真の公開名を確認できます。</span><span data-photo-lang="en">Sign in to see the name that will appear with your photo.</span></p>
+    <button id="mapPhotoPublicNameSettings" type="button"><span data-photo-lang="ja">写真の公開名を設定・変更</span><span data-photo-lang="en">Set or change photo public name</span></button>
     <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
     <div class="photoActions">
@@ -4321,6 +4324,8 @@ const accountDisplayNameInput =
   document.getElementById(
     'accountDisplayNameInput'
   );
+const photoPublicNameInput =
+  document.getElementById('photoPublicNameInput');
 
 const accountSaveButton =
   document.getElementById(
@@ -4394,6 +4399,11 @@ accountProfile.addEventListener('keydown', event => {
   }
 });
 accountSettingsButton.addEventListener('click', openAccountPanel);
+document.getElementById('mapPhotoPublicNameSettings')?.addEventListener('click', () => {
+  openAccountPanel();
+  accountPanel.scrollIntoView({behavior:'smooth', block:'start'});
+  photoPublicNameInput?.focus({preventScroll:true});
+});
 
 accountCloseButton.addEventListener('click', () => {
   accountPanel.open = false;
@@ -4422,6 +4432,8 @@ const avatarFile =
   accountAvatarInput.files?.[0];
   const displayName =
     accountDisplayNameInput.value.trim();
+const photoPublicName =
+  photoPublicNameInput.value.trim();
 let avatarPath =
   currentUser.user_metadata?.avatar_path || '';
 
@@ -4462,6 +4474,7 @@ const newPassword =
 const updateData = {
   data: {
     display_name: displayName,
+    photo_public_name: photoPublicName,
     avatar_path: avatarPath
   }
 };
@@ -6594,8 +6607,8 @@ function setPhotoStatus(ja, en) {
 }
 
 function getPhotoPublicName(user) {
-  const displayName = String(user?.user_metadata?.display_name || '').trim();
-  return displayName || 'ランナー';
+  const publicName = String(user?.user_metadata?.photo_public_name || '').trim();
+  return publicName || 'ランナー';
 }
 
 function updatePhotoPublicNamePreview(user) {
@@ -6779,14 +6792,14 @@ photoFileInput?.addEventListener('change', async () => {
     if (!session?.user) throw new Error(photoText('写真の送信にはログインが必要です。','Sign in to submit a photo.'));
     const authorDisplayName = getPhotoPublicName(session.user);
     if (authorDisplayName.length > 60) {
-      throw new Error(photoText('写真の公開名は60文字以内にしてください。アカウント設定の表示名を短くして保存してください。','The public name must be 60 characters or fewer. Shorten and save the display name in account settings.'));
+      throw new Error(photoText('写真の公開名は60文字以内にしてください。アカウント設定で短くして保存してください。','The public name must be 60 characters or fewer. Shorten and save it in account settings.'));
     }
     setPhotoStatus('撮影時の位置を写真から確認しています…','Reading the photo’s capture location…');
     const location = await getPhotoCaptureLocation(file);
     const coordinates = location.lat.toFixed(5) + ', ' + location.lng.toFixed(5);
     if (!window.confirm(photoText(
-      '投稿者名：「' + authorDisplayName + '」\n写真は掲載基準に沿って審査され、承認まで非公開です。承認後はこの名前と撮影時GPSの位置（' + coordinates + '）が写真とともに地図で公開されます。名前を公開したくない場合は、送信をキャンセルしてアカウント設定の表示名を空欄にしてください（「ランナー」と表示）。人物・顔・子ども・車などの乗り物・ナンバープレート・個人情報や自宅等が写っていないこと、この場所で共有してよいことを確認しましたか？',
-      'Public name: “' + authorDisplayName + '”\nPhotos are private until reviewed and approved. After approval, this name and the capture GPS location (' + coordinates + ') will appear with the photo on the map. If you do not want to publish a name, cancel and leave the account display name blank in account settings (the photo will show “ランナー”). Confirm there are no people/faces, children, vehicles, license plates, personal information, or identifiable private places, and that you intend to share this place.'
+      '投稿者名：「' + authorDisplayName + '」\n写真は掲載基準に沿って審査され、承認まで非公開です。承認後はこの名前と撮影時GPSの位置（' + coordinates + '）が写真とともに地図で公開されます。名前を公開したくない場合は、送信をキャンセルしてアカウント設定の「写真の公開名」を空欄にしてください（「ランナー」と表示）。人物・顔・子ども・車などの乗り物・ナンバープレート・個人情報や自宅等が写っていないこと、この場所で共有してよいことを確認しましたか？',
+      'Public name: “' + authorDisplayName + '”\nPhotos are private until reviewed and approved. After approval, this name and the capture GPS location (' + coordinates + ') will appear with the photo on the map. If you do not want to publish a name, cancel and leave “Public name for photos” blank in account settings (the photo will show “ランナー”). Confirm there are no people/faces, children, vehicles, license plates, personal information, or identifiable private places, and that you intend to share this place.'
     ))) return;
     setPhotoStatus('画像のメタデータを削除しています…','Removing image metadata…');
     const cleanFile = await compressPhotoWithoutMetadata(file);
@@ -27290,6 +27303,8 @@ document.getElementById(
 
 accountDisplayNameInput.value =
   savedDisplayName;
+photoPublicNameInput.value =
+  currentUser.user_metadata?.photo_public_name || '';
 
 const savedAvatarPath =
   currentUser.user_metadata?.avatar_path || '';
