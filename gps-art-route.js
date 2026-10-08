@@ -47,6 +47,7 @@ function render(){
  else if(!preferences)text=en()?'Confirm your start, acknowledge safety and review preferences first.':'出発点を確定し、安全確認をチェックして「制作条件を確認」を押してください。';
  else if(!['template','free'].includes(preferences.material))text=errors.TEMPLATE_ONLY[en()?1:0];
  else text=preferences.material==='free'?(en()?(outline?'Outline ready. If you like it, generate the road candidate.':'Generate an outline first.'):(outline?'下絵を表示しました。これでよければ候補ルートを作ってください。':'まず「下絵を作る」を押してください。')):(en()?'Ready to try a default-shape candidate.':'デフォルト素材の候補生成を試せます。');
+ if(outline?.reference?.omittedDetails>0)text+=en()?' Some details outside the silhouette were omitted.':' 元絵の外にはみ出す装飾は省きました。';
  $('routeStatus').textContent=text;
  $('routeDetails').hidden=!result;
  if(result){
@@ -82,7 +83,7 @@ $('generateOutline').addEventListener('click',async()=>{
   const client=window.runnerRingsArtAuth?.getClient();if(!client){errorCode='AUTH_REQUIRED';return;}
   const {data,error}=await client.auth.getSession();if(ticket!==requestId)return;
   if(error||!data?.session?.access_token){errorCode='AUTH_REQUIRED';return;}
-  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'outline'})});
+  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'curve'})});
   const payload=await response.json();if(ticket!==requestId)return;
   if(!response.ok){errorCode=payload?.error||(response.status===401?'AUTH_REQUIRED':'failed');return;}
   if(!outlineValid(payload.outline))throw new Error('Invalid outline');
@@ -112,6 +113,7 @@ button.addEventListener('click',async()=>{
 });
 render();
 })();
+
 
 
 
