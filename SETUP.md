@@ -1,7 +1,16 @@
-次回反映用。現在の公開版は変更していません。
-1. Supabase gps-art-generateを同梱全文で更新。Verify JWT ONを維持。
-2. GitHub gps-art.html / gps-art-route.js / ROADMAP.mdを全文差し替え。
-既存gps-art-view.js / gps-art-search.js / gps-art-auth.jsは維持。
-Commit: Split GPS Art outline review from road generation
-自由入力→制作条件確認→下絵を作る→形を確認→候補ルートを作る。下絵の作り直しは説明変更か30秒以上空けて再作成。
+# 今回の反映
 
+GitHub mainのルートへgps-art.html、gps-art-route.js、ROADMAP.mdの3ファイルをまとめて上書き。
+
+コミット：Fix GPS Art generation button states and outline guidance
+
+Supabaseはチャッピーがv10へ反映済み。操作不要。supabase/gps-art-generate.tsは記録用で、再貼り替えは不要。
+
+反映後の確認：
+1. GPS Artを再読み込み。自由入力「にわとり」で条件確認。
+2. 下絵を作る：下絵ボタンだけ発光し「下絵を作成中…」。候補ルートは暗色で押せない。
+3. 下絵が表示されたら両ボタンとも発光しない。輪郭がにわとりに見えるか確認。
+4. 候補ルートを作る：候補だけ発光し「道路を計算中…」。完了・失敗で発光解除。
+5. 「富士山」へ条件変更。前の下絵が消え、新しい下絵を作るまで道路生成は押せない。
+
+下絵品質は改善指示のみで、実API品質保証ではない。安定性も未完了。既存の比較表示、全画面再生、GPS初期表示を維持。

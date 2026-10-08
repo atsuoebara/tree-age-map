@@ -19,6 +19,7 @@
 <style>
 :root{--route-neon:#ff6a00}
 .button.is-pressed,.button.is-pressed:disabled{background:var(--route-neon);border:2px solid #ffe5b8;color:#101820;box-shadow:0 0 0 2px #ff6a0040,0 0 16px #ff6a0080}
+.button.primary:disabled:not(.is-pressed){background:#253344;border-color:#41556e;color:#aebed0;box-shadow:none}
 .button:active:not(:disabled){background:var(--route-neon);color:#101820}
 .gpsArtRoute{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #07101d)}
 </style>
@@ -154,6 +155,7 @@ $('review').addEventListener('click',()=>{$('review').classList.add('is-pressed'
 <script src="./gps-art-auth.js"></script>
 <script src="./gps-art-route.js"></script>
 </body></html>
+
 
 
 

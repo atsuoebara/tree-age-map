@@ -26,12 +26,17 @@ const errors={
 };
 const en=()=>document.documentElement.lang==='en',state=()=>window.runnerRingsArtAuth?.getState()||'unavailable';
 function render(){
- button.classList.toggle('is-pressed',busy||Boolean(result)||Boolean(errorCode));
+ const outlineBusy=busy&&message==='outlineLoading',routeBusy=busy&&message==='loading';
+ button.classList.toggle('is-pressed',routeBusy);
+ button.setAttribute('aria-busy',String(routeBusy));
+ button.textContent=routeBusy?(en()?'Calculating roads…':'道路を計算中…'):(en()?'Generate candidate route':'候補ルートを作る');
  const free=preferences?.material==='free';
  $('outlineStep').hidden=!free;
  $('generateOutline').disabled=busy||state()!=='signedIn'||!free;
  $('outlinePreview').hidden=!outline;
- $('generateOutline').classList.toggle('is-pressed',busy||Boolean(outline));
+ $('generateOutline').classList.toggle('is-pressed',outlineBusy);
+ $('generateOutline').setAttribute('aria-busy',String(outlineBusy));
+ $('generateOutline').textContent=outlineBusy?(en()?'Creating outline…':'下絵を作成中…'):(en()?'Create outline':'下絵を作る');
  button.disabled=(free&&!outline)||busy||state()!=='signedIn'||!preferences||!['template','free'].includes(preferences.material);
  let text='';
  if(errorCode)text=(errors[errorCode]||errors.failed)[en()?1:0];
@@ -106,5 +111,6 @@ button.addEventListener('click',async()=>{
 });
 render();
 })();
+
 
 
