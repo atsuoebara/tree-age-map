@@ -1,12 +1,16 @@
-# 貼り替え手順
+# 差し替え手順
 
-GitHub の最新ファイルを元にした、案内文だけの変更です。
+GitHub の最新 index.html、gps-art.html、ROADMAP.md を取得して作成しました。
 
-1. gps-art.html を同名ファイルに貼り替えます。
-2. ROADMAP.md を貼り替えます。別スレで更新した場合は、冒頭の「GPS Art：画伯のあたたかい案内」だけを最新 ROADMAP.md に追記してください。
-3. 公開反映後にページを更新し、日本語・ENで画伯の案内が表示されることを確認してください。
+1. index.html と gps-art.html を同名ファイルへ全文差し替えします。
+2. ROADMAP.md を差し替えます。
+3. ページを更新し、ログイン前・ログイン後の入口、日本語・ENの表示を確認します。
 
-Supabase の操作は不要です。生成処理や絵の品質はこの版では変更しません。
-コメント投稿機能は追加していません。
+別スレでこの取得後に index.html を更新した場合は、古いファイルへ戻さず、最新版との統合が必要です。
+今回の index.html はスクリプトを変更していません。
 
-Commit message: Add warm playful copy to GPS art
+Supabase の追加操作は不要です。診断と交差補正の v17 は反映済みです。
+supabase/gps-art-generate.ts は、反映済みサーバーコードの保管用です。再デプロイ不要です。
+保存・投稿・コメント機能は追加していません。
+
+Commit message: Add GPS art beta entry and generation notices

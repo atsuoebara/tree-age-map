@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rings GPS Art｜Runner's Rings</title>
-<meta name="description" content="走る道を、ひとつの作品に。Rings GPS Artの準備ページ。">
+<meta name="description" content="下手ウマ画伯のGPSアート（β）。下絵づくりだけでも遊べる、無料のGPSアート試作機能。">
 <link rel="icon" href="icon.PNG">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -28,14 +28,14 @@
 <header><a href="./index.html">Runner's Rings</a><div class="languages" aria-label="Language"><button type="button" data-language="ja">日本語</button><button type="button" data-language="en">EN</button></div></header>
 <main>
 <section class="hero">
-<div><div class="eyebrow">RUN THE ART. KEEP THE RINGS.</div><h1>Rings<br><span>GPS Art</span></h1><p class="lead" data-lang="ja">走る道を、ひとつの作品に。</p><p class="lead" data-lang="en">Turn the path you run into art.</p><p class="muted" data-lang="ja">街をキャンバスに、走った軌跡で描く。作品を見つけて、自分の一枚をつくる場所。</p><p class="muted" data-lang="en">Make the city your canvas. Discover running art and create a piece of your own.</p><span class="badge" data-lang="ja">準備中</span><span class="badge" data-lang="en">Coming soon</span><div class="actions"><a class="button primary" href="#gallery"><span data-lang="ja">作品一覧を見る</span><span data-lang="en">Explore the gallery</span></a><a class="button" href="#create"><span data-lang="ja">制作エリアを見る</span><span data-lang="en">View the studio</span></a></div></div>
+<div><div class="eyebrow">RUN THE ART. KEEP THE RINGS.</div><h1>Rings<br><span>GPS Art</span></h1><p class="lead" data-lang="ja">走る道を、ひとつの作品に。</p><p class="lead" data-lang="en">Turn the path you run into art.</p><p class="muted" data-lang="ja">街をキャンバスに、走った軌跡で描く。作品を見つけて、自分の一枚をつくる場所。</p><p class="muted" data-lang="en">Make the city your canvas. Discover running art and create a piece of your own.</p><span class="badge" data-lang="ja">β版・試作公開</span><span class="badge" data-lang="en">Public beta</span><div class="actions"><a class="button primary" href="#gallery"><span data-lang="ja">作品一覧（準備中）</span><span data-lang="en">Gallery (coming soon)</span></a><a class="button" href="#create"><span data-lang="ja">画伯と遊んでみる</span><span data-lang="en">Try the artist</span></a></div></div>
 <figure class="route"><svg viewBox="0 0 360 280" role="img" aria-labelledby="art-title"><title id="art-title">GPS Art concept illustration / GPS Artのイメージ図</title><defs><pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#26384a" stroke-width="1"/></pattern></defs><rect width="360" height="280" fill="url(#grid)" rx="16"/><path d="M30 70H330M60 20V260M300 20V260M30 220H330" stroke="#32485c" stroke-width="5" fill="none"/><path d="M180 225L78 125L86 72L123 49L162 57L180 86L200 57L240 49L277 73L284 125L180 225" fill="none" stroke="#ff9b45" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M180 225L220 186L245 160" fill="none" stroke="#23d9e8" stroke-width="9" stroke-linecap="round"/><circle cx="180" cy="225" r="8" fill="#23d9e8" stroke="#0b1422" stroke-width="3"/></svg><figcaption><span data-lang="ja">イメージ図 · 実際の道路や走行ルートではありません</span><span data-lang="en">Concept illustration · not an actual road or running route</span></figcaption></figure>
 </section>
 <section id="gallery" class="panel"><div class="sectionLabel">GALLERY</div><h2 data-lang="ja">みんなのGPS Art</h2><h2 data-lang="en">Running art gallery</h2><p class="muted" data-lang="ja">作品の閲覧はログインなしで楽しめる予定です。</p><p class="muted" data-lang="en">The gallery will be available without signing in.</p><div class="empty"><strong data-lang="ja">最初の作品を迎える準備中です。</strong><strong data-lang="en">Getting ready for the first creations.</strong><div class="muted" data-lang="ja">作品の投稿・公開機能は、まだ利用できません。</div><div class="muted" data-lang="en">Submitting and publishing artwork is not available yet.</div></div></section>
 <section class="panel"><div class="sectionLabel">HOW IT WILL WORK</div><h2 data-lang="ja">描いて、走って、残す。</h2><h2 data-lang="en">Imagine it. Run it. Keep it.</h2><div class="steps"><div class="step"><span class="number">01 · IDEA</span><strong data-lang="ja">描きたいものを決める</strong><strong data-lang="en">Choose an idea</strong><p data-lang="ja">形やテーマから、自分の作品を考える。</p><p data-lang="en">Start with a shape or theme of your own.</p></div><div class="step"><span class="number">02 · ROUTE</span><strong data-lang="ja">街で走る道を考える</strong><strong data-lang="en">Plan the path</strong><p data-lang="ja">道路や通行できる場所を確かめて、コースをつくる。</p><p data-lang="en">Build a route using roads and places you can access.</p></div><div class="step"><span class="number">03 · ART</span><strong data-lang="ja">走った軌跡を残す</strong><strong data-lang="en">Keep the art you run</strong><p data-lang="ja">自分の足で描いた作品を、年輪の一枚に。</p><p data-lang="en">Make the artwork you run part of your running journey.</p></div></div></section>
 <section id="create" class="panel">
-<div class="sectionLabel">STUDIO · SETTINGS PREVIEW</div><h2 data-lang="ja">自分のGPS Artをつくる</h2><h2 data-lang="en">Create your GPS Art</h2>
-<p class="muted" data-lang="ja">出発点と制作条件を選び、デフォルト素材の候補ルートを試せます。候補生成はログイン必須です。自由入力の生成・保存・投稿は準備中。</p><p class="muted" data-lang="en">Choose your start and preferences, then try a candidate route for a default shape. Candidate generation requires signing in. Free-text generation, saving and posting are still in preparation.</p>
+<div class="sectionLabel">STUDIO · PUBLIC BETA</div><h2 data-lang="ja">下手ウマ画伯のGPSアート（β）</h2><h2 data-lang="en">Charming cartoon GPS art (beta)</h2>
+<p class="muted" data-lang="ja">出発点と制作条件を選び、自由入力の下絵やデフォルト素材の道路候補を試せます。下絵を眺めるだけでも楽しめます。生成にはログインが必要です。作品の保存・投稿・公開は準備中です。</p><p class="muted" data-lang="en">Choose your start and preferences to try an outline from your own idea or a road candidate for a default shape. You can simply enjoy the outline. Generation requires signing in. Saving, submitting and publishing artwork are not available yet.</p>
 <div class="notice" id="artAuthPanel">
 <strong data-lang="ja">制作時のログイン</strong><strong data-lang="en">Sign-in for generation</strong>
 <p id="artAuthStatus" class="status" role="status" aria-live="polite"><span data-lang="ja">ログイン状態を確認しています…</span><span data-lang="en">Checking sign-in status…</span></p>
@@ -74,6 +74,10 @@
 <h3 class="studioHeading"><span data-lang="ja">3. 候補ルートを作る（β）</span><span data-lang="en">3. Generate a candidate route (beta)</span></h3>
 <aside class="notice" aria-label="画伯からのごあいさつ / A note from the artist">
 <strong data-lang="ja">下手ウマ画伯は、まだまだ修行中。</strong><strong data-lang="en">Our charmingly clumsy artist is still learning.</strong>
+<p data-lang="ja">思いどおりの絵にならなかったり、下絵や道路候補を作れないことがあります。同じ題材でも、生成のたびに形や結果が変わります。</p>
+<p data-lang="en">Artwork may turn out differently than expected, and outlines or road candidates may fail. Even the same idea can produce different shapes and results each time.</p>
+<p data-lang="ja">利用上限・連続生成の制限・外部サービスの混雑により、一時的に生成できない場合があります。制限や混雑のときは時間を置いてお試しください。下絵の失敗は説明をシンプルに、道路候補の失敗は表示された理由に合わせて出発点・距離・方角を見直してください。</p>
+<p data-lang="en">Usage limits, limits on repeated requests or external service congestion may temporarily prevent generation. For limits or congestion, wait before trying again. If an outline fails, simplify the description. If a road candidate fails, adjust your start, distance or direction according to the displayed reason.</p>
 <p data-lang="ja">「猫を頼んだのに、誰ですかあなた？」なんて作品も生まれます。下手ウマ画伯の絵に、ぜひ温かいツッコミを！</p>
 <p data-lang="en">“I asked for a cat… who are you?” Sometimes the artwork takes a surprising turn. A little friendly teasing is welcome!</p>
 <p data-lang="ja">走らなくても、下絵を作って眺めるだけで楽しめます。無料で気軽に遊べる場所を目指して、絵のわかりやすさも少しずつ改善していきます。</p>
@@ -170,6 +174,7 @@ $('review').addEventListener('click',()=>{$('review').classList.add('is-pressed'
 <script src="./gps-art-auth.js"></script>
 <script src="./gps-art-route.js"></script>
 </body></html>
+
 
 
 
