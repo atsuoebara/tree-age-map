@@ -3597,10 +3597,10 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
     <div class="photoActions">
       <button id="mapPhotosToggle" type="button" aria-pressed="false"><span data-photo-lang="ja">写真は非表示（タップして表示）</span><span data-photo-lang="en">Photos are hidden (tap to show)</span></button>
-      <button id="mapPhotoChoose" type="button"><span data-photo-lang="ja">写真を送る</span><span data-photo-lang="en">Submit a photo</span></button>
+      <button id="mapPhotoChoose" type="button"><span data-photo-lang="ja">保存済み写真を選ぶ</span><span data-photo-lang="en">Choose a saved photo</span></button>
       <input id="mapPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
     </div>
-    <p class="photoPublicNameNote"><span data-photo-lang="ja">iPhoneで撮影する場合は、標準のカメラアプリで撮って写真アプリに保存した写真を選んでください。写真を開いて上にスワイプし、地図が表示されれば撮影地情報があります。ブラウザーから直接撮影した写真は端末に保存されない場合があります。</span><span data-photo-lang="en">On iPhone, take the photo with the Camera app, then choose the saved original from Photos. Open it and swipe up; a map means capture location is present. A photo taken directly in the browser may not be saved on your device.</span></p>
+    <p class="photoPublicNameNote"><span data-photo-lang="ja">撮影時GPSが必要です。iPhoneでは標準のカメラアプリで撮影し、写真アプリに保存された写真を選んでください。写真を開いて上にスワイプし、地図が表示されることを確認できます。ブラウザー内で撮影した写真は端末に保存されず、撮影時GPSを読み取れない場合があります。</span><span data-photo-lang="en">Capture-time GPS is required. On iPhone, take the photo with the Camera app and choose the saved photo from Photos. Open it and swipe up to check for a map. A photo taken inside the browser may not be saved on your device or may not include readable capture-time GPS.</span></p>
     <p id="mapPhotoStatus" role="status" aria-live="polite"></p>
     <section id="mapPhotoReviewQueue" aria-label="Photo review queue">
       <h3><span data-photo-lang="ja">掲載前の確認</span><span data-photo-lang="en">Pre-publication review</span></h3>
