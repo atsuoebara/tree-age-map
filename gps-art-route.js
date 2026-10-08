@@ -3,7 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id),button=$('generateRoute');
 if(!button)return;
-let preferences=null,result=null,busy=false,requestId=0,controller=null,message='',errorCode='';
+let outline=null,preferences=null,result=null,busy=false,requestId=0,controller=null,message='',errorCode='';
 const errors={
  AI_NOT_CONFIGURED:['Geminiの設定が必要です。デフォルト素材は使えます。','Gemini needs configuration. Default shapes are available.'],
  AI_UNAVAILABLE:['Geminiから下絵を取得できませんでした。時間を置いてお試しください。','Could not obtain an outline from Gemini. Try again later.'],
@@ -27,15 +27,21 @@ const errors={
 const en=()=>document.documentElement.lang==='en',state=()=>window.runnerRingsArtAuth?.getState()||'unavailable';
 function render(){
  button.classList.toggle('is-pressed',busy||Boolean(result)||Boolean(errorCode));
- button.disabled=busy||state()!=='signedIn'||!preferences||!['template','free'].includes(preferences.material);
+ const free=preferences?.material==='free';
+ $('outlineStep').hidden=!free;
+ $('generateOutline').disabled=busy||state()!=='signedIn'||!free;
+ $('outlinePreview').hidden=!outline;
+ $('generateOutline').classList.toggle('is-pressed',busy||Boolean(outline));
+ button.disabled=(free&&!outline)||busy||state()!=='signedIn'||!preferences||!['template','free'].includes(preferences.material);
  let text='';
  if(errorCode)text=(errors[errorCode]||errors.failed)[en()?1:0];
- else if(message==='loading')text=preferences?.material==='free'?(en()?'Creating an outline with Gemini and calculating a road candidate…':'Geminiで下絵を作り、道路に沿った候補を計算しています…'):(en()?'Calculating a road-based candidate…':'道路に沿った候補を計算しています…');
+ else if(message==='outlineLoading')text=en()?'Creating an outline with Gemini…':'Geminiで下絵を作っています…';
+ else if(message==='loading')text=preferences?.material==='free'?(en()?'Calculating roads for your approved outline…':'確認した下絵に沿って道路候補を計算しています…'):(en()?'Calculating a road-based candidate…':'道路に沿った候補を計算しています…');
  else if(result)text=en()?'Candidate shown on the map. Check the shape, actual distance and access before running.':'地図に候補を表示しました。形・実際の距離・通行可否を走る前に確認してください。';
  else if(state()!=='signedIn')text=en()?'Sign in to generate a candidate.':'候補生成にはログインが必要です。';
  else if(!preferences)text=en()?'Confirm your start, acknowledge safety and review preferences first.':'出発点を確定し、安全確認をチェックして「制作条件を確認」を押してください。';
  else if(!['template','free'].includes(preferences.material))text=errors.TEMPLATE_ONLY[en()?1:0];
- else text=preferences.material==='free'?(en()?'Ready to create a candidate from your idea.':'自由入力から候補生成を試せます。'):(en()?'Ready to try a default-shape candidate.':'デフォルト素材の候補生成を試せます。');
+ else text=preferences.material==='free'?(en()?(outline?'Outline ready. If you like it, generate the road candidate.':'Generate an outline first.'):(outline?'下絵を表示しました。これでよければ候補ルートを作ってください。':'まず「下絵を作る」を押してください。')):(en()?'Ready to try a default-shape candidate.':'デフォルト素材の候補生成を試せます。');
  $('routeStatus').textContent=text;
  $('routeDetails').hidden=!result;
  if(result){
@@ -44,6 +50,7 @@ function render(){
  }
 }
 function clear(){
+ outline=null;$('outlineSvg').replaceChildren();
  requestId++;controller?.abort();controller=null;busy=false;result=null;message='';errorCode='';
  $('startMap').dispatchEvent(new CustomEvent('gps-art-clear-route'));render();
 }
@@ -52,8 +59,34 @@ function valid(data){return geometryValid(data?.route)&&geometryValid(data?.temp
 window.addEventListener('gps-art-preferences',event=>{preferences=event.detail;clear();});
 window.addEventListener('gps-art-auth',event=>{if(event.detail.state==='signedOut'||event.detail.state==='unavailable'){clear();}else render();});
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+
+function outlineValid(o){return Array.isArray(o?.points)&&o.points.length>=8&&o.points.length<=28&&o.points.every(p=>typeof p.x==='number'&&typeof p.y==='number'&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.abs(p.x)<=1.000001&&Math.abs(p.y)<=1.000001);}
+function showOutline(o){
+ const svg=$('outlineSvg'),path=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+ path.setAttribute('points',o.points.map(p=>p.x+','+(-p.y)).join(' '));path.setAttribute('fill','none');path.setAttribute('stroke','#23d9e8');path.setAttribute('stroke-width','0.025');path.setAttribute('stroke-linejoin','round');
+ svg.replaceChildren(path);
+}
+$('generateOutline').addEventListener('click',async()=>{
+ if(busy||preferences?.material!=='free'||state()!=='signedIn')return;
+ const input=JSON.parse(JSON.stringify(preferences)),ticket=++requestId;
+ outline=null;result=null;busy=true;message='outlineLoading';errorCode='';$('outlineSvg').replaceChildren();
+ $('startMap').dispatchEvent(new CustomEvent('gps-art-clear-route'));render();
+ const requestController=new AbortController();controller=requestController;const timer=setTimeout(()=>requestController.abort(),75000);
+ try{
+  const client=window.runnerRingsArtAuth?.getClient();if(!client){errorCode='AUTH_REQUIRED';return;}
+  const {data,error}=await client.auth.getSession();if(ticket!==requestId)return;
+  if(error||!data?.session?.access_token){errorCode='AUTH_REQUIRED';return;}
+  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'outline'})});
+  const payload=await response.json();if(ticket!==requestId)return;
+  if(!response.ok){errorCode=payload?.error||(response.status===401?'AUTH_REQUIRED':'failed');return;}
+  if(!outlineValid(payload.outline))throw new Error('Invalid outline');
+  outline=payload.outline;showOutline(outline);
+ }catch{if(ticket===requestId)errorCode='failed';}
+ finally{clearTimeout(timer);if(ticket===requestId){busy=false;controller=null;message='';render();}}
+});
+
 button.addEventListener('click',async()=>{
- if(busy||!preferences||!['template','free'].includes(preferences.material)||state()!=='signedIn')return;
+ if(busy||(preferences?.material==='free'&&!outline)||!preferences||!['template','free'].includes(preferences.material)||state()!=='signedIn')return;
  const input=JSON.parse(JSON.stringify(preferences)),ticket=++requestId;
  const client=window.runnerRingsArtAuth?.getClient();
  if(!client){errorCode='AUTH_REQUIRED';render();return;}
@@ -63,7 +96,7 @@ button.addEventListener('click',async()=>{
  try{
   const {data,error}=await client.auth.getSession();if(ticket!==requestId)return;
   if(error||!data?.session?.access_token){errorCode='AUTH_REQUIRED';return;}
-  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify(input)});
+  const response=await fetch('https://fhwvntpzwyenendhcgbw.supabase.co/functions/v1/gps-art-generate',{method:'POST',credentials:'omit',signal:requestController.signal,headers:{'Content-Type':'application/json',apikey:'sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...input,action:'route',...(input.material==='free'?{outline}: {})})});
   const payload=await response.json();if(ticket!==requestId)return;
   if(!response.ok){errorCode=payload?.error|| (response.status===401?'AUTH_REQUIRED':'failed');return;}
   if(!valid(payload))throw new Error('Invalid candidate');
@@ -73,4 +106,5 @@ button.addEventListener('click',async()=>{
 });
 render();
 })();
+
 

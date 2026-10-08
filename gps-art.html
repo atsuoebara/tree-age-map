@@ -73,6 +73,7 @@
 <h3 class="studioHeading"><span data-lang="ja">3. 候補ルートを作る（β）</span><span data-lang="en">3. Generate a candidate route (beta)</span></h3>
 <p class="muted" data-lang="ja">星・ハート・円・三角に加え、自由入力ではGeminiで一筆の輪郭を下絵にします。細かな目や文字などの再現には対応しません。道路事情で形が崩れたり、距離が目安と異なる場合があります。「おまかせ」はまず北側で試します。作れない場合は、出発点・方角・距離を変えてお試しください。</p>
 <p class="muted" data-lang="en">Choose a star, heart, circle or triangle, or use Gemini to turn your own idea into a single outer contour. Fine details such as eyes or lettering are not supported. Roads may distort the shape or change the distance. Any direction initially tries north. If no candidate can be made, try another start, direction or distance.</p>
+<div id="outlineStep" class="notice" hidden><strong data-lang="ja">先に下絵を確認</strong><strong data-lang="en">Review the outline first</strong><p data-lang="ja">自由入力は下絵を作り、形が気に入ったら「候補ルートを作る」を押してください。下絵は道路とは無関係の輪郭です。説明を変更すると下絵を作り直せます。取得には最大60秒ほど待つ場合があります。</p><p data-lang="en">Generate an outline first. If you like it, generate the road candidate. The outline is not a road route. Change your description to make a different outline. Retrieval may take up to 60 seconds.</p><button id="generateOutline" type="button" class="button primary" disabled><span data-lang="ja">下絵を作る</span><span data-lang="en">Generate outline</span></button><div id="outlinePreview" hidden><svg id="outlineSvg" viewBox="-1.15 -1.15 2.3 2.3" role="img" aria-label="下絵 / Outline" style="display:block;width:100%;max-width:300px;height:260px;margin:12px auto;background:#0b1422;border-radius:12px"></svg><p data-lang="ja">これでよければ、下の「候補ルートを作る」へ。道路に合わせると形が変わることがあります。</p><p data-lang="en">If this shape looks good, generate the candidate below. Roads may distort it.</p></div></div>
 <button id="generateRoute" type="button" class="button primary" disabled><span data-lang="ja">候補ルートを作る</span><span data-lang="en">Generate candidate route</span></button>
 <p id="routeStatus" class="status" role="status" aria-live="polite"></p>
 <div id="routeDetails" class="notice" hidden><strong data-lang="ja">候補ルート · 走る前に現地の通行可否と安全を確認してください</strong><strong data-lang="en">Candidate route · check actual access and safety before running</strong><p id="routeStats"></p><p data-lang="ja">オレンジの実線が道路に沿った候補、シアンの点線が元の形です。道路沿いの開始位置と選んだピンが少しずれることがあります。往復・同じ道の重複が含まれる場合もあります。元の形の点線は走行ルートではありません。</p><p data-lang="en">The orange solid line is the road-based candidate; the cyan dashed line is the original shape, not a running route. The route start may differ slightly from your pin. Backtracking and repeated roads are possible.</p><p class="muted">© <a href="https://openrouteservice.org/" target="_blank" rel="noopener">openrouteservice.org by HeiGIT</a> | © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p></div>
@@ -153,6 +154,7 @@ $('review').addEventListener('click',()=>{$('review').classList.add('is-pressed'
 <script src="./gps-art-auth.js"></script>
 <script src="./gps-art-route.js"></script>
 </body></html>
+
 
 
 
