@@ -2759,6 +2759,12 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 
 #mapPhotosPanel{margin:10px 0 14px;padding:14px;background:#111d30;border:1px solid rgba(255,255,255,.16);border-radius:14px;color:#f7f8fc}
 #mapPhotosPanel h2{margin:0 0 6px;font-size:18px}
+#mapPhotosPanel details>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;min-height:30px}
+#mapPhotosPanel details>summary::-webkit-details-marker{display:none}
+#mapPhotosPanel details>summary::after{content:'＋';flex:none;color:#ff9b45;font-size:20px;font-weight:800}
+#mapPhotosPanel details[open]>summary::after{content:'−'}
+#mapPhotosPanel details>summary h2{margin:0}
+#mapPhotosPanel .mapPhotosContent{padding-top:8px}
 #mapPhotosPanel p{margin:6px 0;line-height:1.55}
 .photoActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .photoActions button,.photoSubmitButton,.photoReviewCard button{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer}
@@ -3566,13 +3572,15 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </div>
 
   <section id="mapPhotosPanel" aria-labelledby="mapPhotosHeading">
-    <h2 id="mapPhotosHeading"><span data-photo-lang="ja">📍 みんなの写真</span><span data-photo-lang="en">📍 Community photos</span></h2>
+    <details id="mapPhotosDisclosure">
+      <summary><h2 id="mapPhotosHeading"><span data-photo-lang="ja">📍 みんなの写真</span><span data-photo-lang="en">📍 Community photos</span></h2></summary>
+      <div class="mapPhotosContent">
     <p><span data-photo-lang="ja">地図上の写真表示は初期OFFです。審査で承認された写真だけが公開されます。</span><span data-photo-lang="en">Photo markers start off. Only photos approved after review are published.</span></p>
-    <p><span data-photo-lang="ja">送信写真は非公開で保管され、淳夫さんとチャッピーが下の基準を確認します。最終承認は淳夫さんが行い、自動公開はありません。</span><span data-photo-lang="en">Submissions stay private while Atsuo and Chappy check the rules below. Atsuo gives final approval; nothing is published automatically.</span></p>
+    <p><span data-photo-lang="ja">送信写真は非公開で保管され、運営者がチャッピーと掲載基準を確認します。運営者の最終承認後に公開され、自動公開はありません。</span><span data-photo-lang="en">Submissions stay private while the operator reviews them with Chappy against the rules below. The operator gives final approval; nothing is published automatically.</span></p>
     <ul class="photoRules">
       <li><span data-photo-lang="ja">人物・顔・子ども、車などの乗り物、ナンバープレート、個人情報が写った写真は掲載しません。</span><span data-photo-lang="en">No people or faces, children, cars or other vehicles, license plates, or personal information.</span></li>
       <li><span data-photo-lang="ja">自宅・勤務先など個人の生活場所が分かる写真は送らないでください。公共の景色や自然、ランドマークを対象にしてください。</span><span data-photo-lang="en">Do not submit images that reveal a home, workplace, or other private location. Share public scenery, nature, or landmarks.</span></li>
-      <li><span data-photo-lang="ja">写真は共有地図で位置とともに公開されます。送信時に画像の位置情報などのメタデータを削除します。</span><span data-photo-lang="en">Approved photos appear with a map location. Image metadata, including embedded GPS data, is removed on upload.</span></li>
+      <li><span data-photo-lang="ja">写真に記録された撮影時GPSをピンに使います。承認後はその位置が地図で公開されます。画像ファイルからGPSなどのメタデータは削除します。</span><span data-photo-lang="en">The pin uses GPS recorded in the photo when it was taken. That location appears on the map after approval. GPS and other metadata are removed from the image file.</span></li>
     </ul>
     <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
@@ -3587,6 +3595,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <p><span data-photo-lang="ja">チャッピーと基準を確認した後、最終承認してください。チェックを入れるだけで自動承認はされません。</span><span data-photo-lang="en">Review each photo with Chappy against the rules. The checkbox alone does not publish it.</span></p>
       <div id="mapPhotoReviewItems"></div>
     </section>
+      </div>
+    </details>
   </section>
 
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
@@ -3783,6 +3793,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="./runner_rings_archive.js"></script>
@@ -6712,18 +6723,22 @@ async function compressPhotoWithoutMetadata(file) {
   return new File([blob],'photo.jpg',{type:'image/jpeg',lastModified:Date.now()});
 }
 
-function getPhotoSubmissionLocation() {
-  return new Promise((resolve,reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error(photoText('この端末では位置情報を取得できません。','Location is unavailable on this device.')));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      position => resolve({lat:position.coords.latitude,lng:position.coords.longitude}),
-      error => reject(new Error(photoText('位置情報を取得できません。位置情報をONにして撮影場所で再試行してください。','Could not get your location. Enable location and try again at the photo location.'))),
-      {enableHighAccuracy:true,timeout:20000,maximumAge:0}
-    );
-  });
+async function getPhotoCaptureLocation(file) {
+  if (!window.exifr?.gps) {
+    throw new Error(photoText('撮影位置を読み取れません。通信後にもう一度お試しください。','Could not read the photo location. Check your connection and try again.'));
+  }
+  let gps;
+  try {
+    gps = await window.exifr.gps(file);
+  } catch (error) {
+    console.warn('Could not read photo GPS metadata:',error);
+  }
+  const lat = Number(gps?.latitude);
+  const lng = Number(gps?.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    throw new Error(photoText('写真に撮影時のGPS位置がありません。カメラの位置情報をONにして撮り直してください。','This photo has no GPS location from capture time. Enable location for your camera and take the photo again.'));
+  }
+  return {lat,lng};
 }
 
 photoFileInput?.addEventListener('change', async () => {
@@ -6732,14 +6747,15 @@ photoFileInput?.addEventListener('change', async () => {
   try {
     const {data:{session}} = await supabaseClient.auth.getSession();
     if (!session?.user) throw new Error(photoText('写真の送信にはログインが必要です。','Sign in to submit a photo.'));
+    setPhotoStatus('撮影時の位置を写真から確認しています…','Reading the photo’s capture location…');
+    const location = await getPhotoCaptureLocation(file);
+    const coordinates = location.lat.toFixed(5) + ', ' + location.lng.toFixed(5);
     if (!window.confirm(photoText(
-      '写真は掲載基準に沿って審査され、承認まで非公開です。人物・顔・子ども・車などの乗り物・個人情報や自宅等が写っていないこと、撮影場所で共有してよいことを確認しましたか？',
-      'Photos are private until reviewed and approved. Confirm there are no people/faces, children, vehicles, personal information, or identifiable private places, and that you have permission to share this image at its location.'
+      '写真は掲載基準に沿って審査され、承認まで非公開です。承認後は撮影時GPSの位置（' + coordinates + '）とともに地図で公開されます。人物・顔・子ども・車などの乗り物・個人情報や自宅等が写っていないこと、この場所で共有してよいことを確認しましたか？',
+      'Photos are private until reviewed and approved. After approval, this photo will appear on the map at its capture GPS location (' + coordinates + '). Confirm there are no people/faces, children, vehicles, personal information, or identifiable private places, and that you intend to share this place.'
     ))) return;
     setPhotoStatus('画像のメタデータを削除しています…','Removing image metadata…');
     const cleanFile = await compressPhotoWithoutMetadata(file);
-    setPhotoStatus('撮影場所の位置を確認しています…','Checking the photo location…');
-    const location = await getPhotoSubmissionLocation();
     const id = crypto.randomUUID();
     const path = session.user.id + '/' + id + '.jpg';
     const {error:uploadError} = await supabaseClient.storage.from('map-photos-private')

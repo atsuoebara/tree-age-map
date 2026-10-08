@@ -1,6 +1,6 @@
 # Runner's Rings community map photos — setup
 
-This bundle adds a photo layer to the existing index map. The layer starts OFF. Photo submissions require sign-in and remain private until the designated account approves them.
+This bundle adds a collapsible photo panel and photo layer to the existing index map. The panel starts collapsed, and the layer starts OFF. Photo submissions require sign-in and remain private until the designated account approves them.
 
 ## Included files
 
@@ -21,9 +21,9 @@ This bundle adds a photo layer to the existing index map. The layer starts OFF. 
 
 ## Publication checklist
 
-Use the same stated checklist for every submission. Reject an image showing people or faces (including children), cars or other vehicles, a license plate, personal/contact information, or an identifiable home/work/private location. Publish only images suitable for a public running map, with the submitter's explicit consent and a location they intend to share. Captions are included in the same review. This is a human review workflow; the app does not claim that AI automatically detects or approves content. Chappy reviews the image with Atsuo in their conversation; the account holder makes the final decision in the app.
+Use the same stated checklist for every submission. Reject an image showing people or faces (including children), cars or other vehicles, a license plate, personal/contact information, or an identifiable home/work/private location. Publish only images suitable for a public running map, with the submitter's explicit consent and a location they intend to share. Captions are included in the same review. This is a human review workflow; the app does not claim that AI automatically detects or approves content. The operator reviews each image with Chappy against the checklist; the account holder makes the final decision in the app.
 
-The browser re-encodes accepted JPEG/PNG/WebP files to JPEG before upload to remove embedded image metadata. The photo pin uses the device's current GPS position at submission time. The submitter must be at the photographed location and must avoid home, work, or other sensitive locations. Approved photos are served with expiring signed URLs from a private bucket; the bucket itself is never public.
+Before publishing, update the live root `index.html` with the corrected full replacement in this bundle. The page uses the photo's embedded capture-time GPS for the map pin; it does not use the phone's location at upload time. A photo without readable capture-time GPS is rejected with a message asking the contributor to enable camera location and retake it. Before upload, the browser re-encodes accepted JPEG/PNG/WebP files to JPEG, removing GPS and other metadata from the public image file. The database keeps only the pin coordinates. The submission confirmation displays those coordinates and states that the exact location will be public on the map after approval. Contributors should avoid homes, workplaces, and other sensitive places. Approved photos are served with expiring signed URLs from a private bucket; the bucket itself is never public.
 
 ## Rollback
 
