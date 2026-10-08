@@ -2756,6 +2756,32 @@
 .mapBoundaryNotice a{color:#8ed8ff;text-decoration:underline}
 html:not([lang="en"]) .mapBoundaryNotice [data-boundary-lang="en"]{display:none}
 html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
+
+#mapPhotosPanel{margin:10px 0 14px;padding:14px;background:#111d30;border:1px solid rgba(255,255,255,.16);border-radius:14px;color:#f7f8fc}
+#mapPhotosPanel h2{margin:0 0 6px;font-size:18px}
+#mapPhotosPanel p{margin:6px 0;line-height:1.55}
+.photoActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.photoActions button,.photoSubmitButton,.photoReviewCard button{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer}
+#mapPhotosToggle{background:#ff9b45;color:#241407}
+#mapPhotoChoose{background:#f7f8fc;color:#172033}
+#mapPhotoFile{display:none}
+#mapPhotoCaption{box-sizing:border-box;width:100%;max-width:520px;padding:10px;border-radius:8px;border:1px solid #8792a3;background:#0a1422;color:#fff}
+#mapPhotoStatus{font-size:13px;min-height:1.4em;color:#ffe4b2}
+.photoRules{padding-left:20px;margin:8px 0;font-size:13px}
+#mapPhotoReviewQueue{display:none;margin-top:14px;padding-top:12px;border-top:1px solid #566176}
+.photoReviewCard{display:grid;grid-template-columns:minmax(130px,220px) 1fr;gap:12px;padding:10px;margin:10px 0;background:#0a1422;border-radius:10px}
+.photoReviewCard img{width:100%;max-height:190px;object-fit:contain;background:#05080d}
+.photoReviewActions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.photoReviewCard button[data-photo-approve]{background:#66e6a2;color:#102518}
+.photoReviewCard button[data-photo-reject]{background:#ff7373;color:#280909}
+.photoReviewCard button:disabled{opacity:.45;cursor:not-allowed}
+.photoReviewConsent{font-size:12px}
+.map-photo-cluster{display:flex;align-items:center;justify-content:center;border:2px solid white;border-radius:50%;background:#ff9b45;color:#241407;font-size:13px;font-weight:900;box-shadow:0 2px 8px #0008}
+.map-photo-single{display:flex;align-items:center;justify-content:center;border:2px solid white;border-radius:50%;background:#ff9b45;font-size:18px;box-shadow:0 2px 8px #0008}
+.map-photo-popup img{display:block;max-width:min(72vw,250px);max-height:190px;object-fit:contain;margin:0 auto 6px}
+.map-photo-popup p{margin:4px 0;overflow-wrap:anywhere}
+@media(max-width:600px){.photoReviewCard{grid-template-columns:1fr}.photoReviewCard img{max-height:240px}}
+html:not([lang="en"]) [data-photo-lang="en"],html[lang="en"] [data-photo-lang="ja"]{display:none}
 </style>
 <style>
 html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{display:none}
@@ -3538,6 +3564,31 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <span data-boundary-lang="ja">国・地域名や境界線は地図データに基づきます。領土・領有権について特定の立場を示すものではありません。 <a href="./faq.html#map-boundaries">地図・地域集計について（Q&amp;A）</a></span>
     <span data-boundary-lang="en">Names and boundaries follow the map data and do not express a position on territorial claims or sovereignty. <a href="./faq.html#map-boundaries">Map and regional statistics FAQ</a></span>
   </div>
+
+  <section id="mapPhotosPanel" aria-labelledby="mapPhotosHeading">
+    <h2 id="mapPhotosHeading"><span data-photo-lang="ja">📍 みんなの写真</span><span data-photo-lang="en">📍 Community photos</span></h2>
+    <p><span data-photo-lang="ja">地図上の写真表示は初期OFFです。審査で承認された写真だけが公開されます。</span><span data-photo-lang="en">Photo markers start off. Only photos approved after review are published.</span></p>
+    <p><span data-photo-lang="ja">送信写真は非公開で保管され、淳夫さんとチャッピーが下の基準を確認します。最終承認は淳夫さんが行い、自動公開はありません。</span><span data-photo-lang="en">Submissions stay private while Atsuo and Chappy check the rules below. Atsuo gives final approval; nothing is published automatically.</span></p>
+    <ul class="photoRules">
+      <li><span data-photo-lang="ja">人物・顔・子ども、車などの乗り物、ナンバープレート、個人情報が写った写真は掲載しません。</span><span data-photo-lang="en">No people or faces, children, cars or other vehicles, license plates, or personal information.</span></li>
+      <li><span data-photo-lang="ja">自宅・勤務先など個人の生活場所が分かる写真は送らないでください。公共の景色や自然、ランドマークを対象にしてください。</span><span data-photo-lang="en">Do not submit images that reveal a home, workplace, or other private location. Share public scenery, nature, or landmarks.</span></li>
+      <li><span data-photo-lang="ja">写真は共有地図で位置とともに公開されます。送信時に画像の位置情報などのメタデータを削除します。</span><span data-photo-lang="en">Approved photos appear with a map location. Image metadata, including embedded GPS data, is removed on upload.</span></li>
+    </ul>
+    <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
+    <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
+    <div class="photoActions">
+      <button id="mapPhotosToggle" type="button" aria-pressed="false"><span data-photo-lang="ja">写真を地図に表示：OFF</span><span data-photo-lang="en">Show photos on map: OFF</span></button>
+      <button id="mapPhotoChoose" type="button"><span data-photo-lang="ja">写真を送る</span><span data-photo-lang="en">Submit a photo</span></button>
+      <input id="mapPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
+    </div>
+    <p id="mapPhotoStatus" role="status" aria-live="polite"></p>
+    <section id="mapPhotoReviewQueue" aria-label="Photo review queue">
+      <h3><span data-photo-lang="ja">掲載前の確認</span><span data-photo-lang="en">Pre-publication review</span></h3>
+      <p><span data-photo-lang="ja">チャッピーと基準を確認した後、最終承認してください。チェックを入れるだけで自動承認はされません。</span><span data-photo-lang="en">Review each photo with Chappy against the rules. The checkbox alone does not publish it.</span></p>
+      <div id="mapPhotoReviewItems"></div>
+    </section>
+  </section>
+
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
 
@@ -6495,6 +6546,329 @@ L.control.scale(
 .addTo(
   map
 );
+
+
+/* =====================================
+   COMMUNITY MAP PHOTOS
+   Pending photos are private; the database and Storage RLS are defined in
+   photo-map-setup.sql. The map layer does not load until the user enables it.
+===================================== */
+const PHOTO_REVIEWER_ID = '386da875-298e-46b7-927d-0e02d02c409a';
+const photoToggle = document.getElementById('mapPhotosToggle');
+const photoChoose = document.getElementById('mapPhotoChoose');
+const photoFileInput = document.getElementById('mapPhotoFile');
+const photoStatus = document.getElementById('mapPhotoStatus');
+const photoCaption = document.getElementById('mapPhotoCaption');
+const photoQueue = document.getElementById('mapPhotoReviewQueue');
+const photoQueueItems = document.getElementById('mapPhotoReviewItems');
+const photoMarkerLayer = L.layerGroup();
+let photoLayerEnabled = false;
+let approvedMapPhotos = [];
+let photoLoadPending = false;
+
+function photoText(ja, en) {
+  return document.documentElement.lang === 'en' ? en : ja;
+}
+
+function setPhotoStatus(ja, en) {
+  if (photoStatus) photoStatus.textContent = photoText(ja, en);
+}
+
+function makePhotoPopup(photo) {
+  const box = document.createElement('div');
+  box.className = 'map-photo-popup';
+  const image = document.createElement('img');
+  image.src = photo.url;
+  image.alt = photo.caption || photoText('共有された写真', 'Community photo');
+  image.loading = 'lazy';
+  box.appendChild(image);
+  if (photo.caption) {
+    const caption = document.createElement('p');
+    caption.textContent = photo.caption;
+    box.appendChild(caption);
+  }
+  const note = document.createElement('p');
+  note.textContent = photoText('掲載基準に沿って確認済み', 'Reviewed against the publication rules');
+  box.appendChild(note);
+  return box;
+}
+
+async function openPhotoPopup(marker, photo) {
+  const loading = document.createElement('div');
+  loading.textContent = photoText('写真を開いています…','Opening photo…');
+  marker.bindPopup(loading).openPopup();
+  const {data,error} = await supabaseClient.storage.from('map-photos-private')
+    .createSignedUrl(photo.storage_path,3600);
+  if (error || !data?.signedUrl) {
+    marker.setPopupContent(photoText('写真を読み込めませんでした。','Could not load this photo.'));
+    return;
+  }
+  marker.setPopupContent(makePhotoPopup({...photo,url:data.signedUrl}));
+}
+
+function drawPhotoMarkers() {
+  photoMarkerLayer.clearLayers();
+  if (!photoLayerEnabled) return;
+  const zoom = map.getZoom();
+  if (zoom >= 14) {
+    approvedMapPhotos.forEach(photo => {
+      const icon = L.divIcon({className:'map-photo-single',html:'📷',iconSize:[36,36],iconAnchor:[18,18]});
+      const marker = L.marker([photo.lat,photo.lng],{icon});
+      marker.on('click',() => openPhotoPopup(marker,photo));
+      marker.addTo(photoMarkerLayer);
+    });
+    return;
+  }
+  const cell = zoom <= 4 ? 4 : zoom <= 6 ? 1 : zoom <= 8 ? 0.25 : zoom <= 10 ? 0.08 : 0.025;
+  const groups = new Map();
+  approvedMapPhotos.forEach(photo => {
+    const key = Math.round(photo.lat / cell) + ':' + Math.round(photo.lng / cell);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(photo);
+  });
+  groups.forEach(group => {
+    const lat = group.reduce((sum, item) => sum + item.lat, 0) / group.length;
+    const lng = group.reduce((sum, item) => sum + item.lng, 0) / group.length;
+    const icon = L.divIcon({className:'map-photo-cluster',html:String(group.length),iconSize:[38,38],iconAnchor:[19,19]});
+    const marker = L.marker([lat,lng],{icon});
+    marker.on('click', () => {
+      if (group.length === 1) openPhotoPopup(marker,group[0]);
+      else map.setView([lat,lng],Math.min(14,zoom + 3),{animate:true});
+    });
+    marker.addTo(photoMarkerLayer);
+  });
+}
+
+async function loadApprovedMapPhotos() {
+  if (photoLoadPending) return;
+  photoLoadPending = true;
+  setPhotoStatus('承認済み写真を読み込み中…','Loading approved photos…');
+  try {
+    const {data, error} = await supabaseClient.from('map_photos')
+      .select('id,lat,lng,storage_path,caption,created_at')
+      .eq('status','approved')
+      .order('created_at',{ascending:false})
+      .limit(500);
+    if (error) throw error;
+    approvedMapPhotos = (data || []).map(row => ({
+      ...row,
+      lat:Number(row.lat),
+      lng:Number(row.lng)
+    }));
+    drawPhotoMarkers();
+    setPhotoStatus(
+      approvedMapPhotos.length ? '承認済み写真を表示できます。':'掲載中の写真はまだありません。',
+      approvedMapPhotos.length ? 'Approved photos are ready to view.':'There are no published photos yet.'
+    );
+  } catch (error) {
+    console.error('Community photo load failed:',error);
+    setPhotoStatus('写真を読み込めませんでした。管理者に設定を確認してください。','Photos could not be loaded. Please check the setup.');
+  } finally {
+    photoLoadPending = false;
+  }
+}
+
+photoToggle?.addEventListener('click', async () => {
+  photoLayerEnabled = !photoLayerEnabled;
+  photoToggle.setAttribute('aria-pressed',String(photoLayerEnabled));
+  photoToggle.querySelectorAll('[data-photo-lang]').forEach(node => {
+    const isOn = photoLayerEnabled;
+    node.textContent = node.dataset.photoLang === 'en'
+      ? (isOn ? 'Show photos on map: ON' : 'Show photos on map: OFF')
+      : (isOn ? '地図の写真表示：ON' : '写真を地図に表示：OFF');
+  });
+  if (photoLayerEnabled) {
+    if (!map.hasLayer(photoMarkerLayer)) photoMarkerLayer.addTo(map);
+    await loadApprovedMapPhotos();
+  } else {
+    photoMarkerLayer.clearLayers();
+    if (map.hasLayer(photoMarkerLayer)) map.removeLayer(photoMarkerLayer);
+    setPhotoStatus('写真表示をOFFにしました。','Photo markers are off.');
+  }
+});
+map.on('zoomend',drawPhotoMarkers);
+
+photoChoose?.addEventListener('click', () => photoFileInput?.click());
+
+async function compressPhotoWithoutMetadata(file) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+    throw new Error(photoText('JPEG・PNG・WebPの写真を選んでください。','Choose a JPEG, PNG, or WebP image.'));
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    throw new Error(photoText('写真は12MB以下にしてください。','Choose a photo smaller than 12 MB.'));
+  }
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1,1600 / Math.max(bitmap.width,bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1,Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1,Math.round(bitmap.height * scale));
+  const context = canvas.getContext('2d');
+  context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  bitmap.close();
+  const blob = await new Promise((resolve,reject) => canvas.toBlob(
+    result => result ? resolve(result) : reject(new Error('Could not process image')),
+    'image/jpeg',0.84
+  ));
+  return new File([blob],'photo.jpg',{type:'image/jpeg',lastModified:Date.now()});
+}
+
+function getPhotoSubmissionLocation() {
+  return new Promise((resolve,reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error(photoText('この端末では位置情報を取得できません。','Location is unavailable on this device.')));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      position => resolve({lat:position.coords.latitude,lng:position.coords.longitude}),
+      error => reject(new Error(photoText('位置情報を取得できません。位置情報をONにして撮影場所で再試行してください。','Could not get your location. Enable location and try again at the photo location.'))),
+      {enableHighAccuracy:true,timeout:20000,maximumAge:0}
+    );
+  });
+}
+
+photoFileInput?.addEventListener('change', async () => {
+  const file = photoFileInput.files?.[0];
+  if (!file) return;
+  try {
+    const {data:{session}} = await supabaseClient.auth.getSession();
+    if (!session?.user) throw new Error(photoText('写真の送信にはログインが必要です。','Sign in to submit a photo.'));
+    if (!window.confirm(photoText(
+      '写真は掲載基準に沿って審査され、承認まで非公開です。人物・顔・子ども・車などの乗り物・個人情報や自宅等が写っていないこと、撮影場所で共有してよいことを確認しましたか？',
+      'Photos are private until reviewed and approved. Confirm there are no people/faces, children, vehicles, personal information, or identifiable private places, and that you have permission to share this image at its location.'
+    ))) return;
+    setPhotoStatus('画像のメタデータを削除しています…','Removing image metadata…');
+    const cleanFile = await compressPhotoWithoutMetadata(file);
+    setPhotoStatus('撮影場所の位置を確認しています…','Checking the photo location…');
+    const location = await getPhotoSubmissionLocation();
+    const id = crypto.randomUUID();
+    const path = session.user.id + '/' + id + '.jpg';
+    const {error:uploadError} = await supabaseClient.storage.from('map-photos-private')
+      .upload(path,cleanFile,{contentType:'image/jpeg',upsert:false});
+    if (uploadError) throw uploadError;
+    const {error:insertError} = await supabaseClient.from('map_photos').insert({
+      id,
+      lat:location.lat,
+      lng:location.lng,
+      storage_path:path,
+      caption:(photoCaption?.value || '').trim(),
+      consent_at:new Date().toISOString()
+    });
+    if (insertError) throw insertError;
+    setPhotoStatus('送信しました。審査・最終承認まで写真は非公開です。','Submitted. Your photo remains private until review and final approval.');
+    if (photoCaption) photoCaption.value = '';
+    photoFileInput.value = '';
+    await loadPendingPhotoReviews();
+  } catch (error) {
+    console.error('Photo submission failed:',error);
+    setPhotoStatus(error.message || '写真を送信できませんでした。','The photo could not be submitted.');
+  }
+});
+
+async function loadPendingPhotoReviews() {
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  if (session?.user?.id !== PHOTO_REVIEWER_ID) {
+    photoQueue.style.display = 'none';
+    return;
+  }
+  photoQueue.style.display = 'block';
+  photoQueueItems.textContent = photoText('確認待ちを読み込み中…','Loading pending photos…');
+  const {data, error} = await supabaseClient.from('map_photos')
+    .select('id,lat,lng,storage_path,caption,created_at')
+    .eq('status','pending').order('created_at',{ascending:true}).limit(100);
+  if (error) {
+    photoQueueItems.textContent = photoText('審査待ちを読み込めませんでした。','Could not load pending photos.');
+    console.error('Photo review queue failed:',error);
+    return;
+  }
+  photoQueueItems.replaceChildren();
+  for (const row of data || []) {
+    const {data:signed,error:signedError} = await supabaseClient.storage.from('map-photos-private')
+      .createSignedUrl(row.storage_path,600);
+    if (signedError || !signed?.signedUrl) continue;
+    const card = document.createElement('article');
+    card.className = 'photoReviewCard';
+    const image = document.createElement('img');
+    image.src = signed.signedUrl;
+    image.alt = photoText('掲載前の確認用写真','Photo awaiting review');
+    card.appendChild(image);
+    const details = document.createElement('div');
+    const caption = document.createElement('p');
+    caption.textContent = row.caption || photoText('説明なし','No caption');
+    details.appendChild(caption);
+    const coords = document.createElement('p');
+    coords.textContent = Number(row.lat).toFixed(5) + ', ' + Number(row.lng).toFixed(5);
+    details.appendChild(coords);
+    const consentLabel = document.createElement('label');
+    consentLabel.className = 'photoReviewConsent';
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    consentLabel.append(check,document.createTextNode(photoText(' チャッピーと掲載基準を確認済み。人物・車等なし、公開同意・場所を確認。',' Reviewed with Chappy: rules, no people/vehicles, consent, and location checked.')));
+    details.appendChild(consentLabel);
+    const actions = document.createElement('div');
+    actions.className = 'photoReviewActions';
+    const approve = document.createElement('button');
+    approve.type = 'button';
+    approve.dataset.photoApprove = row.id;
+    approve.textContent = photoText('承認して公開','Approve and publish');
+    approve.disabled = true;
+    check.addEventListener('change',() => approve.disabled = !check.checked);
+    const reject = document.createElement('button');
+    reject.type = 'button';
+    reject.dataset.photoReject = row.id;
+    reject.textContent = photoText('却下して非公開のまま削除','Reject and delete image');
+    actions.append(approve,reject);
+    details.appendChild(actions);
+    card.appendChild(details);
+    photoQueueItems.appendChild(card);
+  }
+  if (!data?.length) photoQueueItems.textContent = photoText('審査待ちはありません。','No photos are waiting for review.');
+}
+
+photoQueueItems?.addEventListener('click',async event => {
+  const approve = event.target.closest('[data-photo-approve]');
+  const reject = event.target.closest('[data-photo-reject]');
+  const button = approve || reject;
+  if (!button) return;
+  const status = approve ? 'approved' : 'rejected';
+  if (reject && !window.confirm(photoText('この写真を却下し、画像ファイルを削除します。','Reject this photo and delete its image file?'))) return;
+  button.disabled = true;
+  const id = button.dataset.photoApprove || button.dataset.photoReject;
+  const rowResult = await supabaseClient.from('map_photos')
+    .select('storage_path').eq('id',id).eq('status','pending').single();
+  if (rowResult.error) {
+    setPhotoStatus('審査対象を読み込めませんでした。','Could not load the review item.');
+    button.disabled = false;
+    return;
+  }
+  const {error} = await supabaseClient.from('map_photos').update({
+    status,
+    reviewed_at:new Date().toISOString()
+  }).eq('id',id).eq('status','pending');
+  if (error) {
+    setPhotoStatus('審査結果を保存できませんでした。','Could not save the review decision.');
+    console.error(error);
+    button.disabled = false;
+    return;
+  }
+  if (reject) {
+    const {error:removeError} = await supabaseClient.storage.from('map-photos-private').remove([rowResult.data.storage_path]);
+    if (removeError) console.error('Rejected photo file cleanup failed:',removeError);
+  }
+  setPhotoStatus(
+    approve ? '承認しました。写真レイヤーをONにすると地図に表示されます。':'却下しました。画像を削除しました。',
+    approve ? 'Approved. The photo will appear when the map layer is enabled.':'Rejected. The image has been deleted.'
+  );
+  await loadPendingPhotoReviews();
+  if (photoLayerEnabled) {
+    approvedMapPhotos = [];
+    await loadApprovedMapPhotos();
+  }
+});
+supabaseClient.auth.onAuthStateChange(() => {
+  window.setTimeout(() => loadPendingPhotoReviews(),0);
+});
+window.setTimeout(() => loadPendingPhotoReviews(),0);
+
 
 
 /* =====================================
@@ -27946,3 +28320,4 @@ updateScrollToTopButton();
 
 </body>
 </html>
+
