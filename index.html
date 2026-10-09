@@ -24559,7 +24559,7 @@ function getTimelapseActivitiesBounds(selectedActivities) {
   return bounds.isValid() ? bounds : null;
 }
 
-function moveTimelapseMapToBounds(bounds) {
+function moveTimelapseMapToBounds(bounds, maxZoom = 15) {
   if (!bounds?.isValid()) return Promise.resolve(false);
 
   return new Promise(resolve => {
@@ -24580,7 +24580,7 @@ function moveTimelapseMapToBounds(bounds) {
     map.on('moveend', finish);
     map.fitBounds(bounds, {
       padding:[36, 36],
-      maxZoom:15,
+      maxZoom,
       animate:true,
       duration:.8
     });
@@ -25996,7 +25996,8 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
     timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing map…' : '地図を準備しています…';
     if (monthlyRecap) {
       await moveTimelapseMapToBounds(
-        getTimelapseActivitiesBounds(dailyFrames[0].activities)
+        getTimelapseActivitiesBounds(dailyFrames[0].activities),
+        16
       );
     }
     const shareBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
@@ -26022,7 +26023,10 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         cumulativeActivities = cumulativeActivities.concat(day.activities);
         const label = formatTimelapseDayLabel(day.date);
         timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Moving to ' : '移動中 ') + label;
-        await moveTimelapseMapToBounds(getTimelapseActivitiesBounds(cumulativeActivities));
+        await moveTimelapseMapToBounds(
+          getTimelapseActivitiesBounds(day.activities),
+          16
+        );
         drawTimelapseFrame(cumulativeActivities, timelapseMode.value);
         await waitTimelapse(80);
         const dailyBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
