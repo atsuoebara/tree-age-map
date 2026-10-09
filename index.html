@@ -24441,6 +24441,185 @@ function getTimelapseCumulativeActivities(
   );
 }
 
+function isTimelapseSingleMonthRange(
+  rangeStart,
+  rangeEnd
+) {
+  return !!(
+    rangeStart &&
+    rangeEnd &&
+    rangeStart.getFullYear() === rangeEnd.getFullYear() &&
+    rangeStart.getMonth() === rangeEnd.getMonth()
+  );
+}
+
+function getTimelapseDailyFrames(
+  startDate,
+  endDate
+) {
+  const byDay = new Map();
+
+  activities.forEach(activity => {
+    const date = getTimelapseActivityDate(activity);
+    const points = activity?.latlngs;
+    if (
+      !date ||
+      date < startDate ||
+      date > endDate ||
+      !Array.isArray(points) ||
+      points.length < 2
+    ) {
+      return;
+    }
+
+    const dayKey = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0')
+    ].join('-');
+
+    if (!byDay.has(dayKey)) {
+      byDay.set(dayKey, {
+        key:dayKey,
+        date:new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+        activities:[]
+      });
+    }
+
+    byDay.get(dayKey).activities.push(activity);
+  });
+
+  return Array.from(byDay.values())
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+function formatTimelapseDayLabel(date) {
+  return isRunnerRingsEnglish()
+    ? date.toLocaleDateString('en-US', {
+        year:'numeric',
+        month:'short',
+        day:'numeric'
+      })
+    : date.getFullYear() + '年' +
+      (date.getMonth() + 1) + '月' +
+      date.getDate() + '日';
+}
+
+function getTimelapseActivitiesBounds(selectedActivities) {
+  const bounds = L.latLngBounds([]);
+  (selectedActivities || []).forEach(activity => {
+    if (Array.isArray(activity?.latlngs) && activity.latlngs.length >= 2) {
+      bounds.extend(activity.latlngs);
+    }
+  });
+  return bounds.isValid() ? bounds : null;
+}
+
+function moveTimelapseMapToBounds(bounds) {
+  if (!bounds?.isValid()) return Promise.resolve(false);
+
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      map.off('moveend', finish);
+      if (timelapseViewState) {
+        const center = map.getCenter();
+        timelapseViewState.center = L.latLng(center.lat, center.lng);
+        timelapseViewState.zoom = map.getZoom();
+      }
+      resolve(true);
+    };
+    const timer = setTimeout(finish, 1300);
+    map.on('moveend', finish);
+    map.fitBounds(bounds, {
+      padding:[36, 36],
+      maxZoom:15,
+      animate:true,
+      duration:.8
+    });
+  });
+}
+
+function getTimelapseBusiestCell(selectedActivities) {
+  const counts = new Map();
+
+  (selectedActivities || []).forEach(activity => {
+    getOrBuildActivityCells(activity).forEach(key => {
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+  });
+
+  const busiest = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+
+  if (!busiest) return null;
+
+  const bounds = getCellBounds(busiest[0]);
+  return {
+    key:busiest[0],
+    runCount:busiest[1],
+    bounds,
+    center:[
+      (bounds[0][0] + bounds[1][0]) / 2,
+      (bounds[0][1] + bounds[1][1]) / 2
+    ],
+    activities:(selectedActivities || []).filter(activity =>
+      getOrBuildActivityCells(activity).includes(busiest[0])
+    )
+  };
+}
+
+async function moveTimelapseToBusiestCell(
+  selectedActivities,
+  mode
+) {
+  const busiest = getTimelapseBusiestCell(selectedActivities);
+  if (!busiest) return null;
+
+  const center = busiest.center;
+  await new Promise(resolve => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      map.off('moveend', finish);
+      if (timelapseViewState) {
+        const current = map.getCenter();
+        timelapseViewState.center = L.latLng(current.lat, current.lng);
+        timelapseViewState.zoom = map.getZoom();
+      }
+      resolve();
+    };
+    const timer = setTimeout(finish, 1200);
+    map.on('moveend', finish);
+    map.setView(center, 16, {
+      animate:true,
+      duration:.75
+    });
+  });
+
+  drawTimelapseFrame(selectedActivities, mode);
+  timelapseRouteGroup.addLayer(
+    L.rectangle(busiest.bounds, {
+      color:'#eaff00',
+      weight:4,
+      opacity:1,
+      fillColor:'#ff2bd6',
+      fillOpacity:.2,
+      interactive:false
+    })
+  );
+  if (!map.hasLayer(timelapseRouteGroup)) {
+    timelapseRouteGroup.addTo(map);
+  }
+
+  return busiest;
+}
+
 function buildTimelapseDistanceStats(
   selectedActivities
 ) {
@@ -24854,9 +25033,9 @@ function restoreAfterTimelapse() {
     timelapseViewState
   ) {
     const restoreCenter =
-      timelapseViewState.center;
+      timelapseViewState.originalCenter || timelapseViewState.center;
     const restoreZoom =
-      timelapseViewState.zoom;
+      timelapseViewState.originalZoom ?? timelapseViewState.zoom;
     const restoreSelectedRun =
       timelapseViewState.selectedRunWasVisible;
 
@@ -25193,6 +25372,62 @@ function drawTimelapseShareRouteHighlight(ctx, inner, highlightActivities, proje
   ctx.restore();
 }
 
+function drawTimelapseShareHotspot(ctx, inner, projection, hotspot) {
+  if (!hotspot?.bounds) return;
+
+  const southWest = projectTimelapseLatLngToShare(
+    hotspot.bounds[0],
+    inner,
+    projection
+  );
+  const northEast = projectTimelapseLatLngToShare(
+    hotspot.bounds[1],
+    inner,
+    projection
+  );
+  if (
+    !Number.isFinite(southWest.x) ||
+    !Number.isFinite(southWest.y) ||
+    !Number.isFinite(northEast.x) ||
+    !Number.isFinite(northEast.y)
+  ) {
+    return;
+  }
+
+  const x = Math.min(southWest.x, northEast.x);
+  const y = Math.min(southWest.y, northEast.y);
+  const width = Math.max(4, Math.abs(northEast.x - southWest.x));
+  const height = Math.max(4, Math.abs(northEast.y - southWest.y));
+
+  ctx.save();
+  drawRoundedRectPath(ctx, inner.x, inner.y, inner.width, inner.height, 18);
+  ctx.clip();
+  ctx.fillStyle = 'rgba(234,255,0,.18)';
+  ctx.strokeStyle = '#eaff00';
+  ctx.lineWidth = 4;
+  ctx.shadowColor = '#ff2bd6';
+  ctx.shadowBlur = 18;
+  ctx.fillRect(x, y, width, height);
+  ctx.strokeRect(x, y, width, height);
+  ctx.shadowBlur = 0;
+
+  const label = isRunnerRingsEnglish()
+    ? `MOST USED · ${hotspot.runCount} RUNS`
+    : `今月最多 · ${hotspot.runCount} RUN`;
+  ctx.font = '800 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  const pillWidth = Math.min(inner.width - 20, ctx.measureText(label).width + 28);
+  const pillX = Math.max(inner.x + 10, Math.min(x + width / 2 - pillWidth / 2, inner.x + inner.width - pillWidth - 10));
+  const pillY = Math.max(inner.y + 10, y - 44);
+  ctx.fillStyle = 'rgba(7,24,39,.92)';
+  drawRoundedRectPath(ctx, pillX, pillY, pillWidth, 34, 12);
+  ctx.fill();
+  ctx.fillStyle = '#eaff00';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, pillX + pillWidth / 2, pillY + 17, pillWidth - 16);
+  ctx.restore();
+}
+
 function getTimelapseNewActivitiesForStep(rangeStart, previousCutoff, cutoffDate) {
   const stepStart = previousCutoff
     ? new Date(previousCutoff.getTime() + 1)
@@ -25414,7 +25649,7 @@ function drawTimelapseShareAreas(ctx, inner, selectedActivities, projection, hig
   ctx.restore();
 }
 
-async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route', highlightActivities = [], highlightStrength = 0, highlightAreaKeys = null) {
+async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route', highlightActivities = [], highlightStrength = 0, highlightAreaKeys = null, options = {}) {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
@@ -25470,6 +25705,15 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
     );
   }
 
+  if (options.hotspot) {
+    drawTimelapseShareHotspot(
+      ctx,
+      inner,
+      projection,
+      options.hotspot
+    );
+  }
+
   // 左上は大きすぎない固定ブランド。地図領域を削らない。
   if (logo) {
     const logoSize = 82;
@@ -25500,7 +25744,14 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
   drawTimelapseTextFit(ctx, label, width / 2, height - 76, width - 110, 38, 900);
   ctx.fillStyle = '#c4d0db';
   ctx.font = '700 22px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText(isRunnerRingsEnglish() ? `${runCount} runs accumulated` : `${runCount} RUN の積み重なり`, width / 2, height - 42);
+  const countLabel = options.dailyRecap
+    ? (isRunnerRingsEnglish()
+        ? `${runCount} ${runCount === 1 ? 'run' : 'runs'} this day`
+        : `この日の ${runCount} RUN`)
+    : (isRunnerRingsEnglish()
+        ? `${runCount} runs accumulated`
+        : `${runCount} RUN の積み重なり`);
+  ctx.fillText(countLabel, width / 2, height - 42);
   ctx.fillStyle = 'rgba(255,255,255,.62)';
   ctx.font = '600 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('© OpenStreetMap contributors', width / 2, height - 17);
@@ -25592,6 +25843,16 @@ async function generateTimelapseShareVideo() {
   if (!range) return;
   const frameSteps = getTimelapseFrameSteps(range.rangeStart, range.rangeEnd, timelapseStep.value);
   if (!frameSteps.length) return;
+  const monthlyRecap = isTimelapseSingleMonthRange(range.rangeStart, range.rangeEnd);
+  const dailyFrames = monthlyRecap
+    ? getTimelapseDailyFrames(range.rangeStart, range.rangeEnd)
+    : [];
+  if (monthlyRecap && !dailyFrames.length) {
+    alert(isRunnerRingsEnglish()
+      ? 'There are no runs with GPS routes in this month.'
+      : 'この月にはGPSルート付きのランがありません。');
+    return;
+  }
 
   if (typeof HTMLCanvasElement === 'undefined' || !HTMLCanvasElement.prototype.captureStream || typeof MediaRecorder === 'undefined') {
     alert(isRunnerRingsEnglish()
@@ -25642,6 +25903,8 @@ async function generateTimelapseShareVideo() {
   timelapseViewState = {
     center:L.latLng(currentCenter.lat, currentCenter.lng),
     zoom:map.getZoom(),
+    originalCenter:L.latLng(currentCenter.lat, currentCenter.lng),
+    originalZoom:map.getZoom(),
     mapSize:L.point(currentMapSize.x, currentMapSize.y),
     bounds:L.latLngBounds(currentBounds.getSouthWest(), currentBounds.getNorthEast()),
     selectedRunWasVisible:!!(selectedRunLine && map.hasLayer(selectedRunLine))
@@ -25670,57 +25933,98 @@ async function generateTimelapseShareVideo() {
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · START' : '動画作成中 · START';
     await waitTimelapse(900);
 
-    let previousCutoff = null;
-    let previousSelectedActivities = [];
+    if (monthlyRecap) {
+      for (let index = 0; index < dailyFrames.length; index++) {
+        const day = dailyFrames[index];
+        const label = formatTimelapseDayLabel(day.date);
+        timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Moving to ' : '移動中 ') + label;
+        await moveTimelapseMapToBounds(getTimelapseActivitiesBounds(day.activities));
+        drawTimelapseFrame(day.activities, timelapseMode.value);
+        await waitTimelapse(80);
+        const dailyBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
+        await drawTimelapseShareFrame(
+          outputCanvas,
+          dailyBaseMap,
+          label,
+          day.activities.length,
+          day.activities,
+          timelapseMode.value,
+          day.activities,
+          1,
+          null,
+          {dailyRecap:true}
+        );
+        timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${dailyFrames.length})`;
+        timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${dailyFrames.length}`;
+        await waitTimelapse(1300);
+      }
 
-    for (let index = 0; index < frameSteps.length; index++) {
-      const cutoffDate = frameSteps[index];
-      const selectedActivities = getTimelapseCumulativeActivities(range.rangeStart, cutoffDate);
-      const newActivities = getTimelapseNewActivitiesForStep(
-        range.rangeStart,
-        previousCutoff,
-        cutoffDate
-      );
-      const newAreaKeys = timelapseMode.value === 'area'
-        ? getTimelapseNewAreaKeys(previousSelectedActivities, selectedActivities)
-        : null;
+      const allMonthActivities = dailyFrames.flatMap(day => day.activities);
+      const hotspot = await moveTimelapseToBusiestCell(allMonthActivities, timelapseMode.value);
+      if (hotspot) {
+        const hotspotBaseMap = await renderTimelapseBaseMapCanvas(outputCanvas);
+        await drawTimelapseShareFrame(
+          outputCanvas,
+          hotspotBaseMap,
+          isRunnerRingsEnglish() ? 'Most-run place this month' : '今月よく走った場所',
+          allMonthActivities.length,
+          allMonthActivities,
+          timelapseMode.value,
+          hotspot.activities,
+          1,
+          null,
+          {hotspot, dailyRecap:true}
+        );
+        timelapseProgress.textContent = isRunnerRingsEnglish()
+          ? `Most-run place · ${hotspot.runCount} runs`
+          : `今月最も多くのランが通った場所 · ${hotspot.runCount} RUN`;
+        await waitTimelapse(1800);
+      }
+    } else {
+      let previousCutoff = null;
+      let previousSelectedActivities = [];
 
-      // 通常再生は変えず、共有動画だけに軽い発光演出を入れる。
-      drawTimelapseFrame(selectedActivities, timelapseMode.value);
-      await waitTimelapse(80);
-      const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
+      for (let index = 0; index < frameSteps.length; index++) {
+        const cutoffDate = frameSteps[index];
+        const selectedActivities = getTimelapseCumulativeActivities(range.rangeStart, cutoffDate);
+        const newActivities = getTimelapseNewActivitiesForStep(
+          range.rangeStart,
+          previousCutoff,
+          cutoffDate
+        );
+        const newAreaKeys = timelapseMode.value === 'area'
+          ? getTimelapseNewAreaKeys(previousSelectedActivities, selectedActivities)
+          : null;
 
-      // 新しく追加されたコースを短く発光。
-      await drawTimelapseShareFrame(
-        outputCanvas,
-        shareBaseMap,
-        label,
-        selectedActivities.length,
-        selectedActivities,
-        timelapseMode.value,
-        newActivities,
-        1,
-        newAreaKeys
-      );
-
-      timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
-      timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
-
-      await waitTimelapse(timelapseStep.value === 'year' ? 260 : 190);
-
-      // 発光を通常線へ戻し、その月／年の完成状態を見せる。
-      await drawTimelapseShareFrame(
-        outputCanvas,
-        shareBaseMap,
-        label,
-        selectedActivities.length,
-        selectedActivities,
-        timelapseMode.value
-      );
-
-      await waitTimelapse(timelapseStep.value === 'year' ? 940 : 560);
-      previousCutoff = cutoffDate;
-      previousSelectedActivities = selectedActivities;
+        drawTimelapseFrame(selectedActivities, timelapseMode.value);
+        await waitTimelapse(80);
+        const label = formatTimelapseProgressLabel(cutoffDate, timelapseStep.value);
+        await drawTimelapseShareFrame(
+          outputCanvas,
+          shareBaseMap,
+          label,
+          selectedActivities.length,
+          selectedActivities,
+          timelapseMode.value,
+          newActivities,
+          1,
+          newAreaKeys
+        );
+        timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${frameSteps.length})`;
+        timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${frameSteps.length}`;
+        await waitTimelapse(timelapseStep.value === 'year' ? 260 : 190);
+        await drawTimelapseShareFrame(
+          outputCanvas,
+          shareBaseMap,
+          label,
+          selectedActivities.length,
+          selectedActivities,
+          timelapseMode.value
+        );
+        await waitTimelapse(timelapseStep.value === 'year' ? 940 : 560);
+        previousCutoff = cutoffDate;
+        previousSelectedActivities = selectedActivities;
+      }
     }
 
     const startLabel = formatTimelapseMonthValue(range.rangeStart);
@@ -25871,6 +26175,26 @@ async function playRingsTimelapse() {
     return;
   }
 
+  const monthlyRecap = isTimelapseSingleMonthRange(
+    rangeStart,
+    rangeEnd
+  );
+  const dailyFrames = monthlyRecap
+    ? getTimelapseDailyFrames(rangeStart, rangeEnd)
+    : [];
+
+  if (
+    monthlyRecap &&
+    !dailyFrames.length
+  ) {
+    alert(
+      isRunnerRingsEnglish()
+        ? 'There are no runs with GPS routes in this month.'
+        : 'この月にはGPSルート付きのランがありません。'
+    );
+    return;
+  }
+
   timelapsePlaying = true;
   timelapseStopRequested = false;
 
@@ -25884,6 +26208,13 @@ async function playRingsTimelapse() {
         currentCenter.lng
       ),
     zoom:
+      map.getZoom(),
+    originalCenter:
+      L.latLng(
+        currentCenter.lat,
+        currentCenter.lng
+      ),
+    originalZoom:
       map.getZoom(),
     selectedRunWasVisible:
       !!(
@@ -25923,44 +26254,73 @@ async function playRingsTimelapse() {
       800
     );
 
-    for (
-      const cutoffDate of frameSteps
-    ) {
-      if (
-        timelapseStopRequested
-      ) {
-        break;
+    if (monthlyRecap) {
+      for (const day of dailyFrames) {
+        if (timelapseStopRequested) break;
+        await moveTimelapseMapToBounds(
+          getTimelapseActivitiesBounds(day.activities)
+        );
+        if (timelapseStopRequested) break;
+        drawTimelapseFrame(
+          day.activities,
+          timelapseMode.value
+        );
+        timelapseProgress.textContent =
+          formatTimelapseDayLabel(day.date) +
+          ' · ' +
+          day.activities.length +
+          (
+            isRunnerRingsEnglish()
+              ? ' runs'
+              : ' RUN'
+          );
+        await waitTimelapse(1100);
       }
 
-      const selectedActivities =
-        getTimelapseCumulativeActivities(
+      if (!timelapseStopRequested) {
+        const allMonthActivities = dailyFrames.flatMap(
+          day => day.activities
+        );
+        const hotspot = await moveTimelapseToBusiestCell(
+          allMonthActivities,
+          timelapseMode.value
+        );
+        if (hotspot) {
+          timelapseProgress.textContent = isRunnerRingsEnglish()
+            ? `Most-run place · ${hotspot.runCount} runs`
+            : `今月最も多くのランが通った場所 · ${hotspot.runCount} RUN`;
+          await waitTimelapse(1800);
+        }
+      }
+    } else {
+      for (const cutoffDate of frameSteps) {
+        if (timelapseStopRequested) break;
+        const selectedActivities = getTimelapseCumulativeActivities(
           rangeStart,
           cutoffDate
         );
-
-      drawTimelapseFrame(
-        selectedActivities,
-        timelapseMode.value
-      );
-
-      timelapseProgress.textContent =
-        formatTimelapseProgressLabel(
-          cutoffDate,
-          timelapseStep.value
-        ) +
-        ' · ' +
-        selectedActivities.length +
-        (
-          isRunnerRingsEnglish()
-            ? ' runs'
-            : ' RUN'
+        drawTimelapseFrame(
+          selectedActivities,
+          timelapseMode.value
         );
-
-      await waitTimelapse(
-        timelapseStep.value === 'year'
-          ? 1100
-          : 650
-      );
+        timelapseProgress.textContent =
+          formatTimelapseProgressLabel(
+            cutoffDate,
+            timelapseStep.value
+          ) +
+          ' · ' +
+          selectedActivities.length +
+          (
+            isRunnerRingsEnglish()
+              ? ' runs'
+              : ' RUN'
+          );
+        await waitTimelapse(
+          timelapseStep.value === 'year'
+            ? 1100
+            : 650
+        );
+      }
     }
 
     if (
