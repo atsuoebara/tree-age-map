@@ -79,37 +79,49 @@
     return uiLanguage() === 'en' ? en : ja;
   }
 
-  const panel = document.createElement('div');
+  const panel = document.createElement('details');
   panel.id = 'rrOnDeviceTranslate';
   panel.setAttribute('translate', 'no');
   panel.innerHTML = `
     <style>
-      #rrOnDeviceTranslate{position:fixed;z-index:2147483000;right:12px;top:12px;color:#f4f7fb;font:600 12px/1.35 system-ui,sans-serif}
-      #rrOnDeviceTranslate .rrt-toggle{width:42px;height:42px;border:1px solid #596b84;border-radius:50%;background:#101d30;color:inherit;padding:0;font:20px/1 system-ui,sans-serif;box-shadow:0 3px 14px #0006;cursor:pointer}
-      #rrOnDeviceTranslate .rrt-controls{display:none;align-items:center;gap:6px;margin-top:6px;padding:7px;background:#101d30;border:1px solid #43536b;border-radius:12px;box-shadow:0 3px 14px #0006;max-width:calc(100vw - 24px)}
-      #rrOnDeviceTranslate.isOpen .rrt-controls{display:flex}
-      #rrOnDeviceTranslate select,#rrOnDeviceTranslate .rrt-translate{min-height:34px;border:1px solid #596b84;border-radius:8px;background:#17283d;color:inherit;padding:6px 9px;font:inherit}
-      #rrOnDeviceTranslate button{background:#ff2bd6;color:#10101a;border:0;font-weight:800;cursor:pointer;white-space:nowrap}
+      #rrOnDeviceTranslate{max-width:1000px;margin:18px auto;padding:0 12px;box-sizing:border-box;color:#f4f7fb;font:600 13px/1.45 system-ui,sans-serif}
+      #rrOnDeviceTranslate summary{display:inline-flex;align-items:center;min-height:38px;padding:7px 12px;border:1px solid #43536b;border-radius:8px;background:#101d30;color:inherit;cursor:pointer;font-weight:700;list-style:none}
+      #rrOnDeviceTranslate summary::-webkit-details-marker{display:none}
+      #rrOnDeviceTranslate summary::after{content:'＋';margin-left:10px;color:#ff2bd6}
+      #rrOnDeviceTranslate[open] summary::after{content:'−'}
+      #rrOnDeviceTranslate .rrt-content{margin-top:8px;padding:12px;background:#101d30;border:1px solid #43536b;border-radius:12px}
+      #rrOnDeviceTranslate .rrt-note{margin:0 0 10px;color:#d5deeb;font-weight:500}
+      #rrOnDeviceTranslate .rrt-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+      #rrOnDeviceTranslate select,#rrOnDeviceTranslate .rrt-translate{min-height:38px;border:1px solid #596b84;border-radius:8px;background:#17283d;color:inherit;padding:7px 10px;font:inherit}
+      #rrOnDeviceTranslate select{flex:1 1 220px;max-width:100%}
       #rrOnDeviceTranslate .rrt-translate{background:#ff2bd6;color:#10101a;border:0;font-weight:800;cursor:pointer;white-space:nowrap}
       #rrOnDeviceTranslate .rrt-translate:disabled{opacity:.65;cursor:wait}
-      #rrOnDeviceTranslate .rrt-status{position:absolute;right:0;top:calc(100% + 5px);width:min(360px,calc(100vw - 24px));padding:8px 10px;border-radius:8px;background:#101d30;border:1px solid #43536b;color:#f4f7fb;font-weight:500}
-      #rrOnDeviceTranslate[dir="rtl"]{right:auto;left:12px}
-      @media(max-width:520px){#rrOnDeviceTranslate{right:8px;top:8px}#rrOnDeviceTranslate .rrt-controls{gap:4px;padding:5px}#rrOnDeviceTranslate select,#rrOnDeviceTranslate .rrt-translate{min-height:32px;padding:5px 7px;font-size:11px}#rrOnDeviceTranslate .rrt-status{right:0;top:calc(100% + 5px)}}
+      #rrOnDeviceTranslate .rrt-status{display:block;margin-top:9px;padding:8px 10px;border-radius:8px;background:#17283d;border:1px solid #43536b;color:#f4f7fb;font-weight:500}
+      @media(max-width:520px){#rrOnDeviceTranslate{margin:14px auto;padding:0 10px}#rrOnDeviceTranslate .rrt-content{padding:10px}#rrOnDeviceTranslate .rrt-controls{gap:6px}#rrOnDeviceTranslate select,#rrOnDeviceTranslate .rrt-translate{min-height:36px;padding:6px 8px;font-size:12px}}
     </style>
-    <button id="rrTranslateToggle" class="rrt-toggle" type="button" aria-expanded="false" aria-label="Translation options">🌐</button>
-    <div class="rrt-controls">
-      <label for="rrTranslateLanguage" class="rrt-label">🌐</label>
-      <select id="rrTranslateLanguage" aria-label="Translation language"></select>
-      <button id="rrTranslateButton" class="rrt-translate" type="button"></button>
+    <summary id="rrTranslateSummary"></summary>
+    <div class="rrt-content">
+      <p id="rrTranslateNote" class="rrt-note"></p>
+      <div class="rrt-controls">
+        <select id="rrTranslateLanguage" aria-label="Translation language"></select>
+        <button id="rrTranslateButton" class="rrt-translate" type="button"></button>
+      </div>
+      <span id="rrTranslateStatus" class="rrt-status" hidden role="status" aria-live="polite"></span>
     </div>
-    <span id="rrTranslateStatus" class="rrt-status" hidden role="status" aria-live="polite"></span>
   `;
   document.body.append(panel);
 
   const select = panel.querySelector('#rrTranslateLanguage');
   const button = panel.querySelector('#rrTranslateButton');
-  const toggle = panel.querySelector('#rrTranslateToggle');
+  const summary = panel.querySelector('#rrTranslateSummary');
+  const note = panel.querySelector('#rrTranslateNote');
   const status = panel.querySelector('#rrTranslateStatus');
+  summary.textContent = textFor('補助翻訳', 'Supplemental translation');
+  summary.setAttribute('aria-label', summary.textContent);
+  note.textContent = textFor(
+    'この翻訳は端末内で行います。ページの文章はRunner’s Ringsの翻訳サーバーへ送信しません。初回はChromeが翻訳モデルをダウンロードする場合があります。',
+    'Translation runs on your device. Page text is not sent to a Runner’s Rings translation server. Chrome may download a translation model the first time.'
+  );
 
   for (const [code, nativeName] of LANGUAGES) {
     const option = document.createElement('option');
@@ -130,7 +142,7 @@
   function setStatus(message) {
     lastUiMessage = message || '';
     status.textContent = lastUiMessage;
-    status.hidden = !lastUiMessage;
+    status.hidden = !lastUiMessage || !panel.open;
   }
 
   function updateButton() {
@@ -342,9 +354,8 @@
     try { localStorage.setItem(TARGET_LANGUAGE_KEY, select.value); } catch (_) {}
     setStatus(textFor('翻訳する言語を選びました。ボタンを押すと翻訳します。', 'Language selected. Press Translate to begin.'));
   });
-  toggle.addEventListener('click', () => {
-    const open = panel.classList.toggle('isOpen');
-    toggle.setAttribute('aria-expanded', String(open));
+  panel.addEventListener('toggle', () => {
+    if (!panel.open) setStatus('');
   });
   let visibleScanTimer = 0;
   function scheduleVisibleTranslation() {
@@ -362,8 +373,4 @@
     else startTranslation();
   });
   updateButton();
-  setStatus(textFor(
-    '補助言語を選ぶと、端末内で翻訳します。ページの文章はRunner’s Ringsの翻訳サーバーへ送りません。初回はChromeがモデルをダウンロードする場合があります。',
-    'Choose a language for on-device supplemental translation. Page text is not sent to a Runner’s Rings translation server. Chrome may download a model the first time.'
-  ));
 })();
