@@ -123,6 +123,7 @@ function articlePage(post) {
     show();
   })();
   </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
 </body>
 </html>\n`;
 }
