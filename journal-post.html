@@ -74,5 +74,6 @@ const db=window.supabase.createClient(url,key,{auth:{persistSession:false,autoRe
 db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,category,published_at').eq('slug',slug).eq('status','published').maybeSingle().then(({data,error})=>{if(error){console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';return;}post=data;draw();}).catch(error=>{console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';});
 })();
 </script>
+<script defer src="/rr-ondevice-translate.js"></script>
 </body>
 </html>
