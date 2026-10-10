@@ -25498,6 +25498,14 @@ function drawTimelapseShareHotspot(ctx, inner, projection, hotspot) {
   ctx.restore();
 }
 
+function formatTimelapseDistance(distanceKm) {
+  const value = Number(distanceKm) || 0;
+  return value.toLocaleString(
+    isRunnerRingsEnglish() ? 'en-US' : 'ja-JP',
+    {minimumFractionDigits:1, maximumFractionDigits:1}
+  );
+}
+
 function getTimelapseNewActivitiesForStep(rangeStart, previousCutoff, cutoffDate) {
   const stepStart = previousCutoff
     ? new Date(previousCutoff.getTime() + 1)
@@ -25808,19 +25816,53 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
   ctx.font = '800 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('Growth Rings Timelapse', 132, 96);
 
+  if (options.dailyRecap) {
+    const bannerLabel = String(label || '');
+    ctx.font = '900 40px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const bannerWidth = Math.min(
+      mapFrame.width - 32,
+      ctx.measureText(bannerLabel).width + 44
+    );
+    const bannerX = mapFrame.x + (mapFrame.width - bannerWidth) / 2;
+    const bannerY = mapFrame.y + 22;
+    ctx.fillStyle = 'rgba(7,24,39,.94)';
+    drawRoundedRectPath(ctx, bannerX, bannerY, bannerWidth, 62, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#eaff00';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    drawTimelapseTextFit(
+      ctx,
+      bannerLabel,
+      width / 2,
+      bannerY + 31,
+      bannerWidth - 24,
+      40,
+      900
+    );
+  }
+
   // 年月とRUN数は下端へコンパクトにまとめ、余白を増やさない。
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
+  ctx.textBaseline = 'alphabetic';
   drawTimelapseTextFit(ctx, label, width / 2, height - 76, width - 110, 38, 900);
   ctx.fillStyle = '#c4d0db';
-  ctx.font = '700 22px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  const totalDistanceKm = selectedActivities.reduce(
+    (sum, activity) => sum + (Number(activity?.distance) || 0),
+    0
+  );
   const countLabel = options.dailyRecap
     ? (isRunnerRingsEnglish()
-        ? `${runCount} runs accumulated`
-        : `${runCount} RUN 累計`)
+        ? `${runCount} runs · ${formatTimelapseDistance(totalDistanceKm)} km total`
+        : `${runCount} RUN · ${formatTimelapseDistance(totalDistanceKm)} km 累計`)
     : (isRunnerRingsEnglish()
-        ? `${runCount} runs accumulated`
-        : `${runCount} RUN の積み重なり`);
+        ? `${runCount} runs · ${formatTimelapseDistance(totalDistanceKm)} km total`
+        : `${runCount} RUN · ${formatTimelapseDistance(totalDistanceKm)} km`);
   ctx.fillText(countLabel, width / 2, height - 42);
   ctx.fillStyle = 'rgba(255,255,255,.62)';
   ctx.font = '600 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -25828,7 +25870,7 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
   ctx.restore();
 }
 
-async function drawTimelapseEndCard(outputCanvas, rangeLabel) {
+async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}) {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
@@ -25886,10 +25928,16 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel) {
   ctx.font = '800 36px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
   ctx.fillStyle = '#b9c9d8';
-  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * .815), width - 170, 30, 700);
+  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * .795), width - 170, 30, 700);
+  ctx.fillStyle = '#eaff00';
+  ctx.font = '900 38px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  const summaryLabel = isRunnerRingsEnglish()
+    ? `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} runs`
+    : `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} RUN`;
+  drawTimelapseTextFit(ctx, summaryLabel, width / 2, Math.round(height * .855), width - 150, 38, 900);
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('runnersrings.com', width / 2, Math.round(height * .885));
+  ctx.fillText('runnersrings.com', width / 2, Math.round(height * .92));
   ctx.restore();
 }
 
@@ -26048,7 +26096,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         );
         timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${dailyFrames.length})`;
         timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${dailyFrames.length}`;
-        await waitTimelapse(1300);
+        await waitTimelapse(2500);
       }
 
       const allMonthActivities = cumulativeActivities;
@@ -26070,7 +26118,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         timelapseProgress.textContent = isRunnerRingsEnglish()
           ? `Most-run place · ${hotspot.runCount} runs`
           : `今月最も多くのランが通った場所 · ${hotspot.runCount} RUN`;
-        await waitTimelapse(1800);
+        await waitTimelapse(3000);
       }
     } else {
       let previousCutoff = null;
@@ -26121,9 +26169,20 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
 
     const startLabel = formatTimelapseMonthValue(range.rangeStart);
     const endLabel = formatTimelapseMonthValue(range.rangeEnd);
-    await drawTimelapseEndCard(outputCanvas, `${startLabel} → ${endLabel}`);
+    const recapActivities = monthlyRecap
+      ? dailyFrames.flatMap(day => day.activities)
+      : getTimelapseCumulativeActivities(range.rangeStart, range.rangeEnd);
+    const recapDistanceKm = recapActivities.reduce(
+      (sum, activity) => sum + (Number(activity?.distance) || 0),
+      0
+    );
+    await drawTimelapseEndCard(
+      outputCanvas,
+      `${startLabel} → ${endLabel}`,
+      {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm}
+    );
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · Finish' : '動画作成中 · FINISH';
-    await waitTimelapse(1700);
+    await waitTimelapse(3500);
     recorder.stop();
     await stopped;
 
