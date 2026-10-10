@@ -974,6 +974,21 @@
       box-shadow:0 7px 22px rgba(255,43,214,.16);
     }
 
+    .timelapseLaunchHint{
+      margin:8px 2px 3px;
+      color:#cbd5e1;
+      font-size:11px;
+      line-height:1.55;
+    }
+    .timelapseFaqLink{
+      display:inline-block;
+      margin:2px 2px 0;
+      color:#ff8be8;
+      font-size:11px;
+      font-weight:800;
+      text-decoration:none;
+    }
+
     #timelapseOpenButton:focus-visible,
     .timelapseActionButton:focus-visible{
       outline:3px solid rgba(234,255,0,.82);
@@ -1262,6 +1277,21 @@
         0 0 0 1px rgba(255,255,255,.05) inset;
     }
 
+    #mapPrivacyNotice summary{
+      list-style:none;
+      cursor:pointer;
+    }
+    #mapPrivacyNotice summary::-webkit-details-marker{display:none}
+    #mapPrivacyNotice summary::after{
+      content:'＋';
+      float:right;
+      color:#eaff00;
+      font-size:18px;
+      line-height:1.4;
+    }
+    #mapPrivacyNotice[open] summary::after{content:'−'}
+    #mapPrivacyNotice[open] .mapPrivacyTitle{margin-bottom:9px}
+
     #mapPrivacyNotice .mapPrivacyTitle{
       margin:0 0 9px;
       color:#fff36a;
@@ -1303,6 +1333,16 @@
 
     #dashboard{
       padding:18px 16px 32px;
+    }
+
+    .dashboardFeatureGroup{margin:0 0 18px}
+    .dashboardFeatureLinks{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      padding:8px 4px 0;
+      font-size:13px;
+      font-weight:700;
     }
 
     .summary{
@@ -3108,7 +3148,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       </aside>
 
       <details class="setupGuide setupGuideAuth" id="authImportGuide" open>
-        <summary>データの取り込み方</summary>
+        <summary>データ連携・取り込み方法</summary>
+        <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
         <div class="setupGuideOptions">
           <div class="setupGuideOption">
             <strong>Strava経由</strong>
@@ -3436,7 +3477,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 </details>
 <details id="dataSetupGuide" class="setupGuide" open>
-  <summary>初期設定：データの取り込み方</summary>
+  <summary>初期設定：データ連携・取り込み方法</summary>
   <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
   <div class="setupGuideOptions">
     <div class="setupGuideOption">
@@ -3602,6 +3643,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </div>
   <div id="timelapseLaunchArea">
     <button id="timelapseOpenButton" type="button">▶ Growth Rings Timelapse</button>
+      <p class="timelapseLaunchHint">期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。</p>
+      <a class="timelapseFaqLink" href="./faq.html#faq-video">タイムラプスのQ&amp;A ↗</a>
   </div>
   <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
     <h3 class="timelapsePanelTitle">Growth Rings Timelapse</h3>
@@ -3734,21 +3777,25 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </div>
 
   </div>
-  <section id="mapPrivacyNotice" role="note" aria-label="プライバシーについて">
-    <h2 class="mapPrivacyTitle">🔒 この地図は、あなただけの表示です</h2>
+  <details id="mapPrivacyNotice" aria-label="プライバシーについて">
+    <summary class="mapPrivacyTitle">🔒 この地図は、あなただけの表示です</summary>
     <p class="mapPrivacyText">
       この地図に表示されるコースや面は、<span class="mapPrivacyStrong">本人のみ</span>が確認できます。<br>
       <span class="mapPrivacyStrong">ご自身で共有しない限り、他のユーザーに見られることはありません。</span>
     </p>
-  </section>
+  </details>
 
   <section id="dashboard">
 
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">走った人生の物語・開発の裏側を読む →</span></a>
-    <a href="./ranking.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #eaff00;border-radius:16px;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🌍 Rings Ranking <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">世界のランナーとつながる・ランキングを見る →</span></a>
-    <a href="./territory.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">市町村ごとの年間走行距離で、今年の“陣取り”を見る →</span></a>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:-10px 0 18px 4px;font-size:13px;font-weight:700"><a href="./faq.html#faq-ranking" style="color:#eaff00;text-decoration:none">Q&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:-10px 0 18px 4px;font-size:13px;font-weight:700"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">Q&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
+    <div class="dashboardFeatureGroup">
+      <a href="./ranking.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #eaff00;border-radius:16px;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🌍 Rings Ranking <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">世界のランナーとつながる・ランキングを見る →</span></a>
+      <div class="dashboardFeatureLinks"><a href="./faq.html#faq-ranking" style="color:#eaff00;text-decoration:none">ランキングのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
+    </div>
+    <div class="dashboardFeatureGroup">
+      <a href="./territory.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">市町村ごとの年間走行距離で、今年の“陣取り”を見る →</span></a>
+      <div class="dashboardFeatureLinks"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">テリトリーのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
+    </div>
     <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
 
     <h2>あなたの記録</h2>
@@ -27795,6 +27842,10 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  ['期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。','Period videos build up runs across a selected date range. Monthly reviews show your runs day by day for one month.'],
+  ['タイムラプスのQ&A ↗','Timelapse FAQ ↗'],
+  ['ランキングのQ&A ↗','Ranking FAQ ↗'],
+  ['テリトリーのQ&A ↗','Territory FAQ ↗'],
   ['期間動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。','Before creating a period video, set the map below to the center and zoom you want to show. Routes from the selected period will build up from zero in that view.'],
   ['動画の単位','Video step'],
   ['🎬 期間動画を作る','🎬 Create period video'],
@@ -27842,7 +27893,8 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['走るほど、地図が育つ。','Your map grows with every run.'],
   ['StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／TCX／ZIPファイルから利用できます。','Use automatic sync through Strava or Intervals.icu, direct COROS import, or FIT/GPX/TCX/ZIP file import.'],
   ['データの取り込み方','How to import your data'],
-  ['初期設定：データの取り込み方','Getting started: how to import your data'],
+  ['データ連携・取り込み方法','Data connections and imports'],
+  ['初期設定：データ連携・取り込み方法','Getting started: data connections and imports'],
   ['Strava経由','Via Strava'],
   ['自動連携','Automatic sync'],
   ['Intervals.icu経由','Via Intervals.icu'],
@@ -28717,7 +28769,8 @@ updateScrollToTopButton();
   (function rememberIntroDisclosure(){
     const items=[
       ['authValueDisclosure','RunnerRingsFeatureIntroSeen'],
-      ['authImportGuide','RunnerRingsImportIntroSeen']
+      ['authImportGuide','RunnerRingsImportIntroSeen'],
+      ['mapPrivacyNotice','RunnerRingsMapPrivacySeen']
     ];
     items.forEach(([id,key])=>{
       const disclosure=document.getElementById(id);
