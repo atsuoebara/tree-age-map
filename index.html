@@ -1818,51 +1818,6 @@
   color:#8f9bac;
 }
 
-/* Amazon associates card: stays separate from the footer controls and ads. */
-#amazonGearSection{
-  margin:0;
-  padding:20px 16px 24px;
-  border-top:1px solid rgba(255,255,255,.08);
-  background:#111e30;
-  color:#e8edf5;
-}
-#amazonGearCard{
-  width:min(100%,760px);
-  margin:0 auto;
-  padding:18px;
-  border:1px solid rgba(255,153,0,.58);
-  border-radius:16px;
-  background:linear-gradient(135deg,#1b2a3e,#172337 65%,#342817);
-}
-#amazonGearCard h2{
-  margin:0 0 8px;
-  font-size:18px;
-  line-height:1.45;
-}
-#amazonGearDisclosure{
-  margin:0 0 14px;
-  color:#b8c3d2;
-  font-size:12px;
-  line-height:1.6;
-}
-#amazonGearLink{
-  display:flex;
-  min-height:48px;
-  align-items:center;
-  justify-content:center;
-  padding:12px 16px;
-  border-radius:999px;
-  background:#ff9900;
-  color:#151515;
-  font-size:15px;
-  font-weight:800;
-  text-align:center;
-  text-decoration:none;
-}
-#amazonGearLink:hover{background:#ffad32;}
-html:not([lang="en"]) #amazonGearSection [data-affiliate-lang="en"],
-html[lang="en"] #amazonGearSection [data-affiliate-lang="ja"]{display:none;}
-
 #siteFooter .footerLinks{
   display:flex;
   justify-content:center;
@@ -3748,10 +3703,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </p>
   </section>
 
-  <!-- AdSense placement reserved directly below the private-map notice.
-       Add the responsive ad unit here after approval and creation of its ad-unit slot ID. -->
-  <div id="adsenseAfterMapPrivacy"></div>
-
   <section id="dashboard">
 
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">走った人生の物語・開発の裏側を読む →</span></a>
@@ -3838,14 +3789,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 </main>
   </div>
-
-  <section id="amazonGearSection" aria-labelledby="amazonGearTitle">
-    <div id="amazonGearCard">
-      <h2 id="amazonGearTitle"><span data-affiliate-lang="ja">🏃 ランニンググッズ</span><span data-affiliate-lang="en">🏃 Running gear</span></h2>
-      <p id="amazonGearDisclosure"><span data-affiliate-lang="ja">Amazon のアソシエイトとして、Runner’s Ringsは適格販売により収入を得ています。</span><span data-affiliate-lang="en">As an Amazon Associate I earn from qualifying purchases. This link opens Amazon.co.jp.</span></p>
-      <a id="amazonGearLink" href="https://amzn.to/4yaVMbM" target="_blank" rel="sponsored nofollow noopener noreferrer"><span data-affiliate-lang="ja">Amazon.co.jpでランニンググッズを見る →</span><span data-affiliate-lang="en">Browse running gear on Amazon.co.jp →</span></a>
-    </div>
-  </section>
 
   <button
     id="scrollToTopButton"
@@ -11773,6 +11716,7 @@ async function fetchCloudRuns() {
       encodeURIComponent(
         currentUser.id
       ) +
+      '&deleted_at=is.null' +
       '&order=activity_date.asc' +
       '&limit=' +
       pageSize +
