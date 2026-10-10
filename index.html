@@ -1958,6 +1958,29 @@
 .setupGuideAuth {
   margin-top: 18px;
 }
+.authTesterInvitation{
+  margin:18px 0 8px;
+  padding:17px 18px;
+  border:1px solid rgba(255,43,214,.45);
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(255,43,214,.12),rgba(19,34,55,.9));
+  color:#dce8f5;
+  font-size:13px;
+  line-height:1.75;
+}
+.authTesterInvitation p{margin:0 0 9px}
+.authTesterInvitation strong{color:#fff}
+.authTesterInvitation a{
+  display:inline-block;
+  margin-top:3px;
+  padding:9px 13px;
+  border:1px solid rgba(255,43,214,.7);
+  border-radius:999px;
+  color:#fff;
+  font-weight:800;
+  text-decoration:none;
+}
+.authTesterInvitation a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 
 .setupGuide h3 {
   margin: 0 0 12px;
@@ -2306,6 +2329,13 @@
   border-radius:18px;
   background:rgba(19,34,55,.72);
 }
+.authValueSection>summary,.setupGuideAuth>summary{cursor:pointer;list-style:none;color:#fff;font-weight:800}
+.authValueSection>summary::-webkit-details-marker,.setupGuideAuth>summary::-webkit-details-marker{display:none}
+.authValueSection>summary::after,.setupGuideAuth>summary::after{content:"＋";float:right;color:#ff2bd6}
+.authValueSection[open]>summary::after,.setupGuideAuth[open]>summary::after{content:"−"}
+.authValueSection>summary h3{display:inline;margin:0;font-size:19px;line-height:1.45}
+.authValueSection[open]>summary{margin-bottom:12px}
+.setupGuideAuth[open]>summary{margin-bottom:12px;color:#eaff00}
 
 .authValueEyebrow{
   margin:0 0 7px;
@@ -3013,9 +3043,9 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         </span>
       </div>
 
-      <section class="authValueSection" aria-labelledby="authValueHeading">
+      <details class="authValueSection" id="authValueDisclosure" open>
+        <summary><h3 id="authValueHeading">Runner's Ringsでできること</h3></summary>
         <div class="authValueEyebrow">RUNNER'S RINGS EXPERIENCE</div>
-        <h3 id="authValueHeading">走った場所が増えるほど、自分だけの地図になる。</h3>
         <p class="authValueLead">
           ペースや順位だけでは残しきれない「どこを走ってきたか」を、道・地域・年の積み重ねとして振り返れます。
           昔のランも取り込めば、これまでのランニングそのものが一枚の地図に育っていきます。
@@ -3067,10 +3097,18 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
           <a class="authPublicLink" href="./how-to.html">使い方を見る</a>
           <a class="authPublicLink" href="./developer-message.html">開発者からのメッセージ</a>
         </nav>
-      </section>
+      </details>
 
-      <div class="setupGuide setupGuideAuth">
-        <h3>データの取り込み方</h3>
+      <aside class="authTesterInvitation" aria-labelledby="authTesterInvitationTitle">
+        <p>アクセス解析を見ると、Runner's Ringsには国内外から毎日訪れてくださる方がいます。とても励みになっています。</p>
+        <p>使う人の不安を減らそうと説明を足してきたら、少し多くなったかもしれません。自分だけでは気づけない迷いや分かりにくさを、これまで多くの方に教えていただきました。</p>
+        <p>個人開発だからこそ、使う人の声を聞きながら、みんなで少しずつ育てるアプリにしたいと思っています。</p>
+        <p id="authTesterInvitationTitle"><strong>Rings Ranking・Rings Territoryを試して、つまずいたところを教えてくださる方を募集中です。</strong> 日本・海外どちらからでも歓迎です。</p>
+        <a href="./contact.html">気づいたことを伝える・質問する ↗</a>
+      </aside>
+
+      <details class="setupGuide setupGuideAuth" id="authImportGuide" open>
+        <summary>データの取り込み方</summary>
         <div class="setupGuideOptions">
           <div class="setupGuideOption">
             <strong>Strava経由</strong>
@@ -3151,7 +3189,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   >
 </details>     
         
-      </div>
+      </details>
 
     </div>
 
@@ -3399,6 +3437,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 </details>
 <details id="dataSetupGuide" class="setupGuide" open>
   <summary>初期設定：データの取り込み方</summary>
+  <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
   <div class="setupGuideOptions">
     <div class="setupGuideOption">
       <strong>Strava経由</strong>
@@ -3708,6 +3747,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">走った人生の物語・開発の裏側を読む →</span></a>
     <a href="./ranking.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #eaff00;border-radius:16px;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🌍 Rings Ranking <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">世界のランナーとつながる・ランキングを見る →</span></a>
     <a href="./territory.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">市町村ごとの年間走行距離で、今年の“陣取り”を見る →</span></a>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:-10px 0 18px 4px;font-size:13px;font-weight:700"><a href="./faq.html#faq-ranking" style="color:#eaff00;text-decoration:none">Q&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:-10px 0 18px 4px;font-size:13px;font-weight:700"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">Q&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
 
     <h2>あなたの記録</h2>
@@ -28167,6 +28208,16 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['使い方を見る','How to use'],
   ['開発者からのメッセージ','Message from the developer'],
   ['Runner’s Ringsについて詳しく見る','Learn more about Runner’s Rings'],
+  ["Runner's Ringsでできること",'What you can do with Runner’s Rings'],
+  ["アクセス解析を見ると、Runner's Ringsには国内外から毎日訪れてくださる方がいます。とても励みになっています。",'Analytics show that people in Japan and around the world visit Runner’s Rings every day. It is a real encouragement.'],
+  ['使う人の不安を減らそうと説明を足してきたら、少し多くなったかもしれません。自分だけでは気づけない迷いや分かりにくさを、これまで多くの方に教えていただきました。','I added explanations to ease users’ concerns, and may have added too much. Many people have helped me notice confusing parts I could not find on my own.'],
+  ['個人開発だからこそ、使う人の声を聞きながら、みんなで少しずつ育てるアプリにしたいと思っています。','As an independent developer, I want to build this app together with the people who use it, one step at a time.'],
+  ['Rings Ranking・Rings Territoryを試して、つまずいたところを教えてくださる方を募集中です。','I’m looking for people to try Rings Ranking and Rings Territory and tell me where they get stuck.'],
+  ['日本・海外どちらからでも歓迎です。','Runners in Japan and around the world are welcome.'],
+  ['気づいたことを伝える・質問する ↗','Share feedback or ask a question ↗'],
+  ['Q&A ↗','FAQ ↗'],
+  ['使い方で迷ったら聞く ↗','Ask us if you get stuck ↗'],
+  ['連携で迷ったらQ&Aを見る ↗','View import FAQ ↗'],
   ['日本','Japan'],['アメリカ','United States']
 ].sort(
   (a,b) =>
@@ -28662,6 +28713,22 @@ updateScrollToTopButton();
 
 </script>
 
+<script>
+  (function rememberIntroDisclosure(){
+    const items=[
+      ['authValueDisclosure','RunnerRingsFeatureIntroSeen'],
+      ['authImportGuide','RunnerRingsImportIntroSeen']
+    ];
+    items.forEach(([id,key])=>{
+      const disclosure=document.getElementById(id);
+      if(!disclosure)return;
+      try{disclosure.open=localStorage.getItem(key)!=='1';}catch(error){}
+      disclosure.addEventListener('toggle',()=>{
+        if(!disclosure.open){try{localStorage.setItem(key,'1');}catch(error){}}
+      });
+    });
+  })();
+</script>
 <script defer src="/rr-ondevice-translate.js"></script>
 </body>
 </html>

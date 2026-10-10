@@ -103,10 +103,11 @@
       font-size:13px;
       line-height:1.75;
     }
-    .faqList{
-      display:grid;
-      gap:11px;
-    }
+    .faqNav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+    .faqNav a{display:inline-block;padding:9px 12px;border:1px solid rgba(255,43,214,.42);border-radius:999px;background:#132237;color:#fff;font-size:12px;font-weight:800;text-decoration:none}
+    .faqNav a:hover,.faqNav a:focus-visible{background:#392044;outline:2px solid #ff2bd6}
+    .faqList{display:grid;gap:11px}
+    main section[id]{scroll-margin-top:18px}
     details{
       overflow:hidden;
       border:1px solid rgba(255,255,255,.09);
@@ -220,6 +221,9 @@
       走った道、訪れた地域、年ごとの広がりを、自分だけの地図として残していきます。
     </div>
 
+    <nav class="faqNav" aria-label="FAQカテゴリ">
+      <a href="#faq-import-ja">データ取り込み・ウォッチ</a><a href="#faq-video-ja">タイムラプス</a><a href="#faq-ranking-ja">ランキング</a><a href="#faq-territory-ja">テリトリー</a><a href="#faq-privacy-ja">プライバシー・地図</a><a href="./contact.html">直接聞く</a>
+    </nav>
     <div class="faqList">
       <details>
         <summary>Runner's Ringsでは何ができますか？</summary>
@@ -230,7 +234,7 @@
         </div>
       </details>
 
-      <details>
+      <details id="faq-import-ja">
         <summary>StravaとIntervals.icuは両方連携した方がいいですか？</summary>
         <div class="answer">
           基本的には<strong>どちらか一方</strong>を選んで連携するのがおすすめです。
@@ -303,7 +307,7 @@
         </div>
       </details>
 
-      <details>
+      <details id="faq-privacy-ja">
         <summary>自分のラン記録や地図は他の人に見えますか？</summary>
         <div class="answer">
           ログイン後に表示される総距離・ラン数・地図などは、登録した本人向けの表示です。
@@ -328,11 +332,26 @@
           世界各地の表示は今後も段階的に拡張していきます。
         </div>
       </details>
+
+      <details id="faq-video-ja">
+        <summary>タイムラプス動画はどう使い分けますか？</summary>
+        <div class="answer">「期間動画」は開始・終了年月と月ごと／年ごとの単位を選び、地図の表示を基準に走った道が積み上がる動画を作ります。「月の振り返り動画」は指定した月のランを日ごとに重ね、その日のコースを強調します。地図での再生機能はなく、動画を作成して共有・保存します。</div>
+      </details>
+      <details id="faq-ranking-ja">
+        <summary>Rings Rankingに参加すると何が公開されますか？</summary>
+        <div class="answer">参加は任意で、初期設定はOFFです。DISTANCE・EXPLORE・NATIONSから参加する部門を選べます。公開されるのは設定した表示名と、参加・公開を許可した集計情報です。走行コースや個人の地図そのものは公開されません。参加はいつでもOFFにできます。</div>
+      </details>
+      <details id="faq-territory-ja">
+        <summary>Rings Territoryは何を表示しますか？</summary>
+        <div class="answer">参加は任意で、初期設定はOFFです。参加すると2026年以降の対象ランが、対応する地域ごとの年間走行距離に集計されます。公開されるのは地域ごとの集計結果で、走行コースや個人の地図は公開されません。OFFにしても本体のラン記録は削除されません。</div>
+      </details>
     </div>
 
   </section>
 
   <section data-lang="en">
+
+
     <div class="eyebrow">RUNNER'S RINGS FAQ</div>
     <h2>Frequently Asked Questions</h2>
     <p class="lead">
@@ -344,6 +363,10 @@
       It is built to preserve <strong>where you have run</strong> and how your running map grows over time.
     </div>
 
+    <nav class="faqNav" aria-label="FAQ categories">
+      <a href="#faq-import-en">Imports &amp; watches</a><a href="#faq-video-en">Timelapse</a><a href="#faq-ranking-en">Ranking</a><a href="#faq-territory-en">Territory</a><a href="#faq-privacy-en">Privacy &amp; maps</a><a href="./contact.html">Ask us</a>
+    </nav>
+
     <div class="faqList">
       <details>
         <summary>What can I do with Runner's Rings?</summary>
@@ -354,7 +377,7 @@
         </div>
       </details>
 
-      <details>
+      <details id="faq-import-en">
         <summary>Should I connect both Strava and Intervals.icu?</summary>
         <div class="answer">
           In most cases, choose <strong>one</strong>. Connecting both may bring in the same run twice.
@@ -422,7 +445,7 @@
         </div>
       </details>
 
-      <details>
+      <details id="faq-privacy-en">
         <summary>Can other people see my running map?</summary>
         <div class="answer">
           Your logged-in distance, run count, and map are shown for your account.
@@ -445,6 +468,19 @@
           Where supported boundary data exists, state or regional views can also be shown.
           Global coverage will continue to expand gradually.
         </div>
+      </details>
+
+      <details id="faq-video-en">
+        <summary>How do the timelapse videos work?</summary>
+        <div class="answer">For a period video, choose a date range and whether to build it month by month or year by year; routes grow from the map view you set. A monthly review builds that month's runs day by day and highlights each day's route. There is no separate map playback feature: create a video to share or save.</div>
+      </details>
+      <details id="faq-ranking-en">
+        <summary>What becomes public if I join Rings Ranking?</summary>
+        <div class="answer">Participation is optional and starts OFF. You can choose DISTANCE, EXPLORE, and/or NATIONS. Your chosen display name and only the statistics you enable are shown. Your routes and personal map are not published. You can turn participation off at any time.</div>
+      </details>
+      <details id="faq-territory-en">
+        <summary>What does Rings Territory show?</summary>
+        <div class="answer">Participation is optional and starts OFF. Eligible runs from 2026 onward are included in annual distance totals for supported regions. Only regional totals are shown; your routes and personal map are not published. Turning participation off does not delete your Runner's Rings run records.</div>
       </details>
     </div>
 
@@ -527,5 +563,19 @@
   applyLanguage(savedLanguage);
 </script>
 <script defer src="/rr-ondevice-translate.js"></script>
+<script>
+  function openFaqHash(){
+    const rawId=decodeURIComponent(location.hash.slice(1));
+    if(!rawId)return;
+    const language=document.documentElement.lang==='en'?'en':'ja';
+    const id=/^faq-(import|video|ranking|territory|privacy)$/.test(rawId)
+      ? `${rawId}-${language}`
+      : rawId;
+    const target=document.getElementById(id);
+    if(target?.matches('details'))target.open=true;
+  }
+  window.addEventListener('hashchange',openFaqHash);
+  window.addEventListener('DOMContentLoaded',openFaqHash);
+</script>
 </body>
 </html>

@@ -304,6 +304,18 @@
         </a>
       </div>
 
+      <div class="requestItem featured">
+        <div class="requestIcon">🧭</div>
+        <h4>ランキング・テリトリーのテストに協力する</h4>
+        <p>
+          日本・海外どちらからでも歓迎です。使ってみて、迷ったところや分かりにくかったところを教えてください。
+          特別な知識は必要ありません。
+        </p>
+        <a class="contactButton" data-mail-template="featureTester">
+          気づいたことを伝える
+        </a>
+      </div>
+
       <div class="requestItem">
         <div class="requestIcon">🔧</div>
         <h4>不具合を報告する</h4>
@@ -332,9 +344,7 @@
 
     <div class="privacyNote">
       <strong>ランニングデータについて</strong><br>
-      最初のメールにはGPSファイルを添付せず、
-      「アメリカで走った記録を持っている」とだけお知らせください。
-      確認方法を返信でご案内します。
+      テストの相談メールにはGPSファイルを添付しないでください。必要な場合は、内容と確認方法を返信でご案内します。
       Runner's Ringsの地図や記録は、ログインしたご本人だけに表示されます。
     </div>
 
@@ -407,6 +417,14 @@
     ['にご協力ください','Help us expand'],
     ['Runner\'s Ringsでは、走った国や州・地域を地図に残せるよう、\n      世界地図への対応を進めています。','Runner\'s Rings is expanding its map to show the countries, states, and regions where you have run.'],
     ['アメリカのランデータでテストに協力する','Test with a U.S. running record'],
+    ['ランキング・テリトリーのテストに協力する','Help test Ranking and Territory'],
+    ['日本・海外どちらからでも歓迎です。使ってみて、迷ったところや分かりにくかったところを教えてください。','We welcome runners in Japan and abroad. Try the features and tell us where you got stuck or what felt unclear.'],
+    ['特別な知識は必要ありません。','No special expertise is needed.'],
+    ['気づいたことを伝える','Share your feedback'],
+    ['テストの相談メールにはGPSファイルを添付しないでください。必要な場合は、内容と確認方法を返信でご案内します。','Please do not attach GPS files to a testing inquiry. If needed, we will reply with instructions.'],
+    ['個人開発だからこそ、使う人の声と一緒に育てたいと思っています。日本・海外どちらからでも歓迎です。\n          迷ったところや分かりにくかったところを教えてください。特別な知識は必要ありません。','As an independent developer, I want to build Runner’s Rings together with its users. Runners in Japan and around the world are welcome. Tell us where you got stuck or what felt unclear. No special expertise is needed.'],
+    ['気づいたことを伝える','Share your feedback'],
+    ["テストの相談メールにはGPSファイルを添付しないでください。必要な場合は、内容と確認方法を返信でご案内します。\n      Runner's Ringsの地図や記録は、ログインしたご本人だけに表示されます。", "Please do not attach GPS files to a testing inquiry. If needed, we will reply with instructions. Your Runner's Rings map and records are visible only to you."],
     ['アメリカ在住でなくても大丈夫です。ホノルルマラソンなど、\n          過去にアメリカで走ったGPS記録をお持ちの方を募集しています。','You do not need to live in the United States. We welcome anyone with a past GPS running record from the U.S., including the Honolulu Marathon.'],
     ['協力を申し出る','Volunteer to test'],
     ['対応してほしい国・地域を送る','Request a country or region'],
@@ -419,7 +437,7 @@
     ['追加してほしい機能、使い方、アカウント、ランニングデータなど、\n          Runner\'s Ringsに関する内容をお送りください。','Contact us about feature requests, how to use the app, your account, or running data.'],
     ['要望・質問を送る','Send a request'],
     ['ランニングデータについて','About your running data'],
-    ['最初のメールにはGPSファイルを添付せず、\n      「アメリカで走った記録を持っている」とだけお知らせください。\n      確認方法を返信でご案内します。\n      Runner\'s Ringsの地図や記録は、ログインしたご本人だけに表示されます。','Do not attach a GPS file to your first email. Simply tell us that you have a running record from the United States. We will reply with testing instructions. Your Runner\'s Rings map and records are visible only to you.'],
+    ["テストの相談メールにはGPSファイルを添付しないでください。必要な場合は、内容と確認方法を返信でご案内します。\n      Runner's Ringsの地図や記録は、ログインしたご本人だけに表示されます。", "Please do not attach GPS files to a testing inquiry. If needed, we will reply with instructions. Your Runner's Rings map and records are visible only to you."],
     ['メールアプリが開かない場合は、','If your email app does not open, contact us directly at'],
     ['へ直接ご連絡ください。',''],
     ['※内容によっては回答までにお時間をいただく場合があります。\n      また、すべてのお問い合わせへの回答を保証するものではありません。','Replies may take some time, and we may not be able to answer every message.'],
@@ -504,6 +522,16 @@
         "※このメールにはGPSファイルを添付せずにお送りください。"
     },
 
+    featureTester: {
+      subject: "Runner's Rings Ranking / Territory テスト協力",
+      body:
+        "ランキング・テリトリーのテストに協力します。\n\n" +
+        "国・地域（任意）：\n" +
+        "試した機能（ランキング／テリトリー／両方）：\n" +
+        "迷ったところ・分かりにくかったところ：\n\n" +
+        "端末・ブラウザ（任意）：\n\n" +
+        "※GPSファイルは添付していません。"
+    },
     countryRequest: {
       subject:
         "Runner's Rings 対応してほしい国・地域",
@@ -551,6 +579,16 @@
         "Approximate date:\n" +
         "Other information:\n\n" +
         "Please do not attach a GPS file to this first email."
+    },
+    featureTester: {
+      subject: "Runner's Rings Ranking / Territory testing",
+      body:
+        "I would like to help test Rings Ranking and/or Rings Territory.\n\n" +
+        "Country / region (optional):\n" +
+        "Feature tested (Ranking / Territory / both):\n" +
+        "Where I got stuck or what felt unclear:\n\n" +
+        "Device and browser (optional):\n\n" +
+        "I have not attached a GPS file."
     },
     countryRequest: {
       subject:
