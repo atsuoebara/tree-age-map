@@ -81,6 +81,13 @@
         <p class="help">新しい記事はIDを入力せず、そのまま下のフォームに記入してください。既存記事を編集するときだけIDを入力して「下書きを読み込む」を押します。</p>
       </div>
       <form id="journalForm" class="hidden">
+        <section class="field" aria-labelledby="bulkTitle">
+          <label id="bulkTitle" for="bulkArticle">記事をまとめて入力</label>
+          <textarea id="bulkArticle" class="bodyField" placeholder="【日本語タイトル】&#10;タイトル&#10;&#10;【English title】&#10;Title&#10;&#10;【日本語概要】&#10;概要&#10;&#10;【English summary】&#10;Summary&#10;&#10;【日本語本文】&#10;本文&#10;&#10;【English body】&#10;Body&#10;&#10;【カテゴリ】&#10;開発日記"></textarea>
+          <div class="help">原稿を一度貼り付けて「各項目に反映」を押すと、下の欄に自動で振り分けます。記事は保存・公開されません。</div>
+          <button id="applyBulkArticle" type="button" class="secondary">各項目に反映</button>
+          <div id="bulkMessage" class="statusBox hidden" aria-live="polite"></div>
+        </section>
         <div class="field">
           <label for="titleJa">日本語タイトル</label>
           <input id="titleJa" name="titleJa" type="text" maxlength="160" required>
@@ -293,6 +300,42 @@
         showStatus(saveMessage, error.message, 'error');
       }
     });
+    $('applyBulkArticle').addEventListener('click', () => {
+      const source = $('bulkArticle').value.trim();
+      const output = $('bulkMessage');
+      if (!source) return showStatus(output, '原稿を貼り付けてください。', 'error');
+      const labels = [
+        ['titleJa', '日本語タイトル'], ['titleEn', 'English title'],
+        ['summaryJa', '日本語概要'], ['summaryEn', 'English summary'],
+        ['bodyJa', '日本語本文'], ['bodyEn', 'English body'], ['category', 'カテゴリ']
+      ];
+      const found = new Map();
+      let currentField = null;
+      for (const line of source.replace(/\r\n?/g, '\n').split('\n')) {
+        const heading = labels.find(([, label]) =>
+          line.trim() === '【' + label + '】' || line.trim() === '**' + label + '**');
+        if (heading) {
+          currentField = heading[0];
+          if (!found.has(currentField)) found.set(currentField, []);
+          continue;
+        }
+        if (currentField) found.get(currentField).push(line);
+      }
+      for (const [field, lines] of found) found.set(field, lines.join('\n').trim());
+      if (!found.has('titleJa') || !found.has('bodyJa')) {
+        return showStatus(output, '「日本語タイトル」と「日本語本文」の見出しが見つかりません。見出し付き原稿を貼ってください。', 'error');
+      }
+      for (const [field, value] of found) $(field).value = value;
+      const categoryText = found.get('category') || '';
+      const categoryMap = { '開発日記':'development', '世界のランナー':'runner',
+        'GPSアート':'gps-art', '今週の発見':'discovery', 'その他':'other' };
+      if (categoryText) {
+        const category = categoryMap[categoryText.split(/[\\r\\n]/)[0].trim()] || categoryText.trim();
+        if ([...$('category').options].some(option => option.value === category)) $('category').value = category;
+      }
+      showStatus(output, found.size + '項目を反映しました。画像は下の欄から選択してください。', 'ok');
+    });
+
     function collectFields() {
       const titleJa = $('titleJa').value.trim();
       const bodyJa = $('bodyJa').value.trim();
