@@ -1223,8 +1223,7 @@
       position:fixed;z-index:10001;top:0;left:0;right:0;
       height:54px;box-sizing:border-box;justify-content:flex-start;
       gap:5px;padding:max(8px, env(safe-area-inset-top)) 8px 6px;
-      wh
-ite-space:nowrap;
+      white-space:nowrap;
     }
     body.mapFullscreenActive #filters{
       position:fixed;z-index:10002;top:0;left:154px;right:176px;
@@ -2535,8 +2534,7 @@ ite-space:nowrap;
   }
 
   #authHero h2{
-    font-siz
-e:42px;
+    font-size:42px;
   }
 
   #authPreview{
@@ -6484,8 +6482,7 @@ function setImportShareDisplay(shares = {}) {
 function cloudEnabled() {
 
   return !!(
-    currentUser &
-&
+    currentUser &&
     currentSession &&
     typeof SUPABASE_KEY ===
       'string' &&
@@ -16631,8 +16628,7 @@ function focusActivityFromRoutePopup(
         minWidth:250
       }
     )
-    .setLatL
-ng(
+    .setLatLng(
       routeBounds.getCenter()
     )
     .setContent(
@@ -18229,8 +18225,7 @@ function createWorldAdminDashboardCard(
     Math.max(
       3,
       km / Math.max(
-        ma
-xKm,
+        maxKm,
         0.000001
       ) * 100
     );
@@ -19649,8 +19644,7 @@ function getCountryShareData(
 }
 
 
-fu
-nction createCountryConquestShareCanvas(
+function createCountryConquestShareCanvas(
   countryCode,
   stats
 ) {
@@ -22778,8 +22772,7 @@ function drawConquestCard(
   ctx.fillStyle =
     '#ffffff';
   ctx.font =
-    `900 ${Math.round(W * .034)}px -apple-system,B
-linkMacSystemFont,"Segoe UI",sans-serif`;
+    `900 ${Math.round(W * .034)}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
   ctx.fillText(
     "Runner's Rings",
     W * .085,
@@ -24190,8 +24183,7 @@ function setMapViewMode(
   syncMapViewModeButtons();
 
   if (
-    selectedAct
-ivitiesNeedCells()
+    selectedActivitiesNeedCells()
   ) {
     renderSelectedData();
     return;
@@ -25441,8 +25433,7 @@ function projectTimelapseLatLngToShare(latlng, inner, projection) {
 }
 
 async function renderTimelapseBaseMapCanvas(outputCanvas) {
-  const {inner} = getTimelapseShareMa
-pGeometry(outputCanvas);
+  const {inner} = getTimelapseShareMapGeometry(outputCanvas);
   const projection = getTimelapseShareProjection(inner);
   const baseCanvas = document.createElement('canvas');
   baseCanvas.width = Math.round(inner.width);
@@ -28257,8 +28248,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['ラン＋GPS候補','Run + GPS candidates'],
   ['既存ランと重複','Existing duplicates'],
   ['保存予定（500m以上）','To save (500 m or longer)'],
-  ['保留（500m未満）','Held
- (under 500 m)'],
+  ['保留（500m未満）','Held (under 500 m)'],
   ['重複確認不可','Duplicate check unavailable'],
   ['FIT内容確認失敗','FIT inspection failures'],
   ['クラウド保存にはログインが必要です','Log in to save to your account'],
