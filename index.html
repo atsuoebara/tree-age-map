@@ -5347,6 +5347,9 @@ async function importFromCoros() {
   let saved = 0;
   let duplicates = 0;
   let failed = 0;
+  const diagnosticId = crypto.randomUUID();
+  const clientFailures = [];
+  let corosFailureMessage = null;
   const acknowledgedLabelIds = [];
 
   try {
@@ -5362,11 +5365,42 @@ async function importFromCoros() {
             headers: {
               Authorization:
                 `Bearer ${session.access_token}`
+            },
+            body: {
+              diagnosticId
             }
           }
         );
 
     if (error) {
+      try {
+        if (error.context && typeof error.context.clone === 'function') {
+          const failureData = await error.context.clone().json();
+          const phaseLabels = {
+            authenticate_user: 'ログイン確認',
+            load_connection: 'COROS連携情報の確認',
+            refresh_access_token: 'COROS認証の更新',
+            initialize_coros_session: 'COROS接続確認',
+            query_history_records: '過去の記録取得',
+            query_recent_records: '最近の記録取得',
+            check_processed_activities: '取込済み記録の確認',
+            get_fit_download_urls: 'FITデータの取得準備',
+            advance_history_cursor: '履歴の更新',
+            acknowledge_import: '取込結果の保存'
+          };
+          const phaseLabel =
+            Object.hasOwn(phaseLabels, failureData?.phase)
+              ? phaseLabels[failureData.phase]
+              : null;
+          corosFailureMessage =
+            'COROSからの取込みに失敗しました。' +
+            (phaseLabel ? '\n失敗箇所: ' + phaseLabel : '') +
+            '\n確認番号: ' +
+            (failureData?.diagnosticId || diagnosticId);
+        }
+      } catch (diagnosticReadError) {
+        console.warn('COROS failure details unavailable:', diagnosticReadError);
+      }
       throw error;
     }
 
@@ -5411,12 +5445,15 @@ async function importFromCoros() {
         '/' +
         files.length;
 
+      let clientPhase = 'fit_download';
+      let clientHttpStatus = null;
       try {
         const corosFile = files[i];
         const response =
           await fetch(corosFile.url);
 
         if (!response.ok) {
+          clientHttpStatus = response.status;
           throw new Error(
             'FIT取得エラー: ' +
             response.status
@@ -5435,6 +5472,7 @@ async function importFromCoros() {
             }
           );
 
+        clientPhase = 'fit_parse';
         const activity =
           await window
             .buildActivityFromFIT(
@@ -5465,6 +5503,7 @@ async function importFromCoros() {
           continue;
         }
 
+        clientPhase = 'activity_save';
         await saveActivityToCloud(
           activity
         );
@@ -5482,8 +5521,19 @@ async function importFromCoros() {
         }
 
       } catch (error) {
+        clientFailures.push({
+          phase: clientPhase,
+          itemIndex: i + 1,
+          errorName:
+            error instanceof Error && /^[A-Za-z]{1,40}$/.test(error.name)
+              ? error.name
+              : 'UnknownError',
+          httpStatus: clientHttpStatus
+        });
         console.error(
           'COROS FIT取込み失敗:',
+          diagnosticId,
+          clientPhase,
           error
         );
 
@@ -5508,6 +5558,8 @@ async function importFromCoros() {
               },
               body: {
                 action: 'ack',
+                diagnosticId,
+                clientFailures,
                 acknowledgedLabelIds,
                 historyRunLabelIds:
                   Array.isArray(
@@ -5552,6 +5604,11 @@ async function importFromCoros() {
         acknowledgementFailed
           ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
           : ''
+      ) +
+      (
+        failed > 0 || acknowledgementFailed
+          ? '\n\n確認番号: ' + diagnosticId
+          : ''
       );
 
     alert(
@@ -5587,7 +5644,8 @@ async function importFromCoros() {
     );
 
     alert(
-      'COROSからの取込みに失敗しました。'
+      corosFailureMessage ||
+      ('COROSからの取込みに失敗しました。\n確認番号: ' + diagnosticId)
     );
 
   } finally {
