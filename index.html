@@ -11880,7 +11880,9 @@ async function fetchCloudRuns() {
     await getCloudHeaders();
 
   const allRuns = [];
-  const pageSize = 1000;
+  // Route JSON can be large (many GPS points per run). Keep each REST
+  // response small so one oversized page does not fail the entire load.
+  const pageSize = 50;
   let offset = 0;
 
   while (true) {
