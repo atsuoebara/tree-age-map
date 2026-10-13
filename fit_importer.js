@@ -59,10 +59,12 @@ function syncEnglishMonthInputs() {
 
     const refresh = () => {
       if (isEnglish) {
+        wrapper.classList.add('isEnglish');
         input.classList.add('rrEnglishMonthInput');
         display.hidden = false;
         display.textContent = formatEnglishMonthValue(input.value);
       } else {
+        wrapper.classList.remove('isEnglish');
         input.classList.remove('rrEnglishMonthInput');
         display.hidden = true;
       }
@@ -189,12 +191,25 @@ function improveLanguageSwitchDiscoverability() {
         position:relative;
         width:100%;
       }
+      .rrEnglishMonthWrap.isEnglish{
+        min-height:39px;
+        border:1px solid rgba(255,255,255,.14);
+        border-radius:9px;
+        background:#0f1d2f;
+        overflow:hidden;
+      }
       .rrEnglishMonthWrap > input{
         width:100%;
       }
-      .rrEnglishMonthInput{
-        color:transparent !important;
-        -webkit-text-fill-color:transparent !important;
+      .rrEnglishMonthWrap.isEnglish > input{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        min-height:39px;
+        opacity:0 !important;
+        z-index:2;
+        cursor:pointer;
       }
       .rrEnglishMonthDisplay{
         position:absolute;
@@ -206,6 +221,7 @@ function improveLanguageSwitchDiscoverability() {
         color:#fff;
         font:inherit;
         font-weight:700;
+        z-index:1;
       }
       @media (max-width:520px){
         header h1{padding-right:158px !important;}
