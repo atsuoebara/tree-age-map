@@ -6,12 +6,17 @@ const RR_ENGLISH_FIXES = new Map([
   ["Runner's Ringsの始め方", "How to get started with Runner's Rings"],
   ["Runner's Ringsに無料登録", "Create your free Runner's Rings account"],
   ['メールアドレスとパスワードでアカウントを作成します。', 'Create an account with your email address and password.'],
+  ['Email addressとPasswordでAccountを作成します。', 'Create an account with your email address and password.'],
   ['ランニングデータを取り込む', 'Import your running data'],
   ['Strava、Intervals.icu、COROS、FIT / GPX / TCX / ZIPなどから取り込めます。', 'Import runs from Strava, Intervals.icu, COROS, FIT / GPX / TCX / ZIP, and more.'],
   ['自分だけのランニングマップを楽しむ', 'Enjoy your personal running map'],
   ['走った道、地域走破、ALL・年別の広がりを地図で振り返れます。', 'Review the roads you have run, regions you have explored, and your ALL or yearly progress on the map.'],
   ['芸能人だからすごい、じゃない。井上咲楽さんの3時間14分19秒をチャッピーが本気で分析', "It’s not impressive just because she’s a celebrity — Chappy takes a close look at Sakura Inoue’s 3:14:19"],
-  ['Log inすると、あなたのランニングマップを表示します。', 'Log in to view your personal running map.']
+  ['Log inすると、あなたのランニングマップを表示します。', 'Log in to view your personal running map.'],
+  ['Log inすると、 あなたのランニングマップを表示します。', 'Log in to view your personal running map.'],
+  ['走った人生の物語・開発の裏側を読む →', 'Read running stories and behind-the-scenes development →'],
+  ['世界のランナーとつながる・ランキングを見る →', 'Connect with runners worldwide · View rankings →'],
+  ['市町村ごとの順位で、今年の“陣取り”を見る →', 'See this year’s territory standings by municipality →']
 ]);
 
 function applyEnglishLeftoverFixes() {
