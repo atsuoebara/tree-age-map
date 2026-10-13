@@ -35,7 +35,6 @@ function formatEnglishMonthValue(value) {
 }
 
 function syncEnglishMonthInputs() {
-  const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
   const ids = ['timelapseStartMonth', 'timelapseEndMonth', 'timelapseReviewMonth'];
 
   ids.forEach(id => {
@@ -57,26 +56,16 @@ function syncEnglishMonthInputs() {
       wrapper.appendChild(display);
     }
 
-    const refresh = () => {
-      if (isEnglish) {
-        wrapper.classList.add('isEnglish');
-        input.classList.add('rrEnglishMonthInput');
-        display.hidden = false;
-        display.textContent = formatEnglishMonthValue(input.value);
-      } else {
-        wrapper.classList.remove('isEnglish');
-        input.classList.remove('rrEnglishMonthInput');
-        display.hidden = true;
-      }
-    };
+    wrapper.classList.add('isEnglish');
+    input.classList.add('rrEnglishMonthInput');
+    display.hidden = false;
+    display.textContent = formatEnglishMonthValue(input.value);
 
     if (!input.dataset.rrEnglishMonthBound) {
       input.dataset.rrEnglishMonthBound = '1';
       input.addEventListener('input', () => setTimeout(syncEnglishMonthInputs, 0));
       input.addEventListener('change', () => setTimeout(syncEnglishMonthInputs, 0));
     }
-
-    refresh();
   });
 }
 
