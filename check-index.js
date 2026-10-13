@@ -104,6 +104,15 @@ const checks = [
     ]
   },
   {
+    name: '承認写真の公開名・バッジ設定',
+    patterns: [
+      /ranking_photo_badges/,
+      /photo\.public_name\s*\|\|\s*photoText\('ランナー','Runner'\)/,
+      /photo\.badge_codes/,
+      /\.select\(['"]id,lat,lng,storage_path,caption,created_at['"]\)/
+    ]
+  },
+  {
     name: 'アカウント設定の折りたたみ',
     patterns: [
       /id=['"]accountSettingsButton['"]/,
@@ -165,3 +174,4 @@ if (failures.length > 0) {
 
 console.log('Runner\'s Rings 自動チェック：すべて合格');
 console.log('手動確認：スマホで起動画面、言語切替、地図の線、COROS取込みを確認してください。');
+

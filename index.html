@@ -16,7 +16,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Runner's Rings（ランナーズリングス）は、走った道や街を地図に積み重ね、距離・ラン数・訪れた地域を可視化するランニング記録アプリです。">
+  <meta name="description" content="Runner's Rings（ランナーズリングス）は、走った道や街を地図に重ねてランニングの積み重ねを振り返るアプリ。ランニング体験や開発の記録を綴るRings Journalも公開しています。">
 
   <title>Runner's Rings（ランナーズリングス）｜走った人生を地図に残す</title>
 <link rel="icon" type="image/png" href="icon.PNG">
@@ -2300,62 +2300,10 @@
   line-height:1.85;
   color:#b9c6d6;
 }
-
-#authPreview{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:24px;
-}
-
-.authPreviewCard{
-  min-width:0;
-  padding:14px 8px;
-  background:rgba(19,34,55,.88);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  text-align:center;
-}
-
-.authPreviewLabel{
-  margin-bottom:6px;
-  font-size:9px;
-  letter-spacing:1.2px;
-  color:#8494a8;
-}
-
-.authPreviewValue{
-  font-size:20px;
-  font-weight:800;
-  white-space:nowrap;
-}
-
-.authPreviewValue span{
-  font-size:10px;
-  color:#8494a8;
-}
-
-.authConcept{
-  margin-top:14px;
-  padding:15px 16px;
-  border-left:3px solid #ff2bd6;
-  background:rgba(255,255,255,.035);
-  border-radius:0 12px 12px 0;
-}
-
-.authConcept strong{
-  display:block;
-  font-size:14px;
-  margin-bottom:5px;
-}
-
-.authConcept span{
-  display:block;
-  color:#91a0b3;
-  font-size:12px;
-  line-height:1.6;
-}
-
+.authHeroActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.authHeroAction{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;border:1px solid #ff2bd6;border-radius:999px;background:#ff2bd6;color:#fff;text-decoration:none;font-size:13px;font-weight:850}
+.authHeroAction.secondary{border-color:#718096;background:#17283d;color:#fff}
+.authHeroDataNote{margin-top:13px;font-size:12px;color:#91a0b3}
 
 /* =====================================
    ログイン前：Runner's Ringsの価値紹介
@@ -2535,18 +2483,6 @@
 
   #authHero h2{
     font-size:42px;
-  }
-
-  #authPreview{
-    gap:12px;
-  }
-
-  .authPreviewCard{
-    padding:18px 10px;
-  }
-
-  .authPreviewValue{
-    font-size:25px;
   }
 
 }
@@ -2901,11 +2837,17 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 </style>
 <style id="authJournalFeatureStyles">
 #authJournalFeature{margin:22px 0 24px;padding:18px;border:1px solid rgba(255,43,214,.55);border-radius:18px;background:linear-gradient(135deg,rgba(255,43,214,.12),rgba(234,255,0,.045)),#101d2f;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.importShareDisclosure{margin:12px 0;padding:10px 12px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(5,12,22,.35)}
+.importShareDisclosure>summary{cursor:pointer;color:#cbd5e1;font-size:12px;font-weight:750}
+.importShareDisclosure[open]>summary{margin-bottom:10px}
 .authJournalEyebrow{margin:0 0 6px;color:#ff78e6;font-size:11px;font-weight:900;letter-spacing:1.7px}
 #authJournalFeature h3{margin:0;color:#fff;font-size:21px;line-height:1.45}
 .authJournalIntro{margin:8px 0 14px;color:#cbd5e1;font-size:13px;line-height:1.75}
-.authJournalGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.authJournalCard{display:flex;flex-direction:column;min-height:178px;padding:13px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:rgba(11,20,34,.76);color:#fff;text-decoration:none}
+.authJournalGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.authJournalCard{display:flex;flex-direction:column;min-height:178px;padding:15px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:rgba(11,20,34,.76);color:#fff;text-decoration:none}
+.authJournalCardFeatured{grid-column:1/-1;min-height:0;padding:20px;border-color:rgba(255,43,214,.68);background:linear-gradient(120deg,rgba(255,43,214,.13),rgba(19,34,55,.96) 70%)}
+.authJournalCardFeatured .authJournalTitle{font-size:19px;line-height:1.5}
+.authJournalTag{align-self:flex-start;margin-bottom:8px;padding:4px 9px;border-radius:999px;background:rgba(255,43,214,.16);color:#ff9bea;font-size:11px;font-weight:850}
 .authJournalCard:hover,.authJournalCard:focus-visible{border-color:#ff2bd6;outline:2px solid rgba(255,43,214,.35);outline-offset:2px}
 .authJournalDate{margin-bottom:7px;color:#aeb9c8;font-size:10px;font-weight:700}
 .authJournalTitle{margin-bottom:7px;font-size:14px;font-weight:850;line-height:1.5}
@@ -2914,7 +2856,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 .authJournalActions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 15px}
 .authJournalAction{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 14px;border:1px solid #ff2bd6;border-radius:999px;background:#ff2bd6;color:#fff;font-size:12px;font-weight:850;text-decoration:none}
 .authJournalAction.secondary{border-color:#718096;background:#17283d;color:#fff}
-@media(max-width:620px){#authJournalFeature{padding:15px}.authJournalGrid{grid-template-columns:1fr}.authJournalCard{min-height:0}.authJournalTitle{font-size:15px}}
+@media(max-width:620px){#authJournalFeature{padding:15px}.authJournalGrid{grid-template-columns:1fr}.authJournalCard{min-height:0}.authJournalCardFeatured{grid-column:auto;padding:16px}.authJournalCardFeatured .authJournalTitle{font-size:17px}.authJournalTitle{font-size:15px}}
+.runnerBadge{display:inline-flex;align-items:center;margin:3px 4px 3px 0;padding:3px 7px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#172337;color:#dce7f4;font-size:10px;font-weight:800}
 </style>
 </head>
 
@@ -3070,44 +3013,46 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         シェアするかどうかは、自分で選べます。
       </p>
 
-            <p class="authHeroText">
-        <strong>ログイン後のあなたの記録例</strong>
+      <div class="authHeroActions" aria-label="Runner's Ringsを試す">
+        <a class="authHeroAction primary" href="./sample.html">登録なしでサンプルを見る</a>
+        <a class="authHeroAction secondary" href="#authCard">ログイン・新規登録</a>
+      </div>
+
+      <p class="authHeroText authHeroDataNote">
+        Strava・Intervals.icu・COROSや、FIT／GPX／TCXファイルからランニング記録を取り込めます。
       </p>
+    </div>
 
-      <div id="authPreview">
-
-        <div class="authPreviewCard">
-          <div class="authPreviewLabel">あなたの総距離</div>
-          <div class="authPreviewValue">9,500<span> km</span></div>
-        </div>
-
-        <div class="authPreviewCard">
-          <div class="authPreviewLabel">あなたのラン数</div>
-          <div class="authPreviewValue">1,300+</div>
-        </div>
-
-        <div class="authPreviewCard">
-          <div class="authPreviewLabel">あなたが走った地域</div>
-          <div class="authPreviewValue">43</div>
-        </div>
-
+    <section id="authJournalFeature" aria-labelledby="authJournalTitle">
+      <p class="authJournalEyebrow">RINGS JOURNAL｜ランニングと開発の記録</p>
+      <h3 id="authJournalTitle">走った人の経験から、ランニングを考える</h3>
+      <p class="authJournalIntro">Runner's Ringsの開発記録だけでなく、実際に走った体験やレースについて、作り手自身の視点で綴っています。気になる記事からお読みください。</p>
+      <div class="authJournalGrid">
+        <a class="authJournalCard authJournalCardFeatured" href="./journal/articles/journal-20260930-163011-57a69ab1/">
+          <span class="authJournalTag">特集｜レース分析</span>
+          <span class="authJournalDate">2026.09.30</span>
+          <span class="authJournalTitle">芸能人だからすごい、じゃない。井上咲楽さんの3時間14分19秒をチャッピーが本気で分析</span>
+          <span class="authJournalSummary">ベルリンマラソン2026の記録を、タイムだけでなく、公開されている情報をもとにランナー目線で読み解きます。</span>
+          <span class="authJournalRead">分析記事を読む →</span>
+        </a>
+        <a class="authJournalCard" href="./journal-012.html">
+          <span class="authJournalDate">2026.09.23｜開発日記</span>
+          <span class="authJournalTitle">Runner's Rings Version 1.0をリリースしました ─ 「走った人生を残す」地図へ</span>
+          <span class="authJournalSummary">データ連携、地図、地域走破。Version 1.0までに形になった機能と、ここから始まる話です。</span>
+          <span class="authJournalRead">記事を読む →</span>
+        </a>
+        <a class="authJournalCard" href="./journal-011.html">
+          <span class="authJournalDate">2026.09.19｜ランニング体験</span>
+          <span class="authJournalTitle">トレッドミルも、「走った人生」の積み重ねにしたい</span>
+          <span class="authJournalSummary">地図には描けないランも自分の歴史の一部。高崎の低酸素ランニングジムでの体験から考えました。</span>
+          <span class="authJournalRead">記事を読む →</span>
+        </a>
       </div>
-
-      <div class="authConcept">
-        <strong>走るほど、地図が育つ。</strong>
-        <span>
-          StravaやIntervals.icuの自動連携、COROSからの直接取り込み、FIT／GPX／TCX／ZIPファイルから利用できます。
-        </span>
+      <div class="authJournalActions">
+        <a class="authJournalAction" href="./journal.html">Journalの記事一覧を見る</a>
       </div>
-
-      <section id="authJournalFeature" aria-labelledby="authJournalTitle">
-<div class="authJournalActions"><a class="authJournalAction" href="#authCard">ログイン・新規登録へ</a><a class="authJournalAction secondary" href="./sample.html">登録なしでサンプルを試す</a></div>
-<p class="authJournalEyebrow">RINGS JOURNAL</p><h3 id="authJournalTitle">Rings Journal｜走った人生の物語と開発の記録</h3>
-<p class="authJournalIntro">ランニングの振り返りや、Runner's Ringsの機能が生まれた背景を、作り手自身の言葉で記録しています。アプリの紹介だけでは伝えきれない考えや試行錯誤も公開しています。</p>
-<div class="authJournalGrid"><a class="authJournalCard" href="./journal-012.html"><span class="authJournalDate">2026.09.23</span><span class="authJournalTitle">Runner's Rings Version 1.0をリリースしました ─ 「走った人生を残す」地図へ</span><span class="authJournalSummary">データ連携、地図、地域走破、制覇カード。Version 1.0までに形になった機能と、ここから始まるRunner's Ringsの話です。</span><span class="authJournalRead">記事を読む →</span></a><a class="authJournalCard" href="./journal-011.html"><span class="authJournalDate">2026.09.19</span><span class="authJournalTitle">トレッドミルも、「走った人生」の積み重ねにしたい</span><span class="authJournalSummary">地図には描けないトレッドミルのランも、自分が走ってきた歴史の一部。高崎の低酸素ランニングジムでの体験から考えたことを綴ります。</span><span class="authJournalRead">記事を読む →</span></a><a class="authJournalCard" href="./journal-010.html"><span class="authJournalDate">2026.09.17</span><span class="authJournalTitle">Runner's Ringsに「応援する」を付けた理由 ─ そしてチャッピーの餌代</span><span class="authJournalSummary">アプリを無料で続けながら、任意の応援ボタンを付けた理由。機能差を設けずに個人開発を続けるために考えたことです。</span><span class="authJournalRead">記事を読む →</span></a></div>
-<a class="authPublicLink" href="./journal.html">Rings Journalの記事一覧を見る →</a>
-</section>
-<details class="authValueSection" id="authValueDisclosure" open>
+    </section>
+<details class="authValueSection" id="authValueDisclosure">
         <summary><h3 id="authValueHeading">Runner's Ringsでできること</h3></summary>
         <div class="authValueEyebrow">RUNNER'S RINGS EXPERIENCE</div>
         <p class="authValueLead">
@@ -3152,10 +3097,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         </div>
 
         <nav class="authPublicLinks" aria-label="Runner's Ringsについて詳しく見る">
-          <a class="authPublicLink" href="./sample.html" style="border:1px solid #ffdc38;background:linear-gradient(135deg,#fa3fb5,#d47715);color:#fff;font-weight:800">🌍 サンプルを読み込む（登録不要）</a>
-          <a class="authPublicLink" href="./journal.html" style="border:2px solid #ff2bd6;background:linear-gradient(135deg,#572045,#273c60);color:#fff;font-weight:800">📖 Rings Journal｜走った人生の物語を読む →</a>
           <a class="authPublicLink" href="./ranking.html" style="border:2px solid #eaff00;background:linear-gradient(135deg,#26324e,#362345);color:#fff;font-weight:800">🌍 Rings Ranking｜世界のランナーの記録を見る →</a>
-          <a class="authPublicLink" href="./territory.html" style="border:2px solid #5cff9d;background:linear-gradient(135deg,#174b3f,#203a55);color:#fff;font-weight:800">🗾 Rings Territory｜市町村ごとの年間走行距離を見る →</a>
+          <a class="authPublicLink" href="./territory.html" style="border:2px solid #5cff9d;background:linear-gradient(135deg,#174b3f,#203a55);color:#fff;font-weight:800">🗾 Rings Territory｜市町村ごとの順位を見る →</a>
           <a class="authPublicLink" href="./gps-art.html" style="border:2px solid #ff9b45;background:linear-gradient(135deg,#55341e,#203a55);color:#fff;font-weight:800">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）｜下絵だけでも遊べる →</span><span data-art-lang="en">Charming cartoon GPS art (beta)｜Play with outlines →</span><small style="display:block;font-weight:600"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
           <a class="authPublicLink" href="./about-runners-rings.html">Runner's Ringsとは？</a>
           <a class="authPublicLink" href="./how-to.html">使い方を見る</a>
@@ -3171,7 +3114,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <a href="./contact.html">気づいたことを伝える・質問する ↗</a>
       </aside>
 
-      <details class="setupGuide setupGuideAuth" id="authImportGuide" open>
+      <details class="setupGuide setupGuideAuth" id="authImportGuide">
         <summary>データ連携・取り込み方法</summary>
         <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
         <div class="setupGuideOptions">
@@ -3196,6 +3139,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
             <span>ファイル取り込み</span>
           </div>
         </div>
+        <details class="importShareDisclosure">
+          <summary>取り込み方法の利用割合を見る</summary>
         <div class="importSharePanel" data-import-share-panel>
           <div class="importShareTitle">現在のデータ取り込み割合</div>
           <div class="importShareRows">
@@ -3224,6 +3169,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
             ※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。
           </p>
         </div>
+        </details>
         <p class="setupGuideNote">
           ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
         </p>
@@ -3255,9 +3201,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 </details>     
         
       </details>
-
-    </div>
-
 
       <section class="startSteps" aria-labelledby="startStepsTitle">
         <h3 id="startStepsTitle">Runner's Ringsの始め方</h3>
@@ -3348,8 +3291,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <div id="authMessage"></div>
 
     </div>
-    </div>
-
   </div>
 
 </section>
@@ -3818,7 +3759,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <div class="dashboardFeatureLinks"><a href="./faq.html#faq-ranking" style="color:#eaff00;text-decoration:none">ランキングのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     </div>
     <div class="dashboardFeatureGroup">
-      <a href="./territory.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">市町村ごとの年間走行距離で、今年の“陣取り”を見る →</span></a>
+      <a href="./territory.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600">市町村ごとの順位で、今年の“陣取り”を見る →</span></a>
       <div class="dashboardFeatureLinks"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">テリトリーのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     </div>
     <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
@@ -3901,7 +3842,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </section>
 
 </main>
-  </div>
 
   <button
     id="scrollToTopButton"
@@ -6849,8 +6789,15 @@ function makePhotoPopup(photo) {
   box.appendChild(image);
   const author = document.createElement('p');
   author.className = 'photoReviewAuthor';
-  author.textContent = photoText('投稿者：','By: ') + (photo.author_display_name || 'ランナー');
+  author.textContent = photoText('投稿者：','By: ') + (photo.public_name || photoText('ランナー','Runner'));
   box.appendChild(author);
+  for (const code of (photo.badge_codes || [])) {
+    const badge = document.createElement('span');
+    badge.className = 'runnerBadge';
+    badge.textContent = ({first:'🌱',steady:'🔥',photo:'📷'})[code] || '';
+    badge.title = ({first:'はじめの輪 / First Loop',steady:'継続の輪 / Steady Runner',photo:'写真の輪 / Photo Contributor'})[code] || '';
+    if (badge.textContent) box.appendChild(badge);
+  }
   if (photo.caption) {
     const caption = document.createElement('p');
     caption.textContent = photo.caption;
@@ -6914,16 +6861,19 @@ async function loadApprovedMapPhotos() {
   setPhotoStatus('承認済み写真を読み込み中…','Loading approved photos…');
   try {
     const {data, error} = await supabaseClient.from('map_photos')
-      .select('id,lat,lng,storage_path,caption,author_display_name,created_at')
+      .select('id,lat,lng,storage_path,caption,created_at')
       .eq('status','approved')
       .order('created_at',{ascending:false})
       .limit(500);
     if (error) throw error;
-    approvedMapPhotos = (data || []).map(row => ({
-      ...row,
-      lat:Number(row.lat),
-      lng:Number(row.lng)
-    }));
+    approvedMapPhotos = (data || []).map(row => ({...row,lat:Number(row.lat),lng:Number(row.lng)}));
+    if (approvedMapPhotos.length) {
+      const {data:publicInfo,error:publicInfoError}=await supabaseClient.rpc('ranking_photo_badges',{p_photo_ids:approvedMapPhotos.map(row=>row.id)});
+      if (!publicInfoError && Array.isArray(publicInfo)) {
+        const byId=new Map(publicInfo.map(row=>[row.photo_id,row]));
+        approvedMapPhotos=approvedMapPhotos.map(row=>({...row,...(byId.get(row.id)||{})}));
+      } else if (publicInfoError) console.warn('Photo public profile unavailable:',publicInfoError.message);
+    }
     drawPhotoMarkers();
     setPhotoStatus(
       approvedMapPhotos.length ? '承認済み写真を表示できます。':'掲載中の写真はまだありません。',
@@ -7052,7 +7002,7 @@ async function loadPendingPhotoReviews() {
   photoQueue.style.display = 'block';
   photoQueueItems.textContent = photoText('確認待ちを読み込み中…','Loading pending photos…');
   const {data, error} = await supabaseClient.from('map_photos')
-    .select('id,lat,lng,storage_path,caption,author_display_name,created_at')
+    .select('id,lat,lng,storage_path,caption,created_at')
     .eq('status','pending').order('created_at',{ascending:true}).limit(100);
   if (error) {
     photoQueueItems.textContent = photoText('審査待ちを読み込めませんでした。','Could not load pending photos.');
@@ -7073,7 +7023,7 @@ async function loadPendingPhotoReviews() {
     const details = document.createElement('div');
     const author = document.createElement('p');
     author.className = 'photoReviewAuthor';
-    author.textContent = photoText('投稿者：','By: ') + (row.author_display_name || 'ランナー');
+    author.textContent = photoText('投稿者：','By: ') + photoText('ランナー','Runner');
     details.appendChild(author);
     const caption = document.createElement('p');
     caption.textContent = row.caption || photoText('説明なし','No caption');
@@ -27937,6 +27887,23 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  ['RUNNING × LIFE MAP','RUNNING × LIFE MAP'],
+  ['登録なしでサンプルを見る','View the demo without signing up'],
+  ['Strava・Intervals.icu・COROSや、FIT／GPX／TCXファイルからランニング記録を取り込めます。','Import runs from Strava, Intervals.icu, COROS, or FIT/GPX/TCX files.'],
+  ['RINGS JOURNAL｜ランニングと開発の記録','RINGS JOURNAL | Running and development stories'],
+  ['走った人の経験から、ランニングを考える','Running, viewed through a runner’s experience'],
+  ["Runner's Ringsの開発記録だけでなく、実際に走った体験やレースについて、作り手自身の視点で綴っています。気になる記事からお読みください。","Alongside the app development diary, the creator writes about running experiences and races. Choose an article that interests you."],
+  ['特集｜レース分析','FEATURE | RACE ANALYSIS'],
+  ['2026.09.30｜レース分析','2026.09.30 | Race analysis'],
+  ['ベルリンマラソン2026の記録を、タイムだけでなく、公開されている情報をもとにランナー目線で読み解きます。','A runner’s perspective on the 2026 Berlin Marathon performance, using publicly available information beyond the finishing time.'],
+  ['分析記事を読む →','Read the analysis →'],
+  ['2026.09.23｜開発日記','2026.09.23 | Development diary'],
+  ['データ連携、地図、地域走破。Version 1.0までに形になった機能と、ここから始まる話です。','Data connections, maps, and exploring regions: what took shape by Version 1.0 and what comes next.'],
+  ['2026.09.19｜ランニング体験','2026.09.19 | Running experience'],
+  ['地図には描けないランも自分の歴史の一部。高崎の低酸素ランニングジムでの体験から考えました。','Runs that do not appear on a map are still part of a runner’s story. This reflection grew from a visit to a hypoxic training gym in Takasaki.'],
+  ['Journalの記事一覧を見る','View all Journal articles'],
+  ['登録なしでアプリを試す','Try the app without signing up'],
+  ['取り込み方法の利用割合を見る','See how import methods are used'],
   ['Rings Journal｜走った人生の物語と開発の記録','Rings Journal | Stories from running and building the app'],
   ['ランニングの振り返りや、Runner\'s Ringsの機能が生まれた背景を、作り手自身の言葉で記録しています。アプリの紹介だけでは伝えきれない考えや試行錯誤も公開しています。','Running reflections and the story behind Runner\'s Rings features, in the creator\'s own words. Read the ideas and experiments that a product introduction alone cannot capture.'],
   ['Runner\'s Rings Version 1.0をリリースしました ─ 「走った人生を残す」地図へ','Runner\'s Rings Version 1.0 is here — a map for the life you run'],
@@ -27948,6 +27915,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['記事を読む →','Read the article →'],
   ['Rings Journalの記事一覧を見る →','View all Rings Journal articles →'],
   ['ログイン・新規登録へ','Log in or sign up'],
+  ['ログイン・新規登録','Log in or sign up'],
   ['登録なしでサンプルを試す','Try the sample without signing up'],
   ['期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。','Period videos build up runs across a selected date range. Monthly reviews show your runs day by day for one month.'],
   ['タイムラプスのQ&A ↗','Timelapse FAQ ↗'],
@@ -28882,7 +28850,7 @@ updateScrollToTopButton();
     items.forEach(([id,key])=>{
       const disclosure=document.getElementById(id);
       if(!disclosure)return;
-      try{disclosure.open=localStorage.getItem(key)!=='1';}catch(error){}
+      try{disclosure.open=id==='mapPrivacyNotice'&&localStorage.getItem(key)!=='1';}catch(error){}
       disclosure.addEventListener('toggle',()=>{
         if(!disclosure.open){try{localStorage.setItem(key,'1');}catch(error){}}
       });

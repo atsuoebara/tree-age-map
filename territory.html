@@ -11,7 +11,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Rings Territory。日本や海外の地域ごとに、その年に最も長い距離を走った参加ランナーを地図で見るRunner's Ringsの年間企画です。">
+<meta name="description" content="Rings Territory。日本や海外の地域ごとに順位を地図で表示するRunner's Ringsの企画です。個人の距離は公開しません。">
 <title>Rings Territory | Runner's Rings</title>
 <link rel="icon" type="image/png" href="icon.PNG">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -108,88 +108,10 @@ html[lang="en"] [data-lang="en"]{display:revert!important}
   .hero h2{font-size:28px}
   #territoryMap{height:58vh;min-height:390px}
   .mapTop{align-items:flex-start}
-  .row{grid-template-columns:46px minmax(0,1fr) auto;padding:12px 9px}
+  .row{grid-template-columns:46px minmax(0,1fr);padding:12px 9px}
   .score{font-size:15px}
 }
 
-
-/* First-visit participation guide */
-.participationNudge{
-  display:none;
-  margin:16px 0 0;
-  padding:14px 15px;
-  border:1px solid rgba(92,255,157,.42);
-  border-radius:14px;
-  background:linear-gradient(135deg,rgba(92,255,157,.08),rgba(255,43,214,.07));
-}
-.participationNudge.isVisible{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.participationNudgeText strong{display:block;color:#5cff9d;font-size:13px}
-.participationNudgeText span{display:block;margin-top:4px;color:#c0ccda;font-size:11px;line-height:1.55}
-.participationNudgeButton{
-  flex:0 0 auto;
-  border:0;
-  border-radius:999px;
-  padding:9px 12px;
-  background:#5cff9d;
-  color:#101722;
-  font-size:11px;
-  font-weight:900;
-  cursor:pointer;
-}
-.participationGuideOverlay{
-  position:fixed;
-  inset:0;
-  z-index:20000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:rgba(4,10,18,.82);
-  backdrop-filter:blur(8px);
-}
-.participationGuideOverlay.isVisible{display:flex}
-.participationGuideCard{
-  width:min(92vw,520px);
-  padding:24px 21px 20px;
-  border:2px solid #5cff9d;
-  border-radius:22px;
-  background:
-    radial-gradient(circle at 88% 12%,rgba(92,255,157,.15),transparent 30%),
-    radial-gradient(circle at 10% 88%,rgba(255,43,214,.17),transparent 35%),
-    #132237;
-  box-shadow:0 24px 70px rgba(0,0,0,.48);
-}
-.participationGuideEyebrow{color:#ff2bd6;font-size:11px;font-weight:900;letter-spacing:1.6px}
-.participationGuideCard h2{margin:8px 0 10px;font-size:25px;line-height:1.35}
-.participationGuideCard p{margin:0;color:#c2cedc;font-size:13px;line-height:1.75}
-.participationGuidePrivacy{
-  margin-top:14px!important;
-  padding:12px 13px;
-  border:1px solid rgba(92,255,157,.34);
-  border-radius:12px;
-  background:rgba(92,255,157,.06);
-  color:#eafff2!important;
-}
-.participationGuideActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
-.participationGuideAction{
-  min-height:44px;
-  border:0;
-  border-radius:12px;
-  padding:10px 12px;
-  font:inherit;
-  font-size:13px;
-  font-weight:900;
-  cursor:pointer;
-}
-.participationGuidePrimary{background:#5cff9d;color:#101722}
-.participationGuideLater{border:1px solid rgba(255,255,255,.16);background:#17283d;color:#fff}
-@media(max-width:520px){
-  .participationNudge.isVisible{align-items:flex-start;flex-direction:column}
-  .participationNudgeButton{width:100%}
-  .participationGuideCard{padding:22px 17px 18px}
-  .participationGuideCard h2{font-size:22px}
-  .participationGuideActions{grid-template-columns:1fr}
-}
 
 /* Runner's Rings three-pillar navigation */
 .featureNav{margin:28px 0 0}
@@ -221,6 +143,7 @@ html:not([lang="en"]) .mapBoundaryNotice [data-boundary-lang="en"]{display:none}
 html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 
 .publicIdentityField{display:block;margin:15px 0 7px;font-size:13px;font-weight:700}.publicIdentityInput{width:100%;padding:12px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:#101e31;color:#fff;font:inherit}.publicIdentityHelp{font-size:12px;color:#aebbd0;line-height:1.7}
+.runnerBadge{display:inline-flex;align-items:center;margin:5px 5px 0 0;padding:3px 7px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#172337;color:#dce7f4;font-size:10px;font-weight:800}
 </style>
 </head>
 <body>
@@ -238,15 +161,15 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
   <section class="hero">
     <div class="eyebrow">RINGS TERRITORY</div>
     <h2>🗾 Rings Territory</h2>
-    <p data-lang="ja">その街・地域を、いちばん走ったのは誰だ。年間走行距離を地図で楽しむ、任意参加のRunner's Rings企画です。</p>
-    <p data-lang="en">Who ran each city or region the most? An opt-in annual Territory map based on distance run inside each area.</p>
+    <p data-lang="ja">その街・地域の首位は誰だ。個人の距離は表示せず、順位と色分けを地図で楽しむ任意参加の企画です。</p>
+    <p data-lang="en">Who leads each city or region? This opt-in map shows regional ranks while keeping personal distances private.</p>
   </section>
 
   <section class="philosophy">
     <strong data-lang="ja">陣取りだけど、勝ち負けだけじゃない。</strong>
     <strong data-lang="en">Territory, without making winning the point.</strong>
-    <p data-lang="ja">2026年からの年間記録。参加したランナーだけを集計し、選んだ国の地域内で最も長い距離を走った人を地図に表示します。日本・韓国・アメリカに続き、対応国を世界へ広げています。</p>
-    <p data-lang="en">Annual records begin in 2026. Only runners who opt in are counted. Territory is expanding internationally across more countries.</p>
+    <p data-lang="ja">2026年からの年間記録。参加者の地域内の走行距離を順位計算に使い、各地域の首位を地図に表示します。個人の距離は公開しません。対応国を順次広げています。</p>
+    <p data-lang="en">Annual records begin in 2026. Distance within each region is used to calculate rank, but personal totals are not shown. Territory is expanding internationally across more countries.</p>
   </section>
 
 
@@ -293,7 +216,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 
   <section class="infoPanel">
     <h3 id="municipalityTitle">地域をタップ</h3>
-    <p id="municipalitySub" class="sub">首位ランナーと上位記録を表示します。</p>
+    <p id="municipalitySub" class="sub">首位ランナーと順位を表示します。個人の距離は表示しません。</p>
     <div id="municipalityRanking" class="ranking">
       <div class="empty">地図から地域を選んでください。</div>
     </div>
@@ -302,20 +225,20 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
   <section id="territorySettings" class="settings">
     <h3 data-lang="ja">Rings Territory 参加設定</h3>
     <h3 data-lang="en">Rings Territory participation</h3>
-    <p data-lang="ja">初期OFF。参加すると、2026年以降の対象ランが日本・対応国の地域別年間距離に集計されます。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
-    <p data-lang="en">OFF by default. When enabled, eligible runs from 2026 onward are included in annual Territory totals for supported countries. Turning it off does not delete your runs.</p>
-    <p class="publicIdentityHelp" data-lang="ja">Rankingに参加しなくても、Territoryだけに参加できます。</p>
-    <p class="publicIdentityHelp" data-lang="en">You can join Territory without joining Ranking.</p>
+    <p data-lang="ja">初期OFF。地域の色分け・順位への参加は個別設定です。参加者名や個人の距離・地域数を表示するかは別の表示設定で管理します。参加をOFFにしてもRunner's Ringsのラン記録は削除されません。</p>
+    <p data-lang="en">OFF by default. Territory participation is controlled separately. Name display and personal totals are controlled by display settings. Turning participation off does not delete your runs.</p>
+    <p class="publicIdentityHelp" data-lang="ja">Territoryへの参加は個別設定です。表示名はOFFまたは未設定なら「ランナー」となり、個人の距離や担当地域数の数字は表示しません。地図の色は参加地域を示します。</p>
+    <p class="publicIdentityHelp" data-lang="en">Territory participation is separate. Your name appears as “Runner” when name display is off or unset; personal distances and explicit region counts are not displayed. Map colors still identify participating regions.</p>
     <label for="territoryName" class="publicIdentityField"><span data-lang="ja">公開表示名（Ranking / Territory共通）</span><span data-lang="en">Public display name (shared by Ranking / Territory)</span></label>
     <input id="territoryName" class="publicIdentityInput" maxlength="32" autocomplete="off" aria-describedby="territoryNameHelp">
-    <div id="territoryNameHelp" class="publicIdentityHelp"><p data-lang="ja">アカウント名とは違う名前でOKです。この公開表示名はRankingとTerritoryで共通です。どちらのページで変更・保存しても、両方に反映されます。アカウント名は変更されません。</p><p data-lang="en">You can use a name different from your account name. Ranking and Territory share this public display name. Saving it on either page updates both; your account name stays unchanged.</p></div>
+    <div id="territoryNameHelp" class="publicIdentityHelp"><p data-lang="ja">アカウント名とは違う名前でOKです。公開名の表示ON/OFFはRankingの表示設定で切り替えられます。OFFまたは未設定なら「ランナー」と表示されます。</p><p data-lang="en">You can use a name different from your account name. Toggle public name display in Ranking settings. When off or unset, you appear as “Runner”.</p></div>
     <label for="territoryIdentityCountry" class="publicIdentityField"><span data-lang="ja">所属国・地域（自己申告・Rankingと共通）</span><span data-lang="en">Country / region (self-selected, shared with Ranking)</span></label>
     <select id="territoryIdentityCountry" class="publicIdentityInput"></select>
     <div class="settingRow">
       <div class="settingText">
         <b>🗾 Rings Territory</b>
-        <span data-lang="ja">日本・対応国の地域別年間走行距離</span>
-        <span data-lang="en">Annual distance by region in supported countries</span>
+        <span data-lang="ja">日本・対応国の地域別ランキング（個人距離非公開）</span>
+        <span data-lang="en">Regional rankings in supported countries (personal distances hidden)</span>
       </div>
       <label class="switch">
         <input id="joinTerritory" type="checkbox">
@@ -345,7 +268,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
     </a>
     <a class="featureNavCard territoryLink isCurrent" href="./territory.html" aria-current="page">
       <span class="featureNavName">🗾 Rings Territory</span>
-      <span class="featureNavText" data-lang="ja">地域ごとの年間走行距離で“陣取り”を見る</span>
+      <span class="featureNavText" data-lang="ja">地域ごとの順位で“陣取り”を見る</span>
       <span class="featureNavText" data-lang="en">Explore annual running territory by region</span>
     </a>
     <a class="featureNavCard artLink" href="./gps-art.html">
@@ -370,10 +293,10 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
       <span data-lang="ja">🗾 走った街に、あなたの色を。</span>
       <span data-lang="en">🗾 Put your color on the places you run.</span>
     </h2>
-    <p data-lang="ja">参加すると、2026年以降の対象ランが地域ごとの年間走行距離に加わります。参加はいつでもOFFに戻せます。</p>
-    <p data-lang="en">When you join, eligible runs from 2026 onward count toward annual distance in each supported region. You can opt out at any time.</p>
-    <p class="participationGuidePrivacy" data-lang="ja">🔒 Territoryに参加しても、あなたの走行コースや個人の地図そのものは公開されません。地図に表示されるのは地域ごとの集計結果です。</p>
-    <p class="participationGuidePrivacy" data-lang="en">🔒 Joining Territory does not publish your running routes or personal map. The public map shows aggregated results by region.</p>
+    <p data-lang="ja">参加すると、2026年以降の対象ランが地域別ランキングに加わります。順位と地域の色は表示されますが、個人の距離は表示しません。参加はいつでもOFFに戻せます。</p>
+    <p data-lang="en">Eligible runs from 2026 onward contribute to regional rankings. Ranks and colored regions are visible, but personal distances are hidden. You can opt out at any time.</p>
+    <p class="participationGuidePrivacy" data-lang="ja">🔒 走行コースや個人の地図は公開されません。参加地域は地図上で色分け表示されます。個人の距離や担当地域数は表示されません。</p>
+    <p class="participationGuidePrivacy" data-lang="en">🔒 Your running routes and personal map are not published. Participating regions are shown in color; personal distances and numeric region totals are hidden. Map colors still identify participating regions.</p>
     <div class="participationGuideActions">
       <button id="territoryGuideJoin" class="participationGuideAction participationGuidePrimary" type="button">
         <span data-lang="ja">参加設定を見る</span><span data-lang="en">View participation settings</span>
@@ -583,8 +506,8 @@ function resetRegionPanel(){
   clearSelectedMunicipalityStyle();
   $('municipalityTitle').textContent=regionPrompt();
   $('municipalitySub').textContent=lang()==='ja'
-    ?'首位ランナーと上位記録を表示します。'
-    :'See the leader and top runners.';
+    ?'首位ランナーと順位を表示します。個人の距離は表示しません。'
+    :'See the leader and ranks. Personal distances are hidden.';
   $('municipalityRanking').innerHTML='<div class="empty">'+chooseRegionText()+'</div>';
 }
 function renderDynamicCopy(){
@@ -683,23 +606,20 @@ function renderLeaderLegend(){
 
   const byUser=new Map();
   for(const row of leaders){
-    const id=String(row.user_id||'');
+    const id=String(row.runner_key||row.user_id||'');
     if(!id)continue;
     if(!byUser.has(id)){
       byUser.set(id,{
         user_id:id,
-        name:row.ranking_display_name||'Runner',
+        name:row.ranking_display_name||(lang()==='ja'?'ランナー':'Runner'),
         country:row.country||'',
         show_flag:!!row.show_flag,
-        regions:new Set()
+        badge_codes:row.badge_codes||[]
       });
     }
-    byUser.get(id).regions.add(leaderRegionCode(row));
   }
 
-  const items=[...byUser.values()].sort((a,b)=>
-    b.regions.size-a.regions.size || a.name.localeCompare(b.name)
-  );
+  const items=[...byUser.values()].sort((a,b)=>a.name.localeCompare(b.name));
 
   if(!items.length){
     const empty=document.createElement('span');
@@ -717,12 +637,14 @@ function renderLeaderLegend(){
     dot.style.background=colorForUser(item.user_id);
     const name=document.createElement('span');
     name.textContent=(item.show_flag?flag(item.country)+' ':'')+item.name;
-    const count=document.createElement('span');
-    count.className='leaderCount';
-    count.textContent=lang()==='ja'
-      ?`${item.regions.size}${config().kind==='japan'?'市町村':'地域'}`
-      :`${item.regions.size} ${item.regions.size===1?'region':'regions'}`;
-    chip.append(dot,name,count);
+    chip.append(dot,name);
+    for(const code of item.badge_codes){
+      const badge=document.createElement('span');
+      badge.className='runnerBadge';
+      badge.textContent=({first:'🌱',steady:'🔥',photo:'📷'})[code]||'';
+      badge.title=({first:lang()==='ja'?'はじめの輪':'First Loop',steady:lang()==='ja'?'継続の輪':'Steady Runner',photo:lang()==='ja'?'写真の輪':'Photo Contributor'})[code]||'';
+      if(badge.textContent)chip.append(badge);
+    }
     box.append(chip);
   }
 }
@@ -755,7 +677,7 @@ function territoryStyle(feature){
   if(!top.length){
     return {color:'rgba(183,199,219,.34)',weight:.55,fillColor:'#334155',fillOpacity:.16};
   }
-  const color=colorForUser(top[0].user_id);
+  const color=colorForUser(top[0].runner_key||top[0].user_id);
   return {color:'rgba(255,255,255,.46)',weight:.72,fillColor:color,fillOpacity:.75};
 }
 
@@ -843,8 +765,8 @@ async function loadMunicipalityRanking(code,feature){
     :(top[0]?.parent_region_name||fallbackPref||'');
   $('municipalityTitle').textContent=`${pref} ${displayName}`.trim();
   $('municipalitySub').textContent=lang()==='ja'
-    ?`${selectedYear}年・${c.unitJa}内の年間走行距離`
-    :`${selectedYear} · annual distance inside this ${c.unitEn}`;
+    ?`${selectedYear}年・${c.unitJa}の順位（個人距離は非公開）`
+    :`${selectedYear} · rank in this ${c.unitEn} (personal distances hidden)`;
   const board=$('municipalityRanking');
   board.innerHTML='<div class="empty">'+(lang()==='ja'?'ランキングを読み込み中…':'Loading ranking…')+'</div>';
 
@@ -881,20 +803,15 @@ async function loadMunicipalityRanking(code,feature){
     const runner=document.createElement('div');
     const name=document.createElement('div');
     name.className='runnerName';
-    name.textContent=(r.show_flag?flag(r.country)+' ':'')+(r.ranking_display_name||'Runner');
+    name.textContent=(r.show_flag?flag(r.country)+' ':'')+(r.ranking_display_name||(lang()==='ja'?'ランナー':'Runner'));
     const meta=document.createElement('div');
     meta.className='runnerMeta';
     meta.textContent=place===1
       ?(lang()==='ja'?'この地域の先頭':'Region leader')
-      :(lang()==='ja'?`${place}位・年間距離`:`#${place} · annual distance`);
+      :(lang()==='ja'?`${place}位`:`#${place}`);
     runner.append(name,meta);
-    const score=document.createElement('div');
-    score.className='score';
-    score.textContent=Number(r.km||0).toLocaleString(lang(),{maximumFractionDigits:1})+' ';
-    const unit=document.createElement('small');
-    unit.textContent='km';
-    score.append(unit);
-    row.append(rank,runner,score);
+    row.append(rank,runner);
+    for(const code of (r.badge_codes||[])){const badge=document.createElement('span');badge.className='runnerBadge';badge.textContent=({first:'🌱',steady:'🔥',photo:'📷'})[code]||'';badge.title=({first:lang()==='ja'?'はじめの輪':'First Loop',steady:lang()==='ja'?'継続の輪':'Steady Runner',photo:lang()==='ja'?'写真の輪':'Photo Contributor'})[code]||'';if(badge.textContent)runner.append(badge);}
     board.append(row);
   });
 }
@@ -1057,12 +974,6 @@ $('saveTerritory').onclick=async()=>{
   const joining=$('joinTerritory').checked;
   const name=$('territoryName').value.trim(),country=$('territoryIdentityCountry').value;
   if(name.length>32){$('settingsMessage').textContent=lang()==='ja'?'公開表示名は32文字以内で入力してください。':'Use up to 32 characters for the public display name.';return}
-  const {data:latest,error:readError}=await sb.from('ranking_settings').select('join_distance,join_explore,join_nations').eq('user_id',currentUser.id).maybeSingle();
-  if(readError){$('settingsMessage').textContent=lang()==='ja'?'参加設定の確認に失敗しました。':'Unable to check participation settings.';return}
-  if((joining||latest?.join_distance||latest?.join_explore||latest?.join_nations)&&(!name||!country)){
-    $('settingsMessage').textContent=lang()==='ja'?'参加する場合は公開表示名と所属国・地域を設定してください。':'Choose a public display name and country / region to participate.';
-    return;
-  }
   $('saveTerritory').disabled=true;
   $('settingsMessage').textContent=lang()==='ja'?'保存中…':'Saving…';
   const {data:saved,error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,join_territory:joining},{onConflict:'user_id'}).select('ranking_display_name,country,join_territory').single();
