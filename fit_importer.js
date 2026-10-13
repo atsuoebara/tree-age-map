@@ -2,6 +2,102 @@ import { Decoder, Stream } from './fit-sdk/src/index.js';
 
 console.log('FIT SDK loaded');
 
+/*
+ * Language switch discoverability helper.
+ * index.html owns the actual Japanese/English switching logic; this only
+ * makes that existing control easier to notice, especially for first-time
+ * overseas visitors.
+ */
+function improveLanguageSwitchDiscoverability() {
+  const switcher =
+    document.getElementById(
+      'languageSwitch'
+    );
+
+  if (!switcher) {
+    return;
+  }
+
+  const englishButton =
+    switcher.querySelector(
+      '[data-language="en"]'
+    );
+
+  if (englishButton) {
+    englishButton.textContent =
+      'English';
+  }
+
+  switcher.setAttribute(
+    'aria-label',
+    '言語を変更 / Change language'
+  );
+
+  switcher.setAttribute(
+    'title',
+    '日本語 / English'
+  );
+
+  if (
+    !document.getElementById(
+      'runnerRingsLanguageHintStyle'
+    )
+  ) {
+    const style =
+      document.createElement(
+        'style'
+      );
+
+    style.id =
+      'runnerRingsLanguageHintStyle';
+
+    style.textContent = `
+      #languageSwitch{
+        align-items:center;
+        z-index:2000;
+        border-color:rgba(234,255,0,.55) !important;
+        box-shadow:0 0 0 1px rgba(234,255,0,.08),0 5px 18px rgba(0,0,0,.26);
+      }
+      #languageSwitch::before{
+        content:'🌐';
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding-left:5px;
+        font-size:14px;
+        line-height:1;
+      }
+      #languageSwitch .languageButton{
+        min-width:48px;
+        padding:7px 10px;
+        font-size:12px;
+      }
+      @media (max-width:520px){
+        header h1{padding-right:158px !important;}
+        #languageSwitch{top:10px;right:8px;}
+        #languageSwitch .languageButton{padding:7px 8px;font-size:11px;}
+      }
+    `;
+
+    document.head.appendChild(
+      style
+    );
+  }
+}
+
+if (
+  document.readyState ===
+  'loading'
+) {
+  document.addEventListener(
+    'DOMContentLoaded',
+    improveLanguageSwitchDiscoverability,
+    { once: true }
+  );
+} else {
+  improveLanguageSwitchDiscoverability();
+}
+
 const semicirclesToDegrees =
   value =>
     value * (180 / Math.pow(2, 31));
