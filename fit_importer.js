@@ -16,7 +16,9 @@ const RR_ENGLISH_FIXES = new Map([
   ['Log inすると、 あなたのランニングマップを表示します。', 'Log in to view your personal running map.'],
   ['走った人生の物語・開発の裏側を読む →', 'Read running stories and behind-the-scenes development →'],
   ['世界のランナーとつながる・ランキングを見る →', 'Connect with runners worldwide · View rankings →'],
-  ['市町村ごとの順位で、今年の“陣取り”を見る →', 'See this year’s territory standings by municipality →']
+  ['市町村ごとの順位で、今年の“陣取り”を見る →', 'See this year’s territory standings by municipality →'],
+  ['表示', 'Display'],
+  ['コース', 'Routes']
 ]);
 
 function applyEnglishLeftoverFixes() {
@@ -27,7 +29,21 @@ function applyEnglishLeftoverFixes() {
   while (walker.nextNode()) {
     const node = walker.currentNode;
     const value = node.nodeValue?.trim();
-    if (!value || !RR_ENGLISH_FIXES.has(value)) continue;
+    if (!value) continue;
+
+    const japaneseMonth = value.match(/^(\d{4})年(\d{1,2})月$/);
+    if (japaneseMonth) {
+      const year = Number(japaneseMonth[1]);
+      const month = Number(japaneseMonth[2]);
+      if (month >= 1 && month <= 12) {
+        const translatedMonth = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+          .format(new Date(Date.UTC(year, month - 1, 1)));
+        node.nodeValue = node.nodeValue.replace(value, translatedMonth);
+      }
+      continue;
+    }
+
+    if (!RR_ENGLISH_FIXES.has(value)) continue;
     const translated = RR_ENGLISH_FIXES.get(value);
     node.nodeValue = node.nodeValue.replace(value, translated);
   }
