@@ -2,61 +2,76 @@ import { Decoder, Stream } from './fit-sdk/src/index.js';
 
 console.log('FIT SDK loaded');
 
-/*
- * Language switch discoverability helper.
- * index.html owns the actual Japanese/English switching logic; this only
- * makes that existing control easier to notice, especially for first-time
- * overseas visitors.
- */
+const RR_ENGLISH_FIXES = new Map([
+  ["Runner's Ringsの始め方", "How to get started with Runner's Rings"],
+  ["Runner's Ringsに無料登録", "Create your free Runner's Rings account"],
+  ['メールアドレスとパスワードでアカウントを作成します。', 'Create an account with your email address and password.'],
+  ['ランニングデータを取り込む', 'Import your running data'],
+  ['Strava、Intervals.icu、COROS、FIT / GPX / TCX / ZIPなどから取り込めます。', 'Import runs from Strava, Intervals.icu, COROS, FIT / GPX / TCX / ZIP, and more.'],
+  ['自分だけのランニングマップを楽しむ', 'Enjoy your personal running map'],
+  ['走った道、地域走破、ALL・年別の広がりを地図で振り返れます。', 'Review the roads you have run, regions you have explored, and your ALL or yearly progress on the map.'],
+  ['芸能人だからすごい、じゃない。井上咲楽さんの3時間14分19秒をチャッピーが本気で分析', "It’s not impressive just because she’s a celebrity — Chappy takes a close look at Sakura Inoue’s 3:14:19"],
+  ['Log inすると、あなたのランニングマップを表示します。', 'Log in to view your personal running map.']
+]);
+
+function applyEnglishLeftoverFixes() {
+  const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+  if (!isEnglish) return;
+
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const value = node.nodeValue?.trim();
+    if (!value || !RR_ENGLISH_FIXES.has(value)) continue;
+    const translated = RR_ENGLISH_FIXES.get(value);
+    node.nodeValue = node.nodeValue.replace(value, translated);
+  }
+}
+
 function improveLanguageSwitchDiscoverability() {
-  const switcher =
-    document.getElementById(
-      'languageSwitch'
-    );
+  const switcher = document.getElementById('languageSwitch');
+  if (!switcher) return;
 
-  if (!switcher) {
-    return;
+  const englishButton = switcher.querySelector('[data-language="en"]');
+  if (englishButton) englishButton.textContent = 'English';
+
+  switcher.setAttribute('aria-label', '言語を変更 / Change language');
+  switcher.setAttribute('title', '日本語 / English');
+
+  let moreLanguages = document.getElementById('rrMoreLanguagesShortcut');
+  if (!moreLanguages) {
+    moreLanguages = document.createElement('button');
+    moreLanguages.id = 'rrMoreLanguagesShortcut';
+    moreLanguages.type = 'button';
+    switcher.appendChild(moreLanguages);
+    moreLanguages.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const panel = document.getElementById('rrOnDeviceTranslate');
+      if (!panel) return;
+      panel.open = true;
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
 
-  const englishButton =
-    switcher.querySelector(
-      '[data-language="en"]'
-    );
+  const refreshMoreLanguagesLabel = () => {
+    const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+    moreLanguages.textContent = isEnglish ? 'More languages' : '補助翻訳';
+    moreLanguages.setAttribute('aria-label', isEnglish ? 'More languages' : '補助翻訳を開く');
+  };
+  refreshMoreLanguagesLabel();
+  applyEnglishLeftoverFixes();
 
-  if (englishButton) {
-    englishButton.textContent =
-      'English';
-  }
-
-  switcher.setAttribute(
-    'aria-label',
-    '言語を変更 / Change language'
-  );
-
-  switcher.setAttribute(
-    'title',
-    '日本語 / English'
-  );
-
-  if (
-    !document.getElementById(
-      'runnerRingsLanguageHintStyle'
-    )
-  ) {
-    const style =
-      document.createElement(
-        'style'
-      );
-
-    style.id =
-      'runnerRingsLanguageHintStyle';
-
+  if (!document.getElementById('runnerRingsLanguageHintStyle')) {
+    const style = document.createElement('style');
+    style.id = 'runnerRingsLanguageHintStyle';
     style.textContent = `
       #languageSwitch{
         align-items:center;
         z-index:2000;
         border-color:rgba(234,255,0,.55) !important;
         box-shadow:0 0 0 1px rgba(234,255,0,.08),0 5px 18px rgba(0,0,0,.26);
+        overflow:visible !important;
       }
       #languageSwitch::before{
         content:'🌐';
@@ -72,308 +87,111 @@ function improveLanguageSwitchDiscoverability() {
         padding:7px 10px;
         font-size:12px;
       }
+      #rrMoreLanguagesShortcut{
+        position:absolute;
+        right:2px;
+        top:calc(100% + 5px);
+        border:0;
+        background:transparent;
+        color:#cbd5e1;
+        font:700 11px/1.2 system-ui,sans-serif;
+        text-decoration:underline;
+        text-underline-offset:2px;
+        cursor:pointer;
+        white-space:nowrap;
+        padding:3px 5px;
+      }
+      #rrMoreLanguagesShortcut:hover{color:#fff;}
       @media (max-width:520px){
         header h1{padding-right:158px !important;}
         #languageSwitch{top:10px;right:8px;}
         #languageSwitch .languageButton{padding:7px 8px;font-size:11px;}
+        #rrMoreLanguagesShortcut{font-size:10px;top:calc(100% + 3px);}
       }
     `;
-
-    document.head.appendChild(
-      style
-    );
+    document.head.appendChild(style);
   }
+
+  const languageObserver = new MutationObserver(() => {
+    refreshMoreLanguagesLabel();
+    setTimeout(applyEnglishLeftoverFixes, 0);
+  });
+  languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  switcher.addEventListener('click', () => {
+    setTimeout(() => {
+      refreshMoreLanguagesLabel();
+      applyEnglishLeftoverFixes();
+    }, 0);
+  });
 }
 
-if (
-  document.readyState ===
-  'loading'
-) {
-  document.addEventListener(
-    'DOMContentLoaded',
-    improveLanguageSwitchDiscoverability,
-    { once: true }
-  );
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', improveLanguageSwitchDiscoverability, { once: true });
 } else {
   improveLanguageSwitchDiscoverability();
 }
 
-const semicirclesToDegrees =
-  value =>
-    value * (180 / Math.pow(2, 31));
+const semicirclesToDegrees = value => value * (180 / Math.pow(2, 31));
 
 async function buildActivityFromFIT(file) {
-
-  const arrayBuffer =
-    await file.arrayBuffer();
-
-  const stream =
-    Stream.fromArrayBuffer(
-      arrayBuffer
-    );
-
-  const decoder =
-    new Decoder(
-      stream
-    );
-
-  const {
-    messages,
-    errors
-  } =
-    decoder.read();
-
-  console.log(
-    'FIT errors:',
-    errors
-  );
-
-  const session =
-    messages.sessionMesgs?.[0];
-
-  if (!session) {
-    throw new Error(
-      'FITにsession情報がありません'
-    );
-  }
-
-  if (
-    session.sport !== 'running'
-  ) {
-    throw new Error(
-      `ランニング以外のFITです: ${session.sport}`
-    );
-  }
-
-  const records =
-    messages.recordMesgs || [];
-
-  const gpsRecords =
-    records.filter(
-      record =>
-        Number.isFinite(
-          record.positionLat
-        ) &&
-        Number.isFinite(
-          record.positionLong
-        )
-    );
-
-  const latlngs =
-    gpsRecords.map(
-      record => [
-        semicirclesToDegrees(
-          record.positionLat
-        ),
-        semicirclesToDegrees(
-          record.positionLong
-        )
-      ]
-    );
-
-  if (
-    latlngs.length < 2
-  ) {
-    throw new Error(
-      'GPS座標が不足しています'
-    );
-  }
-
-  if (
-    typeof window.analyseRoute !==
-    'function'
-  ) {
-    throw new Error(
-      'analyseRoute が見つかりません'
-    );
-  }
-
-  if (
-    typeof window.buildCellsFromRoute !==
-    'function'
-  ) {
-    throw new Error(
-      'buildCellsFromRoute が見つかりません'
-    );
-  }
-
-  const analysis =
-    window.analyseRoute(
-      latlngs
-    );
-
-  const date =
-    session.startTime
-      ? new Date(
-          session.startTime
-        )
-      : null;
-
-  const distanceKm =
-    Number.isFinite(
-      session.totalDistance
-    )
-      ? session.totalDistance / 1000
-      : analysis.calculatedKm;
-
-  const cells =
-    Array.from(
-      window.buildCellsFromRoute(
-        latlngs
-      )
-    );
-
+  const arrayBuffer = await file.arrayBuffer();
+  const stream = Stream.fromArrayBuffer(arrayBuffer);
+  const decoder = new Decoder(stream);
+  const { messages, errors } = decoder.read();
+  console.log('FIT errors:', errors);
+  const session = messages.sessionMesgs?.[0];
+  if (!session) throw new Error('FITにsession情報がありません');
+  if (session.sport !== 'running') throw new Error(`ランニング以外のFITです: ${session.sport}`);
+  const records = messages.recordMesgs || [];
+  const gpsRecords = records.filter(record => Number.isFinite(record.positionLat) && Number.isFinite(record.positionLong));
+  const latlngs = gpsRecords.map(record => [semicirclesToDegrees(record.positionLat), semicirclesToDegrees(record.positionLong)]);
+  if (latlngs.length < 2) throw new Error('GPS座標が不足しています');
+  if (typeof window.analyseRoute !== 'function') throw new Error('analyseRoute が見つかりません');
+  if (typeof window.buildCellsFromRoute !== 'function') throw new Error('buildCellsFromRoute が見つかりません');
+  const analysis = window.analyseRoute(latlngs);
+  const date = session.startTime ? new Date(session.startTime) : null;
+  const distanceKm = Number.isFinite(session.totalDistance) ? session.totalDistance / 1000 : analysis.calculatedKm;
+  const cells = Array.from(window.buildCellsFromRoute(latlngs));
   return {
-
     source: 'fit',
-
-    name:
-      file.name.replace(
-        /\.fit$/i,
-        ''
-      ),
-
+    name: file.name.replace(/\.fit$/i, ''),
     date,
-
-    startedAt:
-      date,
-
-    year:
-      date
-        ? date.getFullYear()
-        : null,
-
-    distance:
-      distanceKm,
-
+    startedAt: date,
+    year: date ? date.getFullYear() : null,
+    distance: distanceKm,
     latlngs,
-
-    cityDistances:
-      analysis.cityDistances,
-
-    cities:
-      analysis.cities,
-
-    prefectures:
-      analysis.prefectures,
-
+    cityDistances: analysis.cityDistances,
+    cities: analysis.cities,
+    prefectures: analysis.prefectures,
     cells
-
   };
-
 }
-async function inspectFITFile(
-  file
-) {
 
-  const arrayBuffer =
-    await file.arrayBuffer();
-
-  const stream =
-    Stream.fromArrayBuffer(
-      arrayBuffer
-    );
-
-  const decoder =
-    new Decoder(
-      stream
-    );
-
-  const {
-    messages
-  } =
-    decoder.read();
-
-  const session =
-    messages.sessionMesgs?.[0];
-
-  if (
-    !session
-  ) {
-
-    return {
-      isRunning: false,
-      hasGPS: false
-    };
-
-  }
-
-
-  const records =
-    messages.recordMesgs ||
-    [];
-
-    const gpsRecords =
-    records.filter(
-      record =>
-        Number.isFinite(
-          record.positionLat
-        ) &&
-        Number.isFinite(
-          record.positionLong
-        )
-    );
-
-  const gpsRecordCount =
-    gpsRecords.length;
-
-  const latlngs =
-    gpsRecords.map(
-      record => [
-        semicirclesToDegrees(
-          record.positionLat
-        ),
-        semicirclesToDegrees(
-          record.positionLong
-        )
-      ]
-    );
-
-  const date =
-    session.startTime
-      ? new Date(
-          session.startTime
-        )
-      : null;
-
-  const distance =
-    Number.isFinite(
-      session.totalDistance
-    )
-      ? session.totalDistance / 1000
-      : null;
-
+async function inspectFITFile(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const stream = Stream.fromArrayBuffer(arrayBuffer);
+  const decoder = new Decoder(stream);
+  const { messages } = decoder.read();
+  const session = messages.sessionMesgs?.[0];
+  if (!session) return { isRunning: false, hasGPS: false };
+  const records = messages.recordMesgs || [];
+  const gpsRecords = records.filter(record => Number.isFinite(record.positionLat) && Number.isFinite(record.positionLong));
+  const gpsRecordCount = gpsRecords.length;
+  const latlngs = gpsRecords.map(record => [semicirclesToDegrees(record.positionLat), semicirclesToDegrees(record.positionLong)]);
+  const date = session.startTime ? new Date(session.startTime) : null;
+  const distance = Number.isFinite(session.totalDistance) ? session.totalDistance / 1000 : null;
   return {
-    isRunning:
-      session.sport ===
-      'running',
-
-    hasGPS:
-      gpsRecordCount >=
-      2,
-
-        gpsRecordCount,
-
+    isRunning: session.sport === 'running',
+    hasGPS: gpsRecordCount >= 2,
+    gpsRecordCount,
     date,
-
-    startedAt:
-      date,
-
+    startedAt: date,
     distance,
-
     latlngs,
-
-    name:
-      file.name.replace(
-        /\.fit$/i,
-        ''
-      )
+    name: file.name.replace(/\.fit$/i, '')
   };
-
 }
 
-
-window.inspectFITFile =
-  inspectFITFile;
-window.buildActivityFromFIT =
-  buildActivityFromFIT;
+window.inspectFITFile = inspectFITFile;
+window.buildActivityFromFIT = buildActivityFromFIT;
