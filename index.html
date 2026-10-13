@@ -3051,7 +3051,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <a class="authJournalAction" href="./journal.html">Journalの記事一覧を見る</a>
       </div>
     </section>
-<details class="authValueSection" id="authValueDisclosure" open>
+<details class="authValueSection" id="authValueDisclosure">
         <summary><h3 id="authValueHeading">Runner's Ringsでできること</h3></summary>
         <div class="authValueEyebrow">RUNNER'S RINGS EXPERIENCE</div>
         <p class="authValueLead">
@@ -3113,7 +3113,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <a href="./contact.html">気づいたことを伝える・質問する ↗</a>
       </aside>
 
-      <details class="setupGuide setupGuideAuth" id="authImportGuide" open>
+      <details class="setupGuide setupGuideAuth" id="authImportGuide">
         <summary>データ連携・取り込み方法</summary>
         <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
         <div class="setupGuideOptions">
@@ -28839,7 +28839,7 @@ updateScrollToTopButton();
     items.forEach(([id,key])=>{
       const disclosure=document.getElementById(id);
       if(!disclosure)return;
-      try{disclosure.open=localStorage.getItem(key)!=='1';}catch(error){}
+      try{disclosure.open=id==='mapPrivacyNotice'&&localStorage.getItem(key)!=='1';}catch(error){}
       disclosure.addEventListener('toggle',()=>{
         if(!disclosure.open){try{localStorage.setItem(key,'1');}catch(error){}}
       });
