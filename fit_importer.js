@@ -21,9 +21,69 @@ const RR_ENGLISH_FIXES = new Map([
   ['コース', 'Routes']
 ]);
 
+function formatEnglishMonthValue(value) {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})$/);
+  if (!match) return value || '';
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (month < 1 || month > 12) return value || '';
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
+function syncEnglishMonthInputs() {
+  const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+  const ids = ['timelapseStartMonth', 'timelapseEndMonth', 'timelapseReviewMonth'];
+
+  ids.forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    let wrapper = input.closest('.rrEnglishMonthWrap');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'rrEnglishMonthWrap';
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+    }
+
+    let display = wrapper.querySelector('.rrEnglishMonthDisplay');
+    if (!display) {
+      display = document.createElement('span');
+      display.className = 'rrEnglishMonthDisplay';
+      wrapper.appendChild(display);
+    }
+
+    const refresh = () => {
+      if (isEnglish) {
+        input.classList.add('rrEnglishMonthInput');
+        display.hidden = false;
+        display.textContent = formatEnglishMonthValue(input.value);
+      } else {
+        input.classList.remove('rrEnglishMonthInput');
+        display.hidden = true;
+      }
+    };
+
+    if (!input.dataset.rrEnglishMonthBound) {
+      input.dataset.rrEnglishMonthBound = '1';
+      input.addEventListener('input', () => setTimeout(syncEnglishMonthInputs, 0));
+      input.addEventListener('change', () => setTimeout(syncEnglishMonthInputs, 0));
+    }
+
+    refresh();
+  });
+}
+
 function applyEnglishLeftoverFixes() {
   const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
-  if (!isEnglish) return;
+  if (!isEnglish) {
+    syncEnglishMonthInputs();
+    return;
+  }
 
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) {
@@ -47,6 +107,8 @@ function applyEnglishLeftoverFixes() {
     const translated = RR_ENGLISH_FIXES.get(value);
     node.nodeValue = node.nodeValue.replace(value, translated);
   }
+
+  syncEnglishMonthInputs();
 }
 
 function improveLanguageSwitchDiscoverability() {
@@ -123,6 +185,28 @@ function improveLanguageSwitchDiscoverability() {
         padding:3px 5px;
       }
       #rrMoreLanguagesShortcut:hover{color:#fff;}
+      .rrEnglishMonthWrap{
+        position:relative;
+        width:100%;
+      }
+      .rrEnglishMonthWrap > input{
+        width:100%;
+      }
+      .rrEnglishMonthInput{
+        color:transparent !important;
+        -webkit-text-fill-color:transparent !important;
+      }
+      .rrEnglishMonthDisplay{
+        position:absolute;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        pointer-events:none;
+        color:#fff;
+        font:inherit;
+        font-weight:700;
+      }
       @media (max-width:520px){
         header h1{padding-right:158px !important;}
         #languageSwitch{top:10px;right:8px;}
@@ -145,6 +229,14 @@ function improveLanguageSwitchDiscoverability() {
       applyEnglishLeftoverFixes();
     }, 0);
   });
+
+  const timelapseOpenButton = document.getElementById('timelapseOpenButton');
+  if (timelapseOpenButton) {
+    timelapseOpenButton.addEventListener('click', () => {
+      setTimeout(syncEnglishMonthInputs, 50);
+      setTimeout(syncEnglishMonthInputs, 250);
+    });
+  }
 }
 
 if (document.readyState === 'loading') {
