@@ -56,6 +56,16 @@ const checks = [
     ]
   },
   {
+    name: '月の振り返りをラン単位で表示',
+    patterns: [
+      /function\s+getTimelapseRunFrames\s*\(/,
+      /getTimelapseRunFrames\(range\.rangeStart, range\.rangeEnd\)/,
+      /activities:\[activity\]/,
+      /同じ日に複数回走った場合/,
+      /Multiple runs on the same day/
+    ]
+  },
+  {
   name: 'Strava新規連携受付',
   patterns: [
     /const\s+STRAVA_NEW_CONNECTIONS_PAUSED\s*=\s*false\s*;/,

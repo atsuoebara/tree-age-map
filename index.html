@@ -3609,7 +3609,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </div>
   <div id="timelapseLaunchArea">
     <button id="timelapseOpenButton" type="button">▶ Growth Rings Timelapse</button>
-      <p class="timelapseLaunchHint">期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。</p>
+      <p class="timelapseLaunchHint">期間動画は選んだ期間の記録を積み上げ、月の振り返りはランニング1回ごとに振り返ります。</p>
       <a class="timelapseFaqLink" href="./faq.html#faq-video">タイムラプスのQ&amp;A ↗</a>
   </div>
   <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
@@ -3644,7 +3644,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <button id="timelapseCloseButton" class="timelapseActionButton" type="button">閉じる</button>
     </div>
     <div class="timelapseMonthlyReview">
-      <p class="timelapseMonthlyReviewLead">月の振り返り動画は、走った日ごとにコースを積み上げ、その日のコースを強調します。地図は走行範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。</p>
+      <p class="timelapseMonthlyReviewLead">月の振り返り動画は、ランニング1回ごとにコースを積み上げ、その回のコースを強調します。同じ日に複数回走った場合も、走った回数分だけ場面が続きます。地図は各コースの範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。</p>
       <div class="timelapseField">
         <label for="timelapseReviewMonth">振り返る月</label>
         <input id="timelapseReviewMonth" type="month">
@@ -24629,11 +24629,11 @@ function getTimelapseCumulativeActivities(
   );
 }
 
-function getTimelapseDailyFrames(
+function getTimelapseRunFrames(
   startDate,
   endDate
 ) {
-  const byDay = new Map();
+  const frames = [];
 
   activities.forEach(activity => {
     const date = getTimelapseActivityDate(activity);
@@ -24648,25 +24648,19 @@ function getTimelapseDailyFrames(
       return;
     }
 
-    const dayKey = [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, '0'),
-      String(date.getDate()).padStart(2, '0')
-    ].join('-');
-
-    if (!byDay.has(dayKey)) {
-      byDay.set(dayKey, {
-        key:dayKey,
-        date:new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-        activities:[]
-      });
-    }
-
-    byDay.get(dayKey).activities.push(activity);
+    const startedAt = activity?.startedAt
+      ? new Date(activity.startedAt)
+      : null;
+    frames.push({
+      date:new Date(date.getTime()),
+      sortTime:startedAt && !Number.isNaN(startedAt.getTime())
+        ? startedAt.getTime()
+        : date.getTime(),
+      activities:[activity]
+    });
   });
 
-  return Array.from(byDay.values())
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  return frames.sort((a, b) => a.sortTime - b.sortTime);
 }
 
 function formatTimelapseDayLabel(date) {
@@ -26095,10 +26089,10 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
   const frameSteps = getTimelapseFrameSteps(range.rangeStart, range.rangeEnd, timelapseStep.value);
   if (!frameSteps.length) return;
   const monthlyRecap = !!monthlyReview;
-  const dailyFrames = monthlyRecap
-    ? getTimelapseDailyFrames(range.rangeStart, range.rangeEnd)
+  const runFrames = monthlyRecap
+    ? getTimelapseRunFrames(range.rangeStart, range.rangeEnd)
     : [];
-  if (monthlyRecap && !dailyFrames.length) {
+  if (monthlyRecap && !runFrames.length) {
     alert(isRunnerRingsEnglish()
       ? 'There are no runs with GPS routes in this month.'
       : 'この月にはGPSルート付きのランがありません。');
@@ -26176,7 +26170,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
     timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? 'Preparing map…' : '地図を準備しています…';
     if (monthlyRecap) {
       await moveTimelapseMapToBounds(
-        getTimelapseActivitiesBounds(dailyFrames[0].activities),
+        getTimelapseActivitiesBounds(runFrames[0].activities),
         16
       );
     }
@@ -26198,14 +26192,14 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
 
     if (monthlyRecap) {
       let cumulativeActivities = [];
-      for (let index = 0; index < dailyFrames.length; index++) {
-        const day = dailyFrames[index];
+      for (let index = 0; index < runFrames.length; index++) {
+        const run = runFrames[index];
         const previousActivities = cumulativeActivities;
-        cumulativeActivities = cumulativeActivities.concat(day.activities);
-        const label = formatTimelapseDayLabel(day.date);
+        cumulativeActivities = cumulativeActivities.concat(run.activities);
+        const label = formatTimelapseDayLabel(run.date);
         timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Moving to ' : '移動中 ') + label;
         await moveTimelapseMapToBounds(
-          getTimelapseActivitiesBounds(day.activities),
+          getTimelapseActivitiesBounds(run.activities),
           16
         );
         drawTimelapseFrame(cumulativeActivities, timelapseMode.value);
@@ -26221,13 +26215,13 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
           cumulativeActivities.length,
           cumulativeActivities,
           timelapseMode.value,
-          day.activities,
+          run.activities,
           1,
           dailyAreaKeys,
           {dailyRecap:true}
         );
-        timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${dailyFrames.length})`;
-        timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${dailyFrames.length}`;
+        timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${runFrames.length})`;
+        timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${runFrames.length}`;
         await waitTimelapse(2500);
       }
 
@@ -26302,7 +26296,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
     const startLabel = formatTimelapseMonthValue(range.rangeStart);
     const endLabel = formatTimelapseMonthValue(range.rangeEnd);
     const recapActivities = monthlyRecap
-      ? dailyFrames.flatMap(day => day.activities)
+      ? runFrames.flatMap(day => day.activities)
       : getTimelapseCumulativeActivities(range.rangeStart, range.rangeEnd);
     const recapDistanceKm = recapActivities.reduce(
       (sum, activity) => sum + (Number(activity?.distance) || 0),
@@ -27917,14 +27911,14 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['ログイン・新規登録へ','Log in or sign up'],
   ['ログイン・新規登録','Log in or sign up'],
   ['登録なしでサンプルを試す','Try the sample without signing up'],
-  ['期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。','Period videos build up runs across a selected date range. Monthly reviews show your runs day by day for one month.'],
+  ['期間動画は選んだ期間の記録を積み上げ、月の振り返りはその月を走った日ごとに振り返ります。','Period videos build up runs across a selected date range. Monthly reviews show your each individual run for one month, including separate scenes for multiple runs on the same day.'],
   ['タイムラプスのQ&A ↗','Timelapse FAQ ↗'],
   ['ランキングのQ&A ↗','Ranking FAQ ↗'],
   ['テリトリーのQ&A ↗','Territory FAQ ↗'],
   ['期間動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。','Before creating a period video, set the map below to the center and zoom you want to show. Routes from the selected period will build up from zero in that view.'],
   ['動画の単位','Video step'],
   ['🎬 期間動画を作る','🎬 Create period video'],
-  ['月の振り返り動画は、走った日ごとにコースを積み上げ、その日のコースを強調します。地図は走行範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。','The monthly review video builds up your routes day by day and highlights each day’s route. The map adjusts to the accumulated route area and ends at the place most frequently crossed by your runs that month.'],
+  ['月の振り返り動画は、走った日ごとにコースを積み上げ、その日のコースを強調します。地図は走行範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。','The monthly review video builds up routes one run at a time and highlights each run. Multiple runs on the same day appear as separate scenes. The map moves to fit each route and ends at the place most frequently crossed that month.'],
   ['振り返る月','Month to review'],
   ['📅 月の振り返り動画を作る','📅 Create monthly review video'],
   ['開始年月','Start month'],
