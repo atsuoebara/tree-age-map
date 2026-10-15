@@ -28,9 +28,9 @@
   <style>
   *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
   header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
-  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
   main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
-  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
   </style>
 </head>
 <body>
@@ -337,6 +337,28 @@ Map the life you run.</div>
     'use strict';
     const permalink="https://runnersrings.com/journal/articles/journal-20261002-223502-a35b79c8/";
     const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
     let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
     const show=()=>{
       document.documentElement.lang=lang;
@@ -347,11 +369,18 @@ Map the life you run.</div>
     document.querySelectorAll('article').forEach(a=>{
       const feedback=a.querySelector('.feedback');
       a.querySelector('.copy').addEventListener('click',async()=>{
-        try{if(!navigator.clipboard)throw new Error('No clipboard');await navigator.clipboard.writeText(permalink);feedback.textContent=labels[a.dataset.lang];}
-        catch{window.prompt('Copy article URL',permalink);}
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
       });
-      if(navigator.share){const btn=a.querySelector('.native-share');btn.hidden=false;btn.addEventListener('click',async()=>{try{await navigator.share({title:a.querySelector('h1').textContent,text:a.querySelector('h1').textContent+'
-'+permalink});}catch(e){if(e.name!=='AbortError')feedback.textContent='Share failed';}});}
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
     });
     show();
   })();
