@@ -1,0 +1,666 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Runner’s Ringsの「Rings Ranking」は、最近大きく仕様を変更しました。以前は「ランキングに参加する／しない」を選ぶ仕組みでしたが、現在は保存された走行記録をもとに順位が表示され、名前や年間距離、EXPLORE地域数などをどこまで公開するかを本人が選ぶ方式です。アカウント名とランキング表示名は違っ">
+  <title>ランキング参加制をやめました。順位は見える、でも何を見せるかは自分で決める | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261016-060449-e2d031bf/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261016-060449-e2d031bf/">
+  <meta property="og:title" content="ランキング参加制をやめました。順位は見える、でも何を見せるかは自分で決める">
+  <meta property="og:description" content="Runner’s Ringsの「Rings Ranking」は、最近大きく仕様を変更しました。以前は「ランキングに参加する／しない」を選ぶ仕組みでしたが、現在は保存された走行記録をもとに順位が表示され、名前や年間距離、EXPLORE地域数などをどこまで公開するかを本人が選ぶ方式です。アカウント名とランキング表示名は違ってもOK。公開しない自由と、順位を見る楽しさを両立するための変更です。">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/21/f0d46bec-2f07-4e01-8ec2-18ed827cf5b8.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/21/f0d46bec-2f07-4e01-8ec2-18ed827cf5b8.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-10-15T21:04:51.445Z">
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-10-15">2026-10-15</time>
+      <h1>ランキング参加制をやめました。順位は見える、でも何を見せるかは自分で決める</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/21/f0d46bec-2f07-4e01-8ec2-18ed827cf5b8.png" alt="" loading="lazy">
+      <p class="summary">Runner’s Ringsの「Rings Ranking」は、最近大きく仕様を変更しました。以前は「ランキングに参加する／しない」を選ぶ仕組みでしたが、現在は保存された走行記録をもとに順位が表示され、名前や年間距離、EXPLORE地域数などをどこまで公開するかを本人が選ぶ方式です。アカウント名とランキング表示名は違ってもOK。公開しない自由と、順位を見る楽しさを両立するための変更です。</p>
+      <div class="body">Runner’s Ringsの「Rings Ranking」を、少し大きく作り直しました。
+
+これまでの仕様は、
+
+「ランキングに参加する人だけONにする」
+
+という考え方でした。
+
+でも開発を進める中で、
+
+本当にそれでいいのかな？
+
+と思うようになりました。
+
+
+■ 順位そのものは、走った記録から自然に生まれる
+
+Runner’s Ringsには、すでに走った記録があります。
+
+その記録をもとにすれば、
+
+DISTANCEなら年間の順位。
+
+EXPLOREなら走った地域による順位。
+
+NATIONSなら国ごとの順位。
+
+が出せます。
+
+それなら、
+
+「ランキングに参加するかどうか」
+
+を毎回選ばなくてもいいのではないか。
+
+そう考えて、仕様を変えました。
+
+
+■ 今は「参加ON/OFF」ではなく「公開ON/OFF」
+
+現在のRings Rankingでは、
+
+順位そのものは表示されます。
+
+一方で、
+
+何を公開するかは、自分で決められます。
+
+たとえば、
+
+名前を表示するか。
+
+年間距離を公開するか。
+
+EXPLOREの地域数を公開するか。
+
+国旗を表示するか。
+
+EXPLOREの地域名を公開するか。
+
+それぞれ別々に選べます。
+
+
+■ 名前はアカウント名と違ってもOK
+
+ここは大事なポイントです。
+
+Runner’s Ringsのアカウント名と、
+
+ランキングに表示する名前は、
+
+同じでなくても大丈夫です。
+
+本名を使う必要もありません。
+
+SNSで使っている名前。
+
+ランニング仲間から呼ばれている名前。
+
+ニックネーム。
+
+好きな名前で参加できます。
+
+もし名前を公開しない場合は、
+
+「ランナー」
+
+と表示されます。
+
+
+■ 今、上位に“正体が見えないランナー”がいる
+
+これが、実際に見ていて結構おもしろいところです。
+
+現在、ランキング上位には、
+
+名前や距離を公開していないランナーもいます。
+
+順位だけを見ると、
+
+1位。
+
+2位。
+
+3位。
+
+でも距離は見えない。
+
+そうすると、つい思います。
+
+「この人、いったいどのくらい走ってるんだろう？」
+
+これ、意外と気になります。
+
+全部見えるランキングより、
+
+少し見えない方が想像する余地がある。
+
+そんな面白さも出てきました。
+
+
+■ 公開したい人は公開できる
+
+もちろん、
+
+「自分は年間距離を見せたい」
+
+という人は公開できます。
+
+「EXPLOREで何地域走ったか見せたい」
+
+という人も公開できます。
+
+反対に、
+
+順位だけ楽しみたい人は、
+
+個人情報をほとんど出さずに参加できます。
+
+この“選べる”状態を大事にしました。
+
+
+■ DISTANCE
+
+DISTANCEでは、
+
+年間順位が表示されます。
+
+年間距離は、
+
+本人が公開を許可した場合だけ表示されます。
+
+だから同じランキングの中でも、
+
+「1,850km」
+
+と距離が見える人もいれば、
+
+順位だけ表示されている人もいます。
+
+
+■ EXPLORE
+
+EXPLOREでは、
+
+走った国ごとの順位を表示します。
+
+地域数と地域名は別々に公開設定できます。
+
+たとえば、
+
+「何地域走ったかは公開するけど、具体的な地域名は出さない」
+
+という使い方もできます。
+
+
+■ NATIONS
+
+NATIONSは少し考え方が違います。
+
+こちらは国単位のランキングです。
+
+個人ではなく、
+
+その国の合計距離や参加人数を楽しみます。
+
+世界のランナーが増えていけば、
+
+「今年はどの国が一番走ってる？」
+
+という楽しみ方もできます。
+
+
+■ バッジも追加しました
+
+順位だけだと、
+
+どうしても上位の人だけが目立ちます。
+
+そこで、
+
+走った歩みそのものを見せられるように、
+
+バッジも追加しました。
+
+🌱 はじめの輪
+ラン記録を保存
+
+🔥 継続の輪
+異なる3か月以上にラン記録
+
+📷 写真の輪
+承認済みの写真を投稿
+
+速さや距離だけではなく、
+
+続けたこと。
+
+記録を残したこと。
+
+参加したこと。
+
+そういう部分も見えるようにしたかったからです。
+
+
+■ 「全部見せる」か「全部隠す」か、ではない
+
+今回の変更で一番大切にしたのは、
+
+0か100かにしないことです。
+
+名前は出す。
+
+距離は出さない。
+
+国旗は出す。
+
+地域名は出さない。
+
+そんな選び方ができます。
+
+Runner’s Ringsは、
+
+走った道を扱うアプリです。
+
+だからこそ、
+
+公開する情報を自分で決められることは大事だと思っています。
+
+
+■ ランキングは、競争だけじゃなくていい
+
+ランキングという言葉を聞くと、
+
+どうしても
+
+「勝つ」
+「負ける」
+「一番になる」
+
+というイメージがあります。
+
+でもRunner’s Ringsでは、
+
+もう少し軽く楽しめるものにしたいと思っています。
+
+あ、この人ずっと上位にいる。
+
+この人、どのくらい走ってるんだろう。
+
+この国、結構走ってるな。
+
+この人、写真の輪のバッジ持ってる。
+
+そんなふうに、
+
+世界のランナーの存在を感じられる場所にしたい。
+
+
+■ チャッピーと何度も仕様を変えました
+
+今回の仕様も、
+
+最初から決まっていたわけではありません。
+
+作って。
+
+見て。
+
+違和感を感じて。
+
+また変える。
+
+その繰り返しです。
+
+「ランキング参加制で本当にいい？」
+
+「距離は全部見せる？」
+
+「名前はアカウント名と同じじゃないとダメ？」
+
+そんなことを、
+
+チャッピーと何度も話しながら決めてきました。
+
+結果として、
+
+順位は残す。
+
+公開範囲は本人が決める。
+
+という今の形になりました。
+
+
+■ まだ変わるかもしれません
+
+Runner’s Ringsはまだ開発途中です。
+
+実際に使っていく中で、
+
+もっと良い形が見つかれば、
+
+また変えるかもしれません。
+
+でも今は、
+
+「順位は見える。でも、何を見せるかは自分で決める」
+
+この形が、
+
+Runner’s Ringsらしいランキングに近づいている気がしています。
+
+
+Runner’s Rings – Rings Journal
+
+走った距離だけじゃない。
+見せ方も、自分で選ぶ。</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=%E3%83%A9%E3%83%B3%E3%82%AD%E3%83%B3%E3%82%B0%E5%8F%82%E5%8A%A0%E5%88%B6%E3%82%92%E3%82%84%E3%82%81%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E9%A0%86%E4%BD%8D%E3%81%AF%E8%A6%8B%E3%81%88%E3%82%8B%E3%80%81%E3%81%A7%E3%82%82%E4%BD%95%E3%82%92%E8%A6%8B%E3%81%9B%E3%82%8B%E3%81%8B%E3%81%AF%E8%87%AA%E5%88%86%E3%81%A7%E6%B1%BA%E3%82%81%E3%82%8B&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261016-060449-e2d031bf%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-10-15">2026-10-15</time>
+      <h1>We Removed Ranking Opt-In: Your Rank Is Visible, But You Choose What to Share</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/21/f0d46bec-2f07-4e01-8ec2-18ed827cf5b8.png" alt="" loading="lazy">
+      <p class="summary">Rings Ranking in Runner’s Rings recently received a major redesign. Instead of opting in or out of the ranking itself, runners now keep their rank based on saved activities while choosing what personal information to share. Your public ranking name can be different from your account name, and distance or EXPLORE details can stay private. The goal is to keep rankings fun without forcing runners to reveal more than they want.</p>
+      <div class="body">We recently made a major change to Rings Ranking in Runner’s Rings.
+
+Previously, the system was based on opting in:
+
+“You join the ranking only if you turn participation ON.”
+
+But while building it, we started wondering if that was really necessary.
+
+
+■ Your rank naturally comes from your running history
+
+Runner’s Rings already has your saved running activities.
+
+From those records, we can calculate rankings such as:
+
+DISTANCE — annual ranking
+
+EXPLORE — ranking based on explored regions
+
+NATIONS — country-based ranking
+
+So we asked a simple question:
+
+Do runners really need to opt in just to have a rank?
+
+That led us to redesign the system.
+
+
+■ Now the controls are about sharing, not participation
+
+In the current Rings Ranking system, your rank itself is shown.
+
+What you choose to share is up to you.
+
+You can decide whether to show:
+
+your name
+
+your annual distance
+
+your EXPLORE region total
+
+your country flag
+
+your EXPLORE region names
+
+Each setting is controlled separately.
+
+
+■ Your ranking name can be different from your account name
+
+This is an important point.
+
+Your Runner’s Rings account name and your public ranking name do not have to match.
+
+You do not need to use your real name.
+
+You can use:
+
+your social media name
+
+your running nickname
+
+or any public name you prefer.
+
+If you choose not to display a name, you simply appear as “Runner.”
+
+
+■ Some of the top runners are currently a mystery
+
+This has actually created an interesting effect.
+
+Right now, some runners near the top of the ranking are not sharing their name or distance.
+
+You can see:
+
+1st place.
+
+2nd place.
+
+3rd place.
+
+But not how far they actually ran.
+
+And naturally, you start wondering:
+
+“How much has this person actually run?”
+
+That mystery is surprisingly fun.
+
+Sometimes not showing everything makes the ranking more interesting.
+
+
+■ If you want to share, you can
+
+Of course, runners who want to show their annual distance can do so.
+
+The same goes for EXPLORE totals and region names.
+
+Others may prefer to enjoy their rank without sharing much personal information.
+
+Both styles are welcome.
+
+
+■ DISTANCE
+
+DISTANCE shows your annual rank.
+
+Your annual distance appears only if you allow it to be public.
+
+So within the same ranking, one runner may show “1,850 km,” while another may show only their rank.
+
+
+■ EXPLORE
+
+EXPLORE ranks runners by the countries and regions they have actually run in.
+
+Region totals and region names have separate privacy controls.
+
+For example, you can choose to show how many regions you explored without revealing which ones.
+
+
+■ NATIONS
+
+NATIONS works differently.
+
+This is a country-level ranking.
+
+Instead of focusing on individual runners, it shows the combined distance and participant count for each country.
+
+As more runners join from around the world, it could become fun to see which countries are logging the most running.
+
+
+■ Badges were also added
+
+Rankings naturally highlight the runners at the top.
+
+So we also added badges to celebrate other kinds of progress.
+
+🌱 First Loop
+Save a running activity
+
+🔥 Steady Runner
+Record runs across at least three different months
+
+📷 Photo Contributor
+Submit an approved photo
+
+The goal is to recognize not only speed and distance, but also consistency, participation, and the act of documenting your running journey.
+
+
+■ It is not “show everything” or “hide everything”
+
+One of the most important ideas behind this redesign is flexibility.
+
+Show your name.
+
+Hide your distance.
+
+Show your flag.
+
+Hide your region names.
+
+That is possible.
+
+Runner’s Rings handles location-based running data, so runners should be able to control what they reveal.
+
+
+■ Ranking does not have to mean only competition
+
+The word “ranking” often sounds like:
+
+winning
+
+losing
+
+being number one
+
+But we want Rings Ranking to feel lighter than that.
+
+You might think:
+
+“That runner is always near the top.”
+
+“I wonder how far they actually run.”
+
+“That country is running a lot this year.”
+
+“That runner has the Photo Contributor badge.”
+
+The ranking can become another way to notice and connect with runners around the world.
+
+
+■ We changed the specification many times with Chappy
+
+This design was not decided from the beginning.
+
+We built it.
+
+Looked at it.
+
+Felt something was not quite right.
+
+Then changed it again.
+
+“Do we really need ranking opt-in?”
+
+“Should distance always be public?”
+
+“Does the ranking name have to match the account name?”
+
+I discussed these questions many times with Chappy, my AI development partner.
+
+Eventually, we arrived at the current idea:
+
+keep the rank visible
+
+let each runner control what they share
+
+
+■ It may change again
+
+Runner’s Rings is still being developed.
+
+If we discover a better approach through actual use, the ranking may evolve again.
+
+But for now,
+
+“Your rank is visible, but you decide what to share”
+
+feels much closer to the kind of ranking Runner’s Rings should have.
+
+
+Runner’s Rings – Rings Journal
+
+Not just how far you run.
+You also choose how your journey is seen.</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=We%20Removed%20Ranking%20Opt-In%3A%20Your%20Rank%20Is%20Visible%2C%20But%20You%20Choose%20What%20to%20Share&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261016-060449-e2d031bf%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261016-060449-e2d031bf/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        try{if(!navigator.clipboard)throw new Error('No clipboard');await navigator.clipboard.writeText(permalink);feedback.textContent=labels[a.dataset.lang];}
+        catch{window.prompt('Copy article URL',permalink);}
+      });
+      if(navigator.share){const btn=a.querySelector('.native-share');btn.hidden=false;btn.addEventListener('click',async()=>{try{await navigator.share({title:a.querySelector('h1').textContent,text:a.querySelector('h1').textContent+'
+'+permalink});}catch(e){if(e.name!=='AbortError')feedback.textContent='Share failed';}});}
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
