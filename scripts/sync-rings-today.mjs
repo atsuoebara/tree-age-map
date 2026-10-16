@@ -5,11 +5,15 @@
  * Participation settings are intentionally NOT consulted. Public output is exposed only
  * through get_rings_today(date), which returns region-level totals (no user IDs/routes).
  *
+ * This sync is incremental per activity year so an hourly job never restarts from the
+ * beginning. That lets recent runs and overseas runs continue to catch up reliably.
+ *
  * Required env:
  *   SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
  * Optional:
  *   RINGS_TODAY_YEAR=2026
+ *   RINGS_TODAY_LIMIT=250
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,7 +21,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const year = Number(process.env.RINGS_TODAY_YEAR || new Date().getUTCFullYear());
-if (!Number.isInteger(year) || year < 2026 || year > 2099) throw Error('RINGS_TODAY_YEAR must be 2026-2099.');
+const batchLimit = Math.max(1, Math.min(500, Number(process.env.RINGS_TODAY_LIMIT || 250)));
+if (!Number.isInteger(year) || year < 2006 || year > 2099) throw Error('RINGS_TODAY_YEAR must be 2006-2099.');
 
 const REGION_CONFIG = [
   {countryCode:'JPN',adminLevel:'ADM2',boundaryFile:'runners-rings-japan-web.geojson',codeProps:['N03_007'],nameParts:['N03_003','N03_004'],parentProps:['N03_001']},
@@ -100,17 +105,21 @@ if(!base||!secret)throw Error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.')
 const headers={apikey:secret,Authorization:`Bearer ${secret}`,'Content-Type':'application/json'};
 async function request(uri,init={}){const r=await fetch(`${base.replace(/\/$/,'')}/rest/v1/${uri}`,{...init,headers:{...headers,...init.headers}});if(!r.ok)throw Error(`${r.status} ${uri.split('?')[0]}: ${(await r.text()).slice(0,500)}`);const t=await r.text();return t?JSON.parse(t):null;}
 
-const grid=loadGlobalGrid(); let offset=0,runsProcessed=0,rowsWritten=0;
-while(true){
-  const runs=await request(`runs?select=id,user_id,activity_date,route,distance_km&activity_date=gte.${year}-01-01&activity_date=lt.${year+1}-01-01&deleted_at=is.null&route=not.is.null&distance_km=gt.0&order=id&limit=50&offset=${offset}`);
-  if(!runs.length)break;
-  for(const run of runs){
-    if(!Array.isArray(run.route)||run.route.length<2)continue;
+const grid=loadGlobalGrid();
+const stateRows=await request(`rings_today_sync_state?select=last_run_id&activity_year=eq.${year}&limit=1`);
+let lastRunId=Number(stateRows?.[0]?.last_run_id||0);
+const runs=await request(`runs?select=id,user_id,activity_date,route,distance_km&activity_date=gte.${year}-01-01&activity_date=lt.${year+1}-01-01&deleted_at=is.null&route=not.is.null&distance_km=gt.0&id=gt.${lastRunId}&order=id.asc&limit=${batchLimit}`);
+let runsProcessed=0,rowsWritten=0;
+for(const run of runs){
+  if(Array.isArray(run.route)&&run.route.length>=2){
     await request(`rings_today_run_region_distance?run_id=eq.${encodeURIComponent(run.id)}`,{method:'DELETE'});
     const rows=analyseRoute(run.route,run.distance_km,grid).map(row=>({user_id:run.user_id,run_id:run.id,activity_date:run.activity_date,country_code:row.countryCode,admin_level:row.adminLevel,region_code:row.regionCode,region_name:row.regionName,parent_region_name:row.parentRegionName||null,distance_km:Number(row.km.toFixed(6)),center_lat:row.centerLat,center_lng:row.centerLng,updated_at:new Date().toISOString()}));
     if(rows.length){await request('rings_today_run_region_distance?on_conflict=run_id,country_code,admin_level,region_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});rowsWritten+=rows.length;}
-    runsProcessed++;
   }
-  offset+=runs.length; if(runs.length<50)break;
+  lastRunId=Number(run.id);
+  runsProcessed++;
 }
-console.log(`Rings Today ${year}: processed ${runsProcessed} runs; upserted ${rowsWritten} region rows.`);
+if(runsProcessed){
+  await request('rings_today_sync_state?on_conflict=activity_year',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{activity_year:year,last_run_id:lastRunId,updated_at:new Date().toISOString()}])});
+}
+console.log(`Rings Today ${year}: processed ${runsProcessed} runs through id ${lastRunId}; upserted ${rowsWritten} region rows.${runs.length<batchLimit?' Caught up for now.':''}`);
