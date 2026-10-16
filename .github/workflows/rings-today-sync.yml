@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       year:
-        description: 'Year to sync (2026 or later; blank = current UTC year)'
+        description: 'Year to sync (2006 or later; blank = current year plus historical rotation)'
         required: false
         type: string
   schedule:
@@ -18,25 +18,45 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  sync:
+  current:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Check Rings Today geometry
         run: node scripts/sync-rings-today.mjs --self-test
-
-      - name: Sync all runs into Rings Today regions
+      - name: Sync current or requested year
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           REQUESTED_YEAR: ${{ inputs.year }}
+          RINGS_TODAY_LIMIT: '250'
         run: |
           export RINGS_TODAY_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
-          echo "Rings Today sync year: $RINGS_TODAY_YEAR"
+          echo "Rings Today primary sync year: $RINGS_TODAY_YEAR"
+          node scripts/sync-rings-today.mjs
+
+  history:
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rotate one historical year
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RINGS_TODAY_LIMIT: '250'
+        run: |
+          # 2006-2025 are rotated hourly. Each year keeps its own cursor,
+          # so old data gradually fills without restarting from the beginning.
+          SLOT=$(( (10#$(date -u +%j) * 24 + 10#$(date -u +%H)) % 20 ))
+          export RINGS_TODAY_YEAR=$((2006 + SLOT))
+          echo "Rings Today historical sync year: $RINGS_TODAY_YEAR"
           node scripts/sync-rings-today.mjs
