@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+const file='today.html';
+let s=fs.readFileSync(file,'utf8');
+const before=s;
+s=s.replaceAll('.en{display:none}','html[lang="ja"] .ja{display:revert!important}html[lang="ja"] .en{display:none!important}html[lang="en"] .ja{display:none!important}html[lang="en"] .en{display:revert!important}');
+s=s.replace('<span class="featureNavName">🩵 Rings Today · 現在</span>','<span class="featureNavName">🩵 Rings Today<span class="ja"> · 現在</span><span class="en"> · NOW</span></span>');
+s=s.replace('<span class="featureNavName">🎨 下手ウマ画伯のGPSアート（β）</span>','<span class="featureNavName"><span class="ja">🎨 下手ウマ画伯のGPSアート（β）</span><span class="en">🎨 GPS Art Sketches (β)</span></span>');
+const oldSet="function setLang(next){lang=next;document.querySelectorAll('.ja').forEach(el=>el.style.display=next==='ja'?'':'none');document.querySelectorAll('.en').forEach(el=>el.style.display=next==='en'?'':'none');document.getElementById('jaBtn').classList.toggle('active',next==='ja');document.getElementById('enBtn').classList.toggle('active',next==='en');futureBtn.setAttribute('aria-label',next==='ja'?'未来の日へ':'Newer date');pastBtn.setAttribute('aria-label',next==='ja'?'過去の日へ':'Older date');renderDateLabel();}";
+const newSet="function setLang(next){lang=next;document.documentElement.lang=next;document.getElementById('jaBtn').classList.toggle('active',next==='ja');document.getElementById('enBtn').classList.toggle('active',next==='en');futureBtn.setAttribute('aria-label',next==='ja'?'未来の日へ':'Newer date');pastBtn.setAttribute('aria-label',next==='ja'?'過去の日へ':'Older date');load();}";
+if(!s.includes(oldSet)) throw new Error('setLang anchor not found');
+s=s.replace(oldSet,newSet);
+if(s===before) throw new Error('No changes made');
+fs.writeFileSync(file,s);
+console.log('Fixed Rings Today language switching');
