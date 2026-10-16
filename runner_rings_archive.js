@@ -82,9 +82,26 @@
     enhanceImportGuides();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
+  function scheduleBoots() {
     boot();
+    [100, 400, 1000, 2500].forEach(ms => setTimeout(boot, ms));
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleBoots, { once: true });
+  } else {
+    scheduleBoots();
+  }
+
+  window.addEventListener('pageshow', scheduleBoots);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleBoots();
+  });
+
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById('ringsTodayDashboardLink') || !document.getElementById('rrImportRecommendationAuth')) {
+      boot();
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
