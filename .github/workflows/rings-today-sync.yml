@@ -6,6 +6,10 @@ on:
         description: 'Year to sync (2006 or later; blank = current year)'
         required: false
         type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rings-today-sync.yml'
   schedule:
     # Current-year runs: every 5 minutes as a backup for the live trigger.
     - cron: '*/5 * * * *'
@@ -15,13 +19,12 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: rings-today-sync
-  cancel-in-progress: false
-
 jobs:
   current:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '*/5 * * * *' }}
+    concurrency:
+      group: rings-today-current
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -43,7 +46,10 @@ jobs:
           node scripts/sync-rings-today.mjs
 
   history:
-    if: ${{ github.event_name == 'schedule' && github.event.schedule == '*/15 * * * *' }}
+    if: ${{ github.event_name == 'push' || (github.event_name == 'schedule' && github.event.schedule == '*/15 * * * *') }}
+    concurrency:
+      group: rings-today-history
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
