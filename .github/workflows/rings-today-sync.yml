@@ -57,7 +57,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Prioritize previous year
+      - name: Finish previous year first
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -65,7 +65,12 @@ jobs:
         run: |
           export RINGS_TODAY_YEAR=$((10#$(date -u +%Y) - 1))
           echo "Rings Today priority historical sync year: $RINGS_TODAY_YEAR"
-          node scripts/sync-rings-today.mjs
+          # One scheduled/push run should advance enough batches to finish the previous year.
+          # Extra passes are harmless once the cursor is caught up.
+          for PASS in $(seq 1 8); do
+            echo "Previous-year backfill pass $PASS/8"
+            node scripts/sync-rings-today.mjs
+          done
       - name: Rotate older history
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
