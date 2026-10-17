@@ -65,10 +65,20 @@ jobs:
         run: |
           export RINGS_TODAY_YEAR=$((10#$(date -u +%Y) - 1))
           echo "Rings Today priority historical sync year: $RINGS_TODAY_YEAR"
-          # One scheduled/push run should advance enough batches to finish the previous year.
-          # Extra passes are harmless once the cursor is caught up.
           for PASS in $(seq 1 8); do
             echo "Previous-year backfill pass $PASS/8"
+            node scripts/sync-rings-today.mjs
+          done
+      - name: Finish two-years-ago next
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RINGS_TODAY_LIMIT: '500'
+        run: |
+          export RINGS_TODAY_YEAR=$((10#$(date -u +%Y) - 2))
+          echo "Rings Today second-priority historical sync year: $RINGS_TODAY_YEAR"
+          for PASS in $(seq 1 6); do
+            echo "Two-years-ago backfill pass $PASS/6"
             node scripts/sync-rings-today.mjs
           done
       - name: Rotate older history
@@ -79,7 +89,7 @@ jobs:
         run: |
           CURRENT_YEAR=$((10#$(date -u +%Y)))
           OLDEST_YEAR=2006
-          NEWEST_ROTATING_YEAR=$((CURRENT_YEAR - 2))
+          NEWEST_ROTATING_YEAR=$((CURRENT_YEAR - 3))
           YEAR_COUNT=$((NEWEST_ROTATING_YEAR - OLDEST_YEAR + 1))
           if [ "$YEAR_COUNT" -le 0 ]; then exit 0; fi
           SLOT=$(( (10#$(date -u +%j) * 96 + 10#$(date -u +%H) * 4 + 10#$(date -u +%M) / 15) % YEAR_COUNT ))
