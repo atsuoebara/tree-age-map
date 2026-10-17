@@ -7,10 +7,10 @@ on:
         required: false
         type: string
   schedule:
-    # Current-year runs: every 5 minutes so Rings Today feels live.
+    # Current-year runs: every 5 minutes as a backup for the live trigger.
     - cron: '*/5 * * * *'
-    # Historical backfill: once per hour.
-    - cron: '17 * * * *'
+    # Historical backfill: every 15 minutes. Recent history is prioritized.
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
           node scripts/sync-rings-today.mjs
 
   history:
-    if: ${{ github.event_name == 'schedule' && github.event.schedule == '17 * * * *' }}
+    if: ${{ github.event_name == 'schedule' && github.event.schedule == '*/15 * * * *' }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -51,15 +51,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Rotate one historical year
+      - name: Prioritize previous year
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RINGS_TODAY_LIMIT: '500'
+        run: |
+          export RINGS_TODAY_YEAR=$((10#$(date -u +%Y) - 1))
+          echo "Rings Today priority historical sync year: $RINGS_TODAY_YEAR"
+          node scripts/sync-rings-today.mjs
+      - name: Rotate older history
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RINGS_TODAY_LIMIT: '250'
         run: |
-          # 2006-2025 are rotated hourly. Each year keeps its own cursor,
-          # so old data gradually fills without restarting from the beginning.
-          SLOT=$(( (10#$(date -u +%j) * 24 + 10#$(date -u +%H)) % 20 ))
-          export RINGS_TODAY_YEAR=$((2006 + SLOT))
-          echo "Rings Today historical sync year: $RINGS_TODAY_YEAR"
+          CURRENT_YEAR=$((10#$(date -u +%Y)))
+          OLDEST_YEAR=2006
+          NEWEST_ROTATING_YEAR=$((CURRENT_YEAR - 2))
+          YEAR_COUNT=$((NEWEST_ROTATING_YEAR - OLDEST_YEAR + 1))
+          if [ "$YEAR_COUNT" -le 0 ]; then exit 0; fi
+          SLOT=$(( (10#$(date -u +%j) * 96 + 10#$(date -u +%H) * 4 + 10#$(date -u +%M) / 15) % YEAR_COUNT ))
+          export RINGS_TODAY_YEAR=$((NEWEST_ROTATING_YEAR - SLOT))
+          echo "Rings Today rotating historical sync year: $RINGS_TODAY_YEAR"
           node scripts/sync-rings-today.mjs
