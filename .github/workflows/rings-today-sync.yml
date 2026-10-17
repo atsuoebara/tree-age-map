@@ -3,11 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       year:
-        description: 'Year to sync (2006 or later; blank = current year plus historical rotation)'
+        description: 'Year to sync (2006 or later; blank = current year)'
         required: false
         type: string
   schedule:
-    # Every hour at :17. GitHub scheduled runs can be delayed.
+    # Current-year runs: every 5 minutes so Rings Today feels live.
+    - cron: '*/5 * * * *'
+    # Historical backfill: once per hour.
     - cron: '17 * * * *'
 
 permissions:
@@ -19,8 +21,9 @@ concurrency:
 
 jobs:
   current:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '*/5 * * * *' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,14 +36,14 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           REQUESTED_YEAR: ${{ inputs.year }}
-          RINGS_TODAY_LIMIT: '250'
+          RINGS_TODAY_LIMIT: '100'
         run: |
           export RINGS_TODAY_YEAR="${REQUESTED_YEAR:-$(date -u +%Y)}"
           echo "Rings Today primary sync year: $RINGS_TODAY_YEAR"
           node scripts/sync-rings-today.mjs
 
   history:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' && github.event.schedule == '17 * * * *' }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
