@@ -40,6 +40,13 @@ const REGION_CONFIG = [
   {countryCode:'NZL',adminLevel:'ADM2',boundaryFile:'runners-rings-nzl-adm2-simplified.geojson',codeProps:['shapeID','shapeISO','GID_2','code','id'],nameProps:['shapeName','NAME_2','name'],parentProps:['NAME_1','parentName']}
 ];
 
+const rectangle=(west,south,east,north)=>({type:'Polygon',coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]});
+const SPECIAL_REGIONS = [
+  {countryCode:'CYM',adminLevel:'ISLAND',code:'CYM-GC',name:'Grand Cayman',parent:'Cayman Islands',geom:rectangle(-81.46,19.24,-81.02,19.42)},
+  {countryCode:'CYM',adminLevel:'ISLAND',code:'CYM-CB',name:'Cayman Brac',parent:'Cayman Islands',geom:rectangle(-79.90,19.65,-79.68,19.78)},
+  {countryCode:'CYM',adminLevel:'ISLAND',code:'CYM-LC',name:'Little Cayman',parent:'Cayman Islands',geom:rectangle(-80.18,19.63,-79.97,19.75)}
+];
+
 function first(p, keys=[]) { for (const k of keys) { const v=p?.[k]; if (v!=null && String(v).trim()) return String(v).trim(); } return ''; }
 function bboxGeom(g) { const b=[Infinity,Infinity,-Infinity,-Infinity]; const walk=v=>{ if(!Array.isArray(v))return; if(typeof v[0]==='number'&&typeof v[1]==='number'){b[0]=Math.min(b[0],v[0]);b[1]=Math.min(b[1],v[1]);b[2]=Math.max(b[2],v[0]);b[3]=Math.max(b[3],v[1]);return;} for(const w of v)walk(w);}; walk(g.coordinates); return b; }
 function ringContains(x,y,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
@@ -69,6 +76,15 @@ function loadGlobalGrid(){
     }
     console.log(`Rings Today: loaded ${countryLoaded} regions for ${config.countryCode}.`);
   }
+  for(const special of SPECIAL_REGIONS){
+    const bbox=bboxGeom(special.geom);
+    const item={...special,bbox,centerLat:(bbox[1]+bbox[3])/2,centerLng:(bbox[0]+bbox[2])/2};
+    for(let ix=Math.floor(bbox[0]/cellSize);ix<=Math.floor(bbox[2]/cellSize);ix++) for(let iy=Math.floor(bbox[1]/cellSize);iy<=Math.floor(bbox[3]/cellSize);iy++){
+      const k=`${ix},${iy}`; if(!grid.has(k))grid.set(k,[]); grid.get(k).push(item);
+    }
+    loaded++;
+  }
+  console.log(`Rings Today: loaded ${SPECIAL_REGIONS.length} island regions for CYM.`);
   if(!loaded) throw Error('No region boundaries loaded.');
   return grid;
 }
@@ -97,7 +113,10 @@ if(process.argv.includes('--self-test')){
   const sq={type:'Polygon',coordinates:[[[0,0],[1,0],[1,1],[0,1],[0,0]]]};
   if(!contains(.5,.5,sq)||contains(2,2,sq))throw Error('Geometry self-test failed');
   if(Math.abs(distanceKm(0,0,0,1)-111.195)>.2)throw Error('Distance self-test failed');
-  loadGlobalGrid(); console.log('Rings Today self-test passed.'); process.exit(0);
+  const grid=loadGlobalGrid();
+  const cayman=findRegion(19.344,-81.089,grid);
+  if(cayman?.countryCode!=='CYM'||cayman?.name!=='Grand Cayman')throw Error('Cayman Islands self-test failed');
+  console.log('Rings Today self-test passed.'); process.exit(0);
 }
 
 const base=process.env.SUPABASE_URL, secret=process.env.SUPABASE_SERVICE_ROLE_KEY;
