@@ -1,0 +1,635 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ランニングメディア「Run&amp;Dojo（ラン道場）」の企画「道場巡り」で、Runner’s Ringsを取り上げていただきました。タイトルは「走った道が、年輪になる。コードも書けなかった人がAIと作ったランニングアプリ」。開発を始めたきっかけや、走った道を残すことへの思いをインタビュー形式で紹介していただいています。今回">
+  <title>Runner’s Ringsが初めてインタビューされました！走った道が年輪になるアプリ、その開発物語。 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261018-105616-1dd2b82c/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261018-105616-1dd2b82c/">
+  <meta property="og:title" content="Runner’s Ringsが初めてインタビューされました！走った道が年輪になるアプリ、その開発物語。">
+  <meta property="og:description" content="ランニングメディア「Run&amp;Dojo（ラン道場）」の企画「道場巡り」で、Runner’s Ringsを取り上げていただきました。タイトルは「走った道が、年輪になる。コードも書けなかった人がAIと作ったランニングアプリ」。開発を始めたきっかけや、走った道を残すことへの思いをインタビュー形式で紹介していただいています。今回は掲載のお知らせと、Runner’s Ringsに込めた思いを改めてお届けします">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/28/ab359f2c-d2ce-4e6a-a67c-b48a8ce90b84.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/28/ab359f2c-d2ce-4e6a-a67c-b48a8ce90b84.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-10-18T01:58:24.647Z">
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-10-18">2026-10-18</time>
+      <h1>Runner’s Ringsが初めてインタビューされました！走った道が年輪になるアプリ、その開発物語。</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/28/ab359f2c-d2ce-4e6a-a67c-b48a8ce90b84.png" alt="" loading="lazy">
+      <p class="summary">ランニングメディア「Run&amp;Dojo（ラン道場）」の企画「道場巡り」で、Runner’s Ringsを取り上げていただきました。タイトルは「走った道が、年輪になる。コードも書けなかった人がAIと作ったランニングアプリ」。開発を始めたきっかけや、走った道を残すことへの思いをインタビュー形式で紹介していただいています。今回は掲載のお知らせと、Runner’s Ringsに込めた思いを改めてお届けします。</p>
+      <div class="body">今日は、Runner’s Ringsにとって嬉しいお知らせがあります。
+
+ランニングメディア「Run&amp;Dojo（ラン道場）」に、Runner’s Ringsを取り上げていただきました！
+
+しかも今回は、単なるアプリ紹介ではありません。
+
+開発者へのインタビューです。
+
+企画名は、
+
+「道場巡り — 開発者に直接聞いてきた」
+
+Runner’s Ringsを作ろうと思ったきっかけや、アプリに込めた思いを紹介していただきました。
+
+
+■ 記事のタイトルが、とても嬉しかった
+
+今回のインタビュー記事のタイトルはこちら。
+
+「走った道が、年輪になる。コードも書けなかった人がAIと作ったランニングアプリ - Runner’s Rings -」
+
+このタイトルを見たとき、Runner’s Ringsの特徴を分かりやすく表現していただけたと感じました。
+
+走った道が、年輪になる。
+
+まさにRunner’s Ringsで実現したかったことです。
+
+
+■ そもそもRunner’s Ringsとは？
+
+Runner’s Ringsは、
+
+「走った道を、年輪のように残すアプリ」
+
+です。
+
+ランニングアプリというと、
+
+距離。
+
+ペース。
+
+タイム。
+
+心拍数。
+
+そういった数字を記録するものが一般的です。
+
+もちろん、それらは大切な記録です。
+
+でも、走っていて思うことがありました。
+
+いつもの道だけでなく、
+
+初めて走った道。
+
+旅行先で走った道。
+
+新しく開拓した地域。
+
+そんなものも形にできたら、もっと面白いのではないか。
+
+走った距離だけではなく、
+
+「自分がどこを走ってきたのか」
+
+を残したかったのです。
+
+
+■ きっかけのひとつは、走った地図との出会い
+
+ランニングの記録は、数字だけではありません。
+
+走ったルートを地図で眺めると、いろいろなことを思い出します。
+
+あの日の景色。
+
+初めて通った道。
+
+いつもと違うコース。
+
+頑張って走った長い距離。
+
+そして、
+
+少しずつ広がっていく自分の行動範囲。
+
+その積み重ねを、木の年輪のように可視化したい。
+
+そんな思いがRunner’s Ringsの原点になりました。
+
+
+■ コードが書けなくても、アプリは作れるのか？
+
+今回のインタビューで、もうひとつ特徴的なのが、
+
+「コードも書けなかった人がAIと作った」
+
+という部分です。
+
+Runner’s Ringsの開発は、一般的なソフトウェア開発とは少し違います。
+
+開発を始めたとき、専門的なプログラミング技術を持っていたわけではありません。
+
+でも、
+
+「こんなアプリが欲しい」
+
+というイメージはありました。
+
+そこで力を借りたのがAIです。
+
+Runner’s Ringsでは、AIのチャッピーと相談しながら開発を進めています。
+
+アイデアを考える。
+
+仕様を決める。
+
+コードを作る。
+
+実際に動かしてみる。
+
+うまくいかなければ修正する。
+
+これを何度も繰り返してきました。
+
+
+■ AIが全部やってくれるわけではない
+
+ここは誤解してほしくないところです。
+
+AIに頼めば、何でも一瞬で完成するわけではありません。
+
+思った通りに動かないこともあります。
+
+修正したら別のところに不具合が出ることもあります。
+
+何時間も原因を調べることもあります。
+
+開発していて、
+
+「なんでこうなるんだろう？」
+
+と思うことは何度もあります。
+
+それでも、
+
+自分が欲しいと思ったものが少しずつ形になっていく。
+
+その過程が、Runner’s Rings開発の面白いところでもあります。
+
+
+■ チャッピーは開発の相棒
+
+Runner’s Ringsでは、AIを単なる便利な道具として使うだけではなく、
+
+一緒に考える開発の相棒として活用しています。
+
+名前はチャッピー。
+
+アイデアを出したり、
+
+問題の原因を調べたり、
+
+新しい機能を考えたり。
+
+そして、ときどき意見が合わなかったり（笑）。
+
+そんなやり取りを重ねながら、Runner’s Ringsを育てています。
+
+もちろん、最後に何を作るか決めるのは人間です。
+
+どんなアプリにしたいのか。
+
+どんなランナーに使ってもらいたいのか。
+
+その思いが開発の中心にあります。
+
+
+■ 走った道を残す楽しさを、もっと広めたい
+
+Runner’s Ringsで大切にしているのは、
+
+速いランナーだけが楽しめるアプリにしないことです。
+
+フルマラソンで自己ベストを狙う人。
+
+健康のためにジョギングする人。
+
+旅行先で走るのが好きな人。
+
+いつもと違う道を探す人。
+
+ランニングの楽しみ方は、人それぞれ違います。
+
+でも、誰にでも共通することがあります。
+
+走れば、その人だけの道が残る。
+
+速くても、遅くても。
+
+長くても、短くても。
+
+それぞれに走った記録がある。
+
+その積み重ねを楽しめるアプリにしたいと思っています。
+
+
+■ 世界のランナーにも使ってもらいたい
+
+Runner’s Ringsは、日本国内だけでなく海外のランナーにも使ってもらえるアプリを目指しています。
+
+世界には、いろいろな道路があります。
+
+いろいろな街があります。
+
+ランニング文化も国によって違います。
+
+でも、走ることが好きという気持ちは共通しています。
+
+世界のランナーが、それぞれの走った道を残していく。
+
+そんなアプリに成長したら、とても面白いと思っています。
+
+
+■ インタビューしていただいて気づいたこと
+
+普段は、次の機能や不具合の修正を考えていることが多いです。
+
+でも、インタビューで開発のきっかけを聞かれると、
+
+改めて原点を振り返ることができます。
+
+そもそも、なぜ作り始めたのか。
+
+誰に使ってほしいのか。
+
+何を残したいのか。
+
+目の前の開発作業に集中していると、忘れそうになる大切なことです。
+
+今回の機会は、そうした思いを見つめ直すきっかけにもなりました。
+
+
+■ Run&amp;Dojoさん、ありがとうございます！
+
+今回、Runner’s Ringsを取り上げてくださったRun&amp;Dojoさん。
+
+そしてインタビューをしてくださったKazumaさん。
+
+本当にありがとうございます。
+
+まだまだ成長途中のRunner’s Ringsですが、
+
+こうして興味を持っていただき、開発の話を聞いていただけたことを嬉しく思います。
+
+ランニングを通じて、新しいつながりが生まれる。
+
+これもまた、走ることの楽しさのひとつですね。
+
+
+■ インタビュー記事はこちら
+
+Run&amp;Dojo「道場巡り」
+
+走った道が、年輪になる。
+コードも書けなかった人がAIと作ったランニングアプリ - Runner’s Rings -
+
+https://rundojo.sharesweat.com/dojo/p-runnersrings-01
+
+開発のきっかけや、Runner’s Ringsに込めた思いを紹介していただいています。
+
+ぜひ読んでみてください。
+
+
+■ これからのRunner’s Rings
+
+今回のインタビュー掲載は、ひとつの嬉しい節目です。
+
+でも、Runner’s Ringsはまだ完成ではありません。
+
+これからも機能を増やし、
+
+使いやすさを改善し、
+
+世界のランナーに楽しんでもらえるアプリを目指していきます。
+
+そして何より、
+
+走る人が、自分の走った人生を振り返って楽しめること。
+
+その原点を大切にしていきたいと思います。
+
+
+Runner’s Rings – Rings Journal
+
+走った人生を残す。
+Map the life you run.
+
+開発者：@atsuoebarun
+AI開発パートナー：チャッピー</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=Runner%E2%80%99s%20Rings%E3%81%8C%E5%88%9D%E3%82%81%E3%81%A6%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%93%E3%83%A5%E3%83%BC%E3%81%95%E3%82%8C%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81%E8%B5%B0%E3%81%A3%E3%81%9F%E9%81%93%E3%81%8C%E5%B9%B4%E8%BC%AA%E3%81%AB%E3%81%AA%E3%82%8B%E3%82%A2%E3%83%97%E3%83%AA%E3%80%81%E3%81%9D%E3%81%AE%E9%96%8B%E7%99%BA%E7%89%A9%E8%AA%9E%E3%80%82&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261018-105616-1dd2b82c%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-10-18">2026-10-18</time>
+      <h1>Runner’s Rings Featured in Run&amp;Dojo! The Story Behind an App That Turns Running Routes into Growth Rings</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/28/ab359f2c-d2ce-4e6a-a67c-b48a8ce90b84.png" alt="" loading="lazy">
+      <p class="summary">Runner’s Rings has been featured in an interview by the Japanese running media platform Run&amp;Dojo. The article explores the story behind an app that turns running routes into growth rings, created by a runner who had no programming experience and an AI development partner. We share the interview and reflect on why preserving our running journeys matters.</p>
+      <div class="body">Today, we have some exciting news for Runner’s Rings.
+
+Our app has been featured in an interview by Run&amp;Dojo, a Japanese running media platform.
+
+And this was more than a simple app introduction.
+
+It was an interview about the story behind Runner’s Rings.
+
+
+■ The interview
+
+The article is part of Run&amp;Dojo&#39;s series, which introduces projects by speaking directly with their creators.
+
+Its Japanese title translates roughly as:
+
+“The Roads You Run Become Growth Rings: How Someone Who Couldn’t Code Built a Running App with AI.”
+
+We were delighted by the way the title captured the idea behind Runner’s Rings.
+
+
+■ What is Runner’s Rings?
+
+Runner’s Rings is a web app that visualizes the roads and places we have run.
+
+Many running apps focus on familiar numbers:
+
+Distance.
+
+Pace.
+
+Time.
+
+Heart rate.
+
+Those numbers are valuable.
+
+But running is also about places.
+
+A familiar neighborhood.
+
+A new road discovered during a weekend run.
+
+A route explored while traveling.
+
+A town visited for the first time.
+
+We wanted to preserve those experiences on a map.
+
+
+■ Why growth rings?
+
+A tree develops growth rings as it ages.
+
+Each ring represents part of its life.
+
+We wanted to create something similar for runners.
+
+As we continue running and exploring new places, our personal map gradually grows.
+
+Over time, those routes become a visual history of our running journey.
+
+That is the idea behind the name Runner’s Rings.
+
+
+■ Building an app without a programming background
+
+Another important part of the interview is the unusual development process.
+
+Runner’s Rings was not started by an experienced software engineer.
+
+It began with an idea from someone who loves running.
+
+The next question was:
+
+Could that idea become a real app with the help of AI?
+
+Our AI development partner, Chappy, became part of the answer.
+
+
+■ Creating Runner’s Rings with Chappy
+
+The development process involves constant collaboration.
+
+We discuss ideas.
+
+Define features.
+
+Create and review code.
+
+Test the app.
+
+Find problems.
+
+Make corrections.
+
+And repeat.
+
+Sometimes things work immediately.
+
+Often they do not.
+
+AI does not magically remove every difficulty from software development.
+
+But it can help someone with a strong idea take practical steps toward building it.
+
+
+■ AI is a partner, not the purpose
+
+The most important part of Runner’s Rings is not that it was built with AI.
+
+The important part is why it exists.
+
+What experience do we want to give runners?
+
+What should the app remember?
+
+How can it make running more enjoyable?
+
+AI helps with development, but the direction comes from a human desire to preserve running journeys.
+
+
+■ Running is not only about speed
+
+We want Runner’s Rings to be enjoyable for many kinds of runners.
+
+Competitive marathoners.
+
+Casual joggers.
+
+People who run for health.
+
+Travelers who enjoy exploring new places.
+
+People who simply want to discover another road.
+
+Every runner leaves behind a unique collection of routes.
+
+That collection is worth remembering.
+
+
+■ A global running community
+
+Runner’s Rings is also being developed with international runners in mind.
+
+Roads and running cultures differ around the world.
+
+But the enjoyment of running connects people across countries.
+
+Imagine runners everywhere gradually building their own maps of the places they have explored.
+
+That is part of the future we hope to create.
+
+
+■ What the interview meant to us
+
+Most development days are focused on practical questions.
+
+What should we build next?
+
+What needs fixing?
+
+How can the app become easier to use?
+
+But an interview offers a chance to return to the beginning.
+
+Why did we start?
+
+What made the idea exciting?
+
+What do we hope Runner’s Rings will become?
+
+Being asked those questions was a valuable opportunity to reflect on the project.
+
+
+■ Thank you, Run&amp;Dojo
+
+A big thank you to Run&amp;Dojo and interviewer Kazuma for featuring Runner’s Rings.
+
+We are grateful for the opportunity to share the story behind the app.
+
+Runner’s Rings is still growing, and we hope more runners will discover and enjoy it.
+
+
+■ Read the original interview
+
+Run&amp;Dojo — Developer Interview
+
+“The Roads You Run Become Growth Rings: How Someone Who Couldn&#39;t Code Built a Running App with AI.”
+
+https://rundojo.sharesweat.com/dojo/p-runnersrings-01
+
+The original article is in Japanese.
+
+
+■ What comes next
+
+This interview is a memorable milestone, but Runner’s Rings is still a work in progress.
+
+We will continue improving the app, adding new features, and exploring new ways to celebrate running.
+
+Above all, we want runners to enjoy looking back on the places they have traveled on foot.
+
+Every road has a story.
+
+Every run becomes part of a life.
+
+
+Runner’s Rings – Rings Journal
+
+Map the life you run.
+
+Developer: @atsuoebarun
+AI Development Partner: Chappy</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=Runner%E2%80%99s%20Rings%20Featured%20in%20Run%26Dojo!%20The%20Story%20Behind%20an%20App%20That%20Turns%20Running%20Routes%20into%20Growth%20Rings&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261018-105616-1dd2b82c%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261018-105616-1dd2b82c/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
