@@ -3681,7 +3681,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <details id="mapPhotosDisclosure">
       <summary><h2 id="mapPhotosHeading"><span data-photo-lang="ja">📍 みんなの写真</span><span data-photo-lang="en">📍 Community photos</span></h2></summary>
       <div class="mapPhotosContent">
-    <p><span data-photo-lang="ja">地図上の写真表示は初期OFFです。審査で承認された写真だけが公開されます。</span><span data-photo-lang="en">Photo markers start off. Only photos approved after review are published.</span></p>
+    <p><span data-photo-lang="ja">承認済み写真は初期ONで地図に表示します。表示ボタンからいつでも非表示にできます。</span><span data-photo-lang="en">Approved photos are shown by default. You can hide them at any time with the photo button.</span></p>
     <p><span data-photo-lang="ja">送信写真は非公開で保管され、運営者がチャッピーと掲載基準を確認します。運営者の最終承認後に公開され、自動公開はありません。</span><span data-photo-lang="en">Submissions stay private while the operator reviews them with Chappy against the rules below. The operator gives final approval; nothing is published automatically.</span></p>
     <ul class="photoRules">
       <li><span data-photo-lang="ja">人物・顔・子ども、車などの乗り物、ナンバープレート、個人情報が写った写真は掲載しません。</span><span data-photo-lang="en">No people or faces, children, cars or other vehicles, license plates, or personal information.</span></li>
@@ -3694,7 +3694,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <label for="mapPhotoCaption"><span data-photo-lang="ja">説明（任意）</span><span data-photo-lang="en">Caption (optional)</span></label><br>
     <input id="mapPhotoCaption" type="text" maxlength="160" autocomplete="off" placeholder="写真の説明 / Caption">
     <div class="photoActions">
-      <button id="mapPhotosToggle" type="button" aria-pressed="false"><span data-photo-lang="ja">写真は非表示（タップして表示）</span><span data-photo-lang="en">Photos are hidden (tap to show)</span></button>
+      <button id="mapPhotosToggle" type="button" aria-pressed="true"><span data-photo-lang="ja">写真を表示中（タップして非表示）</span><span data-photo-lang="en">Photos are visible (tap to hide)</span></button>
       <button id="mapPhotoChoose" type="button"><span data-photo-lang="ja">保存済み写真を選ぶ</span><span data-photo-lang="en">Choose a saved photo</span></button>
       <input id="mapPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
     </div>
@@ -6748,7 +6748,7 @@ L.control.scale(
 /* =====================================
    COMMUNITY MAP PHOTOS
    Pending photos are private; the database and Storage RLS are defined in
-   photo-map-setup.sql. The map layer does not load until the user enables it.
+   photo-map-setup.sql. The map layer loads after startup unless the user previously disabled it.
 ===================================== */
 const PHOTO_REVIEWER_ID = '386da875-298e-46b7-927d-0e02d02c409a';
 const photoToggle = document.getElementById('mapPhotosToggle');
@@ -6759,7 +6759,21 @@ const photoCaption = document.getElementById('mapPhotoCaption');
 const photoQueue = document.getElementById('mapPhotoReviewQueue');
 const photoQueueItems = document.getElementById('mapPhotoReviewItems');
 const photoMarkerLayer = L.layerGroup();
-let photoLayerEnabled = false;
+const PHOTO_LAYER_SETTING_KEY = 'RunnerRingsCommunityPhotosVisible';
+let photoLayerEnabled = (() => {
+  try { return localStorage.getItem(PHOTO_LAYER_SETTING_KEY) !== 'false'; }
+  catch (_) { return true; }
+})();
+function updatePhotoToggleLabel() {
+  if (!photoToggle) return;
+  photoToggle.setAttribute('aria-pressed', String(photoLayerEnabled));
+  photoToggle.querySelectorAll('[data-photo-lang]').forEach(node => {
+    node.textContent = node.dataset.photoLang === 'en'
+      ? (photoLayerEnabled ? 'Photos are visible (tap to hide)' : 'Photos are hidden (tap to show)')
+      : (photoLayerEnabled ? '写真を表示中（タップして非表示）' : '写真は非表示（タップして表示）');
+  });
+}
+updatePhotoToggleLabel();
 let approvedMapPhotos = [];
 let photoLoadPending = false;
 
@@ -6963,13 +6977,8 @@ async function loadApprovedMapPhotos() {
 
 photoToggle?.addEventListener('click', async () => {
   photoLayerEnabled = !photoLayerEnabled;
-  photoToggle.setAttribute('aria-pressed',String(photoLayerEnabled));
-  photoToggle.querySelectorAll('[data-photo-lang]').forEach(node => {
-    const isOn = photoLayerEnabled;
-    node.textContent = node.dataset.photoLang === 'en'
-      ? (isOn ? 'Photos are visible (tap to hide)' : 'Photos are hidden (tap to show)')
-      : (isOn ? '写真を表示中（タップして非表示）' : '写真は非表示（タップして表示）');
-  });
+  try { localStorage.setItem(PHOTO_LAYER_SETTING_KEY, String(photoLayerEnabled)); } catch (_) {}
+  updatePhotoToggleLabel();
   if (photoLayerEnabled) {
     if (!map.hasLayer(photoMarkerLayer)) photoMarkerLayer.addTo(map);
     await loadApprovedMapPhotos();
@@ -6980,6 +6989,17 @@ photoToggle?.addEventListener('click', async () => {
   }
 });
 map.on('zoomend',drawPhotoMarkers);
+// Load photo data after the initial map and running records, preserving startup speed.
+function beginPhotoLayerAfterStartup() {
+  if (!photoLayerEnabled) return;
+  window.setTimeout(async () => {
+    if (!photoLayerEnabled) return;
+    if (!map.hasLayer(photoMarkerLayer)) photoMarkerLayer.addTo(map);
+    await loadApprovedMapPhotos();
+  },1200);
+}
+if (document.readyState === 'complete') beginPhotoLayerAfterStartup();
+else window.addEventListener('load',beginPhotoLayerAfterStartup,{once:true});
 
 photoChoose?.addEventListener('click', () => photoFileInput?.click());
 
