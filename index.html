@@ -2829,6 +2829,16 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 .map-photo-single{display:flex;align-items:center;justify-content:center;border:2px solid white;border-radius:50%;background:#ff9b45;font-size:18px;box-shadow:0 2px 8px #0008}
 .map-photo-popup img{display:block;max-width:min(72vw,250px);max-height:190px;object-fit:contain;margin:0 auto 6px}
 .map-photo-popup p{margin:4px 0;overflow-wrap:anywhere}
+.map-photo-popup .photoOpenActions{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
+.map-photo-popup .photoOpenActions button,.map-photo-popup .photoOpenActions a{display:inline-flex;justify-content:center;align-items:center;border:0;border-radius:8px;padding:9px 11px;background:#ff9b45;color:#241407;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
+.map-photo-popup .photoOpenActions a{background:#20364c;color:#fff}
+.photoViewerOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(2,8,18,.94);padding:16px}
+.photoViewerInner{width:100%;max-width:1100px;max-height:100%;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:auto}
+.photoViewerInner img{max-width:100%;max-height:76dvh;object-fit:contain}
+.photoViewerBar{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;color:#fff}
+.photoViewerBar button{background:#fff;color:#111;border:0;border-radius:50%;font-size:24px;width:42px;height:42px;cursor:pointer;flex-shrink:0}
+.photoViewerCaption{color:#fff;text-align:center;overflow-wrap:anywhere}
+
 @media(max-width:600px){.photoReviewCard{grid-template-columns:1fr}.photoReviewCard img{max-height:240px}}
 html:not([lang="en"]) [data-photo-lang="en"],html[lang="en"] [data-photo-lang="ja"]{display:none}
 </style>
@@ -6779,6 +6789,51 @@ function updatePhotoPublicNamePreview(user) {
   );
 }
 
+function showPhotoViewer(photo) {
+  const overlay = document.createElement('div');
+  overlay.className = 'photoViewerOverlay';
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label',photoText('写真を大きく表示','View photo larger'));
+  const inner = document.createElement('div');
+  inner.className = 'photoViewerInner';
+  const bar = document.createElement('div');
+  bar.className = 'photoViewerBar';
+  const author = document.createElement('strong');
+  author.textContent = photoText('投稿者：','By: ') + (photo.public_name || photoText('ランナー','Runner'));
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = '×';
+  close.setAttribute('aria-label',photoText('閉じる','Close'));
+  bar.append(author,close);
+  const image = document.createElement('img');
+  image.src = photo.url;
+  image.alt = photo.caption || photoText('共有された写真','Community photo');
+  inner.append(bar,image);
+  if (photo.caption) {
+    const caption = document.createElement('div');
+    caption.className = 'photoViewerCaption';
+    caption.textContent = photo.caption;
+    inner.appendChild(caption);
+  }
+  overlay.appendChild(inner);
+  const previousFocus = document.activeElement;
+  function dismiss() {
+    document.removeEventListener('keydown',onKey);
+    overlay.remove();
+    if (previousFocus?.isConnected) previousFocus.focus();
+  }
+  function onKey(event) {
+    if (event.key === 'Escape') dismiss();
+    if (event.key === 'Tab') { event.preventDefault(); close.focus(); }
+  }
+  close.addEventListener('click',dismiss);
+  overlay.addEventListener('click',event => { if (event.target === overlay) dismiss(); });
+  document.body.appendChild(overlay);
+  document.addEventListener('keydown',onKey);
+  close.focus();
+}
+
 function makePhotoPopup(photo) {
   const box = document.createElement('div');
   box.className = 'map-photo-popup';
@@ -6787,6 +6842,25 @@ function makePhotoPopup(photo) {
   image.alt = photo.caption || photoText('共有された写真', 'Community photo');
   image.loading = 'lazy';
   box.appendChild(image);
+  image.style.cursor = 'pointer';
+  image.setAttribute('role','button');
+  image.setAttribute('tabindex','0');
+  image.setAttribute('aria-label',photoText('写真を大きく見る','View photo larger'));
+  image.addEventListener('click',() => showPhotoViewer(photo));
+  image.addEventListener('keydown',event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showPhotoViewer(photo); } });
+  const actions = document.createElement('div');
+  actions.className = 'photoOpenActions';
+  const enlarge = document.createElement('button');
+  enlarge.type = 'button';
+  enlarge.textContent = photoText('🔍 大きく見る','🔍 View larger');
+  enlarge.addEventListener('click',() => showPhotoViewer(photo));
+  const newTab = document.createElement('a');
+  newTab.href = photo.url;
+  newTab.target = '_blank';
+  newTab.rel = 'noopener noreferrer';
+  newTab.textContent = photoText('↗ 新しいタブで開く','↗ Open in new tab');
+  actions.append(enlarge,newTab);
+  box.appendChild(actions);
   const author = document.createElement('p');
   author.className = 'photoReviewAuthor';
   author.textContent = photoText('投稿者：','By: ') + (photo.public_name || photoText('ランナー','Runner'));
