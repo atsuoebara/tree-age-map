@@ -24801,8 +24801,7 @@ function moveTimelapseMapToBounds(bounds, maxZoom = 15) {
     map.fitBounds(bounds, {
       padding:[36, 36],
       maxZoom,
-      animate:true,
-      duration:.8
+      animate:false
     });
   });
 }
@@ -24861,8 +24860,7 @@ async function moveTimelapseToBusiestCell(
     const timer = setTimeout(finish, 1200);
     map.on('moveend', finish);
     map.setView(center, 16, {
-      animate:true,
-      duration:.75
+      animate:false
     });
   });
 
@@ -25435,6 +25433,8 @@ function drawTimelapseTextFit(ctx, text, x, y, maxWidth, startSize, weight = 800
 }
 
 const timelapseTileImageCache = new Map();
+// Reuse fully rendered base maps during one video; keep memory bounded on phones.
+const timelapseRenderedMapCache = new Map();
 
 function loadTimelapseTileImage(url) {
   if (timelapseTileImageCache.has(url)) {
@@ -25533,6 +25533,12 @@ function projectTimelapseLatLngToShare(latlng, inner, projection) {
 async function renderTimelapseBaseMapCanvas(outputCanvas) {
   const {inner} = getTimelapseShareMapGeometry(outputCanvas);
   const projection = getTimelapseShareProjection(inner);
+  const cacheKey = [projection.zoom, projection.topLeft.x.toFixed(2),
+    projection.topLeft.y.toFixed(2), projection.scale.toFixed(4),
+    inner.width, inner.height].join(':');
+  if (timelapseRenderedMapCache.has(cacheKey)) {
+    return timelapseRenderedMapCache.get(cacheKey);
+  }
   const baseCanvas = document.createElement('canvas');
   baseCanvas.width = Math.round(inner.width);
   baseCanvas.height = Math.round(inner.height);
@@ -25568,7 +25574,12 @@ async function renderTimelapseBaseMapCanvas(outputCanvas) {
   }
 
   await Promise.all(jobs);
-  return {canvas:baseCanvas, projection};
+  const result = {canvas:baseCanvas, projection};
+  if (timelapseRenderedMapCache.size >= 6) {
+    timelapseRenderedMapCache.delete(timelapseRenderedMapCache.keys().next().value);
+  }
+  timelapseRenderedMapCache.set(cacheKey, result);
+  return result;
 }
 
 function drawTimelapseShareRoutes(ctx, inner, selectedActivities, projection) {
@@ -26233,6 +26244,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
   }
 
   resetTimelapseShareResult();
+  timelapseRenderedMapCache.clear();
   timelapseRecording = true;
   timelapseGenerateButton.disabled = true;
   timelapseMonthlyReviewButton.disabled = true;
@@ -26342,7 +26354,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         );
         timelapseProgress.textContent = (isRunnerRingsEnglish() ? 'Creating video · ' : '動画作成中 · ') + label + ` (${index + 1}/${runFrames.length})`;
         timelapseGenerationStatus.textContent = (isRunnerRingsEnglish() ? 'Rendering ' : '描画中 ') + `${index + 1}/${runFrames.length}`;
-        await waitTimelapse(2500);
+        await waitTimelapse(2000);
       }
 
       const allMonthActivities = cumulativeActivities;
