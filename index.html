@@ -26143,11 +26143,13 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 64px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText("Runner's Rings", width / 2, Math.round(height * .70));
-  ctx.fillStyle = '#eaff00';
-  ctx.font = '800 36px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
+  if (!options.monthlyReview) {
+    ctx.fillStyle = '#eaff00';
+    ctx.font = '800 36px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
+  }
   ctx.fillStyle = '#b9c9d8';
-  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * .795), width - 170, 30, 700);
+  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * (options.monthlyReview ? .735 : .795)), width - 170, 30, 700);
   if (options.monthlyReview) {
     // The monthly review ends with distance as the main visual, not a small summary line.
     // Use the same saved distance total as the preceding recap frames.
@@ -26158,14 +26160,14 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
     ctx.fillText(
       isRunnerRingsEnglish() ? 'MONTHLY DISTANCE' : '月間走行距離',
       width / 2,
-      Math.round(height * .82)
+      Math.round(height * .79)
     );
     ctx.fillStyle = '#ffffff';
     drawTimelapseTextFit(
       ctx,
       `${formatTimelapseDistance(displayKm)} km`,
       width / 2,
-      Math.round(height * .895),
+      Math.round(height * .89),
       width - 110,
       108,
       900
@@ -26180,7 +26182,7 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
   }
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillText('runnersrings.com', width / 2, Math.round(height * .92));
+  ctx.fillText('runnersrings.com', width / 2, Math.round(height * (options.monthlyReview ? .95 : .92)));
   ctx.restore();
 }
 
