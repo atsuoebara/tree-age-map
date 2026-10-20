@@ -26089,7 +26089,7 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
   ctx.restore();
 }
 
-async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}) {
+async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, options = {}) {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
   const height = outputCanvas.height;
@@ -26148,12 +26148,36 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}) {
   ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
   ctx.fillStyle = '#b9c9d8';
   drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * .795), width - 170, 30, 700);
-  ctx.fillStyle = '#eaff00';
-  ctx.font = '900 38px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  const summaryLabel = isRunnerRingsEnglish()
-    ? `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} runs`
-    : `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} RUN`;
-  drawTimelapseTextFit(ctx, summaryLabel, width / 2, Math.round(height * .855), width - 150, 38, 900);
+  if (options.monthlyReview) {
+    // The monthly review ends with distance as the main visual, not a small summary line.
+    // Use the same saved distance total as the preceding recap frames.
+    const fraction = Math.max(0, Math.min(1, Number(options.distanceProgress) || 0));
+    const displayKm = (Number(summary.totalDistanceKm) || 0) * fraction;
+    ctx.fillStyle = '#b9c9d8';
+    ctx.font = '800 32px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText(
+      isRunnerRingsEnglish() ? 'MONTHLY DISTANCE' : '月間走行距離',
+      width / 2,
+      Math.round(height * .82)
+    );
+    ctx.fillStyle = '#ffffff';
+    drawTimelapseTextFit(
+      ctx,
+      `${formatTimelapseDistance(displayKm)} km`,
+      width / 2,
+      Math.round(height * .895),
+      width - 110,
+      108,
+      900
+    );
+  } else {
+    ctx.fillStyle = '#eaff00';
+    ctx.font = '900 38px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const summaryLabel = isRunnerRingsEnglish()
+      ? `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} runs`
+      : `${formatTimelapseDistance(summary.totalDistanceKm)} km · ${summary.runCount || 0} RUN`;
+    drawTimelapseTextFit(ctx, summaryLabel, width / 2, Math.round(height * .855), width - 150, 38, 900);
+  }
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('runnersrings.com', width / 2, Math.round(height * .92));
@@ -26396,13 +26420,32 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
       (sum, activity) => sum + (Number(activity?.distance) || 0),
       0
     );
-    await drawTimelapseEndCard(
-      outputCanvas,
-      `${startLabel} → ${endLabel}`,
-      {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm}
-    );
+    const recapSummary = {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm};
+    const recapLabel = monthlyRecap ? startLabel : `${startLabel} → ${endLabel}`;
+    if (monthlyRecap) {
+      // Refresh the recorded canvas during a ~1.5-second count-up, then hold the exact total.
+      const countupStart = performance.now();
+      const countupDuration = 1500;
+      do {
+        const elapsed = performance.now() - countupStart;
+        const progress = Math.min(1, elapsed / countupDuration);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary, {
+          monthlyReview:true,
+          distanceProgress:easedProgress
+        });
+        if (progress >= 1) break;
+        await waitTimelapse(50);
+      } while (true);
+      await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary, {
+        monthlyReview:true,
+        distanceProgress:1
+      });
+    } else {
+      await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary);
+    }
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Creating video · Finish' : '動画作成中 · FINISH';
-    await waitTimelapse(3500);
+    await waitTimelapse(monthlyRecap ? 2200 : 3500);
     recorder.stop();
     await stopped;
 
