@@ -16576,7 +16576,7 @@ function selectedRunRails(points) {
 function makeSelectedRunLine(points){
   const latlngs=ringsLayersEnabled?selectedRunRails(points):points;
   const line=L.polyline(latlngs,{
-    color:ringsLayersEnabled?'#171717':'#0057ff',
+    color:ringsLayersEnabled?'#48E8FF':'#0057ff',
     weight:ringsLayersEnabled?2.7:6,opacity:1,
     lineCap:'round',lineJoin:'round',
     pane:'selectedRunPane',interactive:false
@@ -16590,7 +16590,7 @@ function updateSelectedRunHighlight(){
     ?selectedRunRails(selectedRunLine._rrOriginalPoints)
     :selectedRunLine._rrOriginalPoints);
   selectedRunLine.setStyle({
-    color:ringsLayersEnabled?'#171717':'#0057ff',
+    color:ringsLayersEnabled?'#48E8FF':'#0057ff',
     weight:ringsLayersEnabled?2.7:6,opacity:1,dashArray:null
   });
   selectedRunLine.bringToFront();
