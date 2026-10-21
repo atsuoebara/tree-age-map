@@ -16639,7 +16639,7 @@ function drawRingsLayerStrata(routes) {
           const t1=tangent(previous[previous.length-2],tail);
           const t2=tangent(head,candidate[1]);
           // Tight, same-direction endpoints only. Never draw long shortcuts.
-          if(distance<=12&&t1&&t2&&t1[0]*t2[0]+t1[1]*t2[1]>=0.7){
+          if(distance<=18&&t1&&t2&&t1[0]*t2[0]+t1[1]*t2[1]>=0.75){
             previous.push(...candidate.slice(distance<0.5?1:0));
             joined=true;
           }
@@ -16657,7 +16657,7 @@ function drawRingsLayerStrata(routes) {
       const nextTier=cellTier(mid);
       if(claimed.has(mid)){
         // Keep a pending gap only along the SAME original GPS activity.
-        if(path.length&&nextTier===tier&&gapLength+seg.len<=45){
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=60){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
         continue;
