@@ -16604,36 +16604,29 @@ function drawRingsLayerStrata(routes) {
       groups[n>=40?3:n>=15?2:n>=5?1:0].push([p,q]);
     }
   }
+  // Ballpoint-pen treatment: thin, translucent colored strokes.
+  // The stroke only grows by 0.5px across all frequency bands.
+  // A faint offset under-stroke gives an impression of paper layers,
+  // without turning densely run streets into solid colored areas.
+  const colors=['#ef47a8','#a24ae9','#249fd9','#10b99a'];
   const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
   const add=(segments,color,weight,opacity)=>{
     if(segments.length)routeGroup.addLayer(L.polyline(segments,{...base,color,weight,opacity}));
   };
-  const top=['#ff62c7','#fb48ad','#fc5eac','#ffa35a'];
-  // Pixel-space extrusion simulated with geographic offsets. At each
-  // zoom rebuild from the filtered dataset so the height stays in pixels.
-  const degreesPerPixel=360/(256*Math.pow(2,map.getZoom()));
-  const offset=(segments,dx,dy)=>segments.map(seg=>seg.map(pt=>{
-    const cos=Math.max(0.2,Math.cos(pt[0]*Math.PI/180));
-    return [pt[0]-dy*degreesPerPixel*cos,pt[1]+dx*degreesPerPixel];
-  }));
+  // Keep the offset below one pixel in the screen coordinate system.
+  const panned=(segments,tier)=>{
+    const projected=0.35+0.12*tier;
+    return segments.map(segment=>segment.map(point=>{
+      const projectedPoint=map.project(point,map.getZoom());
+      return map.unproject([projectedPoint.x+projected,projectedPoint.y+projected],map.getZoom());
+    }));
+  };
   groups.forEach((segments,tier)=>{
     if(!segments.length)return;
-    if(tier===0){
-      add(segments,'#712b66',3.3,0.66);
-      add(segments,top[0],1.7,0.93);
-      return;
-    }
-    // Shadow at the bottom; narrow stacked colored edges run below
-    // the original GPS centerline, producing a stepped side wall.
-    const depth=[0,2,3.5,5.5][tier];
-    add(offset(segments,1.6,depth+1.4),'#29233d',3.8,0.45);
-    const strata=['#8f42ec','#25bfea','#45d2a6','#f7c25b'];
-    for(let layer=tier;layer>=0;layer--){
-      const y=depth*(layer+1)/(tier+1);
-      add(offset(segments,0.8,y),strata[layer],2.8,0.81);
-    }
-    add(segments,'#802b73',3.6,0.93);
-    add(segments,top[tier],2.1,0.99);
+    const weight=1.65+tier*0.17;
+    add(panned(segments,tier),'#263451',weight+0.8,0.19);
+    add(segments,colors[tier],weight,0.60+tier*0.065);
+    if(tier>=2)add(segments,'#ffd2fa',0.65,0.20);
   });
   return true;
 }
