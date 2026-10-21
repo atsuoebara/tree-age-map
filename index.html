@@ -16691,7 +16691,10 @@ function drawRingsLayerStrata(routes) {
   const stripeWidth=1.1,spacing=1.05;
   // Keep seven permanent positions about the ORIGINAL GPS mainline.
   // Unearned stripes are transparent (not drawn), so earned ones never move.
+  // Keep low-frequency red separate: higher-frequency rainbow bands
+  // must retain fully saturated red even though they share stripe slot 0.
   const strokes=colors.map(()=>[]);
+  const lowFrequencyRed=[];
   for(let tier=0;tier<bands.length;tier++){
     for(const path of bands[tier]){
       const pts=path.map(p=>map.project(p,zoom));
@@ -16704,12 +16707,19 @@ function drawRingsLayerStrata(routes) {
       });
       for(let layer=0;layer<=tier;layer++){
         const shift=(layer-3)*spacing;
-        if(Math.abs(shift)<0.001){strokes[layer].push(path);continue;}
-        strokes[layer].push(pts.map((p,i)=>map.unproject([
+        const target=(tier===0&&layer===0)?lowFrequencyRed:strokes[layer];
+        if(Math.abs(shift)<0.001){target.push(path);continue;}
+        target.push(pts.map((p,i)=>map.unproject([
           p.x+normals[i][0]*shift,p.y+normals[i][1]*shift
         ],zoom)));
       }
     }
+  }
+  if(lowFrequencyRed.length){
+    routeGroup.addLayer(L.polyline(lowFrequencyRed,{
+      color:colors[0],weight:stripeWidth,opacity:0.35,
+      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
+    }));
   }
   for(let layer=0;layer<strokes.length;layer++){
     if(!strokes[layer].length)continue;
