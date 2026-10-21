@@ -16603,8 +16603,24 @@ function drawRingsLayerStrata(routes) {
   // Select uninterrupted representative portions from the ORIGINAL GPS tracks.
   // Ownership is based on cell visits; nearby already-owned cells are skipped.
   // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
-  const claimed=new Set(),bands=Array.from({length:7},()=>[]);
-  const cellTier=k=>Math.min(6,Math.floor((counts.get(k)||1)/10));
+  const claimed=new Map(),bands=Array.from({length:7},()=>[]);
+  const cellTier=k=>{
+    const [x,y]=k.split(':').map(Number);
+    let best=counts.get(k)||1;
+    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)
+      best=Math.max(best,counts.get((x+dx)+':'+(y+dy))||0);
+    return Math.min(6,Math.floor(best/10));
+  };
+  // Suppress only OTHER representative tracks within ~25m and with
+  // a similar direction. Intersections remain separate.
+  const nearbyOwned=(k,ux,uy)=>{
+    const [x,y]=k.split(':').map(Number);
+    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
+      const entries=claimed.get((x+dx)+':'+(y+dy));
+      if(entries&&entries.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))return true;
+    }
+    return false;
+  };
   const smooth=points=>{
     if(points.length<4)return points;
     // Gentle 3-point smoothing in projected screen space; endpoints fixed.
@@ -16618,6 +16634,7 @@ function drawRingsLayerStrata(routes) {
     return result;
   };
   for(const pieces of tracks){
+    const pending=[];
     let path=[],tier=-1,gap=[],gapLength=0;
     const flush=()=>{
       if(path.length>=2)bands[tier].push(smooth(path));
@@ -16627,7 +16644,10 @@ function drawRingsLayerStrata(routes) {
       if(!seg){flush();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
-      if(claimed.has(mid)){
+      const aa=xy(seg.a),bb=xy(seg.b);
+      const distance=Math.hypot(bb[0]-aa[0],bb[1]-aa[1])||1;
+      const ux=(bb[0]-aa[0])/distance,uy=(bb[1]-aa[1])/distance;
+      if(nearbyOwned(mid,ux,uy)){
         if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
@@ -16641,7 +16661,13 @@ function drawRingsLayerStrata(routes) {
         gap=[];gapLength=0;
       }
       path.push(seg.b);
-      for(const k of seg.cells)claimed.add(k);
+      for(const k of seg.cells)pending.push([k,ux,uy]);
+    }
+    // Commit after this run, so adjacent pieces of the SAME run stay continuous.
+    for(const [k,ux,uy] of pending){
+      if(!claimed.has(k))claimed.set(k,[]);
+      const arr=claimed.get(k);
+      if(!arr.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))arr.push([ux,uy]);
     }
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8'];
