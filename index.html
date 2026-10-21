@@ -16564,71 +16564,80 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Count distinct runs in approximate 18m cells, but draw original GPS
-  // geometry, never artificial grid edges. Experimental road matching.
-  const rad=Math.PI/180, size=18;
+  // Experimental: estimate distinct-run frequency in 18m cells, but
+  // display uninterrupted ORIGINAL GPS paths rather than isolated fragments.
+  const rad=Math.PI/180,size=18;
   const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
-  const lat0=routes.find(r=>r.length)?.[0];
-  if(!lat0)return false;
-  const origin=coords(lat0);
-  if(!valid(origin))return false;
-  const scaleX=111320*Math.max(0.2,Math.cos(origin[0]*rad));
-  const xy=p=>[(p[1]-origin[1])*scaleX,(p[0]-origin[0])*111320];
+  const first=routes.flat().map(coords).find(valid);
+  if(!first)return false;
+  const sx=111320*Math.max(0.2,Math.cos(first[0]*rad));
+  const xy=p=>[(p[1]-first[1])*sx,(p[0]-first[0])*111320];
   const cell=p=>Math.floor(p[0]/size)+':'+Math.floor(p[1]/size);
-  const frequency=new Map();
-  const segments=[];
-  for(let run=0;run<routes.length;run++){
-    const route=routes[run],seen=new Set(),items=[];
-    for(let i=1;i<route.length;i++){
-      const a=coords(route[i-1]),b=coords(route[i]);
-      if(!valid(a)||!valid(b))continue;
+  const frequencies=new Map(),runs=[];
+  for(const route of routes){
+    const seen=new Set(),points=route.map(coords),segments=[];
+    for(let i=1;i<points.length;i++){
+      const a=points[i-1],b=points[i];
+      if(!valid(a)||!valid(b)){segments.push(null);continue;}
       const A=xy(a),B=xy(b),len=Math.hypot(B[0]-A[0],B[1]-A[1]);
-      if(len<2||len>180)continue;
-      const steps=Math.max(1,Math.ceil(len/9));
-      const keys=new Set();
+      if(len<0.3||len>180){segments.push(null);continue;}
+      const keys=new Set(),steps=Math.max(1,Math.ceil(len/9));
       for(let j=0;j<=steps;j++){
         const t=j/steps;
         keys.add(cell([A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t]));
       }
-      items.push({a,b,keys:[...keys]});
+      segments.push({a,b,keys:[...keys],len});
       for(const key of keys)seen.add(key);
     }
-    for(const key of seen)frequency.set(key,(frequency.get(key)||0)+1);
-    segments.push(items);
+    for(const key of seen)frequencies.set(key,(frequencies.get(key)||0)+1);
+    runs.push(segments);
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed'];
-  const batches=colors.map(()=>[]);
-  // One representative GPS segment per nearby cell and direction, avoiding
-  // hundreds of overlapping runs. Keep the real endpoints of that segment.
-  const drawn=new Set();
-  for(const items of segments){
-    for(const item of items){
-      const A=xy(item.a),B=xy(item.b);
-      const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2];
-      const angle=((Math.round(Math.atan2(B[1]-A[1],B[0]-A[0])/Math.PI*6)%6)+6)%6;
-      const id=cell(mid)+':'+angle;
-      if(drawn.has(id))continue;
-      drawn.add(id);
-      const count=Math.max(...item.keys.map(k=>frequency.get(k)||1));
-      const layers=Math.min(6,1+Math.floor(count/10));
-      for(let layer=0;layer<layers;layer++)batches[layer].push([item.a,item.b]);
+  const paths=colors.map(()=>[]);
+  // Assign each segment to its run-count tier. Merge consecutive segments
+  // from the SAME original activity into continuous polylines.
+  // Never connect across a GPS gap or across unrelated activities.
+  const occupied=new Set();
+  for(const segments of runs){
+    let path=[],tier=-1,length=0;
+    const flush=()=>{
+      if(path.length>1&&length>=12) {
+        const signature=path.map((p,i)=>i===0||i===path.length-1?cell(xy(p)):null).filter(Boolean).join('|');
+        const id=tier+':'+signature;
+        if(!occupied.has(id)){occupied.add(id);paths[tier].push(path);}
+      }
+      path=[];length=0;
+    };
+    for(const seg of [...segments,null]){
+      if(!seg){flush();tier=-1;continue;}
+      const count=Math.max(1,...seg.keys.map(k=>frequencies.get(k)||1));
+      const nextTier=Math.min(5,Math.floor(count/10));
+      if(nextTier!==tier){flush();tier=nextTier;}
+      if(!path.length)path=[seg.a];
+      path.push(seg.b);length+=seg.len;
     }
   }
-  // Layer offsets are screen-space and recomputed on zoom; no grid geometry.
   const zoom=map.getZoom();
-  for(let layer=0;layer<6;layer++){
-    if(!batches[layer].length)continue;
-    const shift=layer*1.15;
-    const paths=shift===0?batches[layer]:batches[layer].map(line=>{
-      const p=map.project(line[0],zoom),q=map.project(line[1],zoom);
-      const dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy)||1;
-      const ox=-dy/len*shift,oy=dx/len*shift;
-      return [map.unproject([p.x+ox,p.y+oy],zoom),map.unproject([q.x+ox,q.y+oy],zoom)];
+  // Offset whole continuous paths, not each little segment individually.
+  const offsetPath=(path,shift)=>{
+    if(!shift)return path;
+    const projected=path.map(p=>map.project(p,zoom));
+    return projected.map((p,i)=>{
+      const before=projected[Math.max(0,i-1)],after=projected[Math.min(projected.length-1,i+1)];
+      const dx=after.x-before.x,dy=after.y-before.y,len=Math.hypot(dx,dy)||1;
+      return map.unproject([p.x-dy/len*shift,p.y+dx/len*shift],zoom);
     });
-    routeGroup.addLayer(L.polyline(paths,{
-      color:colors[layer],weight:1.2,opacity:0.67,
-      lineCap:'round',lineJoin:'round',interactive:false,smoothFactor:1
+  };
+  for(let layer=0;layer<6;layer++){
+    const batch=[];
+    for(let tier=layer;tier<6;tier++){
+      for(const path of paths[tier])batch.push(offsetPath(path,layer*1.05));
+    }
+    if(!batch.length)continue;
+    routeGroup.addLayer(L.polyline(batch,{
+      color:colors[layer],weight:1.3,opacity:0.74,
+      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
     }));
   }
   return true;
