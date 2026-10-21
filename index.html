@@ -16645,26 +16645,34 @@ function drawRingsLayerStrata(routes) {
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
   const zoom=map.getZoom();
-  // A maximum 7.2px rainbow, with each earned color as a parallel stripe.
-  // A single-run route is only 1.15px wide, never a broad cyan ribbon.
-  for(let layer=0;layer<8;layer++){
-    const paths=[];
-    for(let tier=layer;tier<8;tier++){
-      for(const path of bands[tier]){
-        if(layer===0){paths.push(path);continue;}
-        const pts=path.map(p=>map.project(p,zoom));
-        const shifted=pts.map((p,i)=>{
-          const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
-          const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1;
-          const shift=layer*.9;
-          return map.unproject([p.x-dy/d*shift,p.y+dx/d*shift],zoom);
-        });
-        paths.push(shifted);
+  const stripeWidth=1.1,spacing=1.05;
+  // Every tier uses ONE common centerline. Position its earned colors
+  // symmetrically about that line, instead of drifting to one side.
+  const strokes=colors.map(()=>[]);
+  for(let tier=0;tier<bands.length;tier++){
+    for(const path of bands[tier]){
+      const pts=path.map(p=>map.project(p,zoom));
+      const normals=pts.map((p,i)=>{
+        // Average adjacent segment normals for stable curves and corners.
+        const prev=pts[Math.max(0,i-1)],next=pts[Math.min(pts.length-1,i+1)];
+        let dx=next.x-prev.x,dy=next.y-prev.y;
+        const d=Math.hypot(dx,dy)||1;
+        return [-dy/d,dx/d];
+      });
+      for(let layer=0;layer<=tier;layer++){
+        const shift=(layer-tier/2)*spacing;
+        if(Math.abs(shift)<0.001){strokes[layer].push(path);continue;}
+        strokes[layer].push(pts.map((p,i)=>map.unproject([
+          p.x+normals[i][0]*shift,p.y+normals[i][1]*shift
+        ],zoom)));
       }
     }
-    if(paths.length)routeGroup.addLayer(L.polyline(paths,{
-      color:colors[layer],weight:1.15,opacity:.9,
-      lineCap:'round',lineJoin:'round',interactive:false
+  }
+  for(let layer=0;layer<strokes.length;layer++){
+    if(!strokes[layer].length)continue;
+    routeGroup.addLayer(L.polyline(strokes[layer],{
+      color:colors[layer],weight:stripeWidth,opacity:0.94,
+      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
     }));
   }
   return true;
