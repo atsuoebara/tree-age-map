@@ -16619,12 +16619,40 @@ function drawRingsLayerStrata(routes) {
   };
   for(const pieces of tracks){
     let path=[],tier=-1,gap=[],gapLength=0;
+    // Merge only consecutive fragments from this SAME recorded run.
+    // Reset candidates on GPS discontinuities; never join different runs.
+    let recentFragments=new Map();
     const flush=()=>{
-      if(path.length>=2)bands[tier].push(smooth(path));
+      if(path.length>=2){
+        const candidate=smooth(path);
+        const previous=recentFragments.get(tier);
+        let joined=false;
+        if(previous&&previous.length>=2&&candidate.length>=2){
+          const tail=previous[previous.length-1],head=candidate[0];
+          const p=xy(tail),q=xy(head);
+          const distance=Math.hypot(q[0]-p[0],q[1]-p[1]);
+          const tangent=(a,b)=>{
+            const u=xy(a),v=xy(b),dx=v[0]-u[0],dy=v[1]-u[1];
+            const d=Math.hypot(dx,dy);
+            return d>0.3?[dx/d,dy/d]:null;
+          };
+          const t1=tangent(previous[previous.length-2],tail);
+          const t2=tangent(head,candidate[1]);
+          // Tight, same-direction endpoints only. Never draw long shortcuts.
+          if(distance<=12&&t1&&t2&&t1[0]*t2[0]+t1[1]*t2[1]>=0.7){
+            previous.push(...candidate.slice(distance<0.5?1:0));
+            joined=true;
+          }
+        }
+        if(!joined){
+          bands[tier].push(candidate);
+          recentFragments.set(tier,candidate);
+        }
+      }
       path=[];tier=-1;gap=[];gapLength=0;
     };
     for(const seg of [...pieces,null]){
-      if(!seg){flush();continue;}
+      if(!seg){flush();recentFragments=new Map();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
       if(claimed.has(mid)){
