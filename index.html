@@ -16564,12 +16564,12 @@ const ringsLayersToggle = document.getElementById('ringsLayersToggle');
 // Use a FeatureGroup so existing selection removal/restore logic remains intact.
 function makeSelectedRunLine(points){
   const glow=L.polyline(points,{
-    color:'#ffffff',weight:9,opacity:0.23,
+    color:'#176B48',weight:9,opacity:0.20,
     lineCap:'round',lineJoin:'round',pane:'selectedRunPane',interactive:false
   });
   const core=L.polyline(points,{
-    color:ringsLayersEnabled?'#ffffff':'#0057ff',
-    weight:ringsLayersEnabled?4:6,opacity:ringsLayersEnabled?0.95:1,
+    color:ringsLayersEnabled?'#075C38':'#0057ff',
+    weight:ringsLayersEnabled?4:6,opacity:ringsLayersEnabled?0.98:1,
     lineCap:'round',lineJoin:'round',pane:'selectedRunPane',interactive:false
   });
   const group=L.featureGroup([glow,core]);
@@ -16577,18 +16577,18 @@ function makeSelectedRunLine(points){
   group._rrGlow=glow;
   group._rrCore=core;
   group.bringToFront=()=>{glow.bringToFront();core.bringToFront();return group;};
-  glow.setStyle({opacity:ringsLayersEnabled?0.23:0});
+  glow.setStyle({opacity:ringsLayersEnabled?0.20:0});
   return group;
 }
 function updateSelectedRunHighlight(){
   if(!selectedRunLine || !selectedRunLine._rrCore)return;
   selectedRunLine._rrGlow.setStyle({
-    opacity:ringsLayersEnabled?0.23:0,weight:9
+    opacity:ringsLayersEnabled?0.20:0,weight:9
   });
   selectedRunLine._rrCore.setStyle({
-    color:ringsLayersEnabled?'#ffffff':'#0057ff',
+    color:ringsLayersEnabled?'#075C38':'#0057ff',
     weight:ringsLayersEnabled?4:6,
-    opacity:ringsLayersEnabled?0.95:1,dashArray:null
+    opacity:ringsLayersEnabled?0.98:1,dashArray:null
   });
   selectedRunLine.bringToFront();
 }
