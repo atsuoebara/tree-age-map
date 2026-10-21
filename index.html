@@ -16628,7 +16628,7 @@ function drawRingsLayerStrata(routes) {
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
       if(claimed.has(mid)){
-        if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=35){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
         continue;
@@ -16683,10 +16683,25 @@ function drawRingsLayerStrata(routes) {
    実走線
 ===================================== */
 
-// Leaflet automatically reprojects the existing rainbow polylines on zoom.
-// Do not rebuild all 10m visit counts and eight stripe layers at every zoom:
-// this was an expensive duplicate render on top of the general zoom handler.
-// A filter change or Rainbow toggle still rebuilds the geometry.
+// Rainbow stripes are positioned in screen pixels at a particular zoom.
+// Leaflet's ordinary reprojection stretches those offsets, causing the large
+// concentric swirls after zooming. Rebuild only after zoom has settled.
+// Do not reload cloud records or invoke the full display update here.
+let rainbowLastDrawZoom = null;
+let rainbowZoomRefreshTimer = null;
+map.on('zoomend', () => {
+  if (!ringsLayersEnabled || !map.hasLayer(routeGroup) || !lastRingsLayersActivities.length) return;
+  if (rainbowLastDrawZoom === map.getZoom()) return;
+  if (rainbowZoomRefreshTimer !== null) window.clearTimeout(rainbowZoomRefreshTimer);
+  rainbowZoomRefreshTimer = window.setTimeout(() => {
+    rainbowZoomRefreshTimer = null;
+    if (!ringsLayersEnabled || !map.hasLayer(routeGroup) || !lastRingsLayersActivities.length) return;
+    if (rainbowLastDrawZoom === map.getZoom()) return;
+    routeGroup.clearLayers();
+    drawRoutes(lastRingsLayersActivities);
+    if (selectedRunLine && typeof selectedRunLine.bringToFront === 'function') selectedRunLine.bringToFront();
+  }, 150);
+});
 
 function drawRoutes(
   selectedActivities
@@ -16714,7 +16729,14 @@ function drawRoutes(
   }
 
   lastRingsLayersActivities = selectedActivities;
-  if (ringsLayersEnabled && drawRingsLayerStrata(routes)) return;
+  if (ringsLayersEnabled) {
+    const drawn = drawRingsLayerStrata(routes);
+    if (drawn) {
+      rainbowLastDrawZoom = map.getZoom();
+      return;
+    }
+  }
+  rainbowLastDrawZoom = null;
 
   // 以前はルートの各区間ごとに
   // LeafletのPolylineを作っていたため、
