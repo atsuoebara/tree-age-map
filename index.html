@@ -3624,7 +3624,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
-    <button id="ringsLayersToggle" class="mapViewModeButton" type="button" aria-pressed="false" title="Make a Rainbow：走った道に虹を育てる（試作）">🌈 Make a Rainbow OFF</button>
+    <button id="ringsLayersToggle" class="mapViewModeButton" type="button" aria-pressed="false" title="Make a Rainbow：走った道に虹を育てる（試作）">🌈 Rainbow</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
   <div id="timelapseLaunchArea">
@@ -16539,7 +16539,7 @@ function syncRingsLayersToggle() {
   if (ringsLayersToggle) {
     ringsLayersToggle.classList.toggle('isActive', ringsLayersEnabled);
     ringsLayersToggle.setAttribute('aria-pressed', String(ringsLayersEnabled));
-    ringsLayersToggle.textContent = ringsLayersEnabled ? '🌈 Make a Rainbow ON（試作）' : '🌈 Make a Rainbow OFF';
+    ringsLayersToggle.textContent = ringsLayersEnabled ? '🌈 Rainbow ON' : '🌈 Rainbow';
     ringsLayersToggle.disabled = false;
     ringsLayersToggle.title = 'Make a Rainbow：走った道に虹を育てる（試作）';
   }
