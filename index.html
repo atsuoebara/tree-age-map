@@ -16628,15 +16628,29 @@ function drawRingsLayerStrata(routes) {
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
       if(claimed.has(mid)){
-        if(path.length&&nextTier===tier&&gapLength+seg.len<=35){
+        // Keep a pending gap only along the SAME original GPS activity.
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=45){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
         continue;
       }
       if(path.length&&tier!==nextTier)flush();
+      if(gap.length&&path.length){
+        // Reject sharp turns across the skipped stretch; preserve real bends
+        // because every accepted bridge point comes from this activity.
+        const direction=(a,b)=>{
+          const u=xy(a),v=xy(b),dx=v[0]-u[0],dy=v[1]-u[1];
+          const d=Math.hypot(dx,dy);
+          return d>0.3?[dx/d,dy/d]:null;
+        };
+        const previous=path.length>1?direction(path[path.length-2],path[path.length-1]):null;
+        const following=direction(seg.a,seg.b);
+        const aligned=!previous||!following||(previous[0]*following[0]+previous[1]*following[1]>=0.45);
+        if(!aligned)flush();
+      }
       if(!path.length){path=[seg.a];tier=nextTier;}
       if(gap.length){
-        // Fill only the short, original-GPS gap; never connect unrelated runs.
+        // Bridge using only the original activity's GPS points.
         for(const bridge of gap)path.push(bridge.b);
         gap=[];gapLength=0;
       }
