@@ -16599,23 +16599,49 @@ function drawRingsLayerStrata(routes) {
     for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
     tracks.push(pieces);
   }
-  // Keep each 10m cell on the first eligible original trace.
-  // Adjacent selected GPS segments stay connected; never invent joins.
+  // Select uninterrupted representative portions from the ORIGINAL GPS tracks.
+  // Ownership is based on cell visits; nearby already-owned cells are skipped.
+  // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
   const claimed=new Set(),bands=Array.from({length:8},()=>[]);
+  const cellTier=k=>Math.min(7,Math.floor((counts.get(k)||1)/10));
+  const smooth=points=>{
+    if(points.length<4)return points;
+    // Gentle 3-point smoothing in projected screen space; endpoints fixed.
+    const projected=points.map(p=>map.project(p,map.getZoom()));
+    const result=[points[0]];
+    for(let i=1;i<points.length-1;i++){
+      const p=projected[i-1],q=projected[i],n=projected[i+1];
+      result.push(map.unproject([(p.x+6*q.x+n.x)/8,(p.y+6*q.y+n.y)/8],map.getZoom()));
+    }
+    result.push(points[points.length-1]);
+    return result;
+  };
   for(const pieces of tracks){
-    let path=[],tier=-1;
-    const flush=()=>{if(path.length>=2)bands[tier].push(path);path=[];};
+    let path=[],tier=-1,gap=[],gapLength=0;
+    const flush=()=>{
+      if(path.length>=2)bands[tier].push(smooth(path));
+      path=[];tier=-1;gap=[];gapLength=0;
+    };
     for(const seg of [...pieces,null]){
-      if(!seg){flush();tier=-1;continue;}
+      if(!seg){flush();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
-      if(claimed.has(mid)){flush();tier=-1;continue;}
-      const count=counts.get(mid)||1,nextTier=Math.min(7,Math.floor(count/10));
-      if(tier!==nextTier){flush();tier=nextTier;}
-      if(!path.length)path.push(seg.a);
+      const nextTier=cellTier(mid);
+      if(claimed.has(mid)){
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
+          gap.push(seg);gapLength+=seg.len;
+        }else flush();
+        continue;
+      }
+      if(path.length&&tier!==nextTier)flush();
+      if(!path.length){path=[seg.a];tier=nextTier;}
+      if(gap.length){
+        // Fill only the short, original-GPS gap; never connect unrelated runs.
+        for(const bridge of gap)path.push(bridge.b);
+        gap=[];gapLength=0;
+      }
       path.push(seg.b);
       for(const k of seg.cells)claimed.add(k);
     }
-    flush();
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
   const zoom=map.getZoom();
