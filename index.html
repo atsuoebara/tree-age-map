@@ -16564,72 +16564,45 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Production trial: one representative segment per visited road-cell
-  // and orientation. Count distinct runs, not GPS samples. Opposite
-  // directions share an axis. Approximation is ~60 m, NOT road snapping.
-  let pointCount=0;
-  for(const route of routes) pointCount+=route.length;
-  const stride=Math.max(1,Math.ceil(pointCount/24000));
-  const cell=0.00055;
-  const bins=new Map();
+  // Draw ONLY original adjacent GPS segments. Never bridge sampled points:
+  // the old global stride produced false shortcuts across winding roads.
+  // A coarse visit grid estimates frequency, but never generates geometry.
+  const cell=0.00025;
+  const key=(p)=>Math.floor(p[0]/cell)+':'+Math.floor(p[1]/cell);
+  const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
-  let runId=0;
-  for(const route of routes) {
-    const seen=new Set();
-    const points=[];
-    for(let i=0;i<route.length;i+=stride)points.push(coords(route[i]));
-    if(route.length>1)points.push(coords(route[route.length-1]));
-    for(let i=1;i<points.length;i++) {
-      const a=points[i-1],b=points[i];
-      if(!Number.isFinite(a[0])||!Number.isFinite(b[0]))continue;
-      const dy=b[0]-a[0],dx=(b[1]-a[1])*Math.cos(a[0]*Math.PI/180);
-      const length=Math.hypot(dy,dx);
-      if(length<0.00002)continue;
-      const axis=((Math.round(Math.atan2(dy,dx)/Math.PI*4)%4)+4)%4;
-      const steps=Math.min(32,Math.max(1,Math.ceil(length/cell)));
-      for(let j=0;j<steps;j++){
-        const t=(j+0.5)/steps;
-        const lat=a[0]+(b[0]-a[0])*t,lng=a[1]+(b[1]-a[1])*t;
-        const key=Math.floor(lat/cell)+':'+Math.floor(lng/cell)+':'+axis;
-        if(seen.has(key))continue;
-        seen.add(key);
-        let item=bins.get(key);
-        if(!item){item={lat,lng,dy:dy/length,dx:dx/length,count:0};bins.set(key,item);}
-        item.count++;
-      }
+  const frequency=new Map();
+  for(const route of routes){
+    const visited=new Set();
+    for(const raw of route){
+      const p=coords(raw);
+      if(valid(p))visited.add(key(p));
     }
-    runId++;
+    for(const k of visited)frequency.set(k,(frequency.get(k)||0)+1);
   }
   const groups=[[],[],[],[],[]];
-  for(const item of bins.values()){
-    const tier=item.count>=30?4:item.count>=15?3:item.count>=7?2:item.count>=3?1:0;
-    const half=cell*0.39;
-    const cos=Math.max(0.4,Math.cos(item.lat*Math.PI/180));
-    const dlat=item.dy*half,dlng=item.dx*half/cos;
-    groups[tier].push([[item.lat-dlat,item.lng-dlng],[item.lat+dlat,item.lng+dlng]]);
-  }
-  const common={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
-  const add=(segments,color,weight,opacity)=>{
-    if(segments.length)routeGroup.addLayer(L.polyline(segments,{...common,color,weight,opacity}));
-  };
-  const shift=(segments,pixels)=>segments.map(seg=>seg.map(p=>{
-    const point=map.project(p,map.getZoom());
-    return map.unproject([point.x+pixels*0.45,point.y+pixels],map.getZoom());
-  }));
-  const rainbow=['#fa48c0','#b948ef','#5355ed','#18b8fb','#34d7a1','#c2e34b','#ffe055','#ff9843'];
-  groups.forEach((segments,tier)=>{
-    if(!segments.length)return;
-    const layers=[1,2,3,5,8][tier],height=[0.3,1,1.8,2.8,4.2][tier];
-    const weight=1.65;
-    if(tier>0){
-      add(shift(segments,height+0.8),'#54506b',weight+0.8,0.18);
-      for(let j=layers-1;j>=0;j--){
-        add(shift(segments,(j+0.65)/layers*height),rainbow[j],Math.max(0.8,weight*0.75),0.75);
-      }
+  for(const route of routes){
+    for(let i=1;i<route.length;i++){
+      const a=coords(route[i-1]),b=coords(route[i]);
+      if(!valid(a)||!valid(b))continue;
+      // GPS discontinuities should never become artificial cross-town lines.
+      const dy=(b[0]-a[0])*111320;
+      const dx=(b[1]-a[1])*111320*Math.cos(a[0]*Math.PI/180);
+      const meters=Math.hypot(dx,dy);
+      if(meters<0.3||meters>180)continue;
+      const n=Math.max(frequency.get(key(a))||1,frequency.get(key(b))||1);
+      const tier=n>=30?4:n>=15?3:n>=7?2:n>=3?1:0;
+      groups[tier].push([a,b]);
     }
-    add(segments,'#f957b8',weight,tier===0?0.65:0.93);
-    if(tier>=2)add(shift(segments,-0.3),'#fff0ff',0.55,0.65);
-  });
+  }
+  const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
+  const colors=['#f957b8','#b948ef','#5355ed','#18b8fb','#34d7a1'];
+  for(let tier=0;tier<groups.length;tier++){
+    const segments=groups[tier];
+    if(!segments.length)continue;
+    // Thin, transparent lines; no displaced copies that clutter intersections.
+    routeGroup.addLayer(L.polyline(segments,{...base,color:colors[tier],weight:1.55,opacity:0.63+tier*0.055}));
+  }
   return true;
 }
 
