@@ -956,6 +956,21 @@
       font-size:12px;
     }
 
+    #rainbowLegend{
+      margin:0;background:#0f1d2f;color:#e1eaf7;
+      padding:7px 12px 9px;border-top:1px solid rgba(255,255,255,.12);
+      font-size:12px;line-height:1.55;
+    }
+    #rainbowLegend summary{
+      cursor:pointer;font-size:12px;font-weight:800;color:#f5d6ff;
+    }
+    #rainbowLegend .rainbowLegendIntro{margin:7px 0 6px}
+    .rainbowLegendItems{display:flex;flex-wrap:wrap;gap:6px 13px}
+    .rainbowLegendItems span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+    .rainbowLegendItems i{display:inline-block;width:13px;height:5px;border-radius:2px;flex-shrink:0}
+    .rainbowLegendNote{font-size:11px;color:#b6c4d7;margin:6px 0 0}
+    body.mapFullscreenActive #rainbowLegend{display:none}
+
     #timelapseLaunchArea{
       padding:0 10px 9px;
       background:#0f1d2f;
@@ -3722,6 +3737,20 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button id="ringsLayersToggle" class="mapViewModeButton" type="button" aria-pressed="false" title="Make a Rainbow：走った道に虹を育てる（試作）">🌈 Rainbow</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
+  <details id="rainbowLegend" open>
+    <summary>🌈 Rainbowの見方（走行回数と色）</summary>
+    <p class="rainbowLegendIntro">同じ道を走る回数が10回増えるごとに、虹の色が1本ずつ増えます。</p>
+    <div class="rainbowLegendItems">
+      <span><i style="background:#f04b55;opacity:.35"></i>1〜9回：薄い赤</span>
+      <span><i style="background:#ff9946"></i>10〜19回：＋橙</span>
+      <span><i style="background:#f4d64a"></i>20〜29回：＋黄</span>
+      <span><i style="background:#3acb8c"></i>30〜39回：＋緑</span>
+      <span><i style="background:#3976e8"></i>40〜49回：＋青</span>
+      <span><i style="background:#465ac9"></i>50〜59回：＋藍</span>
+      <span><i style="background:#aa75ed"></i>60回以上：＋紫（7色）</span>
+    </div>
+    <p class="rainbowLegendNote">※ 色は積み重なります。まだ増えていない色は表示されません。</p>
+  </details>
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
 
