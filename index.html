@@ -16564,18 +16564,19 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Small-area visit counts, like the 100m Rings surface mode.
-  // One activity counts once per cell; draw each occupied cell only once.
+  // Count distinct activities in 10m cells; render representative GPS
+  // chords, never cell rectangles or every overlapping activity.
   const size=10,rad=Math.PI/180;
   const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   let first=null;
-  for(const route of routes){for(const p of route){const q=coords(p);if(valid(q)){first=q;break;}}if(first)break;}
+  for(const route of routes){for(const raw of route){const p=coords(raw);if(valid(p)){first=p;break;}}if(first)break;}
   if(!first)return false;
   const sx=111320*Math.max(0.2,Math.cos(first[0]*rad));
   const xy=p=>[(p[1]-first[1])*sx,(p[0]-first[0])*111320];
-  const key=(x,y)=>x+':'+y;
-  const counts=new Map();
+  const ll=p=>[first[0]+p[1]/111320,first[1]+p[0]/sx];
+  const key=p=>Math.floor(p[0]/size)+':'+Math.floor(p[1]/size);
+  const counts=new Map(),segments=[];
   for(const route of routes){
     const seen=new Set();
     let prev=null;
@@ -16584,45 +16585,56 @@ function drawRingsLayerStrata(routes) {
       if(!valid(p)){prev=null;continue;}
       const current=xy(p);
       if(prev){
-        const len=Math.hypot(current[0]-prev[0],current[1]-prev[1]);
-        if(len<=180&&len>=0.3){
+        const dx=current[0]-prev[0],dy=current[1]-prev[1],len=Math.hypot(dx,dy);
+        if(len>=0.3&&len<=180){
           const steps=Math.max(1,Math.ceil(len/4));
           for(let j=0;j<=steps;j++){
             const t=j/steps;
-            seen.add(key(Math.floor((prev[0]+(current[0]-prev[0])*t)/size),Math.floor((prev[1]+(current[1]-prev[1])*t)/size)));
+            seen.add(key([prev[0]+dx*t,prev[1]+dy*t]));
           }
+          segments.push({a:prev,b:current,len,dx,dy});
         }
-      } else {
-        seen.add(key(Math.floor(current[0]/size),Math.floor(current[1]/size)));
+      }else{
+        seen.add(key(current));
       }
       prev=current;
     }
     for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
   }
-  // Eight cumulative bands, reaching the eighth color at 70 runs.
-  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
-  const groups=colors.map(()=>[]);
-  for(const [k,count] of counts){
-    const [x,y]=k.split(':').map(Number);
-    const tier=Math.min(7,Math.floor(count/10));
-    const west=first[1]+x*size/sx,east=first[1]+(x+1)*size/sx;
-    const south=first[0]+y*size/111320,north=first[0]+(y+1)*size/111320;
-    // Nested rectangles give one rainbow stack per cell, not per run.
-    for(let layer=0;layer<=tier;layer++){
-      const inset=size*layer*0.55/8;
-      const bounds=[[south+inset/111320,west+inset/sx],[north-inset/111320,east-inset/sx]];
-      groups[layer].push(bounds);
+  // One representative chord per 10m cell and approximate road direction.
+  // Opposite running directions share the same undirected orientation.
+  const representatives=new Map();
+  for(const seg of segments){
+    const steps=Math.max(1,Math.ceil(seg.len/5));
+    const angle=((Math.atan2(seg.dy,seg.dx)+Math.PI)%Math.PI);
+    const direction=Math.floor(angle/(Math.PI/6))%6;
+    for(let j=0;j<steps;j++){
+      const t=(j+0.5)/steps;
+      const center=[seg.a[0]+seg.dx*t,seg.a[1]+seg.dy*t];
+      const cell=key(center),id=cell+':'+direction;
+      if(representatives.has(id))continue;
+      const half=6;
+      const ux=seg.dx/seg.len,uy=seg.dy/seg.len;
+      const a=[center[0]-ux*half,center[1]-uy*half];
+      const b=[center[0]+ux*half,center[1]+uy*half];
+      representatives.set(id,{cell,path:[ll(a),ll(b)]});
     }
   }
-  // Canvas renderer avoids one DOM element per small cell.
-  if(!drawRingsLayerStrata.renderer)drawRingsLayerStrata.renderer=L.canvas({padding:0.4});
-  for(let layer=0;layer<groups.length;layer++){
-    if(!groups[layer].length)continue;
-    const featureGroup=L.layerGroup();
-    for(const bounds of groups[layer]){
-      featureGroup.addLayer(L.rectangle(bounds,{renderer:drawRingsLayerStrata.renderer,stroke:false,fillColor:colors[layer],fillOpacity:0.87,interactive:false}));
-    }
-    routeGroup.addLayer(featureGroup);
+  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
+  const paths=colors.map(()=>[]);
+  for(const {cell,path} of representatives.values()){
+    const count=counts.get(cell)||1;
+    const tier=Math.min(7,Math.floor(count/10));
+    for(let layer=0;layer<=tier;layer++)paths[layer].push(path);
+  }
+  // Wide-to-narrow concentric strokes create rainbow edges without
+  // stacking GPS tracks. The final stroke is the newest earned color.
+  for(let layer=0;layer<colors.length;layer++){
+    if(!paths[layer].length)continue;
+    routeGroup.addLayer(L.polyline(paths[layer],{
+      color:colors[layer],weight:14-layer*1.65,opacity:0.92,
+      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
+    }));
   }
   return true;
 }
