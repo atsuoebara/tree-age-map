@@ -16565,9 +16565,9 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Artistic mode: one canonical grid edge for all nearby GPS tracks.
-  // Never draw each individual loop; repeated visits increase stripe count.
-  const cell=18,rad=Math.PI/180;
+  // Artistic Layers: distinct-run count per 10m cell, one continuous
+  // representative GPS trace per occupied stretch. Not road matching.
+  const size=10,rad=Math.PI/180;
   const coord=p=>Array.isArray(p)?p:[p.lat,p.lng];
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   let origin;
@@ -16575,66 +16575,105 @@ function drawRingsLayerStrata(routes) {
   if(!origin)return false;
   const sx=111320*Math.max(.2,Math.cos(origin[0]*rad));
   const xy=p=>[(p[1]-origin[1])*sx,(p[0]-origin[0])*111320];
-  const ll=(x,y)=>[origin[0]+y/111320,origin[1]+x/sx];
-  const key=(x,y)=>x+','+y;
-  const edges=new Map();
+  const key=p=>Math.floor(p[0]/size)+':'+Math.floor(p[1]/size);
+  const counts=new Map(),tracks=[];
   for(const route of routes){
-    const seen=new Set();
+    const seen=new Set(),pieces=[];
     let prev=null;
     for(const raw of route){
       const p=coord(raw);
-      if(!valid(p)){prev=null;continue;}
-      const [x,y]=xy(p);
+      if(!valid(p)){prev=null;pieces.push(null);continue;}
+      const now=xy(p);
       if(prev){
-        const len=Math.hypot(x-prev[0],y-prev[1]);
-        if(len>0.3&&len<=70){
-          const steps=Math.ceil(len/Math.min(6,cell/3));
-          let last=null;
-          for(let i=0;i<=steps;i++){
-            const t=i/steps;
-            const cx=Math.floor((prev[0]+(x-prev[0])*t)/cell);
-            const cy=Math.floor((prev[1]+(y-prev[1])*t)/cell);
-            const cur=[cx,cy];
-            if(last&&(last[0]!==cx||last[1]!==cy)){
-              const a=key(last[0],last[1]),b=key(cx,cy);
-              const id=a<b?a+'|'+b:b+'|'+a;
-              if(!seen.has(id)){
-                seen.add(id);
-                if(!edges.has(id))edges.set(id,{a:last,b:cur,count:0});
-              }
-            }
-            last=cur;
+        const len=Math.hypot(now[0]-prev.xy[0],now[1]-prev.xy[1]);
+        if(len>=.3&&len<=180){
+          const steps=Math.max(1,Math.ceil(len/4)),cells=[];
+          for(let j=0;j<=steps;j++){
+            const t=j/steps,k=key([prev.xy[0]+(now[0]-prev.xy[0])*t,prev.xy[1]+(now[1]-prev.xy[1])*t]);
+            seen.add(k);cells.push(k);
           }
-        }
+          pieces.push({a:prev.ll,b:p,cells,len});
+        }else pieces.push(null);
       }
-      prev=[x,y];
+      prev={xy:now,ll:p};
     }
-    for(const id of seen)edges.get(id).count++;
+    for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
+    tracks.push(pieces);
+  }
+  // Select uninterrupted representative portions from the ORIGINAL GPS tracks.
+  // Ownership is based on cell visits; nearby already-owned cells are skipped.
+  // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
+  const claimed=new Set(),bands=Array.from({length:8},()=>[]);
+  const cellTier=k=>Math.min(7,Math.floor((counts.get(k)||1)/10));
+  const smooth=points=>{
+    if(points.length<4)return points;
+    // Gentle 3-point smoothing in projected screen space; endpoints fixed.
+    const projected=points.map(p=>map.project(p,map.getZoom()));
+    const result=[points[0]];
+    for(let i=1;i<points.length-1;i++){
+      const p=projected[i-1],q=projected[i],n=projected[i+1];
+      result.push(map.unproject([(p.x+6*q.x+n.x)/8,(p.y+6*q.y+n.y)/8],map.getZoom()));
+    }
+    result.push(points[points.length-1]);
+    return result;
+  };
+  for(const pieces of tracks){
+    let path=[],tier=-1,gap=[],gapLength=0;
+    const flush=()=>{
+      if(path.length>=2)bands[tier].push(smooth(path));
+      path=[];tier=-1;gap=[];gapLength=0;
+    };
+    for(const seg of [...pieces,null]){
+      if(!seg){flush();continue;}
+      const mid=seg.cells[Math.floor(seg.cells.length/2)];
+      const nextTier=cellTier(mid);
+      if(claimed.has(mid)){
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
+          gap.push(seg);gapLength+=seg.len;
+        }else flush();
+        continue;
+      }
+      if(path.length&&tier!==nextTier)flush();
+      if(!path.length){path=[seg.a];tier=nextTier;}
+      if(gap.length){
+        // Fill only the short, original-GPS gap; never connect unrelated runs.
+        for(const bridge of gap)path.push(bridge.b);
+        gap=[];gapLength=0;
+      }
+      path.push(seg.b);
+      for(const k of seg.cells)claimed.add(k);
+    }
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
-  const strokes=colors.map(()=>[]);
   const zoom=map.getZoom();
-  for(const edge of edges.values()){
-    // Repeated corridors are the rainbow; isolated GPS noise stays subtle.
-    const tier=Math.min(7,Math.floor(edge.count/10));
-    const p=ll((edge.a[0]+.5)*cell,(edge.a[1]+.5)*cell);
-    const q=ll((edge.b[0]+.5)*cell,(edge.b[1]+.5)*cell);
-    const pp=map.project(p,zoom),qq=map.project(q,zoom);
-    const dx=qq.x-pp.x,dy=qq.y-pp.y,d=Math.hypot(dx,dy)||1;
-    const nx=-dy/d,ny=dx/d;
-    for(let layer=0;layer<=tier;layer++){
-      const shift=(layer-tier/2)*1.1;
-      strokes[layer].push([
-        map.unproject([pp.x+nx*shift,pp.y+ny*shift],zoom),
-        map.unproject([qq.x+nx*shift,qq.y+ny*shift],zoom)
-      ]);
+  const stripeWidth=1.1,spacing=1.05;
+  // Every tier uses ONE common centerline. Position its earned colors
+  // symmetrically about that line, instead of drifting to one side.
+  const strokes=colors.map(()=>[]);
+  for(let tier=0;tier<bands.length;tier++){
+    for(const path of bands[tier]){
+      const pts=path.map(p=>map.project(p,zoom));
+      const normals=pts.map((p,i)=>{
+        // Average adjacent segment normals for stable curves and corners.
+        const prev=pts[Math.max(0,i-1)],next=pts[Math.min(pts.length-1,i+1)];
+        let dx=next.x-prev.x,dy=next.y-prev.y;
+        const d=Math.hypot(dx,dy)||1;
+        return [-dy/d,dx/d];
+      });
+      for(let layer=0;layer<=tier;layer++){
+        const shift=(layer-tier/2)*spacing;
+        if(Math.abs(shift)<0.001){strokes[layer].push(path);continue;}
+        strokes[layer].push(pts.map((p,i)=>map.unproject([
+          p.x+normals[i][0]*shift,p.y+normals[i][1]*shift
+        ],zoom)));
+      }
     }
   }
   for(let layer=0;layer<strokes.length;layer++){
     if(!strokes[layer].length)continue;
     routeGroup.addLayer(L.polyline(strokes[layer],{
-      color:colors[layer],weight:1.35,opacity:layer===0?.78:.94,
-      lineCap:'round',lineJoin:'round',interactive:false
+      color:colors[layer],weight:stripeWidth,opacity:0.94,
+      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
     }));
   }
   return true;
