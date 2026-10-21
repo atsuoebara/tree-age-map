@@ -1144,6 +1144,7 @@
     .timelapseShareActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
     .timelapseShareButton{min-height:42px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#17304a;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer;}
     #timelapseShareButton{border-color:rgba(255,43,214,.55);background:linear-gradient(135deg,rgba(255,43,214,.44),#273c60);}
+    #timelapseImageButton{grid-column:1 / -1;border-color:rgba(106,226,255,.6);background:linear-gradient(135deg,rgba(106,226,255,.22),#253b54);}
     #timelapseSaveButton{border-color:rgba(234,255,0,.45);background:linear-gradient(135deg,rgba(234,255,0,.18),#253b54);}
     #timelapseGenerationStatus{min-height:20px;margin:0 0 10px;color:#d7e4ef;font-size:12px;line-height:1.5;text-align:center;}
 
@@ -3668,6 +3669,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <div class="timelapseShareActions">
         <button id="timelapseShareButton" class="timelapseShareButton" type="button">共有</button>
         <button id="timelapseSaveButton" class="timelapseShareButton" type="button">保存</button>
+        <button id="timelapseImageButton" class="timelapseShareButton" type="button" hidden>🖼️ 月間距離の画像を保存・共有</button>
       </div>
     </div>
   </section>
@@ -24403,9 +24405,12 @@ const timelapseSaveButton =
   document.getElementById(
     'timelapseSaveButton'
   );
+const timelapseImageButton = document.getElementById('timelapseImageButton');
 
 let timelapseViewState = null;
 let timelapseVideoBlob = null;
+let timelapseImageBlob = null;
+let timelapseImageName = '';
 let timelapseVideoFile = null;
 let timelapseVideoUrl = '';
 let timelapseRecording = false;
@@ -26198,6 +26203,9 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
 }
 
 function resetTimelapseShareResult() {
+  timelapseImageBlob = null;
+  timelapseImageName = '';
+  if (timelapseImageButton) timelapseImageButton.hidden = true;
   timelapseVideoBlob = null;
   timelapseVideoFile = null;
   if (timelapseVideoUrl) {
@@ -26455,6 +26463,13 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         monthlyReview:true,
         distanceProgress:1
       });
+      // Save the exact final frame without changing the video or its hold time.
+      try {
+        timelapseImageBlob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/png'));
+        timelapseImageName = `runners-rings-month-review-${startLabel}.png`;
+      } catch (imageError) {
+        console.warn('Monthly recap image unavailable:', imageError);
+      }
     } else {
       await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary);
     }
@@ -26471,6 +26486,12 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
       : `runners-rings-timelapse-${startLabel}-to-${endLabel}.${extension}`;
     timelapseVideoFile = new File([timelapseVideoBlob], fileName, {type:finalType});
     timelapseVideoUrl = URL.createObjectURL(timelapseVideoBlob);
+    if (timelapseImageButton) {
+      timelapseImageButton.hidden = !timelapseImageBlob;
+      timelapseImageButton.textContent = isRunnerRingsEnglish()
+        ? '🖼️ Save / share monthly distance image'
+        : '🖼️ 月間距離の画像を保存・共有';
+    }
     timelapsePreview.src = timelapseVideoUrl;
     timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? `Ready · ${extension.toUpperCase()} · 4:5` : `完成 · ${extension.toUpperCase()} · 4:5`;
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Share video ready.' : '共有動画ができました。';
@@ -26515,6 +26536,30 @@ async function shareTimelapseVideo() {
   } catch (error) {
     if (error?.name !== 'AbortError') console.warn('Timelapse share error:', error);
   }
+}
+
+async function saveTimelapseMonthlyImage() {
+  if (!timelapseImageBlob) return;
+  const file = new File([timelapseImageBlob], timelapseImageName || 'runners-rings-month-review.png', {type:'image/png'});
+  // iPhone offers Save Image through the system share sheet.
+  if (navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
+    try {
+      await navigator.share({files:[file], title:"Runner's Rings — Monthly Review"});
+      return;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('Monthly image share failed, falling back to download:', error);
+    }
+  }
+  const url = URL.createObjectURL(timelapseImageBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = file.name;
+  link.rel = 'noopener';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 function saveTimelapseVideo() {
@@ -26601,6 +26646,9 @@ if (timelapseSaveButton) {
     'click',
     saveTimelapseVideo
   );
+}
+if (timelapseImageButton) {
+  timelapseImageButton.addEventListener('click', saveTimelapseMonthlyImage);
 }
 
 
