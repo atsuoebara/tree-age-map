@@ -16586,7 +16586,7 @@ function drawRingsLayerStrata(routes) {
       const now=xy(p);
       if(prev){
         const len=Math.hypot(now[0]-prev.xy[0],now[1]-prev.xy[1]);
-        if(len>=.3&&len<=55){
+        if(len>=.3&&len<=180){
           const steps=Math.max(1,Math.ceil(len/4)),cells=[];
           for(let j=0;j<=steps;j++){
             const t=j/steps,k=key([prev.xy[0]+(now[0]-prev.xy[0])*t,prev.xy[1]+(now[1]-prev.xy[1])*t]);
@@ -16603,26 +16603,8 @@ function drawRingsLayerStrata(routes) {
   // Select uninterrupted representative portions from the ORIGINAL GPS tracks.
   // Ownership is based on cell visits; nearby already-owned cells are skipped.
   // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
-  const claimed=new Map(),bands=Array.from({length:7},()=>[]);
-  const cellTier=k=>{
-    const [x,y]=k.split(':').map(Number);
-    let best=counts.get(k)||1;
-    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)
-      best=Math.max(best,counts.get((x+dx)+':'+(y+dy))||0);
-    return Math.min(6,Math.floor(best/10));
-  };
-  // Claim accepted mainline segments immediately, including the current run.
-  // Revisited loops must not bypass suppression.
-  // Suppress only OTHER representative tracks within ~25m and with
-  // a similar direction. Intersections remain separate.
-  const nearbyOwned=(k,ux,uy)=>{
-    const [x,y]=k.split(':').map(Number);
-    for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
-      const entries=claimed.get((x+dx)+':'+(y+dy));
-      if(entries&&entries.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))return true;
-    }
-    return false;
-  };
+  const claimed=new Set(),bands=Array.from({length:7},()=>[]);
+  const cellTier=k=>Math.min(6,Math.floor((counts.get(k)||1)/10));
   const smooth=points=>{
     if(points.length<4)return points;
     // Gentle 3-point smoothing in projected screen space; endpoints fixed.
@@ -16645,10 +16627,7 @@ function drawRingsLayerStrata(routes) {
       if(!seg){flush();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
-      const aa=xy(seg.a),bb=xy(seg.b);
-      const distance=Math.hypot(bb[0]-aa[0],bb[1]-aa[1])||1;
-      const ux=(bb[0]-aa[0])/distance,uy=(bb[1]-aa[1])/distance;
-      if(nearbyOwned(mid,ux,uy)){
+      if(claimed.has(mid)){
         if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
@@ -16662,19 +16641,14 @@ function drawRingsLayerStrata(routes) {
         gap=[];gapLength=0;
       }
       path.push(seg.b);
-      for(const k of seg.cells){
-        if(!claimed.has(k))claimed.set(k,[]);
-        const arr=claimed.get(k);
-        if(!arr.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))arr.push([ux,uy]);
-      }
+      for(const k of seg.cells)claimed.add(k);
     }
-
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8'];
   const zoom=map.getZoom();
   const stripeWidth=1.1,spacing=1.05;
-  // Reserve seven permanent stripe slots, centered on the same path.
-  // Unearned stripes stay fully transparent: do not recenter as colors grow.
+  // Keep seven permanent positions about the ORIGINAL GPS mainline.
+  // Unearned stripes are transparent (not drawn), so earned ones never move.
   const strokes=colors.map(()=>[]);
   for(let tier=0;tier<bands.length;tier++){
     for(const path of bands[tier]){
