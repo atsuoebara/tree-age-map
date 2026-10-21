@@ -16565,9 +16565,9 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Artistic Layers: distinct-run count per 20m cell, one continuous
+  // Artistic Layers: distinct-run count per 10m cell, one continuous
   // representative GPS trace per occupied stretch. Not road matching.
-  const size=20,rad=Math.PI/180;
+  const size=10,rad=Math.PI/180;
   const coord=p=>Array.isArray(p)?p:[p.lat,p.lng];
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   let origin;
@@ -16586,7 +16586,7 @@ function drawRingsLayerStrata(routes) {
       const now=xy(p);
       if(prev){
         const len=Math.hypot(now[0]-prev.xy[0],now[1]-prev.xy[1]);
-        if(len>=.3&&len<=65){
+        if(len>=.3&&len<=180){
           const steps=Math.max(1,Math.ceil(len/4)),cells=[];
           for(let j=0;j<=steps;j++){
             const t=j/steps,k=key([prev.xy[0]+(now[0]-prev.xy[0])*t,prev.xy[1]+(now[1]-prev.xy[1])*t]);
@@ -16604,16 +16604,6 @@ function drawRingsLayerStrata(routes) {
   // Ownership is based on cell visits; nearby already-owned cells are skipped.
   // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
   const claimed=new Set(),bands=Array.from({length:7},()=>[]);
-  // A claimed corridor occupies adjacent cells too: a small GPS drift
-  // must not create a second cyan loop alongside the first.
-  const around=k=>{
-    const [x,y]=k.split(':').map(Number),out=[];
-    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)
-      out.push((x+dx)+':'+(y+dy));
-    return out;
-  };
-  const occupied=k=>around(k).some(n=>claimed.has(n));
-  const nearbyCount=k=>Math.max(0,...around(k).map(n=>counts.get(n)||0));
   const cellTier=k=>Math.min(6,Math.floor((counts.get(k)||1)/10));
   const smooth=points=>{
     if(points.length<4)return points;
@@ -16636,9 +16626,8 @@ function drawRingsLayerStrata(routes) {
     for(const seg of [...pieces,null]){
       if(!seg){flush();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
-      const nextTier=Math.min(6,Math.floor(Math.max(1,nearbyCount(mid))/10));
-      if(nearbyCount(mid)<2){flush();continue;}
-      if(occupied(mid)){
+      const nextTier=cellTier(mid);
+      if(claimed.has(mid)){
         if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
