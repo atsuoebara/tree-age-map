@@ -1,6 +1,14 @@
 /* Runner's Rings shared lightweight navigation and onboarding additions. */
 (() => {
   function addRingsTodayLinks() {
+    // The main app switches <html lang> between ja and en.
+    // Limit this rule to the two dynamically inserted Today links.
+    if (!document.getElementById('ringsTodayLanguageStyles')) {
+      const style = document.createElement('style');
+      style.id = 'ringsTodayLanguageStyles';
+      style.textContent = '#ringsTodayDashboardLink [data-lang="en"],#ringsTodayPublicLink [data-lang="en"]{display:none}html[lang="en"] #ringsTodayDashboardLink [data-lang="ja"],html[lang="en"] #ringsTodayPublicLink [data-lang="ja"]{display:none}html[lang="en"] #ringsTodayDashboardLink [data-lang="en"],html[lang="en"] #ringsTodayPublicLink [data-lang="en"]{display:inline}';
+      document.head.appendChild(style);
+    }
     if (!document.getElementById('ringsTodayDashboardLink')) {
       const territoryAnchor = document.querySelector('#appRoot .dashboardFeatureGroup a[href="./territory.html"]');
       const territoryGroup = territoryAnchor?.closest('.dashboardFeatureGroup');
