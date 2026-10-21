@@ -16599,8 +16599,9 @@ function drawRingsLayerStrata(routes) {
     for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
     tracks.push(pieces);
   }
-  // Select uninterrupted representative portions from original GPS traces.
-  // Avoid spatial averaging: it caused unrelated paths to drift and cross.
+  // Prefer long, uninterrupted original GPS traces as representative roads.
+  // Claim only the segment's midpoint cell: claiming every touched cell
+  // previously punched gaps in neighboring routes and produced confetti.
   const claimed=new Set(),bands=Array.from({length:8},()=>[]);
   const cellTier=k=>Math.min(7,Math.floor((counts.get(k)||1)/10));
   const smooth=points=>{
@@ -16614,18 +16615,26 @@ function drawRingsLayerStrata(routes) {
     result.push(points[points.length-1]);
     return result;
   };
-  for(const pieces of tracks){
-    let path=[],tier=-1,gap=[],gapLength=0;
+  // Prioritize long continuous runs, not input order.
+  const ordered=tracks.map(pieces=>({
+    pieces,
+    length:pieces.reduce((sum,seg)=>sum+(seg?seg.len:0),0)
+  })).sort((a,b)=>b.length-a.length);
+  for(const {pieces} of ordered){
+    let path=[],tier=-1,gap=[],gapLength=0,pending=new Set();
     const flush=()=>{
-      if(path.length>=2)bands[tier].push(smooth(path));
-      path=[];tier=-1;gap=[];gapLength=0;
+      if(path.length>=2){
+        bands[tier].push(smooth(path));
+        for(const k of pending)claimed.add(k);
+      }
+      path=[];tier=-1;gap=[];gapLength=0;pending=new Set();
     };
     for(const seg of [...pieces,null]){
       if(!seg){flush();continue;}
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
       const nextTier=cellTier(mid);
       if(claimed.has(mid)){
-        if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
+        if(path.length&&nextTier===tier&&gapLength+seg.len<=30){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
         continue;
@@ -16635,7 +16644,7 @@ function drawRingsLayerStrata(routes) {
       for(const bridge of gap)path.push(bridge.b);
       gap=[];gapLength=0;
       path.push(seg.b);
-      for(const k of seg.cells)claimed.add(k);
+      pending.add(mid);
     }
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
