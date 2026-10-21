@@ -37,25 +37,29 @@ if(style==='pen'){
 L.polyline(shift(line,0.7),{...common,color:'#1c203d',weight:width+0.85,opacity:.20}).addTo(group);
 L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:width,opacity:.67}).addTo(group);
 }else{
-  // Ten runs define the reference thickness. More runs increase
-  // the number of color bands and a little shadow depth, NOT total width.
-  const heightFactor=Math.min(1.55,0.7+0.3*Math.log2(Math.max(1,n)/3+1));
+  // Keep the 10-run pen width constant; increase only the downward
+  // extrusion and darker sidewall for heavily revisited streets.
+  const heightFactor=n<=10?1:Math.min(2.6,1+1.1*Math.log2(n/10));
   const height=depth*scale*heightFactor;
-  const sideColors=rainbow.slice(0,countToLayers);
-  // All bands occupy a narrow 3px sidewall; bands grow finer as
-  // the count rises instead of extending sideways across roads.
-  L.polyline(shift(line,height+0.8),{...common,color:'#15223e',weight:width+1.1,opacity:.28}).addTo(group);
-  for(let i=countToLayers-1;i>=0;i--){
-    const y=(i+0.7)/countToLayers*height;
-    const shade=i/countToLayers;
+  const countBands=countToLayers;
+  const sideColors=rainbow.slice(0,countBands);
+  // Dark ambient shadow below the colored strata adds elevation
+  // without spreading the route sideways like a marker.
+  L.polyline(shift(line,height+1.2),{...common,color:'#141b36',weight:width+2.4,opacity:.23}).addTo(group);
+  L.polyline(shift(line,height+0.45),{...common,color:'#32304f',weight:width+1.2,opacity:.43}).addTo(group);
+  for(let i=countBands-1;i>=0;i--){
+    const y=(i+0.5)/countBands*height;
+    const lower=i/countBands;
+    // Deeper layers are subtly darker, but keep rainbow distinct.
     L.polyline(shift(line,y),{
       ...common,color:sideColors[i],
-      weight:Math.max(0.72,width*0.77),
-      opacity:0.7+shade*0.18
+      weight:Math.max(0.9,width*0.78),
+      opacity:0.70+lower*0.17
     }).addTo(group);
   }
-  L.polyline(line,{...common,color:'#c33493',weight:width+0.5,opacity:.43}).addTo(group);
-  L.polyline(line,{...common,color:'#ff63c5',weight:Math.max(1,width*0.73),opacity:.95}).addTo(group);
+  // Very fine top edge stays the same regardless of repeat count.
+  L.polyline(line,{...common,color:'#632660',weight:width+0.65,opacity:.63}).addTo(group);
+  L.polyline(line,{...common,color:'#ff78d6',weight:Math.max(1,width*0.67),opacity:.96}).addTo(group);
 }
 }
 draw(base);draw(secondary,.72);
