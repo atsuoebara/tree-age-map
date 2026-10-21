@@ -16560,44 +16560,38 @@ let lastRingsLayersActivities = [];
 const ringsLayersToggle = document.getElementById('ringsLayersToggle');
 
 // A hollow selection highlight: dark rails on both sides, transparent center.
-function selectedRunRails(points) {
-  const zoom=map.getZoom(), px=map.project.bind(map);
-  const projected=points.map(p=>px(p,zoom));
-  const left=[],right=[];
-  for(let i=0;i<projected.length;i++){
-    const p=projected[i],prev=projected[Math.max(0,i-1)],next=projected[Math.min(projected.length-1,i+1)];
-    const dx=next.x-prev.x,dy=next.y-prev.y,d=Math.hypot(dx,dy)||1;
-    const nx=-dy/d*4.1,ny=dx/d*4.1;
-    left.push(map.unproject([p.x+nx,p.y+ny],zoom));
-    right.push(map.unproject([p.x-nx,p.y-ny],zoom));
-  }
-  return [left,right];
-}
+// Selected run: a subtle white glow behind a crisp white core in Rainbow mode.
+// Use a FeatureGroup so existing selection removal/restore logic remains intact.
 function makeSelectedRunLine(points){
-  const latlngs=ringsLayersEnabled?selectedRunRails(points):points;
-  const line=L.polyline(latlngs,{
-    color:ringsLayersEnabled?'#48E8FF':'#0057ff',
-    weight:ringsLayersEnabled?2.7:6,opacity:1,
-    lineCap:'round',lineJoin:'round',
-    pane:'selectedRunPane',interactive:false
+  const glow=L.polyline(points,{
+    color:'#ffffff',weight:9,opacity:0.23,
+    lineCap:'round',lineJoin:'round',pane:'selectedRunPane',interactive:false
   });
-  line._rrOriginalPoints=points;
-  return line;
+  const core=L.polyline(points,{
+    color:ringsLayersEnabled?'#ffffff':'#0057ff',
+    weight:ringsLayersEnabled?4:6,opacity:ringsLayersEnabled?0.95:1,
+    lineCap:'round',lineJoin:'round',pane:'selectedRunPane',interactive:false
+  });
+  const group=L.featureGroup([glow,core]);
+  group._rrOriginalPoints=points;
+  group._rrGlow=glow;
+  group._rrCore=core;
+  group.bringToFront=()=>{glow.bringToFront();core.bringToFront();return group;};
+  glow.setStyle({opacity:ringsLayersEnabled?0.23:0});
+  return group;
 }
 function updateSelectedRunHighlight(){
-  if(!selectedRunLine || !selectedRunLine._rrOriginalPoints)return;
-  selectedRunLine.setLatLngs(ringsLayersEnabled
-    ?selectedRunRails(selectedRunLine._rrOriginalPoints)
-    :selectedRunLine._rrOriginalPoints);
-  selectedRunLine.setStyle({
-    color:ringsLayersEnabled?'#48E8FF':'#0057ff',
-    weight:ringsLayersEnabled?2.7:6,opacity:1,dashArray:null
+  if(!selectedRunLine || !selectedRunLine._rrCore)return;
+  selectedRunLine._rrGlow.setStyle({
+    opacity:ringsLayersEnabled?0.23:0,weight:9
+  });
+  selectedRunLine._rrCore.setStyle({
+    color:ringsLayersEnabled?'#ffffff':'#0057ff',
+    weight:ringsLayersEnabled?4:6,
+    opacity:ringsLayersEnabled?0.95:1,dashArray:null
   });
   selectedRunLine.bringToFront();
 }
-map.on('zoomend',()=>{
-  if(ringsLayersEnabled && selectedRunLine)updateSelectedRunHighlight();
-});
 
 function syncRingsLayersToggle() {
   if (ringsLayersToggle) {
