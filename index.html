@@ -3624,7 +3624,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
-    <button id="ringsLayersToggle" class="mapViewModeButton isActive" type="button" aria-pressed="true" title="通過回数を虹色の地層で表示">🌈 Layers ON</button>
+    <button id="ringsLayersToggle" class="mapViewModeButton" type="button" aria-pressed="false" title="通過回数を虹色の地層で表示（試験版）">🌈 Layers OFF</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
   <div id="timelapseLaunchArea">
@@ -16531,8 +16531,8 @@ function clearMapLayers() {
    decorative extrusion may extend beyond road edges.
 ===================================== */
 let ringsLayersEnabled = (() => {
-  try { return localStorage.getItem('RunnerRingsLayersEnabled') !== '0'; }
-  catch (_) { return true; }
+  try { return localStorage.getItem('RunnerRingsLayersEnabled') === '1'; }
+  catch (_) { return false; }
 })();
 let lastRingsLayersActivities = [];
 const ringsLayersToggle = document.getElementById('ringsLayersToggle');
