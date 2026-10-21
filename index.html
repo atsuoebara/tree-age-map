@@ -16564,17 +16564,23 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Avoid multiplying drawing work for unusually large GPS archives.
-  // In that case use the fast, original MultiPolyline renderer.
+  // Keep Layers available even for large archives. Thin GPS
+  // geometry to a bounded number of segments instead of silently
+  // reverting to the old red display.
   let points = 0;
-  for (const route of routes) {
-    points += route.length;
-    if (points > 50000) return false;
-  }
+  for (const route of routes) points += route.length;
+  const stride = Math.max(1, Math.ceil(points / 18000));
+  const simplified = routes.map(route => {
+    if (stride === 1 || route.length <= 2) return route;
+    const sampled = [];
+    for (let i = 0; i < route.length; i += stride) sampled.push(route[i]);
+    if (sampled[sampled.length - 1] !== route[route.length - 1]) sampled.push(route[route.length - 1]);
+    return sampled;
+  });
   const frequency = new Map();
   const cellKey = (lat, lng) => Math.floor(lat / 0.0009) + ':' + Math.floor(lng / 0.0009);
   const getCoordinates = point => Array.isArray(point) ? point : [point.lat, point.lng];
-  for (const route of routes) {
+  for (const route of simplified) {
     const visited = new Set();
     for (let i=1; i<route.length; i++) {
       const p=getCoordinates(route[i-1]), q=getCoordinates(route[i]);
@@ -16588,7 +16594,7 @@ function drawRingsLayerStrata(routes) {
     for(const key of visited) frequency.set(key,(frequency.get(key)||0)+1);
   }
   const groups=[[],[],[],[]];
-  for(const route of routes){
+  for(const route of simplified){
     for(let i=1;i<route.length;i++){
       const p=getCoordinates(route[i-1]),q=getCoordinates(route[i]);
       if(!Number.isFinite(p[0])||!Number.isFinite(q[0]))continue;
