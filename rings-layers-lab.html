@@ -7,7 +7,7 @@
 </head><body><header><h1>🌈 Rings Layers 実験室</h1><p>これは人工的なGPSデータだけを使う試作ページです。ユーザーの走行記録や本番地図には一切アクセスしません。<a href="./">トップに戻る</a></p></header>
 <main><div class="settings">
 <label>描画方式<select id="style"><option value="strata">虹色の薄い地層（立体改良）</option><option value="pen">ボールペン細線</option></select></label>
-<label>テスト地形<select id="scenario"><option value="simple">シンプルな2本</option><option value="cross">交差点・折り返し</option><option value="dense">密集ルート</option><option value="repeat">同じ道を繰り返す</option></select></label>
+<label>テスト地形<select id="scenario"><option value="simple">シンプルな2本</option><option value="cross">交差点・折り返し</option><option value="dense">密集ルート</option><option value="repeat">同じ道を繰り返す</option><option value="gpsdrift">GPS誤差あり（同じ道）</option></select></label>
 <label>重ねる回数<select id="count"><option>1</option><option>3</option><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
 <label>層の厚み <span id="depthValue">3</span><input id="depth" type="range" min="1" max="8" value="3" step=".5"></label>
 <label>線の太さ <span id="widthValue">2</span><input id="width" type="range" min="1" max="4" value="2" step=".25"></label>
@@ -15,7 +15,7 @@
 <button id="reset">初期値に戻す</button></div>
 <p id="repeatResult" role="status" style="color:#8eeaff"></p><div class="map" id="map"></div>
 <div class="legend"><span class="chip">1回：ピンク</span><span class="chip">3回：紫</span><span class="chip">5回：青</span><span class="chip">10回：緑</span><span class="chip">20回：黄</span><span class="chip">30回：オレンジ</span><span class="chip">選択：白</span></div>
-<p>試作のポイント：交差点・折り返し・密集ルートの人工データも切り替えられます。各ルートの中心線を1本だけ描き、虹色の層を少しずつ画面下方向へずらして高さを表現します。ズームしても描き直します。本番の走行区間統合アルゴリズムとは別です。</p></main>
+<p>試作のポイント：交差点・折り返し・密集ルートに加え、GPSが数mずれた人工ランの統合を検証できます。各ルートの中心線を1本だけ描き、虹色の層を少しずつ画面下方向へずらして高さを表現します。ズームしても描き直します。本番の走行区間統合アルゴリズムとは別です。</p></main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (() => {
@@ -44,6 +44,34 @@ const scenarios={
   ]
 };
 const repeatRuns=Array.from({length:30},(_,i)=>({route:i%5===0?secondary:base, runId:i}));
+// Deterministic simulated GPS drift: ~3–10 meters, with mild phase changes.
+const driftRuns=Array.from({length:30},(_,i)=>{
+  const source=i%5===0?secondary:base;
+  const route=source.map(([lat,lng],j)=>{
+    const north=(Math.sin(i*2.31+j*1.67)*4.5+Math.cos(i*0.7+j)*1.3)/111000;
+    const east=(Math.cos(i*1.97+j*2.22)*5.2+Math.sin(i+j)*1.2)/(111000*Math.cos(lat*Math.PI/180));
+    return [lat+north,lng+east];
+  });
+  return {route,runId:i};
+});
+// Cluster complete synthetic tracks by average corresponding-point distance.
+// This is an experiment only. Production needs segment-level matching to
+// handle partial shared streets, reversed direction, different sampling etc.
+function groupDriftTracks(runs,toleranceMeters=14){
+  const groups=[];
+  const meters=(a,b)=>Math.hypot((a[0]-b[0])*111000,(a[1]-b[1])*111000*Math.cos(a[0]*Math.PI/180));
+  for(const item of runs){
+    let matching=null;
+    for(const group of groups){
+      if(group.route.length!==item.route.length)continue;
+      const mean=item.route.reduce((sum,pt,j)=>sum+meters(pt,group.route[j]),0)/item.route.length;
+      if(mean<=toleranceMeters){matching=group;break;}
+    }
+    if(matching)matching.count++;
+    else groups.push({route:item.route,count:1});
+  }
+  return groups;
+}
 const rainbow=['#fa48c0','#b948ef','#5355ed','#18b8fb','#34d7a1','#c2e34b','#ffe055','#ff9843'];
 function render(){
 group.clearLayers();
@@ -84,7 +112,11 @@ L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:wid
 }
 }
 const scenario=$('scenario').value;
-if(scenario==='repeat'){
+if(scenario==='gpsdrift'){
+  const groups=groupDriftTracks(driftRuns.slice(0,n));
+  groups.forEach(item=>draw(item.route,1,item.count));
+  $('repeatResult').textContent='GPS位置誤差を含む人工ラン '+n+'本 → 約14m以内の全体形状類似で '+groups.length+'本の代表ルートへ集約（同じ道の一部分だけの共有には未対応）';
+}else if(scenario==='repeat'){
   // Thirty synthetic run records share two exact geometries.
   // Deduplicate by route signature before drawing; a shared road
   // is rendered once, with its own counted frequency.
