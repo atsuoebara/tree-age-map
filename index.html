@@ -16564,45 +16564,32 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Draw ONLY original adjacent GPS segments. Never bridge sampled points:
-  // the old global stride produced false shortcuts across winding roads.
-  // A coarse visit grid estimates frequency, but never generates geometry.
-  const cell=0.00025;
-  const key=(p)=>Math.floor(p[0]/cell)+':'+Math.floor(p[1]/cell);
+  // Preserve complete original GPS paths as continuous polylines.
+  // Avoid cell-by-cell segment colors: GPS jitter and segment endpoints
+  // become a distracting mesh when zooming in.
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
-  const frequency=new Map();
+  const paths=[];
   for(const route of routes){
-    const visited=new Set();
+    let current=[];
     for(const raw of route){
       const p=coords(raw);
-      if(valid(p))visited.add(key(p));
+      if(!valid(p)){if(current.length>1)paths.push(current);current=[];continue;}
+      if(current.length){
+        const prev=current[current.length-1];
+        const meters=Math.hypot((p[0]-prev[0])*111320,(p[1]-prev[1])*111320*Math.cos(p[0]*Math.PI/180));
+        if(meters>180){if(current.length>1)paths.push(current);current=[];}
+      }
+      current.push(p);
     }
-    for(const k of visited)frequency.set(k,(frequency.get(k)||0)+1);
+    if(current.length>1)paths.push(current);
   }
-  const groups=[[],[],[],[],[]];
-  for(const route of routes){
-    for(let i=1;i<route.length;i++){
-      const a=coords(route[i-1]),b=coords(route[i]);
-      if(!valid(a)||!valid(b))continue;
-      // GPS discontinuities should never become artificial cross-town lines.
-      const dy=(b[0]-a[0])*111320;
-      const dx=(b[1]-a[1])*111320*Math.cos(a[0]*Math.PI/180);
-      const meters=Math.hypot(dx,dy);
-      if(meters<0.3||meters>180)continue;
-      const n=Math.max(frequency.get(key(a))||1,frequency.get(key(b))||1);
-      const tier=n>=30?4:n>=15?3:n>=7?2:n>=3?1:0;
-      groups[tier].push([a,b]);
-    }
-  }
-  const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
-  const colors=['#f957b8','#b948ef','#5355ed','#18b8fb','#34d7a1'];
-  for(let tier=0;tier<groups.length;tier++){
-    const segments=groups[tier];
-    if(!segments.length)continue;
-    // Thin, transparent lines; no displaced copies that clutter intersections.
-    routeGroup.addLayer(L.polyline(segments,{...base,color:colors[tier],weight:1.55,opacity:0.63+tier*0.055}));
-  }
+  if(!paths.length)return false;
+  // One shared Leaflet MultiPolyline keeps each run connected, even at high zoom.
+  routeGroup.addLayer(L.polyline(paths,{
+    color:'#f957b8',weight:1.7,opacity:0.57,
+    lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
+  }));
   return true;
 }
 
