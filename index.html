@@ -16611,6 +16611,8 @@ function drawRingsLayerStrata(routes) {
       best=Math.max(best,counts.get((x+dx)+':'+(y+dy))||0);
     return Math.min(6,Math.floor(best/10));
   };
+  // Claim accepted mainline segments immediately to prevent same-run loops
+  // from creating a dense bundle; localOwned keeps the selected trace connected.
   // Suppress only OTHER representative tracks within ~25m and with
   // a similar direction. Intersections remain separate.
   const nearbyOwned=(k,ux,uy)=>{
@@ -16634,7 +16636,7 @@ function drawRingsLayerStrata(routes) {
     return result;
   };
   for(const pieces of tracks){
-    const pending=[];
+    const localOwned=new Set();
     let path=[],tier=-1,gap=[],gapLength=0;
     const flush=()=>{
       if(path.length>=2)bands[tier].push(smooth(path));
@@ -16647,7 +16649,7 @@ function drawRingsLayerStrata(routes) {
       const aa=xy(seg.a),bb=xy(seg.b);
       const distance=Math.hypot(bb[0]-aa[0],bb[1]-aa[1])||1;
       const ux=(bb[0]-aa[0])/distance,uy=(bb[1]-aa[1])/distance;
-      if(nearbyOwned(mid,ux,uy)){
+      if(!localOwned.has(mid)&&nearbyOwned(mid,ux,uy)){
         if(path.length&&nextTier===tier&&gapLength+seg.len<=24){
           gap.push(seg);gapLength+=seg.len;
         }else flush();
@@ -16661,14 +16663,14 @@ function drawRingsLayerStrata(routes) {
         gap=[];gapLength=0;
       }
       path.push(seg.b);
-      for(const k of seg.cells)pending.push([k,ux,uy]);
+      for(const k of seg.cells){
+        localOwned.add(k);
+        if(!claimed.has(k))claimed.set(k,[]);
+        const arr=claimed.get(k);
+        if(!arr.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))arr.push([ux,uy]);
+      }
     }
-    // Commit after this run, so adjacent pieces of the SAME run stay continuous.
-    for(const [k,ux,uy] of pending){
-      if(!claimed.has(k))claimed.set(k,[]);
-      const arr=claimed.get(k);
-      if(!arr.some(v=>Math.abs(v[0]*ux+v[1]*uy)>.8))arr.push([ux,uy]);
-    }
+
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8'];
   const zoom=map.getZoom();
