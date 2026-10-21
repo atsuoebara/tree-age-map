@@ -3624,6 +3624,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
+    <span id="rrBuildVersion" style="font-size:11px;opacity:.8;white-space:nowrap;align-self:center" title="画面に読み込まれたコードのバージョン">v1.0001</span>
     <button id="ringsLayersToggle" class="mapViewModeButton" type="button" aria-pressed="false" title="Make a Rainbow：走った道に虹を育てる（試作）">🌈 Rainbow</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
@@ -16599,52 +16600,20 @@ function drawRingsLayerStrata(routes) {
     for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
     tracks.push(pieces);
   }
-  // Prefer long, uninterrupted original GPS traces as representative roads.
-  // Claim only the segment's midpoint cell: claiming every touched cell
-  // previously punched gaps in neighboring routes and produced confetti.
+  // Draw only short original-GPS segments that are actually supported by
+  // neighboring 10m visits. Never connect remote paths or average loops.
   const claimed=new Set(),bands=Array.from({length:8},()=>[]);
   const cellTier=k=>Math.min(7,Math.floor((counts.get(k)||1)/10));
-  const smooth=points=>{
-    if(points.length<4)return points;
-    const projected=points.map(p=>map.project(p,map.getZoom()));
-    const result=[points[0]];
-    for(let i=1;i<points.length-1;i++){
-      const p=projected[i-1],q=projected[i],n=projected[i+1];
-      result.push(map.unproject([(p.x+6*q.x+n.x)/8,(p.y+6*q.y+n.y)/8],map.getZoom()));
-    }
-    result.push(points[points.length-1]);
-    return result;
-  };
-  // Prioritize long continuous runs, not input order.
-  const ordered=tracks.map(pieces=>({
-    pieces,
-    length:pieces.reduce((sum,seg)=>sum+(seg?seg.len:0),0)
-  })).sort((a,b)=>b.length-a.length);
-  for(const {pieces} of ordered){
-    let path=[],tier=-1,gap=[],gapLength=0,pending=new Set();
-    const flush=()=>{
-      if(path.length>=2){
-        bands[tier].push(smooth(path));
-        for(const k of pending)claimed.add(k);
-      }
-      path=[];tier=-1;gap=[];gapLength=0;pending=new Set();
-    };
-    for(const seg of [...pieces,null]){
-      if(!seg){flush();continue;}
+  for(const pieces of tracks){
+    for(const seg of pieces){
+      if(!seg)continue;
       const mid=seg.cells[Math.floor(seg.cells.length/2)];
-      const nextTier=cellTier(mid);
-      if(claimed.has(mid)){
-        if(path.length&&nextTier===tier&&gapLength+seg.len<=30){
-          gap.push(seg);gapLength+=seg.len;
-        }else flush();
-        continue;
-      }
-      if(path.length&&tier!==nextTier)flush();
-      if(!path.length){path=[seg.a];tier=nextTier;}
-      for(const bridge of gap)path.push(bridge.b);
-      gap=[];gapLength=0;
-      path.push(seg.b);
-      pending.add(mid);
+      if(claimed.has(mid))continue;
+      // Suppress long GPS jumps and GPS scatter; keep only local geometry.
+      if(seg.len>18)continue;
+      const tier=cellTier(mid);
+      bands[tier].push([seg.a,seg.b]);
+      for(const k of seg.cells)claimed.add(k);
     }
   }
   const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
