@@ -16530,10 +16530,8 @@ function clearMapLayers() {
    Segment geometry stays faithful to GPS even though the
    decorative extrusion may extend beyond road edges.
 ===================================== */
-let ringsLayersEnabled = (() => {
-  try { return localStorage.getItem('RunnerRingsLayersEnabled') === '1'; }
-  catch (_) { return false; }
-})();
+// Temporarily disable experimental Layers for every user, including saved ON state.
+let ringsLayersEnabled = false;
 let lastRingsLayersActivities = [];
 const ringsLayersToggle = document.getElementById('ringsLayersToggle');
 
@@ -16541,7 +16539,9 @@ function syncRingsLayersToggle() {
   if (ringsLayersToggle) {
     ringsLayersToggle.classList.toggle('isActive', ringsLayersEnabled);
     ringsLayersToggle.setAttribute('aria-pressed', String(ringsLayersEnabled));
-    ringsLayersToggle.textContent = ringsLayersEnabled ? '🌈 Layers ON' : '🌈 Layers OFF';
+    ringsLayersToggle.textContent = '🌈 Layers 調整中';
+    ringsLayersToggle.disabled = true;
+    ringsLayersToggle.title = '虹色Layersは表示品質の調整中です';
   }
   if (selectedRunLine && typeof selectedRunLine.setStyle === 'function') {
     selectedRunLine.setStyle({
@@ -16564,79 +16564,9 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Count distinct activities in 10m cells; render representative GPS
-  // chords, never cell rectangles or every overlapping activity.
-  const size=10,rad=Math.PI/180;
-  const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
-  const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
-  let first=null;
-  for(const route of routes){for(const raw of route){const p=coords(raw);if(valid(p)){first=p;break;}}if(first)break;}
-  if(!first)return false;
-  const sx=111320*Math.max(0.2,Math.cos(first[0]*rad));
-  const xy=p=>[(p[1]-first[1])*sx,(p[0]-first[0])*111320];
-  const ll=p=>[first[0]+p[1]/111320,first[1]+p[0]/sx];
-  const key=p=>Math.floor(p[0]/size)+':'+Math.floor(p[1]/size);
-  const counts=new Map(),segments=[];
-  for(const route of routes){
-    const seen=new Set();
-    let prev=null;
-    for(const raw of route){
-      const p=coords(raw);
-      if(!valid(p)){prev=null;continue;}
-      const current=xy(p);
-      if(prev){
-        const dx=current[0]-prev[0],dy=current[1]-prev[1],len=Math.hypot(dx,dy);
-        if(len>=0.3&&len<=180){
-          const steps=Math.max(1,Math.ceil(len/4));
-          for(let j=0;j<=steps;j++){
-            const t=j/steps;
-            seen.add(key([prev[0]+dx*t,prev[1]+dy*t]));
-          }
-          segments.push({a:prev,b:current,len,dx,dy});
-        }
-      }else{
-        seen.add(key(current));
-      }
-      prev=current;
-    }
-    for(const k of seen)counts.set(k,(counts.get(k)||0)+1);
-  }
-  // One representative chord per 10m cell and approximate road direction.
-  // Opposite running directions share the same undirected orientation.
-  const representatives=new Map();
-  for(const seg of segments){
-    const steps=Math.max(1,Math.ceil(seg.len/5));
-    const angle=((Math.atan2(seg.dy,seg.dx)+Math.PI)%Math.PI);
-    const direction=Math.floor(angle/(Math.PI/6))%6;
-    for(let j=0;j<steps;j++){
-      const t=(j+0.5)/steps;
-      const center=[seg.a[0]+seg.dx*t,seg.a[1]+seg.dy*t];
-      const cell=key(center),id=cell+':'+direction;
-      if(representatives.has(id))continue;
-      const half=6;
-      const ux=seg.dx/seg.len,uy=seg.dy/seg.len;
-      const a=[center[0]-ux*half,center[1]-uy*half];
-      const b=[center[0]+ux*half,center[1]+uy*half];
-      representatives.set(id,{cell,path:[ll(a),ll(b)]});
-    }
-  }
-  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
-  const paths=colors.map(()=>[]);
-  for(const {cell,path} of representatives.values()){
-    const count=counts.get(cell)||1;
-    const tier=Math.min(7,Math.floor(count/10));
-    for(let layer=0;layer<=tier;layer++)paths[layer].push(path);
-  }
-  // Wide-to-narrow concentric strokes create rainbow edges without
-  // stacking GPS tracks. The final stroke is the newest earned color.
-  for(let layer=0;layer<colors.length;layer++){
-    if(!paths[layer].length)continue;
-    routeGroup.addLayer(L.polyline(paths[layer],{
-      color:colors[layer],weight:14-layer*1.65,opacity:0.92,
-      lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
-    }));
-  }
-  return true;
+  // Temporarily disabled after real-device validation showed map-obscuring strokes.
+  // Normal course rendering remains the safe fallback.
+  return false;
 }
 
 /* =====================================
