@@ -26119,8 +26119,8 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, width, height);
 
-  const ringCenterY = Math.round(height * .39);
-  const outerRadius = Math.round(Math.min(width, height) * .19);
+  const ringCenterY = Math.round(height * (options.monthlyReview ? .365 : .39));
+  const outerRadius = Math.round(Math.min(width, height) * (options.monthlyReview ? .205 : .19));
   const innerRadius = Math.round(outerRadius * .78);
   const ring = ctx.createLinearGradient(
     width / 2 - outerRadius,
@@ -26143,9 +26143,9 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
   ctx.globalAlpha = 1;
 
   if (logo) {
-    const size = Math.round(outerRadius * .58);
+    const size = Math.round(outerRadius * (options.monthlyReview ? .75 : .58));
     ctx.save();
-    drawRoundedRectPath(ctx, width / 2 - size / 2, ringCenterY - size / 2, size, size, 28);
+    drawRoundedRectPath(ctx, width / 2 - size / 2, ringCenterY - size / 2, size, size, Math.round(size * .19));
     ctx.clip();
     ctx.drawImage(logo, width / 2 - size / 2, ringCenterY - size / 2, size, size);
     ctx.restore();
@@ -26165,7 +26165,10 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
     ctx.fillText('Map the life you run.', width / 2, Math.round(height * .755));
   }
   ctx.fillStyle = '#b9c9d8';
-  drawTimelapseTextFit(ctx, rangeLabel, width / 2, Math.round(height * (options.monthlyReview ? .735 : .795)), width - 170, 30, 700);
+  const displayRangeLabel = options.monthlyReview && !isRunnerRingsEnglish() && /^\d{4}-\d{2}$/.test(rangeLabel)
+    ? `${rangeLabel.slice(0, 4)}年${Number(rangeLabel.slice(5))}月`
+    : rangeLabel;
+  drawTimelapseTextFit(ctx, displayRangeLabel, width / 2, Math.round(height * (options.monthlyReview ? .735 : .795)), width - 170, 30, 700);
   if (options.monthlyReview) {
     // The monthly review ends with distance as the main visual, not a small summary line.
     // Use the same saved distance total as the preceding recap frames.
