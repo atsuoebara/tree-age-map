@@ -6,7 +6,7 @@
 *{box-sizing:border-box}body{background:#091627;color:#edf4ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0}header,main{max-width:960px;margin:auto;padding:14px}h1{font-size:21px;margin:9px 0}p{line-height:1.6;color:#c4d1df;font-size:13px}.settings{display:flex;gap:10px;flex-wrap:wrap;padding:12px;border:1px solid #3d526e;border-radius:13px;background:#14263c;align-items:center;margin-bottom:12px}label{font-size:12px;display:grid;gap:3px}select,input{accent-color:#ff3bbb;border-radius:6px}select{font-size:15px;padding:7px;color:white;background:#182d48;border:1px solid #71839b}input[type=range]{width:115px}button{background:#ff3bbb;color:white;border:0;border-radius:10px;padding:9px 14px;font-weight:800}.map{height:min(65vh,580px);min-height:360px;border-radius:13px;overflow:hidden}.legend{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chip{padding:6px 10px;background:#233551;border-radius:20px;font-size:12px}a{color:#8cddff}.leaflet-container{background:#cededa}.control-label{color:white}</style>
 </head><body><header><h1>🌈 Rings Layers 実験室</h1><p>これは人工的なGPSデータだけを使う試作ページです。ユーザーの走行記録や本番地図には一切アクセスしません。<a href="./">トップに戻る</a></p></header>
 <main><div class="settings">
-<label>描画方式<select id="style"><option value="strata">虹色の薄い地層</option><option value="pen">ボールペン細線</option></select></label>
+<label>描画方式<select id="style"><option value="strata">虹色の薄い地層（立体改良）</option><option value="pen">ボールペン細線</option></select></label>
 <label>重ねる回数<select id="count"><option>1</option><option>3</option><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
 <label>層の厚み <span id="depthValue">3</span><input id="depth" type="range" min="1" max="8" value="3" step=".5"></label>
 <label>線の太さ <span id="widthValue">2</span><input id="width" type="range" min="1" max="4" value="2" step=".25"></label>
@@ -37,12 +37,25 @@ if(style==='pen'){
 L.polyline(shift(line,0.7),{...common,color:'#1c203d',weight:width+0.85,opacity:.20}).addTo(group);
 L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:width,opacity:.67}).addTo(group);
 }else{
-L.polyline(shift(line,depth*scale+1),{...common,color:'#252037',weight:width+1.3,opacity:.23}).addTo(group);
-for(let i=countToLayers-1;i>=0;i--){
-const y=(i+1)/countToLayers*depth*scale;
-L.polyline(shift(line,y),{...common,color:rainbow[i],weight:Math.max(1.25,width+.2),opacity:.87}).addTo(group);
-}
-L.polyline(line,{...common,color:'#ff63c5',weight:Math.max(1.2,width*.8),opacity:.9}).addTo(group);
+  // Ten runs define the reference thickness. More runs increase
+  // the number of color bands and a little shadow depth, NOT total width.
+  const heightFactor=Math.min(1.55,0.7+0.3*Math.log2(Math.max(1,n)/3+1));
+  const height=depth*scale*heightFactor;
+  const sideColors=rainbow.slice(0,countToLayers);
+  // All bands occupy a narrow 3px sidewall; bands grow finer as
+  // the count rises instead of extending sideways across roads.
+  L.polyline(shift(line,height+0.8),{...common,color:'#15223e',weight:width+1.1,opacity:.28}).addTo(group);
+  for(let i=countToLayers-1;i>=0;i--){
+    const y=(i+0.7)/countToLayers*height;
+    const shade=i/countToLayers;
+    L.polyline(shift(line,y),{
+      ...common,color:sideColors[i],
+      weight:Math.max(0.72,width*0.77),
+      opacity:0.7+shade*0.18
+    }).addTo(group);
+  }
+  L.polyline(line,{...common,color:'#c33493',weight:width+0.5,opacity:.43}).addTo(group);
+  L.polyline(line,{...common,color:'#ff63c5',weight:Math.max(1,width*0.73),opacity:.95}).addTo(group);
 }
 }
 draw(base);draw(secondary,.72);
