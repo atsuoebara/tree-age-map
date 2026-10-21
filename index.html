@@ -16564,32 +16564,67 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Preserve complete original GPS paths as continuous polylines.
-  // Avoid cell-by-cell segment colors: GPS jitter and segment endpoints
-  // become a distracting mesh when zooming in.
+  // Experimental: count distinct runs on approximately matching short road edges.
+  // Quantize in metres, not raw latitude/longitude degrees.
+  const size=18, rad=Math.PI/180;
   const valid=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
   const coords=p=>Array.isArray(p)?p:[p.lat,p.lng];
-  const paths=[];
-  for(const route of routes){
-    let current=[];
-    for(const raw of route){
-      const p=coords(raw);
-      if(!valid(p)){if(current.length>1)paths.push(current);current=[];continue;}
-      if(current.length){
-        const prev=current[current.length-1];
-        const meters=Math.hypot((p[0]-prev[0])*111320,(p[1]-prev[1])*111320*Math.cos(p[0]*Math.PI/180));
-        if(meters>180){if(current.length>1)paths.push(current);current=[];}
+  const edges=new Map();
+  const xy=p=>[p[1]*111320*Math.cos(p[0]*rad),p[0]*111320];
+  const grid=p=>[Math.round(p[0]/size),Math.round(p[1]/size)];
+  for(let run=0;run<routes.length;run++){
+    const seen=new Set(),route=routes[run];
+    for(let i=1;i<route.length;i++){
+      const a=coords(route[i-1]),b=coords(route[i]);
+      if(!valid(a)||!valid(b))continue;
+      const A=xy(a),B=xy(b),length=Math.hypot(B[0]-A[0],B[1]-A[1]);
+      if(length<2||length>180)continue;
+      const steps=Math.ceil(length/size);
+      let previous=null;
+      for(let j=0;j<=steps;j++){
+        const t=j/steps;
+        const p=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t];
+        const g=grid(p),id=g.join(':');
+        if(previous&&previous.id!==id){
+          const first=previous.id<id?previous:{id,g};
+          const second=previous.id<id?{id,g}:previous;
+          const key=first.id+'|'+second.id;
+          if(!seen.has(key)){
+            seen.add(key);
+            let edge=edges.get(key);
+            if(!edge){edge={a:first.g,b:second.g,count:0};edges.set(key,edge);}
+            edge.count++;
+          }
+        }
+        previous={id,g};
       }
-      current.push(p);
     }
-    if(current.length>1)paths.push(current);
   }
-  if(!paths.length)return false;
-  // One shared Leaflet MultiPolyline keeps each run connected, even at high zoom.
-  routeGroup.addLayer(L.polyline(paths,{
-    color:'#f957b8',weight:1.7,opacity:0.57,
-    lineCap:'round',lineJoin:'round',smoothFactor:1,interactive:false
-  }));
+  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed'];
+  const batches=colors.map(()=>[]);
+  for(const edge of edges.values()){
+    const latA=edge.a[1]*size/111320,latB=edge.b[1]*size/111320;
+    const lat=(latA+latB)/2,cos=Math.cos(lat*rad);
+    const line=[[latA,edge.a[0]*size/(111320*cos)],[latB,edge.b[0]*size/(111320*cos)]];
+    const layers=Math.min(colors.length,1+Math.floor(edge.count/10));
+    for(let layer=0;layer<layers;layer++)batches[layer].push(line);
+  }
+  const zoom=map.getZoom();
+  for(let layer=0;layer<batches.length;layer++){
+    if(!batches[layer].length)continue;
+    // Layer 0 is centered; later layers are narrow parallel strokes.
+    const shift=layer*1.25;
+    const lines=shift===0?batches[layer]:batches[layer].map(line=>{
+      const p=map.project(line[0],zoom),q=map.project(line[1],zoom);
+      const dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy)||1;
+      const ox=-dy/len*shift,oy=dx/len*shift;
+      return [map.unproject([p.x+ox,p.y+oy],zoom),map.unproject([q.x+ox,q.y+oy],zoom)];
+    });
+    routeGroup.addLayer(L.polyline(lines,{
+      color:colors[layer],weight:1.35,opacity:0.78,
+      lineCap:'round',lineJoin:'round',interactive:false,smoothFactor:1
+    }));
+  }
   return true;
 }
 
