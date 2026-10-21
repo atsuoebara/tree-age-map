@@ -16682,14 +16682,10 @@ function drawRingsLayerStrata(routes) {
    実走線
 ===================================== */
 
-let lastRingsLayersZoom = -1;
-map.on('zoomend', () => {
-  if (!ringsLayersEnabled || !lastRingsLayersActivities.length || !map.hasLayer(routeGroup)) return;
-  if (lastRingsLayersZoom === map.getZoom()) return;
-  lastRingsLayersZoom = map.getZoom();
-  routeGroup.clearLayers();
-  drawRoutes(lastRingsLayersActivities);
-});
+// Leaflet automatically reprojects the existing rainbow polylines on zoom.
+// Do not rebuild all 10m visit counts and eight stripe layers at every zoom:
+// this was an expensive duplicate render on top of the general zoom handler.
+// A filter change or Rainbow toggle still rebuilds the geometry.
 
 function drawRoutes(
   selectedActivities
