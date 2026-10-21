@@ -91,7 +91,9 @@ const checks = [
   {
     name: '選択ランの青線設定',
     patterns: [
-      /color\s*:\s*['"]#0057ff['"][\s\S]{0,100}?weight\s*:\s*6[\s\S]{0,100}?opacity\s*:\s*1/
+      /color\\s*:\\s*ringsLayersEnabled\\s*\\?\\s*['\"]#f5ffff['\"]\\s*:\\s*['\"]#0057ff['"]/, 
+      /weight\\s*:\\s*ringsLayersEnabled\\s*\\?\\s*7\\s*:\\s*6/,
+      /opacity\\s*:\\s*1/
     ]
   },
   {
