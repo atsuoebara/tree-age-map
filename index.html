@@ -3624,6 +3624,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="area">面</button>
     <button class="mapViewModeButton" type="button" data-map-view-mode="route">コース</button>
+    <button id="ringsLayersToggle" class="mapViewModeButton isActive" type="button" aria-pressed="true" title="通過回数を虹色の地層で表示">🌈 Layers ON</button>
     <button id="mapFullscreenButton" class="mapFullscreenButton" type="button" aria-label="地図を全画面表示" title="地図を全画面表示">⛶ 全画面</button>
   </div>
   <div id="timelapseLaunchArea">
@@ -12531,8 +12532,8 @@ selectedRunLine =
   L.polyline(
     activity.latlngs,
     {
-      color: '#0057ff',
-      weight: 6,
+      color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
+      weight: ringsLayersEnabled ? 7 : 6,
       opacity: 1,
       pane: 'selectedRunPane',
       interactive: false
@@ -16523,6 +16524,96 @@ function clearMapLayers() {
 
 
 /* =====================================
+   Rings Layers — lightweight rainbow strata
+   Each GPS segment is assigned a 100m cell. A cell is counted
+   once per activity; the same run is not counted repeatedly.
+   Segment geometry stays faithful to GPS even though the
+   decorative extrusion may extend beyond road edges.
+===================================== */
+let ringsLayersEnabled = (() => {
+  try { return localStorage.getItem('RunnerRingsLayersEnabled') !== '0'; }
+  catch (_) { return true; }
+})();
+let lastRingsLayersActivities = [];
+const ringsLayersToggle = document.getElementById('ringsLayersToggle');
+
+function syncRingsLayersToggle() {
+  if (ringsLayersToggle) {
+    ringsLayersToggle.classList.toggle('isActive', ringsLayersEnabled);
+    ringsLayersToggle.setAttribute('aria-pressed', String(ringsLayersEnabled));
+    ringsLayersToggle.textContent = ringsLayersEnabled ? '🌈 Layers ON' : '🌈 Layers OFF';
+  }
+  if (selectedRunLine && typeof selectedRunLine.setStyle === 'function') {
+    selectedRunLine.setStyle({
+      color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
+      weight: ringsLayersEnabled ? 7 : 6,
+      opacity: 1
+    });
+    selectedRunLine.bringToFront();
+  }
+}
+if (ringsLayersToggle) {
+  ringsLayersToggle.addEventListener('click', () => {
+    ringsLayersEnabled = !ringsLayersEnabled;
+    try { localStorage.setItem('RunnerRingsLayersEnabled', ringsLayersEnabled ? '1' : '0'); } catch (_) {}
+    routeGroup.clearLayers();
+    drawRoutes(lastRingsLayersActivities);
+    syncRingsLayersToggle();
+  });
+}
+syncRingsLayersToggle();
+
+function drawRingsLayerStrata(routes) {
+  // Avoid multiplying drawing work for unusually large GPS archives.
+  // In that case use the fast, original MultiPolyline renderer.
+  let points = 0;
+  for (const route of routes) {
+    points += route.length;
+    if (points > 50000) return false;
+  }
+  const frequency = new Map();
+  const cellKey = (lat, lng) => Math.floor(lat / 0.0009) + ':' + Math.floor(lng / 0.0009);
+  const getCoordinates = point => Array.isArray(point) ? point : [point.lat, point.lng];
+  for (const route of routes) {
+    const visited = new Set();
+    for (let i=1; i<route.length; i++) {
+      const p=getCoordinates(route[i-1]), q=getCoordinates(route[i]);
+      if (!Number.isFinite(p[0]) || !Number.isFinite(q[0])) continue;
+      const steps=Math.min(12,Math.max(1,Math.ceil(Math.hypot((q[0]-p[0])/0.0009,(q[1]-p[1])/0.0009))));
+      for(let k=0;k<=steps;k++){
+        const t=k/steps;
+        visited.add(cellKey(p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t));
+      }
+    }
+    for(const key of visited) frequency.set(key,(frequency.get(key)||0)+1);
+  }
+  const groups=[[],[],[],[]];
+  for(const route of routes){
+    for(let i=1;i<route.length;i++){
+      const p=getCoordinates(route[i-1]),q=getCoordinates(route[i]);
+      if(!Number.isFinite(p[0])||!Number.isFinite(q[0]))continue;
+      const key=cellKey((p[0]+q[0])/2,(p[1]+q[1])/2);
+      const n=frequency.get(key)||1;
+      const tier=n>=12?3:n>=6?2:n>=3?1:0;
+      groups[tier].push([p,q]);
+    }
+  }
+  // Offset shadow and successive insets create a small raised
+  // band. 4 buckets × at most 3 multi-polylines = 12 layers.
+  const colors=['#f94eb0','#8d5cf6','#19bee9','#69ec73'];
+  const edges=['#852356','#513187','#0c617c','#237b51'];
+  groups.forEach((segments,tier)=>{
+    if(!segments.length)return;
+    const width=[3.2,5.4,7.8,10.5][tier];
+    const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
+    routeGroup.addLayer(L.polyline(segments,{...base,color:'#192436',weight:width+3,opacity:0.56,offset:0}));
+    routeGroup.addLayer(L.polyline(segments,{...base,color:edges[tier],weight:width+1,opacity:0.88}));
+    routeGroup.addLayer(L.polyline(segments,{...base,color:colors[tier],weight:width-0.5,opacity:0.94}));
+  });
+  return true;
+}
+
+/* =====================================
    実走線
 ===================================== */
 
@@ -16550,6 +16641,9 @@ function drawRoutes(
   ) {
     return;
   }
+
+  lastRingsLayersActivities = selectedActivities;
+  if (ringsLayersEnabled && drawRingsLayerStrata(routes)) return;
 
   // 以前はルートの各区間ごとに
   // LeafletのPolylineを作っていたため、
@@ -16703,8 +16797,8 @@ function focusActivityFromRoutePopup(
     L.polyline(
       activity.latlngs,
       {
-        color:'#0057ff',
-        weight:6,
+        color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
+        weight: ringsLayersEnabled ? 7 : 6,
         opacity:1,
         pane:'selectedRunPane',
         interactive:false
