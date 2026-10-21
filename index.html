@@ -26541,28 +26541,42 @@ async function shareTimelapseVideo() {
   }
 }
 
+let timelapseImageShareInProgress = false;
+
 async function saveTimelapseMonthlyImage() {
-  if (!timelapseImageBlob) return;
-  const file = new File([timelapseImageBlob], timelapseImageName || 'runners-rings-month-review.png', {type:'image/png'});
-  // iPhone offers Save Image through the system share sheet.
-  if (navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
-    try {
-      await navigator.share({files:[file], title:"Runner's Rings — Monthly Review"});
+  if (!timelapseImageBlob || timelapseImageShareInProgress) return;
+  timelapseImageShareInProgress = true;
+  if (timelapseImageButton) timelapseImageButton.disabled = true;
+  try {
+    const file = new File([timelapseImageBlob], timelapseImageName || 'runners-rings-month-review.png', {type:'image/png'});
+    // Use exactly one delivery route. A share-sheet error must not trigger
+    // a second automatic download after iOS has already saved the image.
+    if (navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
+      try {
+        await navigator.share({files:[file], title:"Runner's Rings — Monthly Review"});
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.warn('Monthly image share error:', error);
+          alert(isRunnerRingsEnglish()
+            ? 'Could not share the image. Please try again.'
+            : '画像を共有できませんでした。もう一度お試しください。');
+        }
+      }
       return;
-    } catch (error) {
-      if (error?.name === 'AbortError') return;
-      console.warn('Monthly image share failed, falling back to download:', error);
     }
+    const url = URL.createObjectURL(timelapseImageBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    link.rel = 'noopener';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } finally {
+    timelapseImageShareInProgress = false;
+    if (timelapseImageButton) timelapseImageButton.disabled = false;
   }
-  const url = URL.createObjectURL(timelapseImageBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = file.name;
-  link.rel = 'noopener';
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 function saveTimelapseVideo() {
