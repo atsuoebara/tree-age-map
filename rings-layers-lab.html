@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Rings Layers 実験室 | Runner's Rings</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{background:#091627;color:#edf4ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0}header,main{max-width:960px;margin:auto;padding:14px}h1{font-size:21px;margin:9px 0}p{line-height:1.6;color:#c4d1df;font-size:13px}.settings{display:flex;gap:10px;flex-wrap:wrap;padding:12px;border:1px solid #3d526e;border-radius:13px;background:#14263c;align-items:center;margin-bottom:12px}label{font-size:12px;display:grid;gap:3px}select,input{accent-color:#ff3bbb;border-radius:6px}select{font-size:15px;padding:7px;color:white;background:#182d48;border:1px solid #71839b}input[type=range]{width:115px}button{background:#ff3bbb;color:white;border:0;border-radius:10px;padding:9px 14px;font-weight:800}.map{height:min(65vh,580px);min-height:360px;border-radius:13px;overflow:hidden}.legend{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chip{padding:6px 10px;background:#233551;border-radius:20px;font-size:12px}a{color:#8cddff}.leaflet-container{background:#cededa}.control-label{color:white}</style>
+</head><body><header><h1>🌈 Rings Layers 実験室</h1><p>これは人工的なGPSデータだけを使う試作ページです。ユーザーの走行記録や本番地図には一切アクセスしません。<a href="./">トップに戻る</a></p></header>
+<main><div class="settings">
+<label>描画方式<select id="style"><option value="strata">虹色の薄い地層</option><option value="pen">ボールペン細線</option></select></label>
+<label>重ねる回数<select id="count"><option>1</option><option>3</option><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
+<label>層の厚み <span id="depthValue">3</span><input id="depth" type="range" min="1" max="8" value="3" step=".5"></label>
+<label>線の太さ <span id="widthValue">2</span><input id="width" type="range" min="1" max="4" value="2" step=".25"></label>
+<label><span class="control-label">白い選択ルート</span><input id="selected" type="checkbox" checked></label>
+<button id="reset">初期値に戻す</button></div>
+<div class="map" id="map"></div>
+<div class="legend"><span class="chip">1回：ピンク</span><span class="chip">3回：紫</span><span class="chip">5回：青</span><span class="chip">10回：緑</span><span class="chip">20回：黄</span><span class="chip">30回：オレンジ</span><span class="chip">選択：白</span></div>
+<p>試作のポイント：人工ルートの中心線を1本だけ描き、虹色の層を少しずつ画面下方向へずらして高さを表現します。ズームしても描き直します。本番の走行区間統合アルゴリズムとは別です。</p></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(() => {
+const map=L.map('map',{preferCanvas:true}).setView([36.39,139.06],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+const group=L.layerGroup().addTo(map);
+const $=id=>document.getElementById(id);
+const base=[[36.391,139.028],[36.392,139.035],[36.389,139.041],[36.384,139.049],[36.386,139.061],[36.393,139.068],[36.401,139.080]];
+const secondary=[[36.376,139.037],[36.383,139.042],[36.391,139.048],[36.399,139.057],[36.404,139.071]];
+const rainbow=['#fa48c0','#b948ef','#5355ed','#18b8fb','#34d7a1','#c2e34b','#ffe055','#ff9843'];
+function render(){
+group.clearLayers();
+const style=$('style').value,n=+$('count').value,depth=+$('depth').value,width=+$('width').value;
+$('depthValue').textContent=depth;$('widthValue').textContent=width;
+const countToLayers=n===1?1:n===3?2:n===5?3:n===10?5:n===20?7:8;
+const common={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
+const shift=(line,pixels)=>line.map(v=>{const p=map.project(v,map.getZoom());return map.unproject([p.x+0.6*pixels,p.y+pixels],map.getZoom());});
+function draw(line,scale=1){
+if(style==='pen'){
+L.polyline(shift(line,0.7),{...common,color:'#1c203d',weight:width+0.85,opacity:.20}).addTo(group);
+L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:width,opacity:.67}).addTo(group);
+}else{
+L.polyline(shift(line,depth*scale+1),{...common,color:'#252037',weight:width+1.3,opacity:.23}).addTo(group);
+for(let i=countToLayers-1;i>=0;i--){
+const y=(i+1)/countToLayers*depth*scale;
+L.polyline(shift(line,y),{...common,color:rainbow[i],weight:Math.max(1.25,width+.2),opacity:.87}).addTo(group);
+}
+L.polyline(line,{...common,color:'#ff63c5',weight:Math.max(1.2,width*.8),opacity:.9}).addTo(group);
+}
+}
+draw(base);draw(secondary,.72);
+if($('selected').checked){
+L.polyline(base,{...common,color:'#142237',weight:5,opacity:.8}).addTo(group);
+L.polyline(base,{...common,color:'#f5ffff',weight:2.5,opacity:1}).addTo(group);
+}
+}
+['style','count','depth','width','selected'].forEach(id=>$(id).addEventListener('input',render));
+$('reset').addEventListener('click',()=>{$('style').value='strata';$('count').value='10';$('depth').value='3';$('width').value='2';$('selected').checked=true;render();});
+map.on('zoomend',render);render();
+})();
+</script></body></html>
