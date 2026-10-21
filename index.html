@@ -16603,8 +16603,8 @@ function drawRingsLayerStrata(routes) {
   // Select uninterrupted representative portions from the ORIGINAL GPS tracks.
   // Ownership is based on cell visits; nearby already-owned cells are skipped.
   // Bridge tiny claimed gaps along the same trace to avoid dotted fragments.
-  const claimed=new Set(),bands=Array.from({length:8},()=>[]);
-  const cellTier=k=>Math.min(7,Math.floor((counts.get(k)||1)/10));
+  const claimed=new Set(),bands=Array.from({length:7},()=>[]);
+  const cellTier=k=>Math.min(6,Math.floor((counts.get(k)||1)/10));
   const smooth=points=>{
     if(points.length<4)return points;
     // Gentle 3-point smoothing in projected screen space; endpoints fixed.
@@ -16644,11 +16644,11 @@ function drawRingsLayerStrata(routes) {
       for(const k of seg.cells)claimed.add(k);
     }
   }
-  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8','#d04fd2'];
+  const colors=['#48c6ed','#3acb8c','#f4d64a','#ff9946','#ed70b4','#aa75ed','#3976e8'];
   const zoom=map.getZoom();
   const stripeWidth=1.1,spacing=1.05;
-  // Every tier uses ONE common centerline. Position its earned colors
-  // symmetrically about that line, instead of drifting to one side.
+  // Reserve seven permanent stripe slots, centered on the same path.
+  // Unearned stripes stay fully transparent: do not recenter as colors grow.
   const strokes=colors.map(()=>[]);
   for(let tier=0;tier<bands.length;tier++){
     for(const path of bands[tier]){
@@ -16661,7 +16661,7 @@ function drawRingsLayerStrata(routes) {
         return [-dy/d,dx/d];
       });
       for(let layer=0;layer<=tier;layer++){
-        const shift=(layer-tier/2)*spacing;
+        const shift=(layer-3)*spacing;
         if(Math.abs(shift)<0.001){strokes[layer].push(path);continue;}
         strokes[layer].push(pts.map((p,i)=>map.unproject([
           p.x+normals[i][0]*shift,p.y+normals[i][1]*shift
