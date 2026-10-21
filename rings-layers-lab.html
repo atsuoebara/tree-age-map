@@ -43,23 +43,23 @@ L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:wid
   const height=depth*scale*heightFactor;
   const countBands=countToLayers;
   const sideColors=rainbow.slice(0,countBands);
-  // Dark ambient shadow below the colored strata adds elevation
-  // without spreading the route sideways like a marker.
-  L.polyline(shift(line,height+1.2),{...common,color:'#141b36',weight:width+2.4,opacity:.23}).addTo(group);
-  L.polyline(shift(line,height+0.45),{...common,color:'#32304f',weight:width+1.2,opacity:.43}).addTo(group);
+  // Draw from bottom to top: dark contact shadow, rainbow sidewall,
+  // then a narrow illuminated top ridge. The shadow is not a thick fill.
+  L.polyline(shift(line,height+1.8),{...common,color:'#10172f',weight:width+2.0,opacity:.23}).addTo(group);
+  L.polyline(shift(line,height+0.65),{...common,color:'#282040',weight:width+1.0,opacity:.72}).addTo(group);
   for(let i=countBands-1;i>=0;i--){
     const y=(i+0.5)/countBands*height;
-    const lower=i/countBands;
-    // Deeper layers are subtly darker, but keep rainbow distinct.
+    const bottomness=(i+1)/countBands;
     L.polyline(shift(line,y),{
       ...common,color:sideColors[i],
       weight:Math.max(0.9,width*0.78),
-      opacity:0.70+lower*0.17
+      opacity:0.90-0.13*bottomness
     }).addTo(group);
   }
-  // Very fine top edge stays the same regardless of repeat count.
-  L.polyline(line,{...common,color:'#632660',weight:width+0.65,opacity:.63}).addTo(group);
-  L.polyline(line,{...common,color:'#ff78d6',weight:Math.max(1,width*0.67),opacity:.96}).addTo(group);
+  // A dark lip separates the upper face from the exposed sidewall.
+  L.polyline(shift(line,0.38),{...common,color:'#52244f',weight:width+0.65,opacity:.88}).addTo(group);
+  L.polyline(line,{...common,color:'#ff84d8',weight:Math.max(1,width*0.7),opacity:1}).addTo(group);
+  L.polyline(shift(line,-0.35),{...common,color:'#ffe8ff',weight:0.55,opacity:.75}).addTo(group);
 }
 }
 draw(base);draw(secondary,.72);
