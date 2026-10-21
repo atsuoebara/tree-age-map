@@ -12563,9 +12563,10 @@ selectedRunLine =
   L.polyline(
     activity.latlngs,
     {
-      color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
-      weight: ringsLayersEnabled ? 7 : 6,
-      opacity: 1,
+      color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
+      weight: ringsLayersEnabled ? 2 : 6,
+      opacity: ringsLayersEnabled ? 0.85 : 1,
+      dashArray: ringsLayersEnabled ? '4 7' : null,
       pane: 'selectedRunPane',
       interactive: false
     }
@@ -16579,9 +16580,10 @@ function syncRingsLayersToggle() {
   }
   if (selectedRunLine && typeof selectedRunLine.setStyle === 'function') {
     selectedRunLine.setStyle({
-      color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
-      weight: ringsLayersEnabled ? 7 : 6,
-      opacity: 1
+      color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
+      weight: ringsLayersEnabled ? 2 : 6,
+      opacity: ringsLayersEnabled ? 0.85 : 1,
+      dashArray: ringsLayersEnabled ? '4 7' : null
     });
     selectedRunLine.bringToFront();
   }
@@ -16975,9 +16977,10 @@ function focusActivityFromRoutePopup(
     L.polyline(
       activity.latlngs,
       {
-        color: ringsLayersEnabled ? '#f5ffff' : '#0057ff',
-        weight: ringsLayersEnabled ? 7 : 6,
-        opacity:1,
+        color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
+        weight: ringsLayersEnabled ? 2 : 6,
+        opacity: ringsLayersEnabled ? 0.85 : 1,
+      dashArray: ringsLayersEnabled ? '4 7' : null,
         pane:'selectedRunPane',
         interactive:false
       }
