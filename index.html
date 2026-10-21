@@ -3753,7 +3753,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </div>
     <p class="rainbowLegendNote">※ 色は積み重なります。まだ増えていない色は表示されません。</p>
   </details>
-  <div id="selectedRunBuildCheck" style="display:none;padding:4px 12px;background:#0f1d2f;color:#8de6b1;font-size:11px;font-weight:700">選択ラン表示：深緑版 2026-10-21 23:15</div>
   <div id="mapDisplayHelp">地図に面やコースが表示されない場合は、地図左上の「＋ / −」を一度押してください。</div>
   <div id="map"></div>
 
@@ -3970,7 +3969,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.21.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.22.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -12564,7 +12563,7 @@ if (
 }
 
 selectedRunLine = makeSelectedRunLine(activity.latlngs).addTo(map);
-  syncSelectedRunBuildCheck();
+
 
 selectedRunLine.bringToFront();
 
@@ -16585,11 +16584,6 @@ function makeSelectedRunLine(points){
   glow.setStyle({opacity:ringsLayersEnabled?1:0});
   return group;
 }
-function syncSelectedRunBuildCheck(){
-  const el=document.getElementById('selectedRunBuildCheck');
-  if(!el)return;
-  el.style.display=selectedRunLine&&map.hasLayer(selectedRunLine)?'block':'none';
-}
 function updateSelectedRunHighlight(){
   if(!selectedRunLine || !selectedRunLine._rrCore)return;
   selectedRunLine._rrGlow.setStyle({
@@ -16601,7 +16595,8 @@ function updateSelectedRunHighlight(){
     opacity:1,dashArray:null
   });
   selectedRunLine.bringToFront();
-  syncSelectedRunBuildCheck();
+
+
 }
 
 function syncRingsLayersToggle() {
@@ -17000,7 +16995,7 @@ function focusActivityFromRoutePopup(
   }
 
   selectedRunLine = makeSelectedRunLine(activity.latlngs).addTo(map);
-  syncSelectedRunBuildCheck();
+
 
   selectedRunLine
     .bringToFront();
