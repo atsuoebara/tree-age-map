@@ -16564,57 +16564,76 @@ if (ringsLayersToggle) {
 syncRingsLayersToggle();
 
 function drawRingsLayerStrata(routes) {
-  // Keep Layers available even for large archives. Thin GPS
-  // geometry to a bounded number of segments instead of silently
-  // reverting to the old red display.
-  let points = 0;
-  for (const route of routes) points += route.length;
-  const stride = Math.max(1, Math.ceil(points / 18000));
-  const simplified = routes.map(route => {
-    if (stride === 1 || route.length <= 2) return route;
-    const sampled = [];
-    for (let i = 0; i < route.length; i += stride) sampled.push(route[i]);
-    if (sampled[sampled.length - 1] !== route[route.length - 1]) sampled.push(route[route.length - 1]);
-    return sampled;
+  // Compact, bounded render: thin each run consistently and count each
+  // visited cell once per activity. Never turn dense urban routes into
+  // opaque wide polygons.
+  let points=0;
+  for(const route of routes) points+=route.length;
+  const stride=Math.max(1,Math.ceil(points/14000));
+  const simplified=routes.map(route=>{
+    if(stride===1||route.length<=2)return route;
+    const result=[];
+    for(let i=0;i<route.length;i+=stride)result.push(route[i]);
+    if(result[result.length-1]!==route[route.length-1])result.push(route[route.length-1]);
+    return result;
   });
-  const frequency = new Map();
-  const cellKey = (lat, lng) => Math.floor(lat / 0.0009) + ':' + Math.floor(lng / 0.0009);
-  const getCoordinates = point => Array.isArray(point) ? point : [point.lat, point.lng];
-  for (const route of simplified) {
-    const visited = new Set();
-    for (let i=1; i<route.length; i++) {
-      const p=getCoordinates(route[i-1]), q=getCoordinates(route[i]);
-      if (!Number.isFinite(p[0]) || !Number.isFinite(q[0])) continue;
-      const steps=Math.min(12,Math.max(1,Math.ceil(Math.hypot((q[0]-p[0])/0.0009,(q[1]-p[1])/0.0009))));
-      for(let k=0;k<=steps;k++){
-        const t=k/steps;
-        visited.add(cellKey(p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t));
+  const ll=point=>Array.isArray(point)?point:[point.lat,point.lng];
+  const key=(lat,lng)=>Math.floor(lat/0.0009)+':'+Math.floor(lng/0.0009);
+  const frequency=new Map();
+  for(const route of simplified){
+    const seen=new Set();
+    for(let i=1;i<route.length;i++){
+      const p=ll(route[i-1]),q=ll(route[i]);
+      if(!Number.isFinite(p[0])||!Number.isFinite(q[0]))continue;
+      const steps=Math.min(24,Math.max(1,Math.ceil(Math.hypot((q[0]-p[0])/0.0009,(q[1]-p[1])/0.0009))));
+      for(let j=0;j<=steps;j++){
+        const t=j/steps;
+        seen.add(key(p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t));
       }
     }
-    for(const key of visited) frequency.set(key,(frequency.get(key)||0)+1);
+    for(const k of seen)frequency.set(k,(frequency.get(k)||0)+1);
   }
   const groups=[[],[],[],[]];
   for(const route of simplified){
     for(let i=1;i<route.length;i++){
-      const p=getCoordinates(route[i-1]),q=getCoordinates(route[i]);
+      const p=ll(route[i-1]),q=ll(route[i]);
       if(!Number.isFinite(p[0])||!Number.isFinite(q[0]))continue;
-      const key=cellKey((p[0]+q[0])/2,(p[1]+q[1])/2);
-      const n=frequency.get(key)||1;
-      const tier=n>=12?3:n>=6?2:n>=3?1:0;
-      groups[tier].push([p,q]);
+      // The most-used roads become taller through visible offset edges,
+      // not by making the main road line extremely wide.
+      const n=frequency.get(key((p[0]+q[0])/2,(p[1]+q[1])/2))||1;
+      groups[n>=40?3:n>=15?2:n>=5?1:0].push([p,q]);
     }
   }
-  // Offset shadow and successive insets create a small raised
-  // band. 4 buckets × at most 3 multi-polylines = 12 layers.
-  const colors=['#f94eb0','#8d5cf6','#19bee9','#69ec73'];
-  const edges=['#852356','#513187','#0c617c','#237b51'];
+  const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
+  const add=(segments,color,weight,opacity)=>{
+    if(segments.length)routeGroup.addLayer(L.polyline(segments,{...base,color,weight,opacity}));
+  };
+  const top=['#ff62c7','#fb48ad','#fc5eac','#ffa35a'];
+  // Pixel-space extrusion simulated with geographic offsets. At each
+  // zoom rebuild from the filtered dataset so the height stays in pixels.
+  const degreesPerPixel=360/(256*Math.pow(2,map.getZoom()));
+  const offset=(segments,dx,dy)=>segments.map(seg=>seg.map(pt=>{
+    const cos=Math.max(0.2,Math.cos(pt[0]*Math.PI/180));
+    return [pt[0]-dy*degreesPerPixel*cos,pt[1]+dx*degreesPerPixel];
+  }));
   groups.forEach((segments,tier)=>{
     if(!segments.length)return;
-    const width=[3.2,5.4,7.8,10.5][tier];
-    const base={interactive:false,lineCap:'round',lineJoin:'round',smoothFactor:1};
-    routeGroup.addLayer(L.polyline(segments,{...base,color:'#192436',weight:width+3,opacity:0.56,offset:0}));
-    routeGroup.addLayer(L.polyline(segments,{...base,color:edges[tier],weight:width+1,opacity:0.88}));
-    routeGroup.addLayer(L.polyline(segments,{...base,color:colors[tier],weight:width-0.5,opacity:0.94}));
+    if(tier===0){
+      add(segments,'#712b66',3.3,0.66);
+      add(segments,top[0],1.7,0.93);
+      return;
+    }
+    // Shadow at the bottom; narrow stacked colored edges run below
+    // the original GPS centerline, producing a stepped side wall.
+    const depth=[0,2,3.5,5.5][tier];
+    add(offset(segments,1.6,depth+1.4),'#29233d',3.8,0.45);
+    const strata=['#8f42ec','#25bfea','#45d2a6','#f7c25b'];
+    for(let layer=tier;layer>=0;layer--){
+      const y=depth*(layer+1)/(tier+1);
+      add(offset(segments,0.8,y),strata[layer],2.8,0.81);
+    }
+    add(segments,'#802b73',3.6,0.93);
+    add(segments,top[tier],2.1,0.99);
   });
   return true;
 }
@@ -16622,6 +16641,15 @@ function drawRingsLayerStrata(routes) {
 /* =====================================
    実走線
 ===================================== */
+
+let lastRingsLayersZoom = -1;
+map.on('zoomend', () => {
+  if (!ringsLayersEnabled || !lastRingsLayersActivities.length || !map.hasLayer(routeGroup)) return;
+  if (lastRingsLayersZoom === map.getZoom()) return;
+  lastRingsLayersZoom = map.getZoom();
+  routeGroup.clearLayers();
+  drawRoutes(lastRingsLayersActivities);
+});
 
 function drawRoutes(
   selectedActivities
