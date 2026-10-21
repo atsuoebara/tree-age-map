@@ -7,7 +7,7 @@
 </head><body><header><h1>🌈 Rings Layers 実験室</h1><p>これは人工的なGPSデータだけを使う試作ページです。ユーザーの走行記録や本番地図には一切アクセスしません。<a href="./">トップに戻る</a></p></header>
 <main><div class="settings">
 <label>描画方式<select id="style"><option value="strata">虹色の薄い地層（立体改良）</option><option value="pen">ボールペン細線</option></select></label>
-<label>テスト地形<select id="scenario"><option value="simple">シンプルな2本</option><option value="cross">交差点・折り返し</option><option value="dense">密集ルート</option><option value="repeat">同じ道を繰り返す</option><option value="gpsdrift">GPS誤差あり（同じ道）</option></select></label>
+<label>テスト地形<select id="scenario"><option value="simple">シンプルな2本</option><option value="cross">交差点・折り返し</option><option value="dense">密集ルート</option><option value="repeat">同じ道を繰り返す</option><option value="gpsdrift">GPS誤差あり（同じ道）</option><option value="partial">部分一致（5kmと10km）</option></select></label>
 <label>重ねる回数<select id="count"><option>1</option><option>3</option><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
 <label>層の厚み <span id="depthValue">3</span><input id="depth" type="range" min="1" max="8" value="3" step=".5"></label>
 <label>線の太さ <span id="widthValue">2</span><input id="width" type="range" min="1" max="4" value="2" step=".25"></label>
@@ -15,7 +15,7 @@
 <button id="reset">初期値に戻す</button></div>
 <p id="repeatResult" role="status" style="color:#8eeaff"></p><div class="map" id="map"></div>
 <div class="legend"><span class="chip">1回：ピンク</span><span class="chip">3回：紫</span><span class="chip">5回：青</span><span class="chip">10回：緑</span><span class="chip">20回：黄</span><span class="chip">30回：オレンジ</span><span class="chip">選択：白</span></div>
-<p>試作のポイント：交差点・折り返し・密集ルートに加え、GPSが数mずれた人工ランの統合を検証できます。各ルートの中心線を1本だけ描き、虹色の層を少しずつ画面下方向へずらして高さを表現します。ズームしても描き直します。本番の走行区間統合アルゴリズムとは別です。</p></main>
+<p>試作のポイント：交差点・折り返し・密集ルートに加え、GPSが数mずれた人工ランや、異なる距離・逆走で部分的に重なる人工ランの統合を検証できます。各ルートの中心線を1本だけ描き、虹色の層を少しずつ画面下方向へずらして高さを表現します。ズームしても描き直します。本番の走行区間統合アルゴリズムとは別です。</p></main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (() => {
@@ -72,6 +72,36 @@ function groupDriftTracks(runs,toleranceMeters=14){
   }
   return groups;
 }
+// Partial route overlaps, including a reversed middle section.
+// These artificial runs share base route edges while having
+// differing starting points, ending points and directions.
+const partialRuns=Array.from({length:30},(_,i)=>{
+  const mode=i%5;
+  if(mode===0)return base.slice(0,4);
+  if(mode===1)return base.slice(2);
+  if(mode===2)return base.slice(1,6).slice().reverse();
+  if(mode===3)return base.slice();
+  return [base[0],base[1],base[2],secondary[2],secondary[3]];
+});
+const edgeSignature=(a,b)=>{
+  const encode=p=>p.map(v=>v.toFixed(6)).join(',');
+  const x=encode(a),y=encode(b);
+  return x<y?x+'|'+y:y+'|'+x;
+};
+function aggregatePartialRuns(runs){
+  const cells=new Map();
+  runs.forEach((run,runId)=>{
+    const once=new Set();
+    for(let i=1;i<run.length;i++){
+      const a=run[i-1],b=run[i],key=edgeSignature(a,b);
+      if(once.has(key))continue;
+      once.add(key);
+      if(!cells.has(key))cells.set(key,{route:[a,b],count:0});
+      cells.get(key).count++;
+    }
+  });
+  return [...cells.values()];
+}
 const rainbow=['#fa48c0','#b948ef','#5355ed','#18b8fb','#34d7a1','#c2e34b','#ffe055','#ff9843'];
 function render(){
 group.clearLayers();
@@ -112,7 +142,13 @@ L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:wid
 }
 }
 const scenario=$('scenario').value;
-if(scenario==='gpsdrift'){
+if(scenario==='partial'){
+  const segments=aggregatePartialRuns(partialRuns.slice(0,n));
+  segments.sort((a,b)=>a.count-b.count);
+  segments.forEach(item=>draw(item.route,1,item.count));
+  const histogram=[...new Set(segments.map(x=>x.count))].sort((a,b)=>a-b).map(c=>c+'回通過：'+segments.filter(x=>x.count===c).length+'区間');
+  $('repeatResult').textContent='異なる距離・逆走を含む人工ラン '+n+'本 → '+segments.length+'区間に統合。 '+histogram.join(' ／ ')+'。同一道路の厳密一致する区間のみを集約（GPS誤差付きの部分一致は未対応）';
+}else if(scenario==='gpsdrift'){
   const groups=groupDriftTracks(driftRuns.slice(0,n));
   groups.forEach(item=>draw(item.route,1,item.count));
   $('repeatResult').textContent='GPS位置誤差を含む人工ラン '+n+'本 → 約14m以内の全体形状類似で '+groups.length+'本の代表ルートへ集約（同じ道の一部分だけの共有には未対応）';
