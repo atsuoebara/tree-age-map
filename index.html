@@ -12559,18 +12559,7 @@ if (
   );
 }
 
-selectedRunLine =
-  L.polyline(
-    activity.latlngs,
-    {
-      color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
-      weight: ringsLayersEnabled ? 2 : 6,
-      opacity: ringsLayersEnabled ? 0.85 : 1,
-      dashArray: ringsLayersEnabled ? '4 7' : null,
-      pane: 'selectedRunPane',
-      interactive: false
-    }
-  ).addTo(map);
+selectedRunLine = makeSelectedRunLine(activity.latlngs).addTo(map);
 
 selectedRunLine.bringToFront();
 
@@ -16570,6 +16559,46 @@ let ringsLayersEnabled = (() => {
 let lastRingsLayersActivities = [];
 const ringsLayersToggle = document.getElementById('ringsLayersToggle');
 
+// A hollow selection highlight: dark rails on both sides, transparent center.
+function selectedRunRails(points) {
+  const zoom=map.getZoom(), px=map.project.bind(map);
+  const projected=points.map(p=>px(p,zoom));
+  const left=[],right=[];
+  for(let i=0;i<projected.length;i++){
+    const p=projected[i],prev=projected[Math.max(0,i-1)],next=projected[Math.min(projected.length-1,i+1)];
+    const dx=next.x-prev.x,dy=next.y-prev.y,d=Math.hypot(dx,dy)||1;
+    const nx=-dy/d*4.1,ny=dx/d*4.1;
+    left.push(map.unproject([p.x+nx,p.y+ny],zoom));
+    right.push(map.unproject([p.x-nx,p.y-ny],zoom));
+  }
+  return [left,right];
+}
+function makeSelectedRunLine(points){
+  const latlngs=ringsLayersEnabled?selectedRunRails(points):points;
+  const line=L.polyline(latlngs,{
+    color:ringsLayersEnabled?'#171717':'#0057ff',
+    weight:ringsLayersEnabled?2.7:6,opacity:1,
+    lineCap:'round',lineJoin:'round',
+    pane:'selectedRunPane',interactive:false
+  });
+  line._rrOriginalPoints=points;
+  return line;
+}
+function updateSelectedRunHighlight(){
+  if(!selectedRunLine || !selectedRunLine._rrOriginalPoints)return;
+  selectedRunLine.setLatLngs(ringsLayersEnabled
+    ?selectedRunRails(selectedRunLine._rrOriginalPoints)
+    :selectedRunLine._rrOriginalPoints);
+  selectedRunLine.setStyle({
+    color:ringsLayersEnabled?'#171717':'#0057ff',
+    weight:ringsLayersEnabled?2.7:6,opacity:1,dashArray:null
+  });
+  selectedRunLine.bringToFront();
+}
+map.on('zoomend',()=>{
+  if(ringsLayersEnabled && selectedRunLine)updateSelectedRunHighlight();
+});
+
 function syncRingsLayersToggle() {
   if (ringsLayersToggle) {
     ringsLayersToggle.classList.toggle('isActive', ringsLayersEnabled);
@@ -16578,15 +16607,7 @@ function syncRingsLayersToggle() {
     ringsLayersToggle.disabled = false;
     ringsLayersToggle.title = 'Make a Rainbow：走った道に虹を育てる（試作）';
   }
-  if (selectedRunLine && typeof selectedRunLine.setStyle === 'function') {
-    selectedRunLine.setStyle({
-      color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
-      weight: ringsLayersEnabled ? 2 : 6,
-      opacity: ringsLayersEnabled ? 0.85 : 1,
-      dashArray: ringsLayersEnabled ? '4 7' : null
-    });
-    selectedRunLine.bringToFront();
-  }
+  updateSelectedRunHighlight();
 }
 if (ringsLayersToggle) {
   ringsLayersToggle.addEventListener('click', () => {
@@ -16973,21 +16994,7 @@ function focusActivityFromRoutePopup(
     );
   }
 
-  selectedRunLine =
-    L.polyline(
-      activity.latlngs,
-      {
-        color: ringsLayersEnabled ? '#ffffff' : '#0057ff',
-        weight: ringsLayersEnabled ? 2 : 6,
-        opacity: ringsLayersEnabled ? 0.85 : 1,
-      dashArray: ringsLayersEnabled ? '4 7' : null,
-        pane:'selectedRunPane',
-        interactive:false
-      }
-    )
-    .addTo(
-      map
-    );
+  selectedRunLine = makeSelectedRunLine(activity.latlngs).addTo(map);
 
   selectedRunLine
     .bringToFront();
