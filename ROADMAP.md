@@ -1,3 +1,9 @@
+## GitHub自動チェックのメール大量通知対策（2026-10-21）
+
+- [x] `.github/workflows/check.yml` の push / pull_request 自動トリガーが開発中の連続コミットごとにチェックを実行し、通知を増やしていた。
+- [x] 自動トリガーを削除し `workflow_dispatch` の手動実行のみ維持（commit cae05b7）。`check-index.js` は保存し、必要な時に手動検証可能。
+- [ ] 他ワークフローからの通知や実行中の残存通知は別途確認。利用者に毎回のメール確認を求めない。
+
 ## ビルド番号の画面表示（2026-10-21）
 
 - [x] ページ最上部のRunner's Ringsタイトル下、既存Version 1.0表示に Build 2026.10.21.01 を追加し、文字サイズ・明度を上げた（index.html: f6a8efb）。
