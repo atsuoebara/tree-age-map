@@ -45,21 +45,22 @@ L.polyline(line,{...common,color:rainbow[Math.min(countToLayers-1,7)],weight:wid
   const sideColors=rainbow.slice(0,countBands);
   // Draw from bottom to top: dark contact shadow, rainbow sidewall,
   // then a narrow illuminated top ridge. The shadow is not a thick fill.
-  L.polyline(shift(line,height+1.8),{...common,color:'#10172f',weight:width+2.0,opacity:.23}).addTo(group);
-  L.polyline(shift(line,height+0.65),{...common,color:'#282040',weight:width+1.0,opacity:.72}).addTo(group);
+  L.polyline(shift(line,height+1.8),{...common,color:'#10172f',weight:width+2.0,opacity:n>=20?.34:.23}).addTo(group);
+  L.polyline(shift(line,height+0.65),{...common,color:'#282040',weight:width+1.0,opacity:n>=20?.82:.72}).addTo(group);
   for(let i=countBands-1;i>=0;i--){
     const y=(i+0.5)/countBands*height;
     const bottomness=(i+1)/countBands;
     L.polyline(shift(line,y),{
       ...common,color:sideColors[i],
-      weight:Math.max(0.9,width*0.78),
+      weight:Math.max(0.82,width*(n>=20?.70:.78)),
+      lineCap:'butt',
       opacity:0.90-0.13*bottomness
     }).addTo(group);
   }
   // A dark lip separates the upper face from the exposed sidewall.
   L.polyline(shift(line,0.38),{...common,color:'#52244f',weight:width+0.65,opacity:.88}).addTo(group);
-  L.polyline(line,{...common,color:'#ff84d8',weight:Math.max(1,width*0.7),opacity:1}).addTo(group);
-  L.polyline(shift(line,-0.35),{...common,color:'#ffe8ff',weight:0.55,opacity:.75}).addTo(group);
+  L.polyline(line,{...common,color:'#ff9be5',weight:Math.max(1,width*0.7),opacity:1}).addTo(group);
+  L.polyline(shift(line,-0.35),{...common,color:'#fff1ff',weight:0.55,opacity:.88}).addTo(group);
 }
 }
 draw(base);draw(secondary,.72);
