@@ -54,7 +54,13 @@ window.initGarminConnection = function ({ client, url }) {
         ? text('Garminに接続済みです。接続後にGarmin Connectへ同期したGPS付きのランを自動で取り込みます。反映まで時間がかかる場合があります。', 'Garmin is connected. GPS runs synced to Garmin Connect after connecting are imported automatically. Imports may take some time.')
         : text('Garminは未接続です。', 'Garmin is not connected.');
       const returnUrl = new URL(window.location.href);
-      if (['connected', 'disconnected'].includes(returnUrl.searchParams.get('garmin'))) {
+      const garminReturn = returnUrl.searchParams.get('garmin');
+      if (garminReturn === 'check') {
+        message.textContent = result.connected
+          ? text('✓ Garmin接続は完了しています。新しいGPSランは自動で取り込まれます。', '✓ Garmin is connected. New GPS runs will import automatically.')
+          : text('Garmin接続はまだ確認できません。接続をやり直す場合は「Garminと連携」を押してください。', 'Garmin is not connected yet. Use Connect Garmin to start a new attempt.');
+      }
+      if (['connected', 'disconnected', 'check'].includes(garminReturn)) {
         const panel = document.getElementById('accountPanel');
         if (panel) panel.open = true;
         returnUrl.searchParams.delete('garmin');
