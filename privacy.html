@@ -7,6 +7,10 @@
   <title>プライバシーポリシー | Runner's Rings</title>
 
   <style>
+    [data-policy-lang="en"]{display:none}
+    html[lang="en"] [data-policy-lang="ja"]{display:none}
+    html[lang="en"] [data-policy-lang="en"]{display:revert}
+
     * {
       box-sizing: border-box;
     }
@@ -367,20 +371,23 @@
     </p>
   </section>
 
+<section class="card privacySection"><h3><span data-policy-lang="ja">Ranking・Territory・バッジ</span><span data-policy-lang="en">Rankings, Territory &amp; badges</span></h3>
+<p data-policy-lang="ja">Rings Rankingは走行記録から順位を表示します。個人の年間距離とEXPLOREの地域数は、本人がそれぞれ公開を許可した場合だけ公開します。以前の公開設定も引き継ぎます。表示名をOFFまたは未設定にすると「ランナー」と表示します。国旗とEXPLOREの地域名は個別設定です。Rings Territoryは個別参加制で、地域の色分けと順位が公開されますが、個人の距離と担当地域数の数字は表示しません。地図上の色から参加地域は確認できます。バッジは保存済みランと承認済み写真から算出します。</p>
+<p data-policy-lang="en">Rings Ranking displays a place based on saved runs. Personal annual distance and EXPLORE region totals appear only with separate permission from the runner. Existing disclosure choices are retained. When name display is off or unset, the name appears as “Runner”. Flags and EXPLORE region names have separate controls. Rings Territory is individually opt-in; participating regions and ranks are visible on the map, while personal distances and numeric region totals are hidden. Map colors still identify participating regions. Badges are derived from saved runs and approved photos.</p></section>
   <section class="card" id="garmin-data">
-    <h3>Garminデータ / Garmin data</h3>
-    <p>Garmin Connect IQ経由で利用者が送信するランニング記録を扱います。Garmin Connect APIによる自動連携は準備中であり、アプリ登録と必要な設定・検証が完了するまで利用できません。有効化後は、利用者の明示的な許可の範囲で、GarminユーザーID、連携権限、認証トークン、ランニングの日時・距離・GPSルートを取得し、本人の記録の保存、地図表示、走行地域・統計の計算に使用します。睡眠など、これらの目的に不要な健康データの取得は行いません。</p>
-    <p>Garminデータの保存・処理にはSupabase（認証・データベース・API処理）を使用します。ウェブ画面はGitHub Pages、地図表示はOpenStreetMapの地図タイルとブラウザ内のLeafletを使用します。これらが本連携で使用するホスティング・技術提供者であり、Garminデータを受領・処理する追加の連携パートナーやAI処理サービスはありません。Garminの認証トークンはサーバー側で暗号化して保存し、ブラウザへ返しません。</p>
-    <p>Garminデータおよびそこから得られる情報を販売せず、広告配信目的で第三者に提供しません。GarminデータをAIシステムへ送信・処理させず、AIモデルの学習・評価・改善にも使用しません。ランキング等でGarmin由来の情報を公開する場合も、利用者による個別の公開許可が必要です。</p>
-    <p>Garmin Connect側で本アプリへのアクセス許可を取り消すことができます。Runner's Rings側での連携解除も、お問い合わせから依頼できます。API連携の解除時はGarminのユーザー登録解除APIを呼び出し、保存した連携認証情報を削除します。保存済みランニング記録は連携解除だけでは自動削除されません。利用者は<a href="./contact.html">お問い合わせ</a>から、自分のデータへのアクセス、訂正、削除、エクスポート、および同意の撤回を依頼できます。本人確認後、必要な対応を行います。記録は利用者が保存を希望する期間、認証情報は連携に必要な期間のみ保持します。削除依頼時には法令上必要な保持分を除き削除し、バックアップの残存分はSupabaseの保持期間に従って失効します。</p>
-    <p>We handle running records users send through Garmin Connect IQ. Automatic Garmin Connect API integration is in preparation and unavailable until registration, configuration and verification are complete. Once enabled, and only with explicit authorization, we use Garmin user IDs, granted permissions, authentication tokens, running dates, distances and GPS routes to save personal running records and provide maps, explored areas and statistics. We do not request unrelated health data such as sleep records.</p>
-    <p>Supabase provides authentication, database storage and API processing. GitHub Pages hosts the web interface; OpenStreetMap tiles and Leaflet in the browser provide maps. These are the hosting and technology providers used for this integration. No additional integration partner or AI processing service receives or processes Garmin data. Garmin tokens are encrypted on the server and never returned to the browser. We do not sell Garmin data or derived information, provide it to third parties for advertising, send it to AI systems, or use it to train, evaluate or improve AI models. Publishing Garmin-derived information in rankings also requires the user's separate permission.</p>
-    <p>Users can withdraw access in Garmin Connect or request disconnection through our <a href="./contact.html">Contact page</a>. API disconnection calls Garmin's registration deletion endpoint and removes stored connection credentials. Previously imported runs are not automatically deleted by disconnection alone. Users can request access, correction, deletion, export and withdrawal of consent through Contact; we act after verifying their identity. Records are retained while users wish to keep them, and credentials only while required for the connection. Requested deletions exclude legally required retention; remaining backups expire under Supabase's retention schedule.</p>
+    <h3><span data-policy-lang="ja">Garminデータ</span><span data-policy-lang="en">Garmin data</span></h3>
+    <p data-policy-lang="ja">Garmin Connect IQ経由で利用者が送信するランニング記録を扱います。Garmin Connect APIによる自動連携は準備中であり、アプリ登録と必要な設定・検証が完了するまで利用できません。有効化後は、利用者の明示的な許可の範囲で、GarminユーザーID、連携権限、認証トークン、ランニングの日時・距離・GPSルートを取得し、本人の記録の保存、地図表示、走行地域・統計の計算に使用します。睡眠など、これらの目的に不要な健康データの取得は行いません。</p>
+    <p data-policy-lang="ja">Garminデータの保存・処理にはSupabase（認証・データベース・API処理）を使用します。ウェブ画面はGitHub Pages、地図表示はOpenStreetMapの地図タイルとブラウザ内のLeafletを使用します。これらが本連携で使用するホスティング・技術提供者であり、Garminデータを受領・処理する追加の連携パートナーやAI処理サービスはありません。Garminの認証トークンはサーバー側で暗号化して保存し、ブラウザへ返しません。</p>
+    <p data-policy-lang="ja">Garminデータおよびそこから得られる情報を販売せず、広告配信目的で第三者に提供しません。GarminデータをAIシステムへ送信・処理させず、AIモデルの学習・評価・改善にも使用しません。ランキング等でGarmin由来の情報を公開する場合も、利用者による個別の公開許可が必要です。</p>
+    <p data-policy-lang="ja">Garmin Connect側で本アプリへのアクセス許可を取り消すことができます。Runner's Rings側での連携解除も、お問い合わせから依頼できます。API連携の解除時はGarminのユーザー登録解除APIを呼び出し、保存した連携認証情報を削除します。保存済みランニング記録は連携解除だけでは自動削除されません。利用者は<a href="./contact.html">お問い合わせ</a>から、自分のデータへのアクセス、訂正、削除、エクスポート、および同意の撤回を依頼できます。本人確認後、必要な対応を行います。記録は利用者が保存を希望する期間、認証情報は連携に必要な期間のみ保持します。削除依頼時には法令上必要な保持分を除き削除し、バックアップの残存分はSupabaseの保持期間に従って失効します。</p>
+    <p data-policy-lang="en">We handle running records users send through Garmin Connect IQ. Automatic Garmin Connect API integration is in preparation and unavailable until registration, configuration and verification are complete. Once enabled, and only with explicit authorization, we use Garmin user IDs, granted permissions, authentication tokens, running dates, distances and GPS routes to save personal running records and provide maps, explored areas and statistics. We do not request unrelated health data such as sleep records.</p>
+    <p data-policy-lang="en">Supabase provides authentication, database storage and API processing. GitHub Pages hosts the web interface; OpenStreetMap tiles and Leaflet in the browser provide maps. These are the hosting and technology providers used for this integration. No additional integration partner or AI processing service receives or processes Garmin data. Garmin tokens are encrypted on the server and never returned to the browser. We do not sell Garmin data or derived information, provide it to third parties for advertising, send it to AI systems, or use it to train, evaluate or improve AI models. Publishing Garmin-derived information in rankings also requires the user's separate permission.</p>
+    <p data-policy-lang="en">Users can withdraw access in Garmin Connect or request disconnection through our <a href="./contact.html">Contact page</a>. API disconnection calls Garmin's registration deletion endpoint and removes stored connection credentials. Previously imported runs are not automatically deleted by disconnection alone. Users can request access, correction, deletion, export and withdrawal of consent through Contact; we act after verifying their identity. Records are retained while users wish to keep them, and credentials only while required for the connection. Requested deletions exclude legally required retention; remaining backups expire under Supabase's retention schedule.</p>
   </section>
   <section class="card">
     <h3>制定日・最終改定日</h3>
     <p>制定日：2026年8月24日</p>
-    <p>最終改定日：2026年10月22日 / Last updated: October 22, 2026</p>
+    <p><span data-policy-lang="ja">最終改定日：2026年10月22日</span><span data-policy-lang="en">Last updated: October 22, 2026</span></p>
   </section>
   
   <div class="buttonArea">
@@ -389,9 +396,7 @@
 
 </main>
 
-<section class="privacySection"><h2>Ranking・Territory・バッジ / Rankings, Territory &amp; badges</h2>
-<p>Rings Rankingは走行記録から順位を表示します。個人の年間距離とEXPLOREの地域数は、本人がそれぞれ公開を許可した場合だけ公開します。以前の公開設定も引き継ぎます。表示名をOFFまたは未設定にすると「ランナー」と表示します。国旗とEXPLOREの地域名は個別設定です。Rings Territoryは個別参加制で、地域の色分けと順位が公開されますが、個人の距離と担当地域数の数字は表示しません。地図上の色から参加地域は確認できます。バッジは保存済みランと承認済み写真から算出します。</p>
-<p>Rings Ranking displays a place based on saved runs. Personal annual distance and EXPLORE region totals appear only with separate permission from the runner. Existing disclosure choices are retained. When name display is off or unset, the name appears as “Runner”. Flags and EXPLORE region names have separate controls. Rings Territory is individually opt-in; participating regions and ranks are visible on the map, while personal distances and numeric region totals are hidden. Map colors still identify participating regions. Badges are derived from saved runs and approved photos.</p></section>
+
 <footer>
   <div>
     <a href="./index.html">Runner's Rings</a>
@@ -429,6 +434,7 @@
       location.reload();
     });
   });
+  document.documentElement.lang = language;
   if (language !== 'en') return;
   const translations = {
     "走った記録ではなく、走った人生を残す。": "Preserve the life you ran, not just the records.",
