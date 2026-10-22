@@ -1,3 +1,11 @@
+## Garmin接続・解除画面（2026-10-22）
+
+- [x] アカウント設定にGarmin Connectの接続・解除ボタンを追加。認証済みの専用status APIから本人の接続有無だけを取得し、表示を切り替える。
+- [x] セッションJWTはPOST本文のみで送信。解除後はアプリへ戻る。既存Strava関数とConnect IQ連携を維持。Build 2026.10.22.02。
+- [x] 利用者がGarmin Client ID / Secret / TOKEN KEYを保存。専用処理が設定を読み込めることを確認。
+- [x] ボタン・状態表示・POST送信・PKCE・暗号化・解除・status認証のモックテスト合格。全体チェックの既存青線2項目失敗は継続。
+- [ ] 本人のGarminアカウントで許可・拒否・解除・再接続を確認。自動取り込み・通知処理は引き続き未実装。
+
 ## Garmin Connect Developer申請準備（2026-10-22）
 
 - [x] main 602407cの実装と公開関数を確認。従来のGarminはConnect IQ連携コード方式で、Connect Developer OAuthは未実装だった。

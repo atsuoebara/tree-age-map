@@ -13,7 +13,8 @@ const unb64 = text => Uint8Array.from(atob(text.replaceAll('-', '+').replaceAll(
 export function createHandler(env, request = fetch) {
   const respond = (text, status = 200, extra = {}) => new Response(text, { status, headers: {
     'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store',
-    'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', ...extra,
+    'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff',
+    'Access-Control-Allow-Origin': ORIGIN, ...extra,
   }});
   const cookie = value => `${COOKIE}=${value}; Path=${PATH}; HttpOnly; Secure; SameSite=Lax; Max-Age=${value ? 600 : 0}`;
   const config = () => {
@@ -52,7 +53,7 @@ export function createHandler(env, request = fetch) {
       'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff',
     }});
     if ((route === '' || route === '/') && req.method === 'GET') return respond('Runner\'s Rings Garmin OAuth endpoint. Callback: /callback. Registration credentials must be configured before connecting.');
-    if (!['/start', '/callback', '/disconnect'].includes(route)) return respond('Not found', 404);
+    if (!['/start', '/callback', '/disconnect', '/status'].includes(route)) return respond('Not found', 404);
     if (req.method !== (route === '/callback' ? 'GET' : 'POST')) return respond('Method not allowed', 405);
     if (route !== '/callback' && req.headers.get('Origin') !== ORIGIN) return respond('Invalid origin', 403);
     // Check malformed callbacks even before credentials have been issued.
@@ -63,13 +64,17 @@ export function createHandler(env, request = fetch) {
     const db = `${c.SUPABASE_URL}/rest/v1/garmin_api_connections`;
     const clear = { 'Set-Cookie': cookie('') };
     try {
-      if (route === '/start' || route === '/disconnect') {
+      if (route === '/start' || route === '/disconnect' || route === '/status') {
         // Submit this form by top-level POST so the HttpOnly cookie works without third-party cookies.
         // Never put the Supabase session JWT in a query string.
         const form = await req.formData();
         let account;
         try { account = await user(c, String(form.get('access_token') || '')); } catch { return respond('Sign in to Runner\'s Rings first.', 401); }
         if (!account.id) return respond('Sign in to Runner\'s Rings first.', 401);
+        if (route === '/status') {
+          const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&select=user_id`, { headers: adminHeaders(c) });
+          return respond(JSON.stringify({ connected: rows.length > 0 }), 200, { 'Content-Type': 'application/json' });
+        }
         if (route === '/disconnect') {
           const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&select=tokens_ciphertext`, { headers: adminHeaders(c) });
           if (rows.length) {
@@ -87,7 +92,7 @@ export function createHandler(env, request = fetch) {
             if (!revoked.ok && revoked.status !== 404 && revoked.status !== 410) throw new Error('revoke');
             await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}`, { method: 'DELETE', headers: { ...adminHeaders(c), Prefer: 'return=representation' } });
           }
-          return respond('Garmin connection removed. Contact Runner\'s Rings to request deletion of previously imported runs.', 200, clear);
+          return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=disconnected` });
         }
         const state = b64(crypto.getRandomValues(new Uint8Array(32)));
         const verifier = b64(crypto.getRandomValues(new Uint8Array(32)));

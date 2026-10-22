@@ -64,8 +64,18 @@ const disconnect = createHandler(k => values[k], async (url, init = {}) => {
   throw new Error('Unexpected disconnect request');
 });
 const removed = await disconnect(new Request(base + '/disconnect', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ access_token: 'user-jwt' }) }));
-assert.equal(removed.status, 200);
+assert.equal(removed.status, 303);
+assert.equal(removed.headers.get('location'), origin + '/?garmin=disconnected');
 assert.equal(revokeCalls.at(-2)[0], 'https://apis.garmin.com/wellness-api/rest/user/registration');
 assert.equal(revokeCalls.at(-2)[1].headers.Authorization, 'Bearer private-access');
 assert.equal(revokeCalls.at(-1)[1].method, 'DELETE');
+const statusHandler = createHandler(k => values[k], async (url, init) => {
+  if (url.endsWith('/auth/v1/user')) return Response.json({ id: 'user-1' });
+  assert.ok(url.endsWith('user_id=eq.user-1&select=user_id'));
+  return Response.json([{user_id:'user-1'}]);
+});
+const status = await statusHandler(new Request(base + '/status', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({access_token:'user-jwt'}) }));
+assert.deepEqual(await status.json(), {connected:true});
+assert.equal(status.headers.get('access-control-allow-origin'), origin);
+assert.equal((await statusHandler(new Request(base + '/status', {method:'POST', headers:{Origin:'https://other.example'},body:new URLSearchParams({access_token:'user-jwt'})}))).status,403);
 console.log('Garmin OAuth: config guard, origin, PKCE, cookie, state, denial, tampering, token encryption, callback and logo checks passed.');

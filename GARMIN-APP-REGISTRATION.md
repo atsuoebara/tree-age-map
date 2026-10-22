@@ -35,15 +35,15 @@ SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEYはEdge Functionsのサーバー環境�
 
 解除も同じオリジンのログイン済み画面から `/functions/v1/garmin-oauth/disconnect` へ同形式のPOSTを送る。期限が近ければトークンを更新し、Garmin登録解除APIの成功後に専用連携行を削除する。保存済みランの削除は別途依頼する。
 
-**開始・解除ボタンは既存index.htmlに追加していない。** アプリ登録後に専用の操作画面を接続し、実Garminアカウントによる許可・拒否・解除・再接続を確認する。アクティビティ同期、通知エンドポイント、Garmin側での権限変更通知・登録解除通知の処理は今回の対象外で未実装。まだ自動同期が使えると案内しない。
+**アカウント設定に接続・解除ボタンを追加済み（Build 2026.10.22.02）。** 本人の接続状態のみを返す認証済みstatus APIを使用する。実Garminアカウントによる許可・拒否・解除・再接続は利用者と確認する。アクティビティ同期、通知エンドポイント、Garmin側での権限変更通知・登録解除通知の処理は今回の対象外で未実装。まだ自動同期が使えると案内しない。
 
 ## 分離と検証
 
 - 新しい関数はgarmin-oauthのみ。既存strava-oauth / sync / status / disconnect / webhook、Connect IQ用garmin-link / ingestを変更していない。
 - 新しいテーブルはgarmin_api_connectionsのみ。既存garmin_connectionsやrunsに触れない。RLS有効、anon/authenticated権限なし、service_roleのみアクセス。tokens_ciphertextはアプリ側でも暗号化。RLSポリシーなしのINFOは、利用者の直接アクセスを許可しない意図した構成。
 - `node scripts/test-garmin-oauth.mjs` 合格。未設定、Origin拒否、PKCE、Cookie、state不一致、有効期限、改ざん、認可拒否、暗号化保存、解除API、PNG実寸を検証。
-- `node check-index.js` は既存「選択ランの青線設定」の2項目で失敗。index.htmlとcheck-index.jsは基準コミットと同一で、今回変更していない。既存の選択ラン描画とチェックの不一致は別件。
-- Garmin認証情報未設定のため、実サービスでの認可コード交換・トークン更新・解除は未確認。モック検証のみ。フォームのAdd app送信は行っていない。
+- `node check-index.js` は既存「選択ランの青線設定」の2項目で失敗。check-index.jsと選択ラン描画は基準コミットと同一。index.htmlは接続ボタンと初期化・Buildを追加した。既存の選択ラン描画とチェックの不一致は別件。
+- 利用者によるアプリ登録と認証情報・暗号鍵の保存は完了。実アカウントでの操作が必要なため、実サービスでの認可コード交換・トークン更新・解除は未確認。モック検証のみ。Add appは利用者が送信済みで、Key Status Approvedを確認。
 
 公式OAuth仕様: https://developerportal.garmin.com/sites/default/files/OAuth2PKCE_1.pdf
 
