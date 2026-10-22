@@ -1,3 +1,11 @@
+## Garmin導線改善（2026-10-22 / Build 2026.10.22.08）
+- [x] COROS横のGarminショートカットは従来「設定を開く」だけで手動取り込みボタンではなかったことを確認。
+- [x] 未接続時はショートカットからOAuth接続開始、接続済み時は設定へ移動。文言を「Garminと連携（自動取込）」「Garmin自動取込 ON」に変更。garmin-connect.jsとindex.htmlを変更、スクリプトキャッシュとAPP_BUILDを更新。
+- [ ] 公開サイトのビルド反映とスマホ実機挙動は未確認。
+- [ ] Chrome開始→Safariへ戻る挙動はiOSの既定ブラウザ/認証フローに依存する可能性。元ブラウザへの強制復帰は未実装・未保証。
+- [ ] Garmin認証画面の未検証警告は提供元の表示。Developer Portalでアプリ検証状況を照合し、解除条件の確認が必要。ランリングのHTMLから消さない。
+- [ ] 接続後の自動Push受信とラン反映は各ユーザー・活動で引き続き確認。
+
 ## English map and timelapse text (2026-10-22, Build 2026.10.22.07)
 
 - [x] Added missing English translations for Rainbow explanation/all seven color tiers, current period/monthly-review descriptions, route/area captions and fullscreen/map buttons. Japanese source text and map/timelapse behavior unchanged.
