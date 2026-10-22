@@ -1,0 +1,404 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026年10月22日、Runner’s RingsのGarmin連携開発に大きな進展がありました。Garmin Connect Developer Programの申請が承認され、開発者向けポータルへのアクセスが可能に。これまでのConnect IQによる連携に加え、Garmin Connectからランニングデータを">
+  <title>Garmin連携に大きな進展！Runner’s Ringsが公式APIの利用承認を取得 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261022-131735-7a9d0107/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261022-131735-7a9d0107/">
+  <meta property="og:title" content="Garmin連携に大きな進展！Runner’s Ringsが公式APIの利用承認を取得">
+  <meta property="og:description" content="2026年10月22日、Runner’s RingsのGarmin連携開発に大きな進展がありました。Garmin Connect Developer Programの申請が承認され、開発者向けポータルへのアクセスが可能に。これまでのConnect IQによる連携に加え、Garmin Connectからランニングデータを自動で取り込む仕組みの開発が、いよいよ本格的に始まります。">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/36/1ab49b40-b911-4545-b5f0-cfdef69a85d0.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/36/1ab49b40-b911-4545-b5f0-cfdef69a85d0.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-10-22T04:24:30.666Z">
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-10-22">2026-10-22</time>
+      <h1>Garmin連携に大きな進展！Runner’s Ringsが公式APIの利用承認を取得</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/36/1ab49b40-b911-4545-b5f0-cfdef69a85d0.png" alt="" loading="lazy">
+      <p class="summary">2026年10月22日、Runner’s RingsのGarmin連携開発に大きな進展がありました。Garmin Connect Developer Programの申請が承認され、開発者向けポータルへのアクセスが可能に。これまでのConnect IQによる連携に加え、Garmin Connectからランニングデータを自動で取り込む仕組みの開発が、いよいよ本格的に始まります。</p>
+      <div class="body">Garmin連携に、大きな一歩！
+
+2026年10月22日。
+
+Runner’s Rings（ランナーズリングス／ランリング）の開発に、うれしいニュースがありました。
+
+Garmin Connect Developer Programへの申請が承認され、公式APIを利用するための開発者ポータルにアクセスできるようになったのです。
+
+Runner’s Ringsは、走った道を地図に残し、年輪のように積み重ねていくランニングアプリ。
+
+これまでもStrava連携やGarmin Connect IQによるデータ送信に取り組んできました。
+
+そして今回、Garmin Connectとの直接的なデータ連携に向けて、新たな扉が開きました。
+
+そもそもGarmin連携で何が変わるの？
+
+現在、Garminのランニングウォッチで記録したデータは、通常Garmin Connectへ同期されます。
+
+Runner’s Ringsが目指しているのは、そのデータをユーザーの許可のもとで自動的に取り込む仕組みです。
+
+例えば、
+
+1. Garminの時計をつけてランニングする。
+2. ランニング終了後、Garmin Connectへ同期する。
+3. Runner’s Ringsが新しいランニングデータを受け取る。
+4. 走行日時・距離・GPSルートを保存する。
+5. 走った道がRunner’s Ringsの地図に加わる。
+
+こうした体験を実現できれば、ランニング後のデータ登録をもっと簡単にできます。
+
+ただし、2026年10月22日時点では自動取り込みは開発途中です。利用承認と機能完成は別の段階になります。
+
+Garmin公式APIとは？
+
+APIとは、異なるサービス同士がデータをやり取りするための仕組みです。
+
+Garmin Connect Developer Programには、運動記録を扱うActivity APIなどがあります。
+
+Activity APIを利用すると、ユーザーが許可したアクティビティの情報をアプリ側で受け取ることができます。
+
+Garminの公式説明では、ランニングを含む運動記録や、詳細なアクティビティデータへのアクセスが提供されています。
+
+Runner’s Ringsが必要としているのは、主にランニングの日時、距離、GPSルートです。
+
+そのため、Activity APIを中心に実装を進める計画です。
+
+今回承認されたStarter Accessとは？
+
+Garmin Connect Developer Programには、Starter AccessとEnterprise Accessなどのアクセス区分があります。
+
+今回Runner’s Ringsが利用を進めているのは、Business Starterです。
+
+公式案内によれば、Starter AccessはPush方式でデータを配信する仕組みです。
+
+これは、Garmin Connectに新しいアクティビティが同期された際、その情報をアプリのサーバーへ送る方式です。
+
+一方で、Starter Accessには重要な制約があります。
+
+それは、過去のアクティビティデータの取得が含まれていないことです。
+
+つまり、Garminを接続するだけで、過去何年分ものランニング記録が自動的に取り込まれるわけではありません。
+
+まずは接続後に発生する新しいランニングデータを確実に保存することが、開発の中心になります。
+
+利用者数や送信量などの具体的な適用条件については、公式仕様書とポータル上の条件を確認しながら対応します。
+
+Strava連携とはどう違う？
+
+Runner’s Ringsでは、すでにStravaとの連携機能を提供しています。
+
+Garmin Connectで記録したランニングがStravaへ同期され、その記録をRunner’s Ringsで利用することもできます。
+
+しかし、すべてのGarminユーザーがStravaを使っているわけではありません。
+
+Garmin Connectだけでランニングを管理している人もいます。
+
+Garminとの公式API連携が実現すれば、Stravaを経由せずにRunner’s Ringsへ走行記録を届ける選択肢が生まれます。
+
+また、GarminとStravaの両方を利用している場合、同じランニングが二重登録されない仕組みも必要です。
+
+新しい連携方法を追加するだけでなく、既存機能との整合性を保つことも重要な開発課題です。
+
+Connect IQとの違いは？
+
+Runner’s Ringsでは、Garmin Connect IQによる連携機能も開発してきました。
+
+Connect IQは、Garminウォッチ上で動くアプリやデータフィールドなどを作るための仕組みです。
+
+一方、今回のActivity APIは、Garmin ConnectとRunner’s Ringsのサーバー間でデータを連携する仕組みです。
+
+つまり、今回目指しているのは、ユーザーが時計上で毎回特別な操作をしなくても、Garmin Connectへの同期をきっかけにデータが取り込まれる体験です。
+
+同じGarmin連携でも、技術的な仕組みは異なります。
+
+これからの開発予定
+
+2026年10月22日時点で、Runner’s RingsはGarmin公式開発者ポータルへアクセスできる段階に進みました。
+
+今後は次のような作業を予定しています。
+
+・Runner’s Ringsのアプリ登録と認証設定
+・Garmin Connectアカウントとの安全な接続
+・Activity APIからのデータ受信
+・走行日時、距離、GPSルートの保存
+・Stravaとの重複登録防止
+・通信エラー時の安全な再処理
+・実機での同期テスト
+
+これらを順番に検証し、安定して利用できる状態を目指します。
+
+正式な提供時期は、実装とテストの結果を踏まえて案内します。
+
+チャッピーの豆知識：Push方式って何？
+
+Push方式は、データが発生した側から情報を送ってもらう仕組みです。
+
+例えばランニングを終えてGarmin Connectに同期すると、その新しい記録についてGarmin側からRunner’s Ringsへ通知が届く、というイメージです。
+
+Runner’s Ringsが何度も「新しい記録はありますか？」と問い合わせ続ける必要を減らせるのが特徴です。
+
+ただし、通知の受信、データ保存、重複防止などの処理は、アプリ側で正しく実装する必要があります。
+
+APIの利用承認は、その仕組みを作り始めるための重要な第一歩なのです。
+
+走った道を、もっと自然に残したい
+
+Runner’s Ringsが目指すのは、ランニングの記録を保存する作業そのものを増やすことではありません。
+
+ランナーは、走ることを楽しむ。
+
+その間に積み重なった道や景色が、自然と自分の地図に残っていく。
+
+そんな体験を実現したいと考えています。
+
+Garmin連携への大きな一歩は、その理想に近づくための進展です。
+
+まだ完成ではありません。
+
+けれど、今日から新しい開発の段階が始まりました。
+
+これからもRunner’s Ringsの成長を、Rings Journalで紹介していきます。
+
+走った人生を残す。
+Map the life you run.
+
+Runner’s Rings
+https://runnersrings.com
+
+参考資料
+
+Garmin Connect Developer Program
+https://developer.garmin.com/gc-developer-program/overview/
+
+Garmin Activity API
+https://developer.garmin.com/gc-developer-program/activity-api/
+
+⸻</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=Garmin%E9%80%A3%E6%90%BA%E3%81%AB%E5%A4%A7%E3%81%8D%E3%81%AA%E9%80%B2%E5%B1%95%EF%BC%81Runner%E2%80%99s%20Rings%E3%81%8C%E5%85%AC%E5%BC%8FAPI%E3%81%AE%E5%88%A9%E7%94%A8%E6%89%BF%E8%AA%8D%E3%82%92%E5%8F%96%E5%BE%97&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261022-131735-7a9d0107%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-10-22">2026-10-22</time>
+      <h1>A Major Step Toward Garmin Integration! Runner’s Rings Gains Official API Access</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/36/1ab49b40-b911-4545-b5f0-cfdef69a85d0.png" alt="" loading="lazy">
+      <p class="summary">On October 22, 2026, Runner’s Rings reached an important milestone in its Garmin integration project. Its application to the Garmin Connect Developer Program was approved, providing access to the official developer portal. The next goal is to implement automatic synchronization of running activities from Garmin Connect, including activity dates, distances, and GPS routes.</p>
+      <div class="body">A major step forward for Garmin integration
+
+October 22, 2026 marked an important milestone for Runner’s Rings.
+
+Our application to the Garmin Connect Developer Program was approved, giving us access to Garmin’s official developer portal.
+
+Runner’s Rings is a running application that preserves the roads you run and visualizes your running journey as growth rings.
+
+We have already developed integrations involving Strava and Garmin Connect IQ.
+
+Now we are taking another step toward direct Garmin Connect synchronization.
+
+What will Garmin integration make possible?
+
+Our goal is to make saving running activities simpler.
+
+The intended experience is straightforward.
+
+1. Record a run using a Garmin watch.
+2. Synchronize the activity with Garmin Connect.
+3. Allow Runner’s Rings to receive the new activity.
+4. Save the date, distance, and GPS route.
+5. Display the route on the Runner’s Rings map.
+
+This would help runners preserve their activities with fewer manual steps.
+
+However, automatic synchronization is not yet available through this new integration. Development and testing are still required.
+
+What is the Garmin Activity API?
+
+An API allows different software services to exchange information.
+
+Garmin’s Activity API provides access to activity data recorded using compatible Garmin devices.
+
+With the user’s authorization, applications can receive relevant exercise information.
+
+For Runner’s Rings, the primary goal is to retrieve running activity dates, distances, and GPS routes.
+
+Understanding Starter Access
+
+Runner’s Rings is beginning with Business Starter access.
+
+According to Garmin’s official documentation, Starter Access uses Push delivery and does not include historical activity retrieval.
+
+This distinction is important.
+
+Connecting a Garmin account will not automatically import years of previous activities under Starter Access.
+
+The initial development goal is to receive and save new running activities after a user has connected their account.
+
+Other applicable usage limits and technical conditions will be checked against Garmin’s official documentation and developer portal.
+
+Why support Garmin directly when Strava is already available?
+
+Runner’s Rings already provides Strava integration.
+
+Garmin users can often synchronize their activities to Strava and then use those records in Runner’s Rings.
+
+But not every Garmin runner uses Strava.
+
+Direct integration would offer another way to preserve running activities.
+
+For users who connect both services, avoiding duplicate activities will be an important part of the implementation.
+
+How is this different from Garmin Connect IQ?
+
+Garmin Connect IQ allows developers to create watch applications and data fields.
+
+The Activity API serves a different purpose.
+
+It enables cloud-to-cloud data integration after activities are synchronized with Garmin Connect.
+
+The aim is to reduce the need for special watch-side actions when saving activities in Runner’s Rings.
+
+What’s next?
+
+As of October 22, 2026, access to Garmin’s official development environment has been established.
+
+The remaining development work includes:
+
+* Registering and configuring the Runner’s Rings application.
+* Implementing secure Garmin account authorization.
+* Receiving new activity data.
+* Saving dates, distances, and GPS routes.
+* Preventing duplicate records from Garmin and Strava.
+* Handling errors and retries safely.
+* Testing the integration with actual devices.
+
+The public release schedule will depend on successful implementation and testing.
+
+Chappy’s running fact: What is Push delivery?
+
+Push delivery means new information is sent from the source system when it becomes available.
+
+For example, when an activity is uploaded to Garmin Connect, Garmin can send a notification to the connected application’s server.
+
+The application must then process and store that information correctly.
+
+Push-based integration can reduce the need for repeated polling, but reliable data handling remains essential.
+
+Preserving the roads we run
+
+Runner’s Rings was created around one simple idea:
+
+Map the life you run.
+
+Runners should be able to focus on running, while their experiences become part of a lasting personal map.
+
+Official Garmin integration brings us one step closer to that goal.
+
+The feature is not complete yet.
+
+But a new stage of development has begun.
+
+We will continue sharing the journey through Rings Journal.
+
+Runner’s Rings
+https://runnersrings.com
+
+References
+
+Garmin Connect Developer Program
+https://developer.garmin.com/gc-developer-program/overview/
+
+Garmin Activity API
+https://developer.garmin.com/gc-developer-program/activity-api/</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=A%20Major%20Step%20Toward%20Garmin%20Integration!%20Runner%E2%80%99s%20Rings%20Gains%20Official%20API%20Access&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261022-131735-7a9d0107%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261022-131735-7a9d0107/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
