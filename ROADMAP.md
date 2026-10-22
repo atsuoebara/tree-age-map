@@ -4,10 +4,12 @@
 - [x] Dedicated branch `feature/garmin-activity-push` based on main `0000d5db8883bb5b3309fc5ff4435786ed4506b9`.
 - [x] New `garmin_activity_inbox` durable queue schema applied to Supabase, RLS enabled and only service_role access. Garmin API external-id unique index added to runs. Existing runs untouched.
 - [x] New `garmin-activity-push` receiver and drain implementation committed on development branch only. Validates high-entropy secret URL path, queues detail payload before HTTP 200, converts samples to [lat,lng], matches owner by Garmin user ID, and detects same-day/distance duplicates (including Strava).
-- [ ] Configure `GARMIN_PUSH_SECRET` (new random secret; do not rotate GARMIN_TOKEN_KEY) and set the `activityDetails` Push endpoint under Garmin API Tools > Endpoints. Check available Push request headers before finalizing receipt authentication.
+- [x] User reports GARMIN_PUSH_SECRET saved in Supabase and Garmin API Tools > Endpoints Activity Details enabled/saved. Actual notification delivery remains unverified; no secret value stored in Git.
+- [ ] Test live webhook receipt/authentication against configured endpoint and confirm secret-path matches the deployed function.
 - [x] New isolated `garmin-activity-push` Edge Function v1 deployed to Supabase with JWT verification disabled for Garmin webhook; without GARMIN_PUSH_SECRET it fails closed with 503. No activity has been received or saved.
 - [ ] Perform negative-authentication, valid notification, retry, idempotency, GPS format, Strava deduplication, and real Garmin watch sync checks.
-- [ ] Establish scheduled `POST /drain` retry execution; best-effort background processing alone is not sufficient after crashes.
+- [x] Edge Function v3 adds recovery of abandoned `processing` receipts older than 15 minutes; code deployed, but not yet live tested.
+- [ ] Establish scheduled `POST /drain` retry execution using pg_cron/pg_net/Vault credentials. Only pg_net is enabled, and no credential has been made available to SQL safely; do not embed service_role in cron SQL or Git. Best-effort background processing alone is not sufficient.
 - [ ] Verify allowed volume limits in Garmin portal and confirm activityDetails permission and production readiness.
 - [ ] No changes to Connect IQ functions or Strava sync. No UI Build increment: index.html unchanged. This is not yet auto-sync complete.
 
