@@ -69,14 +69,7 @@ export function createHandler(env, request = fetch) {
     const db = `${c.SUPABASE_URL}/rest/v1/garmin_api_connections`;
     const sessionsDb = `${c.SUPABASE_URL}/rest/v1/garmin_oauth_sessions`;
     let phase = 'start';
-    const completionPage = (connected) => {
-      const title = connected ? 'Garmin連携が完了しました' : 'Garmin連携を解除しました';
-      const english = connected ? 'Garmin connection completed.' : 'Garmin disconnected.';
-      const explanation = 'Chromeから開始した場合は、元のChromeに戻って接続状態をご確認ください。Safariへ切り替わっても、連携状態はサーバーに保存されています。';
-      const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>${title} | Runner's Rings</title><style>body{font-family:system-ui,-apple-system,sans-serif;background:#101c2a;color:white;max-width:540px;margin:12vh auto;padding:24px;line-height:1.7}h1{font-size:1.4rem}a{display:block;text-align:center;margin-top:22px;background:#eaff00;color:#101c2a;padding:14px;border-radius:12px;font-weight:800;text-decoration:none}small{color:#cbd5e1}</style></head><body><h1>✓ ${title}</h1><p>${english}</p><p>${explanation}</p><a href="https://runnersrings.com/">Runner's Ringsを開く</a><small>元のブラウザでランリングを開いている場合は、そちらに戻ってください。</small></body></html>`;
-      return new Response(html, {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",'Set-Cookie':cookie('')}});
-    };
-    const clear = { 'Set-Cookie': cookie('') };
+        const clear = { 'Set-Cookie': cookie('') };
     try {
       if (route === '/start' || route === '/disconnect' || route === '/status') {
         // Submit this form by top-level POST so the HttpOnly cookie works without third-party cookies.
@@ -155,7 +148,7 @@ export function createHandler(env, request = fetch) {
       await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, import_enabled:true, connection_version:crypto.randomUUID(), permissions_checked_at:new Date().toISOString(), permissions_retry_at:new Date().toISOString(), updated_at: new Date().toISOString() }) });
       phase = 'clear-session';
       await request(`${sessionsDb}?state=eq.${encodeURIComponent(state)}`, {method:'DELETE',headers:adminHeaders(c)}).catch(()=>{});
-      return completionPage(true);
+      return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=connected` });
     } catch (e) {
       console.error('garmin-oauth failure', {phase, error: e instanceof Error ? e.message : 'unknown'});
       return respond('Garmin connection could not be completed. Try again or contact Runner\'s Rings support.', 502, clear);
