@@ -79,6 +79,7 @@ window.initGarminConnection = function ({ client, url }) {
   async function submit(action) {
     if (busy) return;
     if (action === 'disconnect' && !confirm(text('Garminとの接続を解除しますか？保存済みのランは削除されません。', 'Disconnect Garmin? Previously saved runs will be kept.'))) return;
+    if (action === 'start' && !confirm(text('Garmin認証後、別のアプリやブラウザが開く場合があります。自動でRunner\'s Ringsに戻らないときは、連携を始めたアプリに手動で戻って接続状態を確認してください。続けますか？', 'Garmin may open another app or browser. If you are not returned automatically, switch back to the app where you started and check your connection status. Continue?'))) return;
     busy = true;
     connect.disabled = disconnect.disabled = true;
     if (shortcut) shortcut.disabled = true;
