@@ -129,7 +129,7 @@ export function createHandler(env, request = fetch) {
       const matches = await json(`${sessionsDb}?state=eq.${encodeURIComponent(state)}&select=payload,expires_at`, {headers:adminHeaders(c)});
       if (!matches.length) return respond('Garmin連携の状態をご確認ください。元のブラウザに戻り、Runner\'s Ringsで接続済みか確認してください。', 200, clear);
       const value = matches[0].payload;
-      if (Date.parse(matches[0].expires_at) < Date.now()) return respond('',303,{...clear, Location:`${ORIGIN}/garmin-return.html`});
+      if (Date.parse(matches[0].expires_at) < Date.now()) return respond('元のブラウザへ戻り、Runner\'s Ringsの接続状態をご確認ください。',200,clear);
       let session;
       try { session = await open(c, value, 'oauth'); } catch { return respond('Invalid OAuth session.', 400, clear); }
       if (session.exp < Date.now() || session.state !== url.searchParams.get('state')) return respond('Expired or invalid OAuth state.', 400, clear);
