@@ -1,3 +1,91 @@
+## Garmin import UI update (2026-10-22, Build 2026.10.22.06)
+
+- [x] Replaced preparation text with automatic import of GPS runs synced after connecting, including possible delivery delay, in Japanese and English: account status, shortcut, onboarding and privacy notice. Updated script cache versions. Past-run import remains a separate method.
+- [x] Real automatic receipt/save and real Strava coexistence with one run verified in the preceding test; this wording does not claim lifecycle or concurrency coverage.
+- [x] Connection-control mock and JS syntax checks passed. Full index check still fails the previously documented two selected-run blue-line assertions; inline JS syntax passes. Strava/Connect IQ logic unchanged.
+- [ ] Public deployment and device display verification pending. PR #6 remains unmerged until explicitly merged.
+
+## Garmin automatic receipt and save observed (2026-10-22 18:08 JST, current status / PR #6)
+
+- [x] New user watch test without manual resend: real Garmin Health API Push HTTP 200; Inbox 24811705124-detail received 18:06:26 JST, completed saved 18:06:30 JST, attempts=1, no error. Run 26672 has Garmin external ID garmin-api:24811705124, date 2026-10-22, start 18:04:25 JST, distance 0.03931 km, 106 route points, correct connected owner, not deleted. Automatic provider notification -> Inbox -> saved run is now observed for this test.
+- [x] Older requested 24810481769-detail also arrived in the same batch and completed duplicate against existing Strava data.
+- [ ] Important follow-up: saved run currently has source=strava and strava_id=20685054059 alongside the Garmin external ID. The cause/order of Strava enrichment or concurrent update has not been established. Do not claim isolated Garmin-source retention or concurrency correctness; investigate cross-source behavior before changing release status. No manual test inserts/deletes or Strava/Connect IQ changes made. Lifecycle/revoke/reconnect/outage/concurrency verification still pending; PR not merged and UI unchanged. This entry remains local.
+
+## Garmin short real-run follow-up (2026-10-22 18:00 JST, preceding status / PR #6)
+
+- [x] User synced a new outdoor short run. Data Viewer independently confirms 24811618133 / 24811618133-detail, RUNNING, 13.84 m, started 17:53:06 JST. Strava saved the matching run at 17:55:14 JST (13.8 m, six route points).
+- [x] At 18:00:00 JST its Garmin Inbox receipt was absent. After official Summary Resender submission, receipt arrived 18:00:24 JST and finished as duplicate at 18:00:28 JST, attempts=1, no error. Real Garmin delivery-to-Inbox-to-deduplication succeeded for this exact new activity. This was manual provider resend, not proof of automatic initial delivery.
+- [x] Garmin API Configuration shows Activity Approved and enabled with one active endpoint. No additional permission/configuration changes made.
+- [ ] Initial automatic Push delivery delay/failure cause is unresolved. New Garmin-source run insertion remains unverified because Strava saved both tested real activities first. Do not remove Strava data or disable existing integrations to force a pass. Lifecycle, outage/concurrency tests remain pending. PR/UI completion status unchanged; this entry is local only.
+
+## Garmin real Push receipt verified (2026-10-22 17:45 JST, preceding status / PR #6)
+
+- [x] Confirmed malformed Garmin Activity Details endpoint contained an unevaluated PowerShell expression. User authorized rotation of GARMIN_PUSH_SECRET only and personally saved a new value in Supabase and corrected the Garmin URL. SHA-256 comparison confirmed both values match at 17:42:37 JST; no secret is recorded here. GARMIN_TOKEN_KEY, Client Secret, Strava and Connect IQ were not changed.
+- [x] Garmin Summary Resender accepted ActivityDetail for the connected user using 2026-10-22 JST day range; a second submission repeated that range. Narrow activity-start-time range returned no summaries; no conclusion about resend time semantics is inferred from that alone.
+- [x] Production function logs from 17:42 onward show two real non-drain POSTs from user-agent Garmin Health API, both HTTP 200. Real provider delivery/authentication/accepted notification format is now established.
+- [x] Inbox 24810597167-detail received 17:44:29 JST and completed 17:44:33 as duplicate; GPS payload cleared. Existing matching Strava run 26669 starts 06:11:32 UTC, 1.2447 km (Garmin 1.2611 km), same connected owner. Replay leaves one receipt and two runs across the two test start times, without additional runs. Existing Strava data preserved.
+- [x] Requested activity 24810481769 exists in Data Viewer (111.79 m, 180 GPS points); existing Strava run 26668 matches its exact 05:54:25 UTC start, 0.1118 km, same owner. Its Garmin Inbox receipt is still absent at 17:45:33 JST. Do not claim this target notification was imported.
+- [ ] New real Garmin activity -> saved Garmin run remains unverified: observed real delivery was correctly deduplicated against Strava. Need a new GPS run not already saved by another integration to prove Garmin insert; do not delete existing Strava runs to force the test. Real lifecycle delivery, revoke/reconnect, outage replay and simultaneous sessions remain unverified. UI preparation message remains unchanged; PR draft/unmerged. No runtime code changes in this investigation. Documentation remains local, not pushed.
+
+## Garmin notification investigation (2026-10-22, preceding investigation)
+
+- [x] After user login, inspected Garmin Endpoint Configuration: Activity Details Enabled=true, On Hold=false, expected Supabase host/function prefix, but URL suffix contains an unevaluated PowerShell random-generation expression and whitespace instead of the intended generated secret. This is a confirmed configuration defect; successful delivery after correction is still required to establish the complete cause. The configured URL and secret values are deliberately omitted.
+- [x] Independently inspected actual Data Viewer Activity Details for the connected account: activity 24810481769, RUNNING, 111.79 m, summary 24810481769-detail, 180 GPS samples, start 1792648465 and offset +32400. Data Viewer response has nested summary/samples; it is not the actual Push envelope. Another same-day distinct activity 24810597167 (1261.1 m, 197 GPS samples) is available for later separate-run verification. No activity was manually inserted into runs.
+- [x] Summary Resender is available for ActivityDetail and requires user ID plus a time window. No resend has been submitted to the malformed endpoint.
+- [ ] User has no retained Push-secret value and explicitly authorized replacing GARMIN_PUSH_SECRET only, keeping GARMIN_TOKEN_KEY, Client Secret, Strava and Connect IQ unchanged. New 256-bit random value prepared in volatile memory without displaying it. Supabase connector has no Secrets-update tool; dashboard requires user login, requested. No secret or endpoint update has been saved yet. After login, update only that secret and the Garmin Activity Details URL, verify receipt, then resend the real activity and check saved/duplicate behavior.
+
+- [x] Re-read PR #6 (open/draft, not merged; head 3ce2099), previous implementation and specification. Local Activity API PDF SHA-256 matches the handoff. Push remains ACTIVE v5 with platform JWT verification disabled; deployed source matches local. OAuth remains ACTIVE v7.
+- [x] Production query at 17:19:27 JST: Inbox 0; runs with source_external_id=garmin-api:24810481769: 0. Subsequent actual Activity Details inspection is recorded above.
+- [x] Existing connection is enabled with ACTIVITY_EXPORT; permission GET succeeded at 17:16:01 JST. Retry cron remains active every two minutes; 17:14/17:16/17:18 executions succeeded. Function logs separately show worker HTTP 200 responses.
+- [x] Fresh external negative-auth probes: invalid path 404, missing secret path 404, unauthenticated drain 403. No credentials were sent in these probes. This confirms reachability and rejection behavior, NOT successful authentication with the configured secret URL.
+- [x] Last-24-hour function logs show only worker calls and diagnostic non-worker 404 requests; no Garmin-origin request identified by user-agent/provider organization and no successful non-worker Push recorded. Absence of an identifiable request does not establish the provider-side cause. Inbox alone is not a complete ingress audit: unknown/disabled accounts can be acknowledged without an Inbox insert.
+- [x] Push/OAuth/controls mock suites passed again. Current documented Activity Details envelope and nested summary/samples match the receiver; actual provider payload remains unverified. Security/performance advisors inspected; no schema/runtime changes made.
+- [ ] Correct the confirmed malformed endpoint, verify secret match, provider delivery attempts/status and Starter constraints. Do not disable endpoints: queued notifications can be discarded.
+- [ ] Valid-secret empty-batch/auth test, real Activity Details delivery/replay and resulting owner/date/distance/GPS/Inbox-state checks are pending. A configuration defect is confirmed above, but its correction and complete end-to-end outcome remain unverified. No keys, runtime code, Strava/Connect IQ integrations or existing runs changed yet; PR remains draft/unmerged. This investigation entry is local and not yet pushed to PR #6.
+
+## Garmin Starter Push reliability implementation (2026-10-22, preceding verified implementation)
+
+- [x] Reviewed the supplied Activity API 2.0 PDF (2026-10-15 revision), particularly pages 5-6 and 13-16. Starter Push only; no Enterprise Pull/backfill. Lifecycle webhook JSON is not specified in this PDF; authoritative permissions/registration behavior cross-checked against Garmin's official OAuth PDF.
+- [x] Added atomic receipt batches, connection generations, service-only transactional save RPC, attempt fencing, connection-row locking, soft-delete protection and minimal retained payloads. Same-day distinct Garmin activity IDs are preserved; cross-source heuristic uses time and distance.
+- [x] Added current-permission checks, encrypted refresh-token rotation, fail-closed provider-outage handling, local intake suspension before disconnect and scheduled remote-revocation recovery. Lifecycle notifications invalidate permission cache; periodic authoritative checks recover missed hints.
+- [x] Applied reliability schema and enabled `garmin-activity-retry` every two minutes. A dedicated token was generated inside Postgres/Vault without revealing it. GARMIN_TOKEN_KEY and existing provider/push secrets were not overwritten.
+- [x] Deployed `garmin-activity-push` v5 and `garmin-oauth` v7. Retrieved deployed source matches the tested local files. Existing Strava/Connect IQ code, UI and prior user runs remain unchanged by these changes.
+- [x] Push, OAuth and connection-control mock suites passed. Service_role transactional DB tests passed for idempotency, stale attempts, deleted runs, distinct activities, cross-source match, reconnect, permissions and disconnect; all synthetic data rolled back.
+- [x] Live checks: Vault-authenticated worker POST 200, no timeout; existing account's permission GET succeeded with ACTIVITY_EXPORT. Cron runs at 13:46/13:48/13:50 JST succeeded; permission check advanced at 13:50:03 JST. Invalid endpoint path 404, unauthenticated drain 403. Inbox still empty, so no successful real activity import is claimed.
+- [x] Security/performance advisors checked; new Garmin RPCs are not executable by anon/authenticated. Expected service-only RLS info remains; existing unrelated warnings unchanged.
+- [ ] Real watch GPS activity -> configured Garmin Push -> runs import, real duplicate replay, lifecycle notification delivery, real permission withdrawal, disconnect/reconnect and provider-outage replay remain unverified. Two-session concurrent delivery has not been exercised; transactional/attempt-fencing tests are not a real concurrency test.
+- [ ] Confirm Garmin portal endpoint configuration, lifecycle payloads and production quota. Details above 24 hours and GPS-less activities are outside this importer. Cross-source matching cannot guarantee deduplication against simultaneous Strava writes or old records with no start time.
+- Operational/specification/test details: [GARMIN-ACTIVITY-PUSH.md](GARMIN-ACTIVITY-PUSH.md). No UI Build increment. Development and deployment are complete for this scope; automatic sync is **not** marked end-to-end verified.
+
+## Garmin Push follow-up audit (2026-10-22, historical pre-PDF status)
+
+- [x] Updated development branch with latest main `c08e556`. Existing Strava, Connect IQ, UI and run data are unchanged by this follow-up.
+- [x] Live inspection: `garmin-activity-push` ACTIVE v3; inbox empty; one API connection. Inbox/connections have RLS and no anon/authenticated SELECT grant; Garmin run external-ID unique index exists.
+- [x] Live negative-auth checks on v3: invalid secret path returns 404; unauthenticated drain returns 403. These checks do not prove valid notification delivery.
+- [x] Branch-only hardening: validate entire batch before writes, tolerate null GPS samples and invalid offset dates, recheck queued owner's current connection, return 503 on drain database failure. Same-day/distance alone no longer suppresses separate runs: cross-source matching requires start times within two minutes and distance within 3% (minimum 100m); distinct Garmin API IDs are preserved.
+- [x] Mock tests: parsing/GPS, distinct and matching runs, authorization, malformed batch, disconnected owner, durable-receipt failure, drain database failure. Existing OAuth and connection-control suites pass.
+- [ ] Deploy and live-test these follow-up changes. Production remains v3. The connection check is not an atomic revocation barrier; disconnect racing an in-flight run insert remains to be resolved.
+- [ ] Reattach Garmin Activity API 2.0 PDF. The referenced conversation API returns only content-reference placeholders and no attachments; local sources contain no PDF. Earlier document-review claims below are historical and have not been independently revalidated in this continuation.
+- [ ] Implement and verify permission-change / deregistration notification handling against that PDF; queued owner recheck does not replace these handlers. Verify permission semantics before allowing intake based on stored permissions.
+- [ ] Configure scheduled retry and failed-notification recovery. Live pg_cron is absent; current waitUntil processing is best effort. Use Vault for a scheduler credential, never place service_role or endpoint secrets in SQL literals committed to Git. Reference: https://supabase.com/docs/guides/functions/schedule-functions
+- [ ] Real watch sync, valid webhook, complete receipt-to-runs import, concurrent delivery, permission changes, disconnect/reconnect and failure recovery are NOT verified. No claim of completed automatic sync.
+- GARMIN_TOKEN_KEY was not read or modified. No secret values were retrieved or committed. No mock activity was written to production.
+
+## Garmin Connect Starter Activity Push implementation (2026-10-22, development branch; historical status)
+
+- [x] Official Activity API 2.0 document reviewed: Starter uses Push JSON; detailed GPS samples come in `activityDetails`; Enterprise-only historical backfill and Ping/Pull are not used.
+- [x] Dedicated branch `feature/garmin-activity-push` based on main `0000d5db8883bb5b3309fc5ff4435786ed4506b9`.
+- [x] New `garmin_activity_inbox` durable queue schema applied to Supabase, RLS enabled and only service_role access. Garmin API external-id unique index added to runs. Existing runs untouched.
+- [x] New `garmin-activity-push` receiver and drain implementation committed on development branch only. Validates high-entropy secret URL path, queues detail payload before HTTP 200, converts samples to [lat,lng], matches owner by Garmin user ID, and detects same-day/distance duplicates (including Strava).
+- [x] User reports GARMIN_PUSH_SECRET saved in Supabase and Garmin API Tools > Endpoints Activity Details enabled/saved. Actual notification delivery remains unverified; no secret value stored in Git.
+- [ ] Test live webhook receipt/authentication against configured endpoint and confirm secret-path matches the deployed function.
+- [x] New isolated `garmin-activity-push` Edge Function v1 deployed to Supabase with JWT verification disabled for Garmin webhook; without GARMIN_PUSH_SECRET it fails closed with 503. No activity has been received or saved.
+- [ ] Perform negative-authentication, valid notification, retry, idempotency, GPS format, Strava deduplication, and real Garmin watch sync checks.
+- [x] Edge Function v3 adds recovery of abandoned `processing` receipts older than 15 minutes; code deployed, but not yet live tested.
+- [ ] Establish scheduled `POST /drain` retry execution using pg_cron/pg_net/Vault credentials. Only pg_net is enabled, and no credential has been made available to SQL safely; do not embed service_role in cron SQL or Git. Best-effort background processing alone is not sufficient.
+- [ ] Verify allowed volume limits in Garmin portal and confirm activityDetails permission and production readiness.
+- [ ] No changes to Connect IQ functions or Strava sync. No UI Build increment: index.html unchanged. This is not yet auto-sync complete.
+
 ## 左上タイトルのホームリンク（2026-10-22）
 
 - [x] Ranking・Territory・FAQ・ポリシー・お問い合わせ・Journal各記事など、公開ページのヘッダー内Runner's Ringsタイトルを/index.htmlへのリンクに統一。表示色・文字サイズは維持。既存GPS Art・Todayのリンクは維持。index.htmlはBuild 2026.10.22.05。

@@ -8,7 +8,7 @@ window.initGarminConnection = function ({ client, url }) {
   const text = (ja, en) => english ? en : ja;
   if (shortcut) {
     shortcut.textContent = text('Garmin設定', 'Garmin settings');
-    shortcut.title = text('接続設定を開きます。自動取り込みは準備中です。', 'Open connection settings. Automatic import is not available yet.');
+    shortcut.title = text('接続設定を開きます。接続後に同期したGPS付きのランを自動で取り込みます。', 'Open connection settings. GPS runs synced after connecting are imported automatically.');
     shortcut.onclick = () => {
       const panel = document.getElementById('accountPanel');
       if (panel) panel.open = true;
@@ -43,7 +43,7 @@ window.initGarminConnection = function ({ client, url }) {
         ? text('✓ Garmin接続済み', '✓ Garmin connected')
         : text('Garminに接続', 'Connect Garmin');
       message.textContent = result.connected
-        ? text('Garminに接続済みです。ランの自動取り込みは準備中です。', 'Garmin is connected. Automatic activity import is not available yet.')
+        ? text('Garminに接続済みです。接続後にGarmin Connectへ同期したGPS付きのランを自動で取り込みます。反映まで時間がかかる場合があります。', 'Garmin is connected. GPS runs synced to Garmin Connect after connecting are imported automatically. Imports may take some time.')
         : text('Garminは未接続です。', 'Garmin is not connected.');
       const returnUrl = new URL(window.location.href);
       if (['connected', 'disconnected'].includes(returnUrl.searchParams.get('garmin'))) {

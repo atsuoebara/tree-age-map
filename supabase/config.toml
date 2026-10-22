@@ -2,3 +2,7 @@
 # encrypted HttpOnly OAuth session and state; start/disconnect verify user JWTs.
 [functions.garmin-oauth]
 verify_jwt = false
+
+# Secret-path webhook; /drain verifies a dedicated Vault token inside the handler.
+[functions.garmin-activity-push]
+verify_jwt = false

@@ -72,13 +72,24 @@ export function createHandler(env, request = fetch) {
         try { account = await user(c, String(form.get('access_token') || '')); } catch { return respond('Sign in to Runner\'s Rings first.', 401); }
         if (!account.id) return respond('Sign in to Runner\'s Rings first.', 401);
         if (route === '/status') {
-          const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&select=user_id`, { headers: adminHeaders(c) });
+          const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&import_enabled=eq.true&select=user_id`, { headers: adminHeaders(c) });
           return respond(JSON.stringify({ connected: rows.length > 0 }), 200, { 'Content-Type': 'application/json' });
         }
         if (route === '/disconnect') {
-          const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&select=tokens_ciphertext`, { headers: adminHeaders(c) });
+          // Stop intake first, even when Garmin is down; cron retries remote revocation.
+          const rows = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}`, { method: 'PATCH', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify({ import_enabled: false, permissions_retry_at: new Date().toISOString() }) });
+          const lease = crypto.randomUUID();
+          const leaseCall = release => json(`${c.SUPABASE_URL}/rest/v1/rpc/garmin_worker_lease`, { method:'POST', headers:{...adminHeaders(c),'Content-Type':'application/json'}, body:JSON.stringify({p_token:lease,p_release:release}) });
+          // Serialize refresh-token rotation with the worker. Local disconnect already succeeded.
+          let held=false;
+          try {
+          held=await leaseCall(false);
+          if(!held)return respond('',303,{...clear,Location:`${ORIGIN}/?garmin=disconnected`});
           if (rows.length) {
-            const tokens = await open(c, rows[0].tokens_ciphertext, `tokens:${account.id}`);
+            const current = await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}&connection_version=eq.${rows[0].connection_version}&import_enabled=eq.false&select=tokens_ciphertext,connection_version`, {headers:adminHeaders(c)});
+            if(!current.length)return respond('',303,{...clear,Location:`${ORIGIN}/?garmin=disconnected`});
+            const target=`${db}?user_id=eq.${encodeURIComponent(account.id)}&connection_version=eq.${current[0].connection_version}`;
+            const tokens = await open(c, current[0].tokens_ciphertext, `tokens:${account.id}`);
             let access = tokens.access_token;
             if (tokens.expires_at <= Date.now() + 600000) {
               const refreshed = await json(TOKEN, { method: 'POST', body: new URLSearchParams({ grant_type: 'refresh_token', client_id: c.GARMIN_CLIENT_ID, client_secret: c.GARMIN_CLIENT_SECRET, refresh_token: tokens.refresh_token }) });
@@ -86,12 +97,14 @@ export function createHandler(env, request = fetch) {
               access = refreshed.access_token;
               // Persist rotated credentials before deletion so an upstream failure can be retried.
               const rotated = await seal(c, { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 }, `tokens:${account.id}`);
-              await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}`, { method: 'PATCH', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify({ tokens_ciphertext: rotated }) });
+              await json(target, { method: 'PATCH', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify({ tokens_ciphertext: rotated }) });
             }
             const revoked = await request(`${API}/registration`, { method: 'DELETE', headers: { Authorization: `Bearer ${access}` }, signal: AbortSignal.timeout(15000) });
-            if (!revoked.ok && revoked.status !== 404 && revoked.status !== 410) throw new Error('revoke');
-            await json(`${db}?user_id=eq.${encodeURIComponent(account.id)}`, { method: 'DELETE', headers: { ...adminHeaders(c), Prefer: 'return=representation' } });
+            if (!revoked.ok && ![403,404,410].includes(revoked.status)) throw new Error('revoke');
+            await json(target, { method: 'DELETE', headers: { ...adminHeaders(c), Prefer: 'return=representation' } });
           }
+          } catch { /* Local consent is off; scheduled worker completes remote revocation. */ }
+          finally { if(held)await leaseCall(true).catch(()=>{}); }
           return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=disconnected` });
         }
         const state = b64(crypto.getRandomValues(new Uint8Array(32)));
@@ -115,7 +128,7 @@ export function createHandler(env, request = fetch) {
       const permissions = await json(`${API}/permissions`, { headers });
       if (!identity.userId) throw new Error('identity');
       const encrypted = await seal(c, { ...tokens, expires_at: Date.now() + tokens.expires_in * 1000 }, `tokens:${session.user}`);
-      await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, updated_at: new Date().toISOString() }) });
+      await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, import_enabled:true, connection_version:crypto.randomUUID(), permissions_checked_at:new Date().toISOString(), permissions_retry_at:new Date().toISOString(), updated_at: new Date().toISOString() }) });
       return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=connected` });
     } catch {
       return respond('Garmin connection could not be completed. Try again or contact Runner\'s Rings support.', 502, clear);

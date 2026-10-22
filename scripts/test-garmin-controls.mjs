@@ -26,14 +26,14 @@ assert.equal(scrolled,true);
 await elements.garminApiConnectButton.onclick();
 assert.equal(posted.method,'POST'); assert.ok(posted.action.endsWith('/start'));
 assert.equal(posted.input.name,'access_token'); assert.equal(posted.input.value,user.access_token); assert.ok(removed);
-// New page lifecycle with a connection: show disconnect and report sync as pending.
+// New page lifecycle with a connection: show disconnect and report automatic GPS import.
 connected=true;
 context.window.initGarminConnection({client,url:'https://example.supabase.co'});
 await tick();
 assert.equal(elements.garminApiDisconnectButton.hidden,false);
 assert.equal(elements.garminShortcutButton.textContent,'✓ Garmin接続済み');
-assert.match(elements.garminApiMessage.textContent,/自動取り込みは準備中/);
+assert.match(elements.garminApiMessage.textContent,/GPS付きのランを自動で取り込み/);
 await elements.garminApiDisconnectButton.onclick();
 assert.ok(posted.action.endsWith('/disconnect'));
 assert.ok(!posted.action.includes(user.access_token));
-console.log('Garmin controls: authenticated status, connect/disconnect POST, hidden JWT body, connected state and sync-pending message passed.');
+console.log('Garmin controls: authenticated status, connect/disconnect POST, hidden JWT body, connected state and automatic GPS-import message passed.');
