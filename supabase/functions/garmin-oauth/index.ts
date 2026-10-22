@@ -141,7 +141,17 @@ export function createHandler(env, request = fetch) {
       phase = 'garmin-identity';
       const identity = await json(`${API}/id`, { headers });
       phase = 'garmin-permissions';
-      const permissions = await json(`${API}/permissions`, { headers });
+      let permissions;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          permissions = await json(`${API}/permissions`, { headers });
+          break;
+        } catch (error) {
+          // Retry only short-lived provider 403 responses. Never retry the one-use authorization code.
+          if (!(error instanceof Error) || error.message !== 'upstream-403' || attempt === 2) throw error;
+          await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1200));
+        }
+      }
       if (!identity.userId) throw new Error('identity');
       const encrypted = await seal(c, { ...tokens, expires_at: Date.now() + tokens.expires_in * 1000 }, `tokens:${session.user}`);
       phase = 'save-connection';
