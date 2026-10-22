@@ -56,6 +56,9 @@ async function mark(id,state,extra={}) {
   await db('garmin_activity_inbox?id=eq.'+id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({state,updated_at:new Date().toISOString(),...extra})});
 }
 async function drain() {
+  // Recover receipts abandoned by an interrupted Edge Function invocation.
+  const stale=new Date(Date.now()-15*60_000).toISOString();
+  await db('garmin_activity_inbox?state=eq.processing&updated_at=lt.'+encodeURIComponent(stale),{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({state:'retry',next_retry_at:new Date().toISOString(),updated_at:new Date().toISOString(),last_error:'interrupted processing'})});
   const rows=await db('garmin_activity_inbox?state=in.(pending,retry)&next_retry_at=lte.'+encodeURIComponent(new Date().toISOString())+'&select=id,user_id,payload,attempts&order=id.asc&limit=15');
   for(const r of rows) {
     try {
