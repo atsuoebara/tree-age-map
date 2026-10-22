@@ -1,0 +1,4 @@
+# Garmin calls the callback without a Supabase JWT. The handler validates the
+# encrypted HttpOnly OAuth session and state; start/disconnect verify user JWTs.
+[functions.garmin-oauth]
+verify_jwt = false

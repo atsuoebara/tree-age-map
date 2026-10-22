@@ -1,3 +1,14 @@
+## Garmin Connect Developer申請準備（2026-10-22）
+
+- [x] main 602407cの実装と公開関数を確認。従来のGarminはConnect IQ連携コード方式で、Connect Developer OAuthは未実装だった。
+- [x] 独立したgarmin-oauth関数にPKCE S256、暗号化HttpOnly Cookie、state照合、トークン暗号化保存、Garmin登録解除を実装・公開。専用テーブルgarmin_api_connectionsを追加。Stravaと既存Connect IQの実装・データは変更なし。
+- [x] 既存ロゴを300×300に縮小し、専用関数から公開配信。GET 200 / image/pngを確認。正確な登録値・設定手順はGARMIN-APP-REGISTRATION.mdに記録。
+- [x] privacy.htmlにGarminの用途、処理事業者、販売・広告提供なし、AI利用なし、権利行使・同意撤回を日英で追記。
+- [ ] privacy.htmlの本番公開後、Garmin記述を確認してからAdd appを送信する。
+- [ ] 発行されたGarmin Client ID / Secretと専用暗号鍵を設定し、開始・解除画面を接続して実アカウントで認可・拒否・解除・再接続を確認。認証情報未設定で、現時点では自動連携を利用できない。
+- [ ] アクティビティ同期と権限変更・登録解除通知は未実装。今回のコールバック準備と区別し、完成扱いにしない。
+- [x] OAuthのモック・ロゴ実寸のテストに合格。既存check-index.jsは未変更の選択ラン描画に関する2項目で失敗したため別件として記録。
+
 ## 画面品質・診断表示の整理（2026-10-22）
 
 - [x] 前日の選択ラン調査用「深緑版」ラベルと関連JSを撤去（index.html: ec14829）。白4px＋深緑6pxの選択ラン、Rainbow描画は変更なし。
