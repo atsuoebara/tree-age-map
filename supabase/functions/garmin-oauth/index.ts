@@ -114,7 +114,7 @@ export function createHandler(env, request = fetch) {
         const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))));
         const envelope = await seal(c, { user: account.id, state, verifier, exp: Date.now() + 600000 }, 'oauth');
         phase = 'store-session';
-        await json(sessionsDb, { method: 'POST', headers: {...adminHeaders(c), 'Content-Type':'application/json', Prefer:'return=minimal'}, body: JSON.stringify({state, payload:envelope, expires_at: new Date(Date.now()+600000).toISOString()}) });
+        await json(sessionsDb, { method: 'POST', headers: {...adminHeaders(c), 'Content-Type':'application/json', Prefer:'return=representation'}, body: JSON.stringify({state, payload:envelope, expires_at: new Date(Date.now()+600000).toISOString()}) });
         const auth = new URL('https://connect.garmin.com/oauth2Confirm');
         auth.search = new URLSearchParams({ response_type: 'code', client_id: c.GARMIN_CLIENT_ID, redirect_uri: callback, state, code_challenge: challenge, code_challenge_method: 'S256' }).toString();
         return respond('', 303, { Location: auth.href, 'Set-Cookie': cookie(envelope) });
