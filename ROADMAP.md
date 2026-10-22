@@ -1,3 +1,15 @@
+## Garmin Connect Starter Activity Push implementation (2026-10-22, development branch)
+
+- [x] Official Activity API 2.0 document reviewed: Starter uses Push JSON; detailed GPS samples come in `activityDetails`; Enterprise-only historical backfill and Ping/Pull are not used.
+- [x] Dedicated branch `feature/garmin-activity-push` based on main `0000d5db8883bb5b3309fc5ff4435786ed4506b9`.
+- [x] New `garmin_activity_inbox` durable queue schema applied to Supabase, RLS enabled and only service_role access. Garmin API external-id unique index added to runs. Existing runs untouched.
+- [x] New `garmin-activity-push` receiver and drain implementation committed on development branch only. Validates high-entropy secret URL path, queues detail payload before HTTP 200, converts samples to [lat,lng], matches owner by Garmin user ID, and detects same-day/distance duplicates (including Strava).
+- [ ] Configure `GARMIN_PUSH_SECRET` (new random secret; do not rotate GARMIN_TOKEN_KEY) and set the `activityDetails` Push endpoint under Garmin API Tools > Endpoints. Check available Push request headers before finalizing receipt authentication.
+- [ ] Deploy and test the new Edge Function; perform negative-authentication, valid notification, retry, idempotency, GPS format, Strava deduplication, and real Garmin watch sync checks.
+- [ ] Establish scheduled `POST /drain` retry execution; best-effort background processing alone is not sufficient after crashes.
+- [ ] Verify allowed volume limits in Garmin portal and confirm activityDetails permission and production readiness.
+- [ ] No changes to Connect IQ functions or Strava sync. No UI Build increment: index.html unchanged. This is not yet auto-sync complete.
+
 ## 左上タイトルのホームリンク（2026-10-22）
 
 - [x] Ranking・Territory・FAQ・ポリシー・お問い合わせ・Journal各記事など、公開ページのヘッダー内Runner's Ringsタイトルを/index.htmlへのリンクに統一。表示色・文字サイズは維持。既存GPS Art・Todayのリンクは維持。index.htmlはBuild 2026.10.22.05。
