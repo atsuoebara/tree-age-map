@@ -1,3 +1,15 @@
+## Garmin連携 緊急再点検（2026-10-22 / Build 2026.10.22.10）
+- [x] OAuthセッションをDBに保持し、Chrome→Safari間でCookieを共有しなくてもcallbackを検証可能に変更。本番Garmin OAuth v17 ACTIVE。
+- [x] 接続・解除のトップボタンをアカウント設定と同じ操作へ変更。接続解除前に確認。
+- [x] callback失敗・期限切れ時に連携状態再照会へ戻す導線を追加。失敗を成功とは表示せず、接続済みかどうかをstatusで判定。
+- [x] 本番接続数は3件、全件import_enabled=true（確認時）。
+- [ ] 実機で新しいcallback復帰動作を検証すること。Chrome→SafariのOS側アプリ切替は制御不能な場合あり。
+- [ ] OAuthコードの再送信・権限API403の原因は完全解明に至っていない。既存成功ユーザーを解除してテストしない。
+- [ ] Garminロゴ画像は緊急Edge Function配備時の一時代替画像のまま。元のlogo.tsを含む通常手順の再配備が必要。
+- [ ] Garminの未検証警告はDeveloper Portal側の確認事項。
+- [ ] 既存Stravaランとの統合レース条件、Lifecycle、revoke/reconnect、障害復旧、各端末実機は未完了。
+- [ ] 本番公開ページでBuild 2026.10.22.10の表示を検証。
+
 ## Garmin導線改善（2026-10-22 / Build 2026.10.22.08）
 - [x] COROS横のGarminショートカットは従来「設定を開く」だけで手動取り込みボタンではなかったことを確認。
 - [x] 未接続時はショートカットからOAuth接続開始、接続済み時は設定へ移動。文言を「Garminと連携（自動取込）」「Garmin自動取込 ON」に変更。garmin-connect.jsとindex.htmlを変更、スクリプトキャッシュとAPP_BUILDを更新。
