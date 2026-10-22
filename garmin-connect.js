@@ -7,9 +7,10 @@ window.initGarminConnection = function ({ client, url }) {
   const english = (localStorage.getItem('runners-rings-language') || navigator.language).startsWith('en');
   const text = (ja, en) => english ? en : ja;
   if (shortcut) {
-    shortcut.textContent = text('Garmin設定', 'Garmin settings');
-    shortcut.title = text('接続設定を開きます。接続後に同期したGPS付きのランを自動で取り込みます。', 'Open connection settings. GPS runs synced after connecting are imported automatically.');
+    shortcut.textContent = text('Garminと連携（自動取込）', 'Connect Garmin (auto-import)');
+    shortcut.title = text('Garmin接続後の新しいGPSランを自動で取り込みます。接続済みなら設定を開きます。', 'Automatically import new GPS runs after connecting; opens settings when connected.');
     shortcut.onclick = () => {
+      if (!connect.hidden && !connect.disabled) { submit('start'); return; }
       const panel = document.getElementById('accountPanel');
       if (panel) panel.open = true;
       document.getElementById('garminApiSection')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -40,8 +41,8 @@ window.initGarminConnection = function ({ client, url }) {
       disconnect.hidden = !result.connected;
       connect.disabled = false;
       if (shortcut) shortcut.textContent = result.connected
-        ? text('✓ Garmin接続済み', '✓ Garmin connected')
-        : text('Garminに接続', 'Connect Garmin');
+        ? text('✓ Garmin自動取込 ON', '✓ Garmin auto-import ON')
+        : text('Garminと連携（自動取込）', 'Connect Garmin (auto-import)');
       message.textContent = result.connected
         ? text('Garminに接続済みです。接続後にGarmin Connectへ同期したGPS付きのランを自動で取り込みます。反映まで時間がかかる場合があります。', 'Garmin is connected. GPS runs synced to Garmin Connect after connecting are imported automatically. Imports may take some time.')
         : text('Garminは未接続です。', 'Garmin is not connected.');
@@ -56,6 +57,7 @@ window.initGarminConnection = function ({ client, url }) {
       if (current !== revision) return;
       connect.hidden = false;
       connect.disabled = false;
+      if (shortcut) shortcut.textContent = text('Garmin設定（接続状態を確認）', 'Garmin settings (check status)');
       message.textContent = text('接続状態を確認できません。ログイン状態や通信を確認してください。', 'Could not check the connection. Check your sign-in and network.');
     }
   }
