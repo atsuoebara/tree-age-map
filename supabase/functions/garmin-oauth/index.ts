@@ -38,7 +38,7 @@ export function createHandler(env, request = fetch) {
   }
   async function json(url, init) {
     const res = await request(url, { ...init, signal: AbortSignal.timeout(15000) });
-    if (!res.ok) throw new Error('upstream');
+    if (!res.ok) throw new Error(`upstream-${res.status}`);
     return res.status === 204 ? null : res.json();
   }
   const adminHeaders = c => ({ apikey: c.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${c.SUPABASE_SERVICE_ROLE_KEY}` });
@@ -62,6 +62,8 @@ export function createHandler(env, request = fetch) {
     try { c = config(); } catch { return respond('Garmin connection is not enabled yet. App registration credentials and the encryption key must be configured.', 503); }
     const callback = `${c.SUPABASE_URL}${PATH}/callback`;
     const db = `${c.SUPABASE_URL}/rest/v1/garmin_api_connections`;
+    const sessionsDb = `${c.SUPABASE_URL}/rest/v1/garmin_oauth_sessions`;
+    let phase = 'start';
     const clear = { 'Set-Cookie': cookie('') };
     try {
       if (route === '/start' || route === '/disconnect' || route === '/status') {
@@ -111,26 +113,39 @@ export function createHandler(env, request = fetch) {
         const verifier = b64(crypto.getRandomValues(new Uint8Array(32)));
         const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))));
         const envelope = await seal(c, { user: account.id, state, verifier, exp: Date.now() + 600000 }, 'oauth');
+        phase = 'store-session';
+        await json(sessionsDb, { method: 'POST', headers: {...adminHeaders(c), 'Content-Type':'application/json', Prefer:'return=minimal'}, body: JSON.stringify({state, payload:envelope, expires_at: new Date(Date.now()+600000).toISOString()}) });
         const auth = new URL('https://connect.garmin.com/oauth2Confirm');
         auth.search = new URLSearchParams({ response_type: 'code', client_id: c.GARMIN_CLIENT_ID, redirect_uri: callback, state, code_challenge: challenge, code_challenge_method: 'S256' }).toString();
         return respond('', 303, { Location: auth.href, 'Set-Cookie': cookie(envelope) });
       }
-      const value = req.headers.get('Cookie')?.split(';').map(s => s.trim()).find(s => s.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
-      if (!value) return respond('Missing OAuth session. Start the connection again.', 400, clear);
+      phase = 'load-session';
+      const state = url.searchParams.get('state');
+      const matches = await json(`${sessionsDb}?state=eq.${encodeURIComponent(state)}&select=payload,expires_at`, {headers:adminHeaders(c)});
+      if (!matches.length) return respond('Expired or missing Garmin connection request. Start again from Runner\'s Rings.', 400, clear);
+      const value = matches[0].payload;
+      if (Date.parse(matches[0].expires_at) < Date.now()) return respond('Expired Garmin connection request.',400,clear);
       let session;
       try { session = await open(c, value, 'oauth'); } catch { return respond('Invalid OAuth session.', 400, clear); }
       if (session.exp < Date.now() || session.state !== url.searchParams.get('state')) return respond('Expired or invalid OAuth state.', 400, clear);
       if (url.searchParams.has('error')) return respond('Garmin authorization was declined. No connection was saved.', 400, clear);
+      phase = 'exchange-code';
       const tokens = await json(TOKEN, { method: 'POST', body: new URLSearchParams({ grant_type: 'authorization_code', client_id: c.GARMIN_CLIENT_ID, client_secret: c.GARMIN_CLIENT_SECRET, redirect_uri: callback, code: url.searchParams.get('code'), code_verifier: session.verifier }) });
       if (!tokens.access_token || !tokens.refresh_token || !Number.isFinite(tokens.expires_in)) throw new Error('tokens');
       const headers = { Authorization: `Bearer ${tokens.access_token}` };
+      phase = 'garmin-identity';
       const identity = await json(`${API}/id`, { headers });
+      phase = 'garmin-permissions';
       const permissions = await json(`${API}/permissions`, { headers });
       if (!identity.userId) throw new Error('identity');
       const encrypted = await seal(c, { ...tokens, expires_at: Date.now() + tokens.expires_in * 1000 }, `tokens:${session.user}`);
+      phase = 'save-connection';
       await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, import_enabled:true, connection_version:crypto.randomUUID(), permissions_checked_at:new Date().toISOString(), permissions_retry_at:new Date().toISOString(), updated_at: new Date().toISOString() }) });
+      phase = 'clear-session';
+      await request(`${sessionsDb}?state=eq.${encodeURIComponent(state)}`, {method:'DELETE',headers:adminHeaders(c)}).catch(()=>{});
       return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=connected` });
-    } catch {
+    } catch (e) {
+      console.error('garmin-oauth failure', {phase, error: e instanceof Error ? e.message : 'unknown'});
       return respond('Garmin connection could not be completed. Try again or contact Runner\'s Rings support.', 502, clear);
     }
   };
