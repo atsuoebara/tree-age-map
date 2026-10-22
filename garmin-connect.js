@@ -3,8 +3,18 @@ window.initGarminConnection = function ({ client, url }) {
   const connect = document.getElementById('garminApiConnectButton');
   const disconnect = document.getElementById('garminApiDisconnectButton');
   const message = document.getElementById('garminApiMessage');
+  const shortcut = document.getElementById('garminShortcutButton');
   const english = (localStorage.getItem('runners-rings-language') || navigator.language).startsWith('en');
   const text = (ja, en) => english ? en : ja;
+  if (shortcut) {
+    shortcut.textContent = text('Garmin設定', 'Garmin settings');
+    shortcut.title = text('接続設定を開きます。自動取り込みは準備中です。', 'Open connection settings. Automatic import is not available yet.');
+    shortcut.onclick = () => {
+      const panel = document.getElementById('accountPanel');
+      if (panel) panel.open = true;
+      document.getElementById('garminApiSection')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+  }
   let revision = 0;
   let busy = false;
   async function session() {
@@ -29,6 +39,9 @@ window.initGarminConnection = function ({ client, url }) {
       connect.hidden = result.connected;
       disconnect.hidden = !result.connected;
       connect.disabled = false;
+      if (shortcut) shortcut.textContent = result.connected
+        ? text('✓ Garmin接続済み', '✓ Garmin connected')
+        : text('Garminに接続', 'Connect Garmin');
       message.textContent = result.connected
         ? text('Garminに接続済みです。ランの自動取り込みは準備中です。', 'Garmin is connected. Automatic activity import is not available yet.')
         : text('Garminは未接続です。', 'Garmin is not connected.');
