@@ -8,9 +8,11 @@ window.initGarminConnection = function ({ client, url }) {
   const text = (ja, en) => english ? en : ja;
   if (shortcut) {
     shortcut.textContent = text('Garminと連携（自動取込）', 'Connect Garmin (auto-import)');
-    shortcut.title = text('Garmin接続後の新しいGPSランを自動で取り込みます。接続済みなら設定を開きます。', 'Automatically import new GPS runs after connecting; opens settings when connected.');
+    shortcut.title = text('未接続なら連携、接続済みなら確認後に解除します。', 'Connect when disconnected, or confirm disconnection when connected.');
     shortcut.onclick = () => {
-      if (!connect.hidden && !connect.disabled) { submit('start'); return; }
+      if (busy) return;
+      if (connectionStatus === false) { submit('start'); return; }
+      if (connectionStatus === true) { submit('disconnect'); return; }
       const panel = document.getElementById('accountPanel');
       if (panel) panel.open = true;
       document.getElementById('garminApiSection')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -18,6 +20,7 @@ window.initGarminConnection = function ({ client, url }) {
   }
   let revision = 0;
   let busy = false;
+  let connectionStatus = null;
   async function session() {
     const { data, error } = await client.auth.getSession();
     if (error || !data.session) throw new Error('session');
@@ -25,6 +28,8 @@ window.initGarminConnection = function ({ client, url }) {
   }
   async function refresh() {
     const current = ++revision;
+    connectionStatus = null;
+    if (shortcut) shortcut.disabled = true;
     connect.disabled = true;
     disconnect.hidden = true;
     message.textContent = text('Garminの接続状態を確認中…', 'Checking Garmin connection…');
@@ -37,11 +42,13 @@ window.initGarminConnection = function ({ client, url }) {
       if (!response.ok) throw new Error('status');
       const result = await response.json();
       if (current !== revision) return;
+      connectionStatus = result.connected;
+      if (shortcut) shortcut.disabled = false;
       connect.hidden = result.connected;
       disconnect.hidden = !result.connected;
       connect.disabled = false;
       if (shortcut) shortcut.textContent = result.connected
-        ? text('✓ Garmin自動取込 ON', '✓ Garmin auto-import ON')
+        ? text('Garmin接続を解除', 'Disconnect Garmin')
         : text('Garminと連携（自動取込）', 'Connect Garmin (auto-import)');
       message.textContent = result.connected
         ? text('Garminに接続済みです。接続後にGarmin Connectへ同期したGPS付きのランを自動で取り込みます。反映まで時間がかかる場合があります。', 'Garmin is connected. GPS runs synced to Garmin Connect after connecting are imported automatically. Imports may take some time.')
@@ -57,6 +64,8 @@ window.initGarminConnection = function ({ client, url }) {
       if (current !== revision) return;
       connect.hidden = false;
       connect.disabled = false;
+      connectionStatus = null;
+      if (shortcut) shortcut.disabled = false;
       if (shortcut) shortcut.textContent = text('Garmin設定（接続状態を確認）', 'Garmin settings (check status)');
       message.textContent = text('接続状態を確認できません。ログイン状態や通信を確認してください。', 'Could not check the connection. Check your sign-in and network.');
     }
@@ -66,6 +75,7 @@ window.initGarminConnection = function ({ client, url }) {
     if (action === 'disconnect' && !confirm(text('Garminとの接続を解除しますか？保存済みのランは削除されません。', 'Disconnect Garmin? Previously saved runs will be kept.'))) return;
     busy = true;
     connect.disabled = disconnect.disabled = true;
+    if (shortcut) shortcut.disabled = true;
     message.textContent = text('Garminの手続きを開始しています…', 'Starting Garmin connection request…');
     try {
       const account = await session();
@@ -80,6 +90,7 @@ window.initGarminConnection = function ({ client, url }) {
       message.textContent = text('開始できませんでした。ログインし直してお試しください。', 'Could not start. Please sign in again.');
       busy = false;
       connect.disabled = disconnect.disabled = false;
+      if (shortcut) shortcut.disabled = false;
     }
   }
   connect.onclick = () => submit('start');
