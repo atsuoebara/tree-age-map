@@ -127,9 +127,9 @@ export function createHandler(env, request = fetch) {
       phase = 'load-session';
       const state = url.searchParams.get('state');
       const matches = await json(`${sessionsDb}?state=eq.${encodeURIComponent(state)}&select=payload,expires_at`, {headers:adminHeaders(c)});
-      if (!matches.length) return respond('', 303, {...clear, Location:`${ORIGIN}/?garmin=check`});
+      if (!matches.length) return respond('', 303, {...clear, Location:`${ORIGIN}/garmin-return.html`});
       const value = matches[0].payload;
-      if (Date.parse(matches[0].expires_at) < Date.now()) return respond('',303,{...clear, Location:`${ORIGIN}/?garmin=check`});
+      if (Date.parse(matches[0].expires_at) < Date.now()) return respond('',303,{...clear, Location:`${ORIGIN}/garmin-return.html`});
       let session;
       try { session = await open(c, value, 'oauth'); } catch { return respond('Invalid OAuth session.', 400, clear); }
       if (session.exp < Date.now() || session.state !== url.searchParams.get('state')) return respond('Expired or invalid OAuth state.', 400, clear);
@@ -148,10 +148,10 @@ export function createHandler(env, request = fetch) {
       await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, import_enabled:true, connection_version:crypto.randomUUID(), permissions_checked_at:new Date().toISOString(), permissions_retry_at:new Date().toISOString(), updated_at: new Date().toISOString() }) });
       phase = 'clear-session';
       await request(`${sessionsDb}?state=eq.${encodeURIComponent(state)}`, {method:'DELETE',headers:adminHeaders(c)}).catch(()=>{});
-      return respond('', 303, { ...clear, Location: `${ORIGIN}/?garmin=connected` });
+      return respond('', 303, { ...clear, Location: `${ORIGIN}/garmin-return.html` });
     } catch (e) {
       console.error('garmin-oauth failure', {phase, error: e instanceof Error ? e.message : 'unknown'});
-      if (route === '/callback') return respond('', 303, {...clear, Location:`${ORIGIN}/?garmin=check`});
+      if (route === '/callback') return respond('', 303, {...clear, Location:`${ORIGIN}/garmin-return.html`});
       return respond('Garmin connection could not be completed. Try again or contact Runner\'s Rings support.', 502, clear);
     }
   };
