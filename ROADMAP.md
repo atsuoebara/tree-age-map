@@ -1,3 +1,7 @@
+## 左上タイトルのホームリンク（2026-10-22）
+
+- [x] Ranking・Territory・FAQ・ポリシー・お問い合わせ・Journal各記事など、公開ページのヘッダー内Runner's Ringsタイトルを/index.htmlへのリンクに統一。表示色・文字サイズは維持。既存GPS Art・Todayのリンクは維持。index.htmlはBuild 2026.10.22.05。
+
 ## Garminボタンを上部に追加（2026-10-22）
 
 - [x] COROS・Intervalsの並びにGarmin設定ボタンを追加。本人の接続状態を表示し、タップでアカウント設定内のGarmin欄を開く。Build 2026.10.22.04。
