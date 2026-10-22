@@ -92,7 +92,9 @@ Deno.serve(async req=>{
   }
   if(!equal(last||'',secret))return response(404,'Not found');
   const client=env('GARMIN_CLIENT_ID');
-  if(!client || req.headers.get('garmin-client-id')!==client)return response(403,'Forbidden');
+  if(!client)return response(503,'Unavailable');
+  const notifiedClient=req.headers.get('garmin-client-id');
+  if(notifiedClient && notifiedClient!==client)return response(403,'Forbidden'); // Header is not guaranteed by the Push section.
   const len=Number(req.headers.get('content-length')||0);
   if(len>8_000_000)return response(413,'Too large');
   let body;
