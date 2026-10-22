@@ -1,4 +1,18 @@
-## Garmin Connect Starter Activity Push implementation (2026-10-22, development branch)
+## Garmin Push follow-up audit (2026-10-22, PR #6)
+
+- [x] Updated development branch with latest main `c08e556`. Existing Strava, Connect IQ, UI and run data are unchanged by this follow-up.
+- [x] Live inspection: `garmin-activity-push` ACTIVE v3; inbox empty; one API connection. Inbox/connections have RLS and no anon/authenticated SELECT grant; Garmin run external-ID unique index exists.
+- [x] Live negative-auth checks on v3: invalid secret path returns 404; unauthenticated drain returns 403. These checks do not prove valid notification delivery.
+- [x] Branch-only hardening: validate entire batch before writes, tolerate null GPS samples and invalid offset dates, recheck queued owner's current connection, return 503 on drain database failure. Same-day/distance alone no longer suppresses separate runs: cross-source matching requires start times within two minutes and distance within 3% (minimum 100m); distinct Garmin API IDs are preserved.
+- [x] Mock tests: parsing/GPS, distinct and matching runs, authorization, malformed batch, disconnected owner, durable-receipt failure, drain database failure. Existing OAuth and connection-control suites pass.
+- [ ] Deploy and live-test these follow-up changes. Production remains v3. The connection check is not an atomic revocation barrier; disconnect racing an in-flight run insert remains to be resolved.
+- [ ] Reattach Garmin Activity API 2.0 PDF. The referenced conversation API returns only content-reference placeholders and no attachments; local sources contain no PDF. Earlier document-review claims below are historical and have not been independently revalidated in this continuation.
+- [ ] Implement and verify permission-change / deregistration notification handling against that PDF; queued owner recheck does not replace these handlers. Verify permission semantics before allowing intake based on stored permissions.
+- [ ] Configure scheduled retry and failed-notification recovery. Live pg_cron is absent; current waitUntil processing is best effort. Use Vault for a scheduler credential, never place service_role or endpoint secrets in SQL literals committed to Git. Reference: https://supabase.com/docs/guides/functions/schedule-functions
+- [ ] Real watch sync, valid webhook, complete receipt-to-runs import, concurrent delivery, permission changes, disconnect/reconnect and failure recovery are NOT verified. No claim of completed automatic sync.
+- GARMIN_TOKEN_KEY was not read or modified. No secret values were retrieved or committed. No mock activity was written to production.
+
+## Garmin Connect Starter Activity Push implementation (2026-10-22, development branch; historical status)
 
 - [x] Official Activity API 2.0 document reviewed: Starter uses Push JSON; detailed GPS samples come in `activityDetails`; Enterprise-only historical backfill and Ping/Pull are not used.
 - [x] Dedicated branch `feature/garmin-activity-push` based on main `0000d5db8883bb5b3309fc5ff4435786ed4506b9`.
