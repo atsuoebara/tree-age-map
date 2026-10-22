@@ -38,7 +38,12 @@ export function createHandler(env, request = fetch) {
   }
   async function json(url, init) {
     const res = await request(url, { ...init, signal: AbortSignal.timeout(15000) });
-    if (!res.ok) throw new Error(`upstream-${res.status}`);
+    if (!res.ok) {
+      // Keep request credentials, provider response bodies and user identifiers out of logs.
+      const requestId = res.headers.get('x-request-id') || res.headers.get('x-correlation-id');
+      if (url.startsWith(API)) console.error('garmin-api-status', {endpoint: new URL(url).pathname.split('/').pop(), status: res.status, requestId: requestId?.slice(0,80) || null});
+      throw new Error(`upstream-${res.status}`);
+    }
     return res.status === 204 ? null : res.json();
   }
   const adminHeaders = c => ({ apikey: c.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${c.SUPABASE_SERVICE_ROLE_KEY}` });
