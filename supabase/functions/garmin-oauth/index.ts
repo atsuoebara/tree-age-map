@@ -127,7 +127,7 @@ export function createHandler(env, request = fetch) {
       phase = 'load-session';
       const state = url.searchParams.get('state');
       const matches = await json(`${sessionsDb}?state=eq.${encodeURIComponent(state)}&select=payload,expires_at`, {headers:adminHeaders(c)});
-      if (!matches.length) return respond('', 303, {...clear, Location:`${ORIGIN}/garmin-return.html`});
+      if (!matches.length) return respond('Garmin連携の状態をご確認ください。元のブラウザに戻り、Runner\'s Ringsで接続済みか確認してください。', 200, clear);
       const value = matches[0].payload;
       if (Date.parse(matches[0].expires_at) < Date.now()) return respond('',303,{...clear, Location:`${ORIGIN}/garmin-return.html`});
       let session;
@@ -148,10 +148,10 @@ export function createHandler(env, request = fetch) {
       await json(`${db}?on_conflict=user_id`, { method: 'POST', headers: { ...adminHeaders(c), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: session.user, garmin_user_id: identity.userId, tokens_ciphertext: encrypted, permissions, import_enabled:true, connection_version:crypto.randomUUID(), permissions_checked_at:new Date().toISOString(), permissions_retry_at:new Date().toISOString(), updated_at: new Date().toISOString() }) });
       phase = 'clear-session';
       await request(`${sessionsDb}?state=eq.${encodeURIComponent(state)}`, {method:'DELETE',headers:adminHeaders(c)}).catch(()=>{});
-      return respond('', 303, { ...clear, Location: `${ORIGIN}/garmin-return.html` });
+      return respond('Garminの認証が終了しました。元のブラウザ（ChromeまたはSafari）に戻って、Runner\'s Ringsの接続状態をご確認ください。この画面は閉じても大丈夫です。', 200, clear);
     } catch (e) {
       console.error('garmin-oauth failure', {phase, error: e instanceof Error ? e.message : 'unknown'});
-      if (route === '/callback') return respond('', 303, {...clear, Location:`${ORIGIN}/garmin-return.html`});
+      if (route === '/callback') return respond('Garmin連携の状態をご確認ください。元のブラウザに戻り、Runner\'s Ringsで接続済みか確認してください。', 200, clear);
       return respond('Garmin connection could not be completed. Try again or contact Runner\'s Rings support.', 502, clear);
     }
   };
