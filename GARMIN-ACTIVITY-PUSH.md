@@ -48,3 +48,9 @@
 ## First real watch test
 
 Sync a new GPS running activity through Garmin Connect. Check the inbox state and the resulting Garmin external ID, date, distance and route in runs. Re-send the same notification through Garmin's tools to verify one saved run. Check a second run on the same day remains separate. Then test permission withdrawal and disconnect/reconnect using the real account; do not simulate those changes against the real account without the user's participation.
+
+## Real automatic delivery and UI update, 2026-10-22
+
+At 18:06:26 JST Garmin automatically delivered activity 24811705124 without manual resend. Inbox completed saved at 18:06:30. The resulting run has the correct owner, date, Garmin external ID, 39.31 m and 106 GPS points. Strava also linked to the same single run; no duplicate row was observed. Earlier activity 24810481769 also arrived and completed duplicate. This verifies one real automatic delivery/save and observed coexistence, not general concurrency, lifecycle or outage coverage.
+
+UI Build 2026.10.22.06 describes automatic GPS-run import after connection and possible delay in Japanese/English. Historical lifecycle/concurrency/revoke/reconnect gaps above remain open.
