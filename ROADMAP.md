@@ -1,3 +1,9 @@
+## English map and timelapse text (2026-10-22, Build 2026.10.22.07)
+
+- [x] Added missing English translations for Rainbow explanation/all seven color tiers, current period/monthly-review descriptions, route/area captions and fullscreen/map buttons. Japanese source text and map/timelapse behavior unchanged.
+- [x] Executed real translation function for 19 phrases and map buttons in English; verified Japanese preservation. Inline syntax passes; existing blue selected-route check still fails two unrelated assertions.
+- [ ] Public deployment/display verification pending.
+
 ## Garmin import UI update (2026-10-22, Build 2026.10.22.06)
 
 - [x] Replaced preparation text with automatic import of GPS runs synced after connecting, including possible delivery delay, in Japanese and English: account status, shortcut, onboarding and privacy notice. Updated script cache versions. Past-run import remains a separate method.

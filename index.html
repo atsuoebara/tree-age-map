@@ -3986,7 +3986,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.22.06'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.22.07'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -28410,6 +28410,25 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  ["🌈 Rainbowの見方（走行回数と色）","🌈 How Rainbow works (run counts and colors)"],
+  ["同じ道を走る回数が10回増えるごとに、虹の色が1本ずつ増えます。","Each additional 10 runs along the same road adds another rainbow color."],
+  ["1〜9回：薄い赤","1–9 runs: light red"],
+  ["10〜19回：＋橙","10–19 runs: + orange"],
+  ["20〜29回：＋黄","20–29 runs: + yellow"],
+  ["30〜39回：＋緑","30–39 runs: + green"],
+  ["40〜49回：＋青","40–49 runs: + blue"],
+  ["50〜59回：＋藍","50–59 runs: + indigo"],
+  ["60回以上：＋紫（7色）","60+ runs: + violet (7 colors)"],
+  ["※ 色は積み重なります。まだ増えていない色は表示されません。","Colors accumulate. Colors you have not earned yet are not shown."],
+  ["コース表示：実際に走ったコース","Route view: your actual routes"],
+  ["面表示：走った州・地域を表示","Area view: states and regions you have run in"],
+  ["面表示：累積走行距離を市町村面で表示","Area view: cumulative distance by municipality"],
+  ["地図を全画面表示","Show map in fullscreen"],
+  ["全画面表示を終了","Exit fullscreen"],
+  ["⛶ 全画面","⛶ Fullscreen"],
+  ["✕ 戻る","✕ Back"],
+  ["期間動画は選んだ期間の記録を積み上げ、月の振り返りはランニング1回ごとに振り返ります。","Period videos build up runs across your selected date range. Monthly reviews show each run separately."],
+  ["月の振り返り動画は、ランニング1回ごとにコースを積み上げ、その回のコースを強調します。同じ日に複数回走った場合も、走った回数分だけ場面が続きます。地図は各コースの範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。","The monthly review video builds up routes one run at a time and highlights each run. Multiple runs on the same day appear as separate scenes. The map moves to fit each route and ends at the place crossed by the most runs that month."],
   ['RUNNING × LIFE MAP','RUNNING × LIFE MAP'],
   ['登録なしでサンプルを見る','View the demo without signing up'],
   ['Strava・Intervals.icu・COROSや、FIT／GPX／TCXファイルからランニング記録を取り込めます。','Import runs from Strava, Intervals.icu, COROS, or FIT/GPX/TCX files.'],
@@ -28887,6 +28906,8 @@ function translateUiText(
 
   const exactTranslations = {
     'ラン':'Run',
+    '自動':'Auto',
+    '面':'Areas',
     '年':'Year',
     '月':'Month',
     'の':' ',
