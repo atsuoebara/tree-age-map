@@ -58,6 +58,8 @@ const revokeCalls = [];
 const disconnect = createHandler(k => values[k], async (url, init = {}) => {
   revokeCalls.push([url, init]);
   if (url.endsWith('/auth/v1/user')) return Response.json({ id: 'user-1' });
+  if (url.endsWith('/rpc/garmin_worker_lease')) return Response.json(true);
+  if (url.includes('/garmin_api_connections') && init.method==='PATCH') return Response.json([stored]);
   if (url.includes('select=tokens_ciphertext')) return Response.json([stored]);
   if (url.endsWith('/user/registration')) return new Response(null, { status: 204 });
   if (init.method === 'DELETE' && url.includes('/garmin_api_connections')) return Response.json([]);
@@ -66,12 +68,26 @@ const disconnect = createHandler(k => values[k], async (url, init = {}) => {
 const removed = await disconnect(new Request(base + '/disconnect', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ access_token: 'user-jwt' }) }));
 assert.equal(removed.status, 303);
 assert.equal(removed.headers.get('location'), origin + '/?garmin=disconnected');
-assert.equal(revokeCalls.at(-2)[0], 'https://apis.garmin.com/wellness-api/rest/user/registration');
-assert.equal(revokeCalls.at(-2)[1].headers.Authorization, 'Bearer private-access');
-assert.equal(revokeCalls.at(-1)[1].method, 'DELETE');
+const revoke = revokeCalls.find(([url])=>url.endsWith('/user/registration'));
+assert.equal(revoke[1].headers.Authorization, 'Bearer private-access');
+assert.ok(revokeCalls.some(([url,init])=>url.includes('/garmin_api_connections')&&init.method==='DELETE'));
+assert.equal(JSON.parse(revokeCalls.find(([url,init])=>url.includes('/garmin_api_connections')&&init.method==='PATCH')[1].body).import_enabled,false);
+const outageCalls=[];
+const disconnectDuringOutage=createHandler(k=>values[k],async(url,init={})=>{
+  outageCalls.push([url,init]);
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:'user-1'});
+  if(url.includes('/garmin_api_connections')&&init.method==='PATCH')return Response.json([stored]);
+  if(url.endsWith('/rpc/garmin_worker_lease'))return Response.json(true);
+  if(url.includes('select=tokens_ciphertext'))return Response.json([stored]);
+  if(url.endsWith('/user/registration'))return new Response('',{status:503});
+  throw Error('unexpected request');
+});
+assert.equal((await disconnectDuringOutage(new Request(base+'/disconnect',{method:'POST',headers:{Origin:origin},body:new URLSearchParams({access_token:'user-jwt'})}))).status,303);
+assert.ok(outageCalls.some(([url,init])=>url.includes('/garmin_api_connections')&&init.method==='PATCH'&&JSON.parse(init.body).import_enabled===false));
+assert.ok(!outageCalls.some(([url,init])=>url.includes('/garmin_api_connections')&&init.method==='DELETE'),'remote outage retains encrypted credentials for scheduled revocation');
 const statusHandler = createHandler(k => values[k], async (url, init) => {
   if (url.endsWith('/auth/v1/user')) return Response.json({ id: 'user-1' });
-  assert.ok(url.endsWith('user_id=eq.user-1&select=user_id'));
+  assert.ok(url.endsWith('user_id=eq.user-1&import_enabled=eq.true&select=user_id'));
   return Response.json([{user_id:'user-1'}]);
 });
 const status = await statusHandler(new Request(base + '/status', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({access_token:'user-jwt'}) }));
