@@ -103,5 +103,7 @@ window.initGarminConnection = function ({ client, url }) {
   disconnect.onclick = () => submit('disconnect');
   client.auth.onAuthStateChange(() => { setTimeout(refresh, 0); });
   window.addEventListener('pageshow', () => { busy = false; disconnect.disabled = false; refresh(); });
+  window.addEventListener('focus', () => { if (!busy) refresh(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !busy) refresh(); });
   refresh();
 };
