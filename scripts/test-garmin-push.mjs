@@ -15,6 +15,18 @@ const detail={userId:'garmin-1',summaryId:'summary',activityId:42,userAccessToke
 context.detail=detail;
 const record=run('parsed(detail)');
 assert.equal(record.source_external_id,'garmin-api:42');assert.equal(record.route.length,2);assert.equal(record.distance_km,5);
+// Treadmill/indoor runs retain distance without manufacturing geographic data.
+for(const kind of ['TREADMILL_RUNNING','INDOOR_RUNNING']) {
+  context.indoorDetail={...detail,summary:{...detail.summary,activityType:kind},samples:[]};
+  const indoorRun=run('parsed(indoorDetail)');
+  assert.equal(indoorRun.distance_km,5);
+  assert.equal(indoorRun.indoor,true);
+  assert.equal(indoorRun.route.length,0);
+}
+context.indoorDetail={...detail,summary:{...detail.summary,activityType:'TREADMILL_RUNNING'},samples:undefined};
+assert.equal(run('parsed(indoorDetail)').route.length,0);
+context.changed={...detail,summary:{...detail.summary,activityType:'RUNNING'},samples:[]};
+assert.equal(run('parsed(changed)'),null);
 assert.ok(!JSON.stringify(run('sanitized(detail)')).includes('must-not-persist'));
 assert.ok(!JSON.stringify(run('sanitized(detail)')).includes('heartRate'));
 for(const changed of [{manual:true},{isParent:true},{activityType:'CYCLING'},{startTimeOffsetInSeconds:1e30},{distanceInMeters:-1}]) {
