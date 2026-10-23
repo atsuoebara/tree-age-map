@@ -6,14 +6,14 @@
 <title>パートナー・協賛募集 | Runner's Rings</title>
 <link rel="icon" href="./icon.PNG" type="image/png">
 <style>
-*{box-sizing:border-box}html,body{margin:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#f5f7fb;line-height:1.8}a{color:#ff89df}a:focus-visible,button:focus-visible{outline:3px solid #eaff4e;outline-offset:3px}header{background:#101f32;border-bottom:1px solid #34465c;padding:16px 20px}nav{max-width:880px;margin:auto;display:flex;justify-content:space-between;align-items:center}nav a{text-decoration:none;font-weight:750}button{background:#1b3150;color:white;border:1px solid #4b6078;border-radius:999px;padding:8px 15px;cursor:pointer}main{max-width:880px;margin:auto;padding:34px 20px 70px}h1{font-size:clamp(1.85rem,5vw,2.7rem);line-height:1.35;margin:8px 0 18px}h2{font-size:1.35rem;margin:0 0 16px}.eyebrow{color:#ff8be5;font-weight:800;letter-spacing:.1em}.lead{font-size:1.1rem;color:#d9e2ef}.panel{border:1px solid #30455f;background:#13243a;border-radius:17px;padding:23px;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.item{background:#1a304a;border-radius:12px;padding:17px}.item h3{margin:0 0 7px;font-size:1rem}.item p{margin:0;color:#d7e1ed;font-size:.94rem}.cta{display:inline-block;background:#ff2bd6;color:#081522;border-radius:999px;text-decoration:none;font-weight:850;padding:13px 23px;margin:10px 0;overflow-wrap:anywhere}.note{color:#cbd6e4;font-size:.9rem}.notice{border-left:3px solid #f5e770;padding-left:16px}footer{text-align:center;background:#101f32;padding:22px;color:#afbed0}[lang=en]{display:none}html[data-lang=en] [lang=ja]{display:none}html[data-lang=en] [lang=en]{display:block}@media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:18px}}
+*{box-sizing:border-box}html,body{margin:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#f5f7fb;line-height:1.8}a{color:#ff89df}a:focus-visible,button:focus-visible{outline:3px solid #eaff4e;outline-offset:3px}header{background:#101f32;border-bottom:1px solid #34465c;padding:16px 20px}nav{max-width:880px;margin:auto;display:flex;justify-content:space-between;align-items:center}nav a{text-decoration:none;font-weight:750}button{font:inherit;cursor:pointer}.languageSwitch{display:flex;gap:3px;align-items:center;border:1px solid #b4ba31;border-radius:999px;padding:4px;background:#102033}.languageButton{background:transparent;color:#aebbd0;border:0;border-radius:999px;padding:8px 14px;font-weight:750;font-size:14px;white-space:nowrap}.languageButton.isActive{background:#e535cb;color:#fff}.languageButton:hover:not(.isActive){background:#263d59}nav{gap:12px}main{max-width:880px;margin:auto;padding:34px 20px 70px}h1{font-size:clamp(1.85rem,5vw,2.7rem);line-height:1.35;margin:8px 0 18px}h2{font-size:1.35rem;margin:0 0 16px}.eyebrow{color:#ff8be5;font-weight:800;letter-spacing:.1em}.lead{font-size:1.1rem;color:#d9e2ef}.panel{border:1px solid #30455f;background:#13243a;border-radius:17px;padding:23px;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.item{background:#1a304a;border-radius:12px;padding:17px}.item h3{margin:0 0 7px;font-size:1rem}.item p{margin:0;color:#d7e1ed;font-size:.94rem}.cta{display:inline-block;background:#ff2bd6;color:#081522;border-radius:999px;text-decoration:none;font-weight:850;padding:13px 23px;margin:10px 0;overflow-wrap:anywhere}.note{color:#cbd6e4;font-size:.9rem}.notice{border-left:3px solid #f5e770;padding-left:16px}footer{text-align:center;background:#101f32;padding:22px;color:#afbed0}main > section[lang="en"]{display:none}html[data-lang="en"] main > section[lang="ja"]{display:none}html[data-lang="en"] main > section[lang="en"]{display:block}@media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:18px}}
 </style>
 </head>
 <body>
-<header><nav><a href="./index.html">← Runner's Rings</a><button type="button" id="langSwitch">English</button></nav></header>
+<header><nav><a href="./index.html">← Runner's Rings</a><div class="languageSwitch" role="group" aria-label="Language / 言語"><button type="button" class="languageButton" data-language="ja">日本語</button><button type="button" class="languageButton" data-language="en">English</button></div></nav></header>
 <main>
 <section lang="ja">
-<div class="eyebrow">PARTNERS & SPONSORS</div>
+<div class="eyebrow">パートナー・協賛募集</div>
 <h1>走る努力に、新しい価値を。</h1>
 <p class="lead">Runner's Rings（ランナーズリングス）は、走った道や地域を年輪のように可視化するランニングアプリです。国内外のランナーの挑戦を一緒に応援してくださる企業・店舗・団体を募集しています。</p>
 <div class="panel"><h2>募集する協力内容</h2><div class="grid">
@@ -41,6 +41,27 @@
 </main>
 <footer>© 2026 Runner's Rings · <a href="./index.html">Home</a> · <a href="./contact.html">Contact</a></footer>
 <script>
-(function(){const key='runnerRingsLanguage';let lang='ja';try{lang=localStorage.getItem(key)==='en'?'en':'ja'}catch(e){}const b=document.getElementById('langSwitch');function apply(){document.documentElement.dataset.lang=lang;document.documentElement.lang=lang;document.title=lang==='en'?"Partners & Sponsors | Runner's Rings":"パートナー・協賛募集 | Runner's Rings";b.textContent=lang==='ja'?'English':'日本語'}b.addEventListener('click',()=>{lang=lang==='ja'?'en':'ja';try{localStorage.setItem(key,lang)}catch(e){}apply()});apply()})();
+(function(){
+  const key='runners-rings-language';
+  let lang='ja';
+  try{const saved=localStorage.getItem(key);lang=saved==='en'?'en':saved==='ja'?'ja':navigator.language.toLowerCase().startsWith('ja')?'ja':'en'}catch(e){}
+  const buttons=Array.from(document.querySelectorAll('.languageButton'));
+  function apply(){
+    document.documentElement.dataset.lang=lang;
+    document.documentElement.lang=lang;
+    document.title=lang==='en'?"Partners & Sponsors | Runner's Rings":"パートナー・協賛募集 | Runner's Rings";
+    buttons.forEach(button=>{
+      const active=button.dataset.language===lang;
+      button.classList.toggle('isActive',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+  }
+  buttons.forEach(button=>button.addEventListener('click',()=>{
+    lang=button.dataset.language;
+    try{localStorage.setItem(key,lang)}catch(e){}
+    apply();
+  }));
+  apply();
+})();
 </script>
 </body></html>
