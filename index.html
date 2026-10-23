@@ -10766,6 +10766,11 @@ function createActivitySignature(
   activity
 ) {
 
+  // Indoor activities lack start/end coordinates. Cloud ID keeps each run unique.
+  if (activity.cloudId != null && Array.isArray(activity.latlngs) && activity.latlngs.length === 0) {
+    return 'cloud-indoor|' + String(activity.cloudId);
+  }
+
   // Strava由来はStrava固有IDを最優先
   if (
     activity.stravaId
@@ -12097,12 +12102,10 @@ function buildActivityFromCloudRow(
     return cached;
   }
 
+  const indoorNoGps = row.source === 'garmin' && Array.isArray(row.route) && row.route.length === 0;
   if (
-    !Array.isArray(
-      row.route
-    ) ||
-    row.route.length <
-      2
+    !Array.isArray(row.route) ||
+    (row.route.length < 2 && !indoorNoGps)
   ) {
 
     return null;
@@ -12134,8 +12137,7 @@ function buildActivityFromCloudRow(
 
 
   if (
-    latlngs.length <
-    2
+    latlngs.length < 2 && !indoorNoGps
   ) {
 
     return null;
