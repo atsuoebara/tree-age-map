@@ -24,17 +24,20 @@ function parsed(d) {
   if(!validDetails(d))return null;
   const s=d.summary;
   if(!allowedKinds.has(s.activityType)||s.manual===true||s.isParent===true)return null;
-  if(!Number.isFinite(s.startTimeInSeconds)||!Number.isFinite(s.distanceInMeters)||s.distanceInMeters<=0||!Array.isArray(d.samples))return null;
-  const route=d.samples.filter(p=>p&&typeof p==='object').map(p=>[p.latitudeInDegree,p.longitudeInDegree])
+  const indoor=['INDOOR_RUNNING','TREADMILL_RUNNING'].includes(s.activityType);
+  if(!Number.isFinite(s.startTimeInSeconds)||!Number.isFinite(s.distanceInMeters)||s.distanceInMeters<=0||(!indoor&&!Array.isArray(d.samples)))return null;
+  const route=(Array.isArray(d.samples)?d.samples:[]).filter(p=>p&&typeof p==='object').map(p=>[p.latitudeInDegree,p.longitudeInDegree])
     .filter(p=>Number.isFinite(p[0])&&Number.isFinite(p[1])&&Math.abs(p[0])<=90&&Math.abs(p[1])<=180);
-  if(route.length<2)return null;
+  if(!indoor&&route.length<2)return null;
+  // Indoor distances are legitimate even without GPS; never invent a map route.
+  if(indoor)route.length=0;
   const offset=Number.isFinite(s.startTimeOffsetInSeconds)?s.startTimeOffsetInSeconds:0;
   const started=new Date(s.startTimeInSeconds*1000),local=new Date((s.startTimeInSeconds+offset)*1000);
   if(!Number.isFinite(started.getTime())||!Number.isFinite(local.getTime()))return null;
   const id=d.activityId??s.activityId??d.summaryId;
   if(!['string','number'].includes(typeof id)||String(id).length>256)return null;
   return {activity_date:local.toISOString().slice(0,10),started_at:started.toISOString(),distance_km:s.distanceInMeters/1000,
-    name:String(s.activityName||'Garmin Run').slice(0,200),route,source:'garmin',source_external_id:'garmin-api:'+id};
+    name:String(s.activityName||(indoor?'Garmin Indoor Run':'Garmin Run')).slice(0,200),route,indoor,source:'garmin',source_external_id:'garmin-api:'+id};
 }
 // Persist importer fields only: discard legacy userAccessToken and unused sensor data.
 function sanitized(d) {
