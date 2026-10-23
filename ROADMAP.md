@@ -2,8 +2,9 @@
 - [x] Garmin TREADMILL_RUNNING / INDOOR_RUNNING についてGPS座標がない記録も距離・日付・開始時刻をパースする変更をブランチに作成。架空ルートは描かず、route=[]。
 - [x] Garmin DB保存RPCのGPS必須条件を屋外ランと屋内ランで分離するSQL変更をブランチに作成。重複判定で屋内ランと屋外ランを混同しない条件を追加。
 - [x] GPSなし2種、屋外GPSなし拒否のモック検査ケースを追加。
-- [ ] モックテストの実行・SQLトランザクションテストは未実施。本番DB・Edge Functionへ未適用。
-- [ ] index画面の累計距離・本数とGPSなしラン表示／国別・地域別・ランキング等の影響を確認し、GPSなし記録が地図に出ないことを実機検証。
+- [x] GPSなしTREADMILL_RUNNING / INDOOR_RUNNING受入、屋外GPSなし拒否を実行検証。DBの保存RPC変更を本番適用し、Edge Function garmin-activity-push v10 ACTIVEを確認。実ユーザーのランは追加・削除していない。
+- [x] index.htmlのGPSなしGarminランの活動変換を修正。GPSなしの別ラン同士が同一シグネチャになる問題も避けた。
+- [ ] 実Garminトレッドミル通知によるエンドツーエンド保存、月別・総距離・ラン数・地図非表示と端末挙動を実機検証。SQLトランザクション試験は未実施。
 - [ ] 既存Garmin自動連携PR #6と競合・実環境の導線を確認してから統合／本番デプロイ。テスト用に既存ランを削除しない。
 
 ## Journal Instagram画像共有（2026-10-23 / 実装ブランチ）
