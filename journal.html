@@ -302,6 +302,7 @@ function applyLanguage(language){
 languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
 applyLanguage(savedLanguage);
 </script>
+<script src="/journal-instagram-share.js"></script>
 <script>
 /* Journal 2.0 published articles and legacy articles. */
 (() => {
@@ -367,7 +368,7 @@ applyLanguage(savedLanguage);
       status.textContent=lang==='ja'?'URLをコピーしました':'Link copied';
     } catch (_) { window.prompt(lang==='ja'?'記事URLをコピーしてください':'Copy this article URL',url); }
   }
-  function makeShareRow(href, title, lang) {
+  function makeShareRow(href, title, lang, image) {
     const url=shareURL(href);
     const row=document.createElement('div');row.className='shareRow';
     const status=textElement('span','shareStatus','');status.setAttribute('role','status');
@@ -381,6 +382,7 @@ applyLanguage(savedLanguage);
     }
     const x=document.createElement('a');x.target='_blank';x.rel='noopener noreferrer';x.href='https://twitter.com/intent/tweet?'+new URLSearchParams({text:title,url}).toString();
     x.textContent=lang==='ja'?'Xで共有':'Share to X';row.append(x,status);
+    if(window.RRJournalInstagram) window.RRJournalInstagram.attach(row,{url,image,lang,status});
     return row;
   }
   function render() {
@@ -389,8 +391,8 @@ applyLanguage(savedLanguage);
       dynamicCards[lang].forEach(el=>el.remove());
       dynamicCards[lang] = [];
       // Remove old cards from the DOM without recreating or changing their links/content.
-      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Rings Journal'}));
-      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Rings Journal'});});
+      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Rings Journal',image:old.element.querySelector('img.cardImage')?.src||null}));
+      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Rings Journal',image:safeImage(post.image_url)});});
       items.sort((a,b)=>b.date.localeCompare(a.date)||b.order-a.order);
       items.forEach(item=>item.node.remove());
       const total = Math.max(1,Math.ceil(items.length / PAGE_SIZE));
@@ -398,7 +400,7 @@ applyLanguage(savedLanguage);
       const anchor = section.querySelector('.lead');
       const visible=items.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
       let previous=anchor;
-      visible.forEach(item=>{previous.after(item.node);const controls=makeShareRow(item.href,item.title,lang);item.node.after(controls);previous=controls;});
+      visible.forEach(item=>{previous.after(item.node);const controls=makeShareRow(item.href,item.title,lang,item.image);item.node.after(controls);previous=controls;});
       const notice=textElement('p','listNotice', failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
       if(failed) previous.after(notice);
       const nav=document.createElement('div');nav.className='pageButtons';
