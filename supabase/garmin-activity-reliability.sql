@@ -72,7 +72,7 @@ grant execute on function public.garmin_invalidate_permissions(text[]) to servic
 create or replace function public.garmin_commit_activity(p_id bigint,p_attempt integer,p_record jsonb) returns text
 language plpgsql security invoker set search_path='' as $$
 declare i public.garmin_activity_inbox%rowtype; c public.garmin_api_connections%rowtype;
-  owner_id uuid; outcome text; ext text; start_at timestamptz; km double precision;
+  owner_id uuid; outcome text; ext text; start_at timestamptz; km double precision; indoor boolean; route_length integer;
 begin
   select user_id into owner_id from public.garmin_activity_inbox where id=p_id;
   if owner_id is null then return 'stale'; end if;
@@ -88,13 +88,18 @@ begin
       raise exception 'permissions pending';
     end if;
     ext:=p_record->>'source_external_id'; start_at:=(p_record->>'started_at')::timestamptz; km:=(p_record->>'distance_km')::double precision;
-    if ext not like 'garmin-api:%' or km<=0 or jsonb_array_length(p_record->'route')<2 then raise exception 'invalid record'; end if;
+    indoor:=coalesce((p_record->>'indoor')::boolean,false);
+    route_length:=jsonb_array_length(p_record->'route');
+    if ext not like 'garmin-api:%' or km<=0 or route_length is null
+      or (indoor and route_length<>0) or (not indoor and route_length<2)
+      then raise exception 'invalid record'; end if;
     -- Exact IDs include soft-deleted runs: redelivery must not resurrect user deletions.
     if exists(select 1 from public.runs r where r.user_id=owner_id and
       ((r.source='garmin' and r.source_external_id=ext) or
        (r.deleted_at is null and coalesce(r.source_external_id,'') not like 'garmin-api:%'
         and r.started_at between start_at-interval '2 minutes' and start_at+interval '2 minutes'
-        and abs(r.distance_km-km)<=greatest(0.1,km*0.03)))) then outcome:='duplicate';
+        and abs(r.distance_km-km)<=greatest(0.1,km*0.03)
+        and (coalesce(jsonb_array_length(r.route),0)=0)=indoor))) then outcome:='duplicate';
     else
       insert into public.runs(user_id,activity_date,started_at,distance_km,name,route,source,source_external_id)
       values(owner_id,(p_record->>'activity_date')::date,start_at,km,left(p_record->>'name',200),p_record->'route','garmin',ext)

@@ -1,3 +1,12 @@
+## Garminトレッドミル（GPSなし）取り込み対応（2026-10-24 / 検証ブランチ）
+- [x] Garmin TREADMILL_RUNNING / INDOOR_RUNNING についてGPS座標がない記録も距離・日付・開始時刻をパースする変更をブランチに作成。架空ルートは描かず、route=[]。
+- [x] Garmin DB保存RPCのGPS必須条件を屋外ランと屋内ランで分離するSQL変更をブランチに作成。重複判定で屋内ランと屋外ランを混同しない条件を追加。
+- [x] GPSなし2種、屋外GPSなし拒否のモック検査ケースを追加。
+- [x] GPSなしTREADMILL_RUNNING / INDOOR_RUNNING受入、屋外GPSなし拒否を実行検証。DBの保存RPC変更を本番適用し、Edge Function garmin-activity-push v10 ACTIVEを確認。実ユーザーのランは追加・削除していない。
+- [x] index.htmlのGPSなしGarminランの活動変換を修正。GPSなしの別ラン同士が同一シグネチャになる問題も避けた。
+- [ ] 実Garminトレッドミル通知によるエンドツーエンド保存、月別・総距離・ラン数・地図非表示と端末挙動を実機検証。SQLトランザクション試験は未実施。
+- [ ] 既存Garmin自動連携PR #6と競合・実環境の導線を確認してから統合／本番デプロイ。テスト用に既存ランを削除しない。
+
 ## Journal Instagram画像共有（2026-10-23 / 実装ブランチ）
 - [x] Journal一覧と個別記事に「Instagram用に共有」ボタンを追加。掲載済み画像を加工せず、そのままWeb Share APIのファイル共有へ渡す。
 - [x] 記事URLコピー・画像を開く／保存のフォールバックを追加。画像のない記事は画像共有ボタンを無効にする。
