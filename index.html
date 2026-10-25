@@ -26764,19 +26764,23 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
     const recapSummary = {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm};
     const recapLabel = monthlyRecap ? startLabel : `${startLabel} → ${endLabel}`;
     if (monthlyRecap) {
-      // Refresh the recorded canvas during a ~1.5-second count-up, then hold the exact total.
+      // Start visibly above 0.0 km and finish the monthly count-up promptly.
+      // Keep the final distance on screen long enough to read.
       const countupStart = performance.now();
-      const countupDuration = 1500;
+      const countupDuration = 800;
       do {
         const elapsed = performance.now() - countupStart;
         const progress = Math.min(1, elapsed / countupDuration);
         const easedProgress = 1 - Math.pow(1 - progress, 3);
+        const visibleProgress = recapDistanceKm > 0
+          ? Math.max(easedProgress, Math.min(1, 0.1 / recapDistanceKm))
+          : 1;
         await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary, {
           monthlyReview:true,
-          distanceProgress:easedProgress
+          distanceProgress:visibleProgress
         });
         if (progress >= 1) break;
-        await waitTimelapse(50);
+        await waitTimelapse(40);
       } while (true);
       await drawTimelapseEndCard(outputCanvas, recapLabel, recapSummary, {
         monthlyReview:true,
