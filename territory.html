@@ -148,6 +148,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 /* Participation message is hidden until verified status requires it. */
 #territoryParticipationNudge{display:none}
 #territoryParticipationNudge.isVisible{display:block}
+.myTerritoryCount{margin:14px 0;padding:15px 18px;border:1px solid #ff5ac8;border-radius:14px;background:#172237;color:#fff;font-weight:800;font-size:18px}.myTerritoryCount small{display:block;font-size:12px;font-weight:500;color:#c5ceda;margin-top:4px}.myTerritoryCount[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -189,6 +190,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
   </button>
 </section>
 
+  <section id="myTerritoryCount" class="myTerritoryCount" aria-live="polite" hidden></section>
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
   <div id="countryBar" class="countryBar" aria-label="Country"></div>
 
@@ -439,6 +441,22 @@ let selectedCountry=Object.prototype.hasOwnProperty.call(TERRITORY_COUNTRIES,sav
 let currentUser=null;
 let settingsRow=null;
 let participationLoaded=false;
+let myCountRequest=0;
+async function refreshMyTerritoryCount(){
+  const box=document.getElementById('myTerritoryCount');
+  const seq=++myCountRequest;
+  if(!participationLoaded){box.hidden=true;return;}
+  box.hidden=false;
+  if(!currentUser){box.textContent=lang()==='ja'?'ログインすると参加状況を確認できます':'Log in to check your participation';return;}
+  if(!settingsRow?.join_territory){box.textContent=lang()==='ja'?'参加すると制覇数を確認できます':'Join to see your territories';return;}
+  box.textContent=lang()==='ja'?'あなたの制覇数：集計中…':'Your territories: loading…';
+  const year=selectedYear,c=config();
+  const {data,error}=await sb.rpc('territory_my_lead_count',{p_year:year,p_country_code:c.code,p_admin_level:c.adminLevel||'ADM2'});
+  if(seq!==myCountRequest)return;
+  if(error||data===null||!Number.isInteger(Number(data))){box.textContent=lang()==='ja'?'制覇数を取得できませんでした':'Unable to load territories';return;}
+  box.textContent=(lang()==='ja'?`🏆 あなたの制覇数：${data}${c.kind==='japan'?'市町村':'地域'}`:`🏆 Your territories: ${data} ${Number(data)===1?'region':'regions'}`);
+}
+
 const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
 function updateTerritoryParticipationPrompt(){
   const nudge=$('territoryParticipationNudge');
@@ -533,6 +551,7 @@ function resetRegionPanel(){
 }
 function renderDynamicCopy(){
   if(!selectedMunicipalityCode)resetRegionPanel();
+  refreshMyTerritoryCount();
   if(currentUser){
     $('settingsMessage').textContent=settingsRow?.join_territory
       ?(lang()==='ja'?'Rings Territoryに参加中です。':'You are participating in Rings Territory.')
@@ -768,6 +787,7 @@ async function loadLeaders(){
   }
   renderLeaderLegend();
   updateStatus();
+  refreshMyTerritoryCount();
   return true;
 }
 
@@ -971,6 +991,7 @@ async function initSettings(){
       :'Log in through Runner’s Rings to change participation.';
     updateTerritoryParticipationPrompt();
     showTerritoryParticipationGuideIfNeeded();
+    refreshMyTerritoryCount();
     return;
   }
   const {data,error}=await sb.from('ranking_settings').select(
@@ -979,6 +1000,7 @@ async function initSettings(){
   if(error){
     $('settingsMessage').textContent=lang()==='ja'?'参加設定を読み込めませんでした。':'Unable to load participation settings.';
     updateTerritoryParticipationPrompt();
+    refreshMyTerritoryCount();
     return;
   }
   participationLoaded=true;
@@ -991,6 +1013,7 @@ async function initSettings(){
     :(lang()==='ja'?'現在は参加OFFです。':'Participation is currently OFF.');
   updateTerritoryParticipationPrompt();
   showTerritoryParticipationGuideIfNeeded();
+  refreshMyTerritoryCount();
 }
 
 $('saveTerritory').onclick=async()=>{
@@ -1008,6 +1031,7 @@ $('saveTerritory').onclick=async()=>{
     return;
   }
   settingsRow=saved;
+  refreshMyTerritoryCount();
   if(typeof gtag==='function')gtag('event','territory_participation_saved',{participation_status:joining?'on':'off'});
   $('settingsMessage').textContent=joining
     ?(lang()==='ja'?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。':'Participation is ON. Results appear after the next verification/sync run.')
