@@ -234,7 +234,7 @@ function renderRanking(id,data,kind){
   const delta=kind==='explore'?r.month_regions:r.month_km;
   const monthly=document.createElement('div');monthly.className='monthlyScore';
   monthly.title=selectedRankingYear+'-'+String(selectedRankingMonth).padStart(2,'0');
-  monthly.textContent=delta!==null&&delta!==undefined&&Number.isFinite(Number(delta))?'+'+Number(delta).toLocaleString(lang(),{maximumFractionDigits:kind==='explore'?0:1})+(kind==='explore'?(lang()==='ja'?'地域':' regions'):'km'):'—';
+  monthly.textContent=delta!==null&&delta!==undefined&&Number.isFinite(Number(delta))?'+'+Number(delta).toLocaleString(lang(),{maximumFractionDigits:kind==='explore'?0:1})+(kind==='explore'?(lang()==='ja'?'地域':' regions'):'km'):'';
   monthly.setAttribute('aria-label',monthly.title+' '+monthly.textContent);node.append(monthly);
   node.dataset.search=[rank.textContent,name.textContent,meta.textContent].join(' ').toLocaleLowerCase();
   node.dataset.place=String(r.place??i+1);el.append(node);

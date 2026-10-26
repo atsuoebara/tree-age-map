@@ -26,7 +26,7 @@ AS $function$
          coalesce(s.show_flag,false),
          public.runner_badge_codes(r.user_id),
          CASE WHEN coalesce(s.join_distance,false) THEN r.private_km ELSE NULL END,
-         r.month_km
+         CASE WHEN coalesce(s.join_distance,false) THEN r.month_km ELSE NULL END
   FROM ranked r LEFT JOIN public.ranking_settings s ON s.user_id=r.user_id
   ORDER BY r.place LIMIT 100;
 $function$
@@ -62,7 +62,7 @@ AS $function$
          CASE WHEN coalesce(s.show_regions,false) THEN r.region_names ELSE ARRAY[]::text[] END,
          public.runner_badge_codes(r.user_id),
          CASE WHEN coalesce(s.join_explore,false) THEN r.private_region_count ELSE NULL END,
-         r.month_regions
+         CASE WHEN coalesce(s.join_explore,false) THEN r.month_regions ELSE NULL END
   FROM ranked r LEFT JOIN public.ranking_settings s ON s.user_id=r.user_id
   ORDER BY r.place LIMIT 100;
 $function$
@@ -77,7 +77,7 @@ CREATE OR REPLACE FUNCTION public.ranking_nations_monthly(p_year integer, p_mont
 AS $function$
   WITH runner_totals AS (
     SELECT s.user_id,s.country,sum(r.distance_km::numeric) AS km,
-      coalesce(sum(r.distance_km::numeric) FILTER (WHERE extract(month FROM r.activity_date)=p_month),0) AS month_km
+      coalesce(sum(r.distance_km::numeric) FILTER (WHERE s.join_nations IS TRUE AND extract(month FROM r.activity_date)=p_month),0) AS month_km
     FROM public.ranking_settings s JOIN public.runs r ON r.user_id=s.user_id
     WHERE s.country IS NOT NULL
       AND r.activity_date>=make_date(p_year,1,1)

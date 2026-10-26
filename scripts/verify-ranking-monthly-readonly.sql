@@ -19,7 +19,7 @@ select 'ranking_distance' as department, count(*) as cases, bool_and((select coa
          coalesce(s.show_flag,false),
          public.runner_badge_codes(r.user_id),
          CASE WHEN coalesce(s.join_distance,false) THEN r.private_km ELSE NULL END,
-         r.month_km
+         CASE WHEN coalesce(s.join_distance,false) THEN r.month_km ELSE NULL END
   FROM ranked r LEFT JOIN public.ranking_settings s ON s.user_id=r.user_id
   ORDER BY r.place LIMIT 100) candidate(place,ranking_display_name,country,show_flag,badge_codes,km,month_km))) annual_unchanged from (select y as p_year,m as p_month,'JP'::text as p_country from generate_series(2024,2026) y cross join generate_series(1,12) m) periods union all select 'ranking_explore' as department, count(*) as cases, bool_and((select coalesce(jsonb_agg(to_jsonb(old) order by old.place),'[]'::jsonb) from public.ranking_explore(p_year, 'JP') old)=(select coalesce(jsonb_agg(to_jsonb(candidate)-'month_km'-'month_regions' order by candidate.place),'[]'::jsonb) from (
   WITH distinct_regions AS (
@@ -45,12 +45,12 @@ select 'ranking_distance' as department, count(*) as cases, bool_and((select coa
          CASE WHEN coalesce(s.show_regions,false) THEN r.region_names ELSE ARRAY[]::text[] END,
          public.runner_badge_codes(r.user_id),
          CASE WHEN coalesce(s.join_explore,false) THEN r.private_region_count ELSE NULL END,
-         r.month_regions
+         CASE WHEN coalesce(s.join_explore,false) THEN r.month_regions ELSE NULL END
   FROM ranked r LEFT JOIN public.ranking_settings s ON s.user_id=r.user_id
   ORDER BY r.place LIMIT 100) candidate(place,ranking_display_name,country,show_flag,show_regions,region_names,badge_codes,regions,month_regions))) annual_unchanged from (select y as p_year,m as p_month,'JP'::text as p_country from generate_series(2024,2026) y cross join generate_series(1,12) m) periods union all select 'ranking_nations' as department, count(*) as cases, bool_and((select coalesce(jsonb_agg(to_jsonb(old) order by old.place),'[]'::jsonb) from public.ranking_nations(p_year) old)=(select coalesce(jsonb_agg(to_jsonb(candidate)-'month_km'-'month_regions' order by candidate.place),'[]'::jsonb) from (
   WITH runner_totals AS (
     SELECT s.user_id,s.country,sum(r.distance_km::numeric) AS km,
-      coalesce(sum(r.distance_km::numeric) FILTER (WHERE extract(month FROM r.activity_date)=p_month),0) AS month_km
+      coalesce(sum(r.distance_km::numeric) FILTER (WHERE s.join_nations IS TRUE AND extract(month FROM r.activity_date)=p_month),0) AS month_km
     FROM public.ranking_settings s JOIN public.runs r ON r.user_id=s.user_id
     WHERE s.country IS NOT NULL
       AND r.activity_date>=make_date(p_year,1,1)
