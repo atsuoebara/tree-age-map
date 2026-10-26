@@ -435,12 +435,24 @@ let selectedCountry=Object.prototype.hasOwnProperty.call(TERRITORY_COUNTRIES,sav
   :'JPN';
 let currentUser=null;
 let settingsRow=null;
+let participationLoaded=false;
 const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
 function updateTerritoryParticipationPrompt(){
   const nudge=$('territoryParticipationNudge');
   if(!nudge)return;
-  const visible=!settingsRow?.join_territory;
+  const visible=participationLoaded && !settingsRow?.join_territory;
   nudge.classList.toggle('isVisible',visible);
+  if(visible){
+    const guest=!currentUser;
+    const titleJa=nudge.querySelector('.participationNudgeText strong[data-lang="ja"]');
+    const titleEn=nudge.querySelector('.participationNudgeText strong[data-lang="en"]');
+    const descJa=nudge.querySelector('.participationNudgeText span[data-lang="ja"]');
+    const descEn=nudge.querySelector('.participationNudgeText span[data-lang="en"]');
+    if(titleJa)titleJa.textContent=guest?'🗾 参加状況を確認するにはログインしてください':'🗾 まだRings Territoryに参加していません';
+    if(titleEn)titleEn.textContent=guest?'🗾 Log in to check your participation':'🗾 You are not participating in Rings Territory yet';
+    if(descJa)descJa.textContent=guest?'ログインすると、あなたの参加設定を確認できます。':'参加すると、走った地域にあなたの記録が加わります。';
+    if(descEn)descEn.textContent=guest?'Log in to check your participation settings.':'Join to add your running distance to the regions you have run.';
+  }
   const button=$('territoryNudgeButton');
   if(button){
     const ja=button.querySelector('[data-lang="ja"]');
@@ -453,7 +465,7 @@ function closeTerritoryParticipationGuide(){
   $('territoryParticipationGuide')?.classList.remove('isVisible');
 }
 function showTerritoryParticipationGuideIfNeeded(){
-  if(settingsRow?.join_territory)return;
+  if(!participationLoaded || !currentUser || settingsRow?.join_territory)return;
   const key=currentUser
     ? territoryIntroKey(currentUser.id)
     : 'RunnerRingsTerritoryIntroSeen:guest';
@@ -946,6 +958,7 @@ async function initSettings(){
   const {data:{user}}=await sb.auth.getUser();
   currentUser=user;
   if(!user){
+    participationLoaded=true;
     $('territoryName').disabled=true;
     $('territoryIdentityCountry').disabled=true;
     $('joinTerritory').disabled=true;
@@ -962,8 +975,10 @@ async function initSettings(){
   ).eq('user_id',user.id).maybeSingle();
   if(error){
     $('settingsMessage').textContent=lang()==='ja'?'参加設定を読み込めませんでした。':'Unable to load participation settings.';
+    updateTerritoryParticipationPrompt();
     return;
   }
+  participationLoaded=true;
   settingsRow=data||null;
   $('territoryName').value=data?.ranking_display_name||'';
   makeIdentityCountries(data?.country||'');
