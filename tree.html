@@ -3,7 +3,7 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-CX6V4G2ML5');</script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Rings Tree | Runner's Rings</title><link rel="icon" href="./icon.PNG"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>*{box-sizing:border-box}body{margin:0;background:#0c1722;color:#f5f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto;padding:20px 15px 60px}a{color:#91e9cc}.head{color:#83e4ac;font-size:12px;letter-spacing:.14em;font-weight:900;margin-top:30px}h1{font-size:32px;margin:10px 0}.intro{line-height:1.7;color:#b5c8d3}.treePanel{border-radius:22px;background:linear-gradient(170deg,#143b3b,#132638 75%);border:1px solid #438a73;padding:16px 10px;text-align:center}.treeSvg{width:min(100%,420px);display:block;margin:auto;max-height:490px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}.stat{border-radius:12px;background:#17353e;padding:12px 5px}.stat b{display:block;color:#8df3ae;font-size:20px}.stat small{font-size:11px;color:#c3d7d7}.annual{margin:15px 0;padding:15px;border:1px solid #315d63;background:#132638;border-radius:14px}.annual h2{font-size:17px;margin:0 0 10px}.yearRow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #284851;font-size:13px}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}button{border:0;border-radius:12px;background:#83e4ac;color:#0c2725;padding:13px 16px;font:inherit;font-weight:900;cursor:pointer}button.secondary{background:#193b48;border:1px solid #83e4ac;color:#e8f5ed}button:disabled{opacity:.5}#status{color:#b4c8d1;margin:14px 0;line-height:1.6}.note{font-size:12px;color:#b1c4c9;line-height:1.7}</style></head>
-<body><main><div style="text-align:right;color:#a5d7bd;font-size:12px;font-weight:700" aria-label="ビルド番号">Version 1.0 ｜ Build 2026.10.27.02</div><a href="./index.html">← Runner's Rings</a><div class="head">🌳 MY RINGS TREE</div><h1>一生に一本、あなただけの木。</h1><p class="intro">走るたびに枝と葉が育ち、走った年が年輪になる。休んでも枯れず、過去のランも一緒に成長します。</p>
+<body><main><div style="text-align:right;color:#a5d7bd;font-size:12px;font-weight:700" aria-label="ビルド番号">Version 1.0 ｜ Build 2026.10.27.03</div><a href="./index.html">← Runner's Rings</a><div class="head">🌳 MY RINGS TREE</div><h1>一生に一本、あなただけの木。</h1><p class="intro">走るたびに枝と葉が育ち、走った年が年輪になる。休んでも枯れず、過去のランも一緒に成長します。</p>
 <div class="treePanel"><svg id="treeSvg" class="treeSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 490" role="img" aria-label="走行記録で育つ一本の木"><rect width="420" height="490" fill="#143a39" rx="18"/><circle cx="210" cy="210" r="157" fill="#225044" opacity=".38"/><path d="M42 435 Q210 418 378 435" fill="none" stroke="#98c99b" stroke-width="3"/><g id="branches"></g><g id="leaves"></g><path id="trunk" d="M203 430 Q197 345 207 275 L213 275 Q225 340 217 430 Z" fill="#8a5a3b" stroke="#b5885d" stroke-width="2"/><g id="rings"></g></svg>
 <div id="treeStage" style="font-weight:900;font-size:17px;color:#f9e49c;margin:7px 0 9px">🌱 はじまりの木</div><div class="stats"><div class="stat"><b id="km">—</b><small>累計 km</small></div><div class="stat"><b id="days">—</b><small>走った日数</small></div><div class="stat"><b id="years">—</b><small>走った年</small></div></div></div>
 <div class="annual"><h2>🪵 年輪の記録</h2><div id="yearList">読み込み中…</div></div>
@@ -14,67 +14,69 @@ const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
 let summary=null;
 function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const [key,val] of Object.entries(attrs))n.setAttribute(key,String(val));parent.append(n);return n;}
 function grow(summary){
- const branches=$('branches'),leaves=$('leaves'),rings=$('rings');
+ const branches=$('branches'),leaves=$('leaves'),rings=$('rings'),trunk=$('trunk');
  branches.replaceChildren();leaves.replaceChildren();rings.replaceChildren();
- const svg=$('treeSvg'),trunk=$('trunk');
- if(!summary.days){trunk.setAttribute('opacity','0.25');return;}
+ if(!summary.days){trunk.setAttribute('opacity','.3');return;}
  trunk.setAttribute('opacity','1');
- // Slow lifelong progression, balanced across distance, running days and years.
- const kmGrowth=Math.log1p(summary.km)/Math.log(1+40000);
- const dayGrowth=Math.log1p(summary.days)/Math.log(1+7500);
- const yearGrowth=Math.log1p(summary.years.length)/Math.log(1+50);
- const growth=Math.min(.98,Math.max(.06,kmGrowth*.42+dayGrowth*.38+yearGrowth*.20));
- const spread=44+growth*122, height=82+growth*116;
- let seed=(3907+summary.days*31+Math.floor(summary.km)*7+summary.years.length*127)>>>0;
- const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
- // Ground, roots and subtle game-style sparkles are inside the SVG and share export.
- el('ellipse',{cx:210,cy:440,rx:142,ry:15,fill:'#082c2b',opacity:.5},branches);
- for(let i=0;i<5;i++){
-  const side=i%2===0?-1:1, y=326-i*24;
-  const tx=210+side*(spread*(.48+.15*i)),ty=y-38-i*4;
-  el('path',{d:`M 210 ${y+16} Q ${210+side*spread*.35} ${y-16} ${tx} ${ty}`,stroke:'#9b6748','stroke-width':12-i*1.45,fill:'none','stroke-linecap':'round'},branches);
- }
- // Three overlapping, continuous scalloped foliage masses, not scattered circles.
- function canopy(cx,cy,rx,ry,color,light){
-  const n=13,pts=[];
-  for(let i=0;i<n;i++){
-   const a=-Math.PI/2+i*Math.PI*2/n;
-   const wave=1+.035*Math.sin(i*2.4+growth*4);
-   pts.push([cx+Math.cos(a)*rx*wave,cy+Math.sin(a)*ry*wave]);
+ const progress=Math.min(1,Math.max(.12,.46*Math.log1p(summary.km)/Math.log(50001)+.34*Math.log1p(summary.days)/Math.log(9001)+.2*Math.log1p(summary.years.length)/Math.log(61)));
+ const wide=82+progress*91,high=82+progress*96;
+ let seed=(summary.days*71+Math.round(summary.km)*11+summary.years.length*197+531)>>>0;
+ const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+ const path=(d,fill,stroke='none',sw=0,where=leaves)=>el('path',{d,fill,stroke,'stroke-width':sw,'stroke-linejoin':'round','stroke-linecap':'round'},where);
+ // Silhouette: layered organic foliage with irregular lobes, NOT three circles.
+ const clumps=[
+  [-.78,.24,.40,.43],[-.55,-.18,.43,.42],[-.24,-.49,.49,.44],[.10,-.59,.45,.42],[.46,-.37,.42,.48],[.77,.02,.39,.46],
+  [-.88,-.04,.32,.34],[-.60,-.55,.35,.35],[-.17,-.78,.36,.33],[.28,-.76,.37,.35],[.73,-.45,.35,.34],
+  [-.46,.36,.42,.36],[.08,.34,.50,.38],[.53,.31,.43,.37]
+ ];
+ const shades=['#2b7951','#348b57','#3b9561','#44a36b','#53aa70','#4d9e61','#3f9865','#3a895b','#58b373','#439e64','#64b97b','#63b37a','#4ba76b','#53aa70'];
+ // Branch framework extends into leaves and is visible through some gaps.
+ const limbs=[[-1,334,-.79,245,14],[1,331,.78,249,14],[-1,298,-.60,184,11],[1,287,.64,183,11],[-1,268,-.33,135,9],[1,257,.28,125,9]];
+ limbs.forEach(([side,base,tx,ty,sw])=>{
+  const x=210+tx*wide;
+  path(`M 210 ${base+14} Q ${210+side*wide*.20} ${base-38} ${x} ${ty}`,'none','#95633f',sw,branches);
+ });
+ // Outer silhouette includes many overlapping uneven, scalloped crowns.
+ function cluster(cx,cy,rx,ry,color,i){
+  const pts=[],n=11;
+  for(let j=0;j<n;j++){
+   const a=j*2*Math.PI/n-Math.PI/2;
+   const r=1+.10*Math.sin(j*2.4+i*1.9)+.09*Math.sin(j*3.6+i);
+   pts.push([cx+Math.cos(a)*rx*r,cy+Math.sin(a)*ry*r]);
   }
-  let d=`M ${(pts[n-1][0]+pts[0][0])/2} ${(pts[n-1][1]+pts[0][1])/2}`;
-  for(let i=0;i<n;i++){
-   const p=pts[i],next=pts[(i+1)%n];
-   d+=` Q ${p[0]} ${p[1]} ${(p[0]+next[0])/2} ${(p[1]+next[1])/2}`;
-  }
-  d+=' Z';
-  el('path',{d,fill:color,stroke:'#286d4e','stroke-width':4,'stroke-linejoin':'round'},leaves);
-  el('path',{d:`M ${cx-rx*.56} ${cy-ry*.34} Q ${cx-rx*.12} ${cy-ry*.77} ${cx+rx*.42} ${cy-ry*.39}`,fill:'none',stroke:light,'stroke-width':9,'stroke-linecap':'round',opacity:.62},leaves);
+  let d='M '+((pts[n-1][0]+pts[0][0])/2)+' '+((pts[n-1][1]+pts[0][1])/2);
+  for(let j=0;j<n;j++){const p=pts[j],q=pts[(j+1)%n];d+=` Q ${p[0].toFixed(1)} ${p[1].toFixed(1)} ${((p[0]+q[0])/2).toFixed(1)} ${((p[1]+q[1])/2).toFixed(1)}`;}
+  path(d+' Z',color,'#276d4d',2.3);
+  path(`M ${cx-rx*.45} ${cy-ry*.26} Q ${cx-rx*.12} ${cy-ry*.60} ${cx+rx*.24} ${cy-ry*.37}`,'none','#9cdfa0',3.6);
  }
- canopy(210-spread*.40,258-height*.32,spread*.64,height*.63,'#3d9964','#99e4a0');
- canopy(210+spread*.40,258-height*.32,spread*.64,height*.63,'#328a5c','#7cd69b');
- canopy(210,247-height*.70,spread*.81,height*.78,'#55b577','#b5f0a3');
- // Broad game-art trunk with single curved bark accents, avoiding ladder rungs.
- const w=10+growth*22;
- trunk.setAttribute('d',`M ${210-w} 431 Q ${201-w*.8} 355 203 274 Q 205 255 210 238 Q 220 272 218 305 Q ${219+w*.75} 376 ${210+w} 431 Z`);
- trunk.setAttribute('fill','#a66e48');trunk.setAttribute('stroke','#e0aa70');trunk.setAttribute('stroke-width','3.4');
- el('path',{d:'M 202 402 Q 206 367 205 335',fill:'none',stroke:'#e9b982','stroke-width':4,opacity:.7,'stroke-linecap':'round'},rings);
- el('path',{d:'M 218 392 Q 213 378 217 355',fill:'none',stroke:'#704a37','stroke-width':4,opacity:.65,'stroke-linecap':'round'},rings);
- // Each completed calendar year gets a tiny concentric annual marker.
- const n=Math.min(summary.years.length,20);
- for(let i=0;i<n;i++)el('ellipse',{cx:210,cy:420,rx:2.8+i*1.04,ry:1.5+i*.45,fill:'none',stroke:i%2?'#e8bf84':'#76503b','stroke-width':1.2,opacity:.76},rings);
- // Seasonal rewards: restrained five-petal blossoms within the crown.
- const flowers=Math.min(18,Math.floor(summary.years.length*.65+growth*8));
- for(let i=0;i<flowers;i++){
-  const ang=rnd()*Math.PI*2,rad=Math.sqrt(rnd())*.79;
-  const x=210+Math.cos(ang)*spread*rad,y=248-height*.56+Math.sin(ang)*height*.59*rad;
-  const hue=['#ffd978','#ffc6da','#fff0a7'][i%3];
-  for(let p=0;p<5;p++){const a=p*Math.PI*2/5;el('circle',{cx:x+Math.cos(a)*5,cy:y+Math.sin(a)*5,r:4.2,fill:hue},leaves)}
-  el('circle',{cx:x,cy:y,r:3.3,fill:'#e68e56'},leaves);
+ // Back-to-front, with irregular small foreground clusters.
+ clumps.forEach((p,i)=>{
+  const [x,y,rx,ry]=p;
+  cluster(210+x*wide,243+y*high,rx*wide,ry*high,shades[i],i);
+ });
+ // Accent leaves (teardrops), restrained to avoid the old grape/circle effect.
+ for(let i=0;i<35;i++){
+  const a=random()*Math.PI*2,r=Math.sqrt(random())*.81;
+  const x=210+Math.cos(a)*wide*r,y=226+Math.sin(a)*high*r;
+  const size=3+random()*5;
+  path(`M ${x} ${y} q ${-size} ${-size*1.2} 0 ${-size*1.8} q ${size*1.2} ${size*.7} 0 ${size*1.8} Z`,['#8cd793','#a6e3a4','#71c584'][i%3]);
  }
- for(let i=0;i<4;i++){
-  const x=50+rnd()*320,y=70+rnd()*200;
-  el('path',{d:`M ${x} ${y-6} V ${y+6} M ${x-6} ${y} H ${x+6}`,stroke:'#ffeab8','stroke-width':2,'stroke-linecap':'round',opacity:.75},leaves);
+ // Wide lower trunk, clear fork at crown; taper toward upper branches.
+ const w=15+progress*22;
+ trunk.setAttribute('d',`M ${210-w} 433 C ${210-w*1.15} 375 195 325 197 284 Q 200 264 210 240 Q 217 263 221 289 C 222 338 ${210+w*1.05} 383 ${210+w} 433 Z`);
+ trunk.setAttribute('fill','#a67551');trunk.setAttribute('stroke','#dfaa78');trunk.setAttribute('stroke-width','3.5');
+ path('M 204 412 Q 205 374 202 344','none','#e7bd91',4,rings);
+ path('M 222 408 Q 214 385 219 363','none','#82563f',4,rings);
+ // Bark annual rings remain a small cross-section medallion near the roots.
+ el('ellipse',{cx:210,cy:421,rx:16,ry:6,fill:'#78503e',stroke:'#ddb184','stroke-width':2},rings);
+ for(let i=0;i<Math.min(7,summary.years.length);i++)el('ellipse',{cx:210,cy:421,rx:2+i*1.85,ry:1+i*.58,fill:'none',stroke:'#f2c691','stroke-width':.9},rings);
+ // Sparse flowers as a reward; in groups instead of random confetti.
+ const flowerSites=[[-.62,-.44],[.43,-.52],[.71,.12],[-.33,.22],[.19,.01],[-.09,-.77]];
+ const count=Math.min(6,Math.floor(summary.years.length/3));
+ for(let i=0;i<count;i++){
+  const [x,y]=flowerSites[i],cx=210+x*wide,cy=235+y*high;
+  for(let p=0;p<5;p++){const a=p*Math.PI*2/5;el('ellipse',{cx:cx+Math.cos(a)*4.3,cy:cy+Math.sin(a)*4.3,rx:3.7,ry:4.5,fill:i%2?'#ffe4ad':'#ffd3dc'},leaves)}
+  el('circle',{cx,cy,r:2.5,fill:'#edb75d'},leaves);
  }
  const stage=summary.days<5?'芽吹きの木':summary.days<30?'小さな若木':summary.days<180?'育ちざかりの木':summary.days<500?'森を目指す木':'旅する大樹';
  const label=$('treeStage');if(label)label.textContent='✨ '+stage;
