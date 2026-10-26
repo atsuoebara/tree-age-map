@@ -79,7 +79,7 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 <div class="settingRow"><div class="settingText"><b data-lang="ja">EXPLOREの地域名を公開</b><b data-lang="en">Show region names</b></div><label class="switch"><input type="checkbox" data-setting="regions" aria-label="Show EXPLORE region names / EXPLORE地域名を表示"><span class="slider"></span></label></div>
 <p class="settingsLead" data-lang="ja">バッジ：🌱 はじめの輪＝ラン記録を保存、🔥 継続の輪＝異なる3か月以上にラン記録、📷 写真の輪＝承認済み写真を投稿。ログイン回数や紹介数は集計していません。</p><p class="settingsLead" data-lang="en">Badges: 🌱 First Loop = a saved run; 🔥 Steady Runner = runs in at least three different months; 📷 Photo Contributor = an approved photo. Login and referral counts are not tracked.</p>
 <button id="saveRanking" class="backButton" type="button" style="border:0;margin-top:16px;cursor:pointer">保存 / Save</button><p id="rankingMessage" class="notice" role="status"></p></div>
-<div class="settings"><h3 data-lang="ja">仲間を招待する</h3><h3 data-lang="en">Invite your running friends</h3><p data-lang="ja">一緒に走った人生を讃えよう。参加しなくてもランキングは閲覧できます。</p><p data-lang="en">Celebrate every runner's journey. Viewing does not require joining.</p><button id="shareRanking" class="backButton" type="button" style="border:0;cursor:pointer">共有 / Share</button></div>
+<div class="settings"><h3 data-lang="ja">仲間を招待する</h3><h3 data-lang="en">Invite your running friends</h3><p data-lang="ja">一緒に走った人生を讃えよう。参加しなくてもランキングは閲覧できます。</p><p data-lang="en">Celebrate every runner's journey. Viewing does not require joining.</p><button id="shareRanking" class="backButton" type="button" style="border:0;cursor:pointer">リンクを共有 / Share link</button> <button id="rankingStoryShare" class="backButton" type="button" style="border:0;cursor:pointer;background:#eaff00;color:#101722">📷 Instagramへ共有</button> <button id="rankingStorySave" class="backButton" type="button" style="border:0;cursor:pointer">画像保存</button><p id="rankingStoryMessage" class="notice" role="status"></p></div>
 
   <nav class="featureNav" aria-label="Runner's Rings features">
     <div class="featureNavTitle">
@@ -251,6 +251,48 @@ document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',appl
 async function loadBoards(){const request=++boardsRequest;try{const [d,n]=await Promise.all([sb.rpc('ranking_distance_monthly',{p_year:selectedRankingYear,p_month:selectedRankingMonth}),sb.rpc('ranking_nations_monthly',{p_year:selectedRankingYear,p_month:selectedRankingMonth})]);if(request!==boardsRequest)return;if(d.error||n.error)throw d.error||n.error;rows('distanceRanking',d.data,'distance');rows('nationsRanking',n.data,'nations')}catch(e){if(request!==boardsRequest)return;['distanceRanking','nationsRanking'].forEach(id=>$(id).innerHTML='<p class="notice">'+(lang()==='ja'?'ランキングDB設定待ち':'Ranking database setup pending')+'</p>');console.warn('Ranking:',e.message)}}
 async function init(){await loadAvailableRankingYears();selectedRankingYear=availableRankingYears[0]||currentRankingYear;renderRankingYearFilter();setLanguage(localStorage.getItem(langKey)||((navigator.language||'').startsWith('en')?'en':'ja'));const {data:{user}}=await sb.auth.getUser();currentUser=user;if(!user){$('rankingMessage').textContent=lang()==='ja'?'表示設定を保存するにはログインしてください':'Log in to save display settings';return}const {data,error}=await sb.from('ranking_settings').select('*').eq('user_id',user.id).maybeSingle();if(error){$('rankingMessage').textContent='Database setup pending';return}if(data){$('rankingName').value=data.ranking_display_name||'';countrySelect.value=data.country||'';document.querySelector('[data-setting="name"]').checked=!!data.show_ranking_name;document.querySelector('[data-setting="distance"]').checked=!!data.join_distance;document.querySelector('[data-setting="explore"]').checked=!!data.join_explore;document.querySelector('[data-setting="flag"]').checked=!!data.show_flag;document.querySelector('[data-setting="regions"]').checked=!!data.show_regions}}
 $('saveRanking').onclick=async()=>{if(!currentUser){$('rankingMessage').textContent='Log in first / ログインしてください';return}const name=$('rankingName').value.trim(),country=countrySelect.value;if(name.length>32){$('rankingMessage').textContent='表示名は32文字以内 / Name must be 32 characters or fewer';return}const {error}=await sb.from('ranking_settings').upsert({user_id:currentUser.id,ranking_display_name:name||null,country:country||null,show_ranking_name:document.querySelector('[data-setting="name"]').checked,join_distance:document.querySelector('[data-setting="distance"]').checked,join_explore:document.querySelector('[data-setting="explore"]').checked,show_flag:document.querySelector('[data-setting="flag"]').checked,show_regions:document.querySelector('[data-setting="regions"]').checked},{onConflict:'user_id'});$('rankingMessage').textContent=error?('保存失敗 / Save failed: '+error.message):'保存しました / Saved';if(!error){if(typeof gtag==='function')gtag('event','ranking_settings_saved',{feature:'ranking'});loadBoards();loadExplore()}};
+function rankingStoryCanvas(){
+ const active=document.querySelector('.panel.active');
+ const board=active?.querySelector('.ranking');
+ if(!board)throw Error('No ranking board');
+ const entries=[...board.querySelectorAll('.row')].filter(r=>getComputedStyle(r).display!=='none').slice(0,10);
+ if(!entries.length)throw Error('No ranking entries');
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+ const c=canvas.getContext('2d'),g=c.createLinearGradient(0,0,1080,1920);g.addColorStop(0,'#283944');g.addColorStop(1,'#0b1527');c.fillStyle=g;c.fillRect(0,0,1080,1920);
+ function write(v,x,y,size,color,maxWidth=930){c.fillStyle=color;c.font='bold '+size+'px sans-serif';c.fillText(String(v),x,y,maxWidth)}
+ const kind=active.id.toUpperCase();
+ write('RINGS RANKING',65,125,49,'#eaff00');write(kind,65,250,76,'#fff');write(String(selectedRankingYear),65,332,39,'#acc1ce');
+ write(lang()==='ja'?'世界のランナーとつながろう':'Connect with runners worldwide',65,445,38,'#d8e8ef');
+ entries.forEach((row,i)=>{
+   const rank=row.querySelector('.rank')?.textContent?.trim()||String(i+1);
+   const name=row.querySelector('.runnerName')?.textContent?.trim()||'Runner';
+   const meta=row.querySelector('.runnerMeta')?.textContent?.trim()||'';
+   const score=row.querySelector('.score')?.textContent?.trim()||'';
+   const y=535+i*120;
+   c.fillStyle='#1e3446';c.fillRect(55,y-46,970,103);
+   write(rank,76,y+13,38,'#eaff00',95);write(name,193,y+6,31,'#fff',630);
+   if(meta)write(meta,193,y+37,18,'#b8cad6',640);
+   if(score)write(score,843,y+17,27,'#eaff00',160);
+ });
+ write("Runner's Rings",65,1830,46,'#eaff00');write('runnersrings.com/ranking.html',65,1880,28,'#c3cfda');
+ return canvas;
+}
+async function exportRankingStory(saveOnly){
+ const status=$('rankingStoryMessage');status.textContent=lang()==='ja'?'画像を作成中…':'Creating image…';
+ try{
+  const blob=await new Promise((resolve,reject)=>rankingStoryCanvas().toBlob(b=>b?resolve(b):reject(Error('PNG failed')),'image/png'));
+  const file=new File([blob],'rings-ranking-'+selectedRankingYear+'.png',{type:'image/png'});
+  if(!saveOnly&&navigator.share&&navigator.canShare?.({files:[file]})){
+   try{await navigator.share({files:[file],title:'Rings Ranking'});status.textContent=lang()==='ja'?'共有先でInstagramを選んでください':'Choose Instagram from share sheet';return}catch(e){if(e.name==='AbortError'){status.textContent='';return}}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  if(typeof gtag==='function')gtag('event','ranking_story_image_saved',{ranking_kind:document.querySelector('.panel.active')?.id||''});
+  status.textContent=lang()==='ja'?'画像を保存しました':'Image saved';
+ }catch(e){console.warn(e);status.textContent=lang()==='ja'?'画像を作成できませんでした。ランキングの読み込み後にお試しください':'Could not create image';}
+}
+$('rankingStoryShare').onclick=()=>exportRankingStory(false);
+$('rankingStorySave').onclick=()=>exportRankingStory(true);
+
 $('shareRanking').onclick=async()=>{const url=location.origin+'/ranking.html';const text=lang()==='ja'?'走った人生を一緒に讃えよう！Rings Ranking 🌍':'Celebrate the miles we run together! Rings Ranking 🌍';if(navigator.share){try{await navigator.share({title:'Rings Ranking',text,url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text+' '+url);alert(lang()==='ja'?'招待文とURLをコピーしました':'Invite link copied')}catch(e){prompt('Copy / コピー',text+' '+url)}};
 init();
 </script><script defer src="/rr-ondevice-translate.js"></script>
