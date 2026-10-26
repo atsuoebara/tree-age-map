@@ -20,6 +20,7 @@
 *{box-sizing:border-box}html,body{margin:0;background:#08131f;color:#f6fbff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}.wrap{width:min(1080px,100%);margin:auto;padding:14px 14px 40px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:9px;text-decoration:none;font-weight:900}.brand img{width:38px;height:38px;border-radius:50%;object-fit:cover}.back{padding:8px 12px;border:1px solid rgba(116,231,255,.35);border-radius:999px;text-decoration:none;font-size:13px;color:#c9f7ff;background:#102335}.hero{position:relative;overflow:hidden;padding:24px 20px;border:1px solid rgba(117,232,255,.34);border-radius:22px;background:radial-gradient(circle at 85% 10%,rgba(111,231,255,.20),transparent 34%),linear-gradient(145deg,#0c2936,#112438 62%,#132033);box-shadow:0 0 40px rgba(96,223,255,.08)}.eyebrow{font-size:12px;letter-spacing:.18em;color:#78eaff;font-weight:900}.hero h1{margin:7px 0 4px;font-size:clamp(30px,8vw,52px);line-height:1}.hero h1 span{color:#86edff;text-shadow:0 0 22px rgba(87,224,255,.55)}.hero p{margin:12px 0 0;max-width:760px;line-height:1.75;color:#c6d8e5}.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}.controls button{border:1px solid rgba(116,231,255,.36);background:#102235;color:#fff;border-radius:12px;padding:10px 12px;font:inherit;cursor:pointer;font-weight:800}.controls button.primary{background:#78eaff;color:#06212a;border-color:#78eaff}.controls button:disabled{opacity:.35;cursor:default}.datePickerBtn{min-width:152px;font-variant-numeric:tabular-nums}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 14px}.stat{padding:13px 14px;border:1px solid rgba(255,255,255,.09);background:#0e1d2c;border-radius:15px}.stat small{display:block;color:#93aabd;font-size:11px}.stat strong{display:block;margin-top:4px;font-size:22px;color:#90efff}.panel{margin-top:14px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:#0d1a28;overflow:hidden}.panelHead{padding:14px 16px 8px}.panelHead h2{margin:0;font-size:18px}.panelHead p{margin:5px 0 0;color:#91a6b8;font-size:12px;line-height:1.6}.regionList{display:grid;gap:8px;padding:10px 12px 14px}.regionRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 13px;border:1px solid rgba(116,231,255,.13);border-radius:13px;background:#102131}.regionName{font-weight:850;line-height:1.35}.regionSub{margin-top:3px;color:#8fa7ba;font-size:11px}.regionNums{text-align:right;white-space:nowrap}.regionNums strong{color:#8ceeff;font-size:16px}.regionNums small{display:block;color:#9eb1c0;margin-top:2px}.empty,.error{padding:22px;text-align:center;color:#9eb1c0}.error{color:#ffd2d2}.note{margin:15px 3px 0;color:#8fa5b6;font-size:11px;line-height:1.7}.lang{display:flex;gap:5px;margin-left:auto}.lang button{padding:6px 9px;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:#102235;color:#91a9ba;font-weight:800;cursor:pointer}.lang button.active{background:#78eaff;color:#06212a}.featureNav{margin:28px 0 0}.featureNavTitle{margin:0 0 10px;color:#8fa0b5;font-size:11px;font-weight:900;letter-spacing:.12em;text-align:center}.featureNavGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.featureNavCard{display:block;min-width:0;padding:15px 14px;border:2px solid;border-radius:15px;color:#fff;text-decoration:none;font-weight:900;line-height:1.35}.featureNavName{display:block;font-size:14px}.featureNavText{display:block;margin-top:5px;font-size:10px;font-weight:650;line-height:1.5;opacity:.92}.featureNavCard.journal{border-color:#ff2bd6;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55)}.featureNavCard.ranking{border-color:#eaff00;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644)}.featureNavCard.territory{border-color:#5cff9d;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55)}.featureNavCard.today{border-color:#78eaff;background:linear-gradient(135deg,rgba(120,234,255,.34),#12374a 52%,#203a55);box-shadow:0 0 0 2px rgba(255,255,255,.25) inset}.featureNavCard.art{border-color:#ff9b45;background:linear-gradient(135deg,rgba(255,155,69,.42),#4b3328 52%,#203a55)}.homeArea{text-align:center;margin:22px 0 4px}.homeButton{display:inline-block;padding:12px 22px;border-radius:999px;background:#ff2bd6;color:#fff;font-weight:900;text-decoration:none}html[lang="ja"] .ja{display:revert!important}html[lang="ja"] .en{display:none!important}html[lang="en"] .ja{display:none!important}html[lang="en"] .en{display:revert!important}
 .dateModal[hidden]{display:none}.dateModal{position:fixed;inset:0;z-index:9999;background:rgba(2,10,18,.72);display:flex;align-items:flex-end;justify-content:center;padding:18px}.dateSheet{width:min(560px,100%);border:1px solid rgba(120,234,255,.35);border-radius:24px;background:#eef5fb;color:#102033;padding:18px;box-shadow:0 20px 80px rgba(0,0,0,.45)}.dateSheet h3{margin:0 0 14px;text-align:center;font-size:18px}.dateFields{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px}.dateField label{display:block;margin:0 0 6px;text-align:center;font-size:12px;font-weight:800;color:#526476}.dateField select{width:100%;font-size:22px;font-weight:800;padding:12px 8px;border-radius:14px;border:1px solid #b9c9d6;background:#fff;color:#102033;text-align:center}.dateActions{display:flex;gap:10px;margin-top:16px}.dateActions button{flex:1;padding:12px;border-radius:14px;border:1px solid #b9c9d6;font-size:16px;font-weight:900}.dateActions .apply{background:#1977ff;color:#fff;border-color:#1977ff}.dateActions .cancel{background:#fff;color:#253748}
 @media(max-width:640px){.wrap{padding:10px 10px 30px}.hero{padding:20px 16px}.summary{grid-template-columns:1fr 1fr}.summary .stat:last-child{grid-column:1/-1}.top{flex-wrap:wrap}.lang{margin-left:0}.regionRow{gap:7px}.regionNums strong{font-size:14px}.featureNavGrid{grid-template-columns:1fr}.featureNavCard{padding:15px 16px}.featureNavName{font-size:15px}.featureNavText{font-size:11px}.dateModal{padding:10px}.dateSheet{border-radius:22px}.dateField select{font-size:20px;padding:11px 4px}}
+.shareBox{margin:14px 0;padding:16px;border:1px solid #78eaff;border-radius:18px;background:#102537}.shareBox h2{font-size:17px;margin:0 0 8px}.shareBox p{font-size:12px;color:#b6d0dd;line-height:1.6}.shareFields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.shareFields select{width:100%;min-width:0;padding:12px 9px;border:1px solid #3d7483;border-radius:10px;color:#fff;background:#142f42;font-size:14px}.shareActions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.shareActions button{padding:12px 16px;border-radius:11px;border:1px solid #78eaff;background:#143a50;color:#fff;font-weight:850;font-size:14px}.shareActions button:first-child{background:#78eaff;color:#092434}.shareActions button:disabled{opacity:.5}.shareStatus{min-height:16px;font-size:12px;color:#aceaff;margin:10px 0 0}@media(max-width:420px){.shareFields{grid-template-columns:1fr}.shareActions button{flex:1}}
 </style>
 </head>
 <body>
@@ -51,6 +52,14 @@
     <div class="stat"><small class="ja">地域内の合計距離</small><small class="en">Distance in regions</small><strong id="distanceTotal">—</strong></div>
   </div>
 
+<section class="shareBox" aria-label="Rings Today sharing">
+<h2><span class="ja">📷 Instagram用に1枚で共有</span><span class="en">📷 Share as one Instagram Story</span></h2>
+<p class="ja">全体・国・都道府県・市町村から選んで、ストーリーズ用の縦長画像を作成します。個人名や走行ルートは入りません。</p>
+<p class="en">Choose all regions, a country, prefecture or city. Generate a Story-size image without personal names or routes.</p>
+<div class="shareFields"><select id="shareScope" aria-label="共有範囲"><option value="all">🌍 全体</option><option value="country">国別</option><option value="prefecture">県・州など</option><option value="city">市町村・地域</option></select><select id="shareArea" aria-label="共有する地域" hidden></select></div>
+<div class="shareActions"><button id="shareImageBtn" type="button">Instagramへ共有</button><button id="saveImageBtn" type="button">画像を保存</button></div>
+<div id="shareStatus" class="shareStatus" role="status"></div>
+</section>
   <section class="panel">
     <div class="panelHead"><h2><span class="ja">走られた地域</span><span class="en">Regions visited</span></h2><p id="selectedDateLabel"></p></div>
     <div id="regionList" class="regionList"></div>
@@ -121,11 +130,97 @@ function renderDateLabel(){const d=new Date(dateInput.value+'T00:00:00');documen
 function regionLabel(r){const parent=r.parent_region_name?`${r.parent_region_name} / `:'';return `${parent}${r.region_name}`;}
 function countryLabel(code){return lang==='ja'?(COUNTRY_NAMES[code]||code):code;}
 function escapeHtml(s){return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
+let todayShareRows=[],todayShareLoaded=false;
+const shareScope=document.getElementById('shareScope'),shareArea=document.getElementById('shareArea'),shareStatus=document.getElementById('shareStatus');
+function shareGroupKey(r,scope){
+  if(scope==='country')return r.country_code||'';
+  if(scope==='prefecture')return [r.country_code||'',r.parent_region_name||''].join('|');
+  if(scope==='city')return [r.country_code||'',r.parent_region_name||'',r.region_name||''].join('|');
+  return 'all';
+}
+function shareGroupName(r,scope){
+  if(scope==='country')return countryLabel(r.country_code);
+  if(scope==='prefecture')return [countryLabel(r.country_code),r.parent_region_name||'—'].join(' / ');
+  return [countryLabel(r.country_code),r.parent_region_name,r.region_name].filter(Boolean).join(' / ');
+}
+function fillShareAreas(){
+  const scope=shareScope.value;
+  const groups=new Map();
+  for(const r of todayShareRows){const key=shareGroupKey(r,scope);if(!groups.has(key))groups.set(key,shareGroupName(r,scope));}
+  const old=shareArea.value;
+  shareArea.replaceChildren();
+  for(const [key,name] of [...groups.entries()].sort((a,b)=>a[1].localeCompare(b[1],lang==='ja'?'ja':'en')))shareArea.add(new Option(name,key));
+  if(groups.has(old))shareArea.value=old;
+  shareArea.hidden=scope==='all';
+  const disabled=!todayShareLoaded||!todayShareRows.length||scope!=='all'&&!groups.size;
+  document.getElementById('shareImageBtn').disabled=disabled;
+  document.getElementById('saveImageBtn').disabled=disabled;
+}
+shareScope.onchange=fillShareAreas;
+function shareSelectedRows(){
+  return shareScope.value==='all'?todayShareRows:todayShareRows.filter(r=>shareGroupKey(r,shareScope.value)===shareArea.value);
+}
+function trackTodayShare(event){if(typeof gtag==='function')gtag('event',event,{feature:'rings_today',scope:shareScope.value});}
+function canvasText(ctx,text,x,y,maxWidth,font,color){
+  ctx.font=font;ctx.fillStyle=color;
+  let value=String(text);
+  while(ctx.measureText(value).width>maxWidth&&value.length>1)value=value.slice(0,-2)+'…';
+  ctx.fillText(value,x,y);
+}
+function drawShareImage(){
+  const rows=shareSelectedRows();
+  if(!todayShareLoaded||!rows.length)throw Error(lang==='ja'?'共有する集計がありません':'No data to share');
+  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+  const c=canvas.getContext('2d');if(!c)throw Error('Canvas unavailable');
+  const grad=c.createLinearGradient(0,0,1080,1920);grad.addColorStop(0,'#0c3040');grad.addColorStop(.7,'#0b1829');grad.addColorStop(1,'#17283c');c.fillStyle=grad;c.fillRect(0,0,1080,1920);
+  const box=(x,y,w,h)=>{c.fillStyle='#142e40';c.beginPath();c.roundRect(x,y,w,h,28);c.fill();};
+  c.textBaseline='alphabetic';
+  canvasText(c,'♥ RINGS TODAY',65,130,950,'bold 46px sans-serif','#78eaff');
+  canvasText(c,lang==='ja'?'今日、どこが走られた？':'Where did we run?',65,230,945,'bold 56px sans-serif','#ffffff');
+  canvasText(c,dateInput.value.replaceAll('-','.'),65,320,900,'bold 42px sans-serif','#b4d6e0');
+  const scope=shareScope.value;
+  const label=scope==='all'?(lang==='ja'?'すべての地域':'All regions'):(shareArea.selectedOptions[0]?.textContent||'');
+  canvasText(c,label,65,425,950,'bold 43px sans-serif','#86edff');
+  const people=rows.reduce((a,r)=>a+Number(r.runner_count||0),0);
+  const km=rows.reduce((a,r)=>a+Number(r.distance_km||0),0);
+  const labels=lang==='ja'?['走られた地域','地域ごとの人数合計','地域内の合計距離']:['Regions','Runner-region total','Distance'];
+  const values=[String(rows.length),String(people),km.toFixed(1)+' km'];
+  for(let i=0;i<3;i++){const y=480+i*158;box(58,y,964,135);canvasText(c,labels[i],84,y+46,900,'28px sans-serif','#b7ced9');canvasText(c,values[i],84,y+106,900,'bold 51px sans-serif','#88edff');}
+  canvasText(c,lang==='ja'?'走られた地域':'Regions visited',65,1045,900,'bold 47px sans-serif','#fff');
+  const sorted=[...rows].sort((a,b)=>Number(b.runner_count||0)-Number(a.runner_count||0)||Number(b.distance_km||0)-Number(a.distance_km||0));
+  const shown=sorted.slice(0,7);
+  shown.forEach((r,i)=>{const y=1105+i*90;canvasText(c,regionLabel(r),70,y+24,695,'bold 31px sans-serif','#eaf8ff');canvasText(c,String(r.runner_count||0)+(lang==='ja'?'人':' runners'),785,y+24,230,'bold 30px sans-serif','#86edff');c.fillStyle='#244354';c.fillRect(65,y+56,950,2);});
+  if(sorted.length>shown.length)canvasText(c,lang==='ja'?`ほか${sorted.length-shown.length}地域`:`+ ${sorted.length-shown.length} more regions`,70,1764,890,'bold 30px sans-serif','#b4d6e0');
+  canvasText(c,lang==='ja'?'※人数は地域ごとの合計（同一人物の地域間重複あり）':'Runner totals may count the same person in different regions',65,1810,950,'24px sans-serif','#a9bdc9');
+  canvasText(c,"Runner's Rings  •  runnersrings.com/today.html",65,1880,955,'bold 30px sans-serif','#78eaff');
+  return canvas;
+}
+async function createShareBlob(){return new Promise((resolve,reject)=>{try{drawShareImage().toBlob(blob=>blob?resolve(blob):reject(Error('Image conversion failed')),'image/png')}catch(e){reject(e)}});}
+function saveBlob(blob){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='rings-today-'+dateInput.value+'.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+async function shareTodayImage(downloadOnly){
+  const b1=document.getElementById('shareImageBtn'),b2=document.getElementById('saveImageBtn');b1.disabled=b2.disabled=true;
+  shareStatus.textContent=lang==='ja'?'画像を作成しています…':'Creating image…';
+  try{
+    const blob=await createShareBlob(),file=new File([blob],'rings-today-'+dateInput.value+'.png',{type:'image/png'});
+    trackTodayShare('today_share_image_generated');
+    if(!downloadOnly&&navigator.canShare?.({files:[file]})&&navigator.share){
+      try{await navigator.share({files:[file],title:'Rings Today'});trackTodayShare('today_share_sheet_opened');shareStatus.textContent=lang==='ja'?'共有先でInstagramを選んでください':'Choose Instagram in the share sheet';return;}
+      catch(e){if(e.name==='AbortError'){shareStatus.textContent='';return;}console.warn(e);}
+    }
+    saveBlob(blob);trackTodayShare('today_share_image_saved');
+    shareStatus.textContent=lang==='ja'?'画像を保存しました。Instagramで画像を選んで投稿してください。':'Image downloaded. Choose it in Instagram to post.';
+  }catch(e){console.error(e);shareStatus.textContent=lang==='ja'?'画像を作成できませんでした。もう一度お試しください。':'Could not create image. Please retry.';}
+  finally{fillShareAreas();}
+}
+document.getElementById('shareImageBtn').onclick=()=>shareTodayImage(false);
+document.getElementById('saveImageBtn').onclick=()=>shareTodayImage(true);
+
 async function load(){
+  todayShareLoaded=false;todayShareRows=[];fillShareAreas();shareStatus.textContent='';
   updateDateButton();renderDateLabel();updateArrowState();document.getElementById('regionList').innerHTML='<div class="empty">Loading…</div>';
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_rings_today`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({target_date:dateInput.value})});
-    if(!res.ok)throw new Error(await res.text());const rows=await res.json();
+    if(!res.ok)throw new Error(await res.text());const rows=await res.json();todayShareRows=rows;todayShareLoaded=true;fillShareAreas();
     const totalRunners=rows.reduce((s,r)=>s+Number(r.runner_count||0),0),totalKm=rows.reduce((s,r)=>s+Number(r.distance_km||0),0);
     document.getElementById('regionCount').textContent=rows.length.toLocaleString();document.getElementById('runnerCount').textContent=totalRunners.toLocaleString();document.getElementById('distanceTotal').textContent=`${totalKm.toFixed(1)} km`;
     const list=document.getElementById('regionList');
