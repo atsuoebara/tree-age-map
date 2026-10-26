@@ -8,13 +8,13 @@
 <label for="date">共有する日付</label> <input id="date" type="date">
 <div class="card"><small id="dateLabel">—</small><div class="distance"><span id="km">—</span><span style="font-size:25px"> km</span></div><div class="stats"><div class="stat">🏃 <span id="count">—</span> runs</div></div><p id="region" class="sub"></p></div>
 <div class="actions"><button id="share" disabled>Instagramへ共有</button><button class="secondary" id="save" disabled>画像を保存</button></div><p id="status" role="status">ログイン情報を確認中…</p>
-<p class="privacy">共有画像には個人名・走行ルート・GPS座標を含めません。地域名は元データに確実な情報がある場合だけ表示します。投稿前に画像をご確認ください。</p>
+<p class="privacy">共有画像には個人名・走行ルート・GPS座標を含めません。地域名は保存された地域別集計から取得できた場合だけ表示します。投稿前に画像をご確認ください。</p>
 </main>
 <script>
 const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co','sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id),localDay=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
 $('date').value=localDay(new Date());$('date').max=$('date').value;
-let current=null,data=[];
+let current=null,data=[];let regionNames=[];
 function gtagEvent(name){if(typeof gtag==='function')gtag('event',name,{feature:'my_today'});}
 async function load(){
  $('share').disabled=$('save').disabled=true;$('status').textContent='ランニングデータを集計中…';
@@ -25,8 +25,13 @@ async function load(){
  if(error){console.error(error);$('status').textContent='ランデータを読み込めませんでした。';return;}
  if(date!==$('date').value)return;
  data=rows||[];current={date,count:data.length,km:data.reduce((a,r)=>a+Number(r.distance_km||0),0)};
+ const {data:geoRows,error:geoError}=await sb.rpc('my_today_regions',{p_date:date});
+ if(date!==$('date').value)return;
+ if(geoError){console.warn('MY TODAY regions:',geoError.message);regionNames=[];}else{
+ regionNames=[...new Set((geoRows||[]).map(r=>[r.country_code,r.parent_region_name,r.region_name].filter(Boolean).join(' / ')).filter(Boolean))];
+ }
  $('dateLabel').textContent=date.replaceAll('-','.');$('km').textContent=current.km.toFixed(2);$('count').textContent=current.count;
- $('region').textContent=''; // Names must not be inferred from free-text run titles.
+ $('region').textContent=regionNames.length?'📍 '+regionNames.slice(0,4).join(' ・ ')+(regionNames.length>4?' ほか'+(regionNames.length-4)+'地域':''):'';
  $('share').disabled=$('save').disabled=!current.count;
  $('status').textContent=current.count?'共有画像を作成できます。':'この日の保存済みランはありません。';
 }
@@ -39,7 +44,8 @@ function draw(){
  txt('MY TODAY',68,150,65,'#88edff');txt(current.date.replaceAll('-','.'),68,260,45,'#b5d6e2');
  c.fillStyle='#17374b';c.beginPath();c.roundRect(55,390,970,550,34);c.fill();
  txt(current.km.toFixed(2),92,665,142,'#fff');txt('km',92,753,72,'#8eefff');txt(current.count+' '+(current.count===1?'run':'runs'),92,870,56,'#bedce8');
- txt('Today I added another ring.',68,1160,48,'#d2e9f1');
+ txt('Today I added another ring.',68,1130,48,'#d2e9f1');
+ if(regionNames.length){txt('📍 REGIONS',68,1270,40,'#8eefff');regionNames.slice(0,5).forEach((name,i)=>txt(name,68,1350+i*85,32,'#e7f7ff'));if(regionNames.length>5)txt('+'+(regionNames.length-5)+' more regions',68,1780,30,'#a6d3e3');}
  txt("Runner's Rings",68,1755,55,'#8eefff');txt('runnersrings.com',68,1840,35,'#c5dbe4');
  return canvas;
 }
