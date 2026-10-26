@@ -1,3 +1,13 @@
+## ランキング月間増加分・適用待ち（2026-10-26）
+
+- [x] 最新main f762634、ranking.html、稼働中3 RPCとranking_explore_verifiedを確認。join_distance/join_exploreは現行画面では累計公開設定であり、既存RPCは累計非公開でも行を返す。掲載条件を変更せず月間値を追加するSQL案を作成。
+- [x] DISTANCE/NATIONSは保存済みactivity_dateの対象年月距離、EXPLOREは対象年・国・地域の最初の有効走行日が対象月に入る地域数。年間非公開欄は空欄。初期月は閲覧端末の現在月、過去年も選択した月を使う。
+- [x] 読取専用で2024〜2026年×12か月、3部門108ケース（EXPLOREはJP）の年間全返却列・順位・掲載行が既存RPCと一致。合成SQLで年跨ぎ・1/2/12月境界・再訪地域の重複除外を確認。本番データ書換えなし。
+- [x] Edgeの375px幅で合成データを使用し、累計空欄・月間値・3部門の過去年12月引数・横はみ出しなし・実行エラーなしを確認。公開画面の実データ検証とは別。
+- [ ] 自動承認レビューが本番SECURITY DEFINER RPC追加を2回拒否。理由は非参加者の月間値公開リスク。既存掲載行の継承と累計非公開でも月間値を表示する指示は確認済みだが、DB適用は未実施。適用前にユーザー承認が必要。
+- [ ] DB適用後、anon/authenticatedでRPCを検証してから公開。main未反映・GitHub Pages未公開・iPhone実機未確認。このブランチ単独では未適用RPCを呼ぶため公開しないこと。
+- SQL案: supabase/ranking-monthly.sql。読取検証: scripts/verify-ranking-monthly-readonly.sql。境界検証: scripts/test-ranking-month-boundaries.sql。画面検証: scripts/test-ranking-monthly.cjs（Playwrightが必要）。
+
 ## Territory参加案内CSS不具合修正（2026-10-26）
 
 - [x] 未参加案内の .isVisible をJavaScriptで切り替えていたが、対応するCSSの非表示規則が存在せず常時表示されていた。#territoryParticipationNudge をデフォルト非表示、.isVisible時だけ表示へ修正（991a6fb）。
