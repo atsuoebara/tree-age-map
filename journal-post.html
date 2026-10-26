@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="ja">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CX6V4G2ML5', {send_page_view:false});
+</script>
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Journal | Runner's Rings</title>
 <link rel="icon" href="icon.PNG" type="image/png">
@@ -29,6 +38,7 @@ const back=document.getElementById('back');
 const slug=new URLSearchParams(location.search).get('slug');
 let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
 let post=null;
+let articlePageViewSent=false;
 const canonicalURL=location.origin+location.pathname+'?'+new URLSearchParams({slug}).toString();
 function item(tag, cls, val){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=val||'';return el;}
 function validImage(src){try{const u=new URL(src);return u.protocol==='https:'&&u.hostname==='fhwvntpzwyenendhcgbw.supabase.co'&&u.pathname.includes('/storage/v1/object/public/journal-images/')?u.href:null;}catch(_){return null;}}
@@ -68,6 +78,10 @@ function draw(){
   root.append(row,msg);
   if(window.RRJournalInstagram) window.RRJournalInstagram.attach(row,{url:canonicalURL,image:img,lang,status:msg});
   document.title=title+' | Runner\'s Rings Journal';
+  if(!articlePageViewSent){
+    articlePageViewSent=true;
+    gtag('event','page_view',{page_title:document.title,page_location:canonicalURL});
+  }
 }
 ['ja','en'].forEach(code=>document.getElementById(code).addEventListener('click',()=>{lang=code;localStorage.setItem('runners-rings-language',lang);draw();}));
 if(!slug||slug.length>220||!/^[-a-zA-Z0-9_]+$/.test(slug)){draw();return;}

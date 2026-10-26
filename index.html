@@ -26847,6 +26847,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
         : '🖼️ 月間距離の画像を保存・共有';
     }
     timelapsePreview.src = timelapseVideoUrl;
+    gtag('event', 'timelapse_complete', {video_type:monthlyReview ? 'monthly_review' : 'period'});
     timelapseGenerationStatus.textContent = isRunnerRingsEnglish() ? `Ready · ${extension.toUpperCase()} · 4:5` : `完成 · ${extension.toUpperCase()} · 4:5`;
     timelapseProgress.textContent = isRunnerRingsEnglish() ? 'Share video ready.' : '共有動画ができました。';
   } catch (error) {
@@ -26966,6 +26967,7 @@ if (timelapseOpenButton) {
           'isOpen'
         )
       ) {
+        gtag('event', 'timelapse_open');
         timelapsePanel.scrollIntoView({
           behavior:'smooth',
           block:'nearest'
