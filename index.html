@@ -26278,6 +26278,24 @@ function drawTimelapseShareAreas(ctx, inner, selectedActivities, projection, hig
   ctx.restore();
 }
 
+// Garmin API Brand Guidelines: attribute known Garmin-origin activities in every exported frame.
+// Strava-origin activities have uncertain device provenance; do not mislabel them as Garmin.
+function hasKnownGarminTimelapseSource(activities) {
+  return Array.isArray(activities) && activities.some(activity =>
+    String(activity?.originalSource || '').toLowerCase() === 'garmin'
+  );
+}
+function drawTimelapseGarminAttribution(ctx, width, y, activities) {
+  if (!hasKnownGarminTimelapseSource(activities)) return;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 22px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillText('Data source: Garmin', width / 2, y);
+  ctx.restore();
+}
+
 async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, selectedActivities = [], mode = 'route', highlightActivities = [], highlightStrength = 0, highlightAreaKeys = null, options = {}) {
   const ctx = outputCanvas.getContext('2d');
   const width = outputCanvas.width;
@@ -26418,6 +26436,7 @@ async function drawTimelapseShareFrame(outputCanvas, baseMap, label, runCount, s
   ctx.fillStyle = 'rgba(255,255,255,.62)';
   ctx.font = '600 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('© OpenStreetMap contributors', width / 2, height - 17);
+  drawTimelapseGarminAttribution(ctx, width, height - 106, selectedActivities);
   ctx.restore();
 }
 
@@ -26518,6 +26537,7 @@ async function drawTimelapseEndCard(outputCanvas, rangeLabel, summary = {}, opti
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.fillText('runnersrings.com', width / 2, Math.round(height * (options.monthlyReview ? .95 : .92)));
+  drawTimelapseGarminAttribution(ctx, width, Math.round(height * (options.monthlyReview ? .925 : .89)), summary.activities);
   ctx.restore();
 }
 
@@ -26761,7 +26781,7 @@ async function generateTimelapseShareVideo(monthlyReview = false) {
       (sum, activity) => sum + (Number(activity?.distance) || 0),
       0
     );
-    const recapSummary = {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm};
+    const recapSummary = {runCount:recapActivities.length, totalDistanceKm:recapDistanceKm, activities:recapActivities};
     const recapLabel = monthlyRecap ? startLabel : `${startLabel} → ${endLabel}`;
     if (monthlyRecap) {
       // Start visibly above 0.0 km and finish the monthly count-up promptly.
