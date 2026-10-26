@@ -149,6 +149,13 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 #territoryParticipationNudge{display:none}
 #territoryParticipationNudge.isVisible{display:block}
 .myTerritoryCount{margin:14px 0;padding:15px 18px;border:1px solid #ff5ac8;border-radius:14px;background:#172237;color:#fff;font-weight:800;font-size:18px}.myTerritoryCount small{display:block;font-size:12px;font-weight:500;color:#c5ceda;margin-top:4px}.myTerritoryCount[hidden]{display:none}
+.myTerritoryCount.isClickable{cursor:pointer;text-align:left;width:100%;font:inherit;font-weight:800;font-size:18px}
+.myTerritoryList{margin:-6px 0 16px;padding:12px;border:1px solid rgba(255,90,200,.5);border-radius:12px;background:#101e31}
+.myTerritoryList[hidden]{display:none}
+.myTerritoryListTitle{font-size:12px;color:#b9c6d6;margin:0 0 9px}
+.myTerritoryRegions{display:flex;flex-wrap:wrap;gap:8px}
+.myTerritoryRegion{font:inherit;font-size:13px;font-weight:700;color:#fff;background:#21344e;border:1px solid #5cff9d;border-radius:100px;padding:9px 12px;cursor:pointer}
+.myTerritoryRegion:focus-visible,.myTerritoryCount.isClickable:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -191,6 +198,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 </section>
 
   <section id="myTerritoryCount" class="myTerritoryCount" aria-live="polite" hidden></section>
+  <div id="myTerritoryList" class="myTerritoryList" hidden aria-live="polite"></div>
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
   <div id="countryBar" class="countryBar" aria-label="Country"></div>
 
@@ -442,19 +450,74 @@ let currentUser=null;
 let settingsRow=null;
 let participationLoaded=false;
 let myCountRequest=0;
+let myRegionRows=[];
+function closeMyTerritoryList(){
+  $('myTerritoryList').hidden=true;
+  $('myTerritoryList').replaceChildren();
+}
+function showMyTerritoryList(){
+  const panel=$('myTerritoryList');
+  if(!panel.hidden){closeMyTerritoryList();return;}
+  if(!myRegionRows.length)return;
+  const title=document.createElement('div');
+  title.className='myTerritoryListTitle';
+  title.textContent=lang()==='ja'?'市町村名をタップすると地図へ移動します':'Tap a region to find it on the map';
+  const items=document.createElement('div');
+  items.className='myTerritoryRegions';
+  for(const row of myRegionRows){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='myTerritoryRegion';
+    button.textContent=[row.parent_region_name,row.region_name].filter(Boolean).join(' ');
+    button.onclick=()=>{
+      if(!municipalityLayer)return;
+      let match=null;
+      municipalityLayer.eachLayer(layer=>{
+        if(!match&&featureCode(layer.feature)===String(row.region_code))match=layer;
+      });
+      if(!match)return;
+      if(selectedMunicipalityLayer&&selectedMunicipalityLayer!==match)municipalityLayer.resetStyle(selectedMunicipalityLayer);
+      selectedMunicipalityLayer=match;
+      applySelectedMunicipalityStyle(match);
+      map.fitBounds(match.getBounds(),{padding:[24,24],maxZoom:11,animate:true});
+      loadMunicipalityRanking(row.region_code,match.feature);
+      $('territoryMap').scrollIntoView({behavior:'smooth',block:'center'});
+    };
+    items.append(button);
+  }
+  panel.replaceChildren(title,items);
+  panel.hidden=false;
+}
 async function refreshMyTerritoryCount(){
-  const box=document.getElementById('myTerritoryCount');
-  const seq=++myCountRequest;
+  const box=$('myTerritoryCount'),seq=++myCountRequest;
+  closeMyTerritoryList();
+  myRegionRows=[];
+  box.classList.remove('isClickable');
+  box.onclick=null;
+  box.onkeydown=null;
+  box.removeAttribute('role');
+  box.removeAttribute('tabindex');
   if(!participationLoaded){box.hidden=true;return;}
   box.hidden=false;
   if(!currentUser){box.textContent=lang()==='ja'?'ログインすると参加状況を確認できます':'Log in to check your participation';return;}
   if(!settingsRow?.join_territory){box.textContent=lang()==='ja'?'参加すると制覇数を確認できます':'Join to see your territories';return;}
-  box.textContent=lang()==='ja'?'あなたの制覇数：集計中…':'Your territories: loading…';
+  box.textContent=lang()==='ja'?'制覇した地域を確認中…':'Loading your territories…';
   const year=selectedYear,c=config();
-  const {data,error}=await sb.rpc('territory_my_lead_count',{p_year:year,p_country_code:c.code,p_admin_level:c.adminLevel||'ADM2'});
+  const {data,error}=await sb.rpc('territory_my_lead_regions',{p_year:year,p_country_code:c.code,p_admin_level:c.adminLevel||'ADM2'});
   if(seq!==myCountRequest)return;
-  if(error||data===null||!Number.isInteger(Number(data))){box.textContent=lang()==='ja'?'制覇数を取得できませんでした':'Unable to load territories';return;}
-  box.textContent=(lang()==='ja'?`🏆 あなたの制覇数：${data}${c.kind==='japan'?'市町村':'地域'}`:`🏆 Your territories: ${data} ${Number(data)===1?'region':'regions'}`);
+  if(error||!Array.isArray(data)){console.error(error);box.textContent=lang()==='ja'?'制覇した地域を取得できませんでした':'Unable to load territories';return;}
+  myRegionRows=data;
+  const count=data.length,unit=c.kind==='japan'?'市町村':'地域';
+  box.textContent=lang()==='ja'
+    ?`🏆 ${count}${unit}で1位！ ${count?'▼ 場所を見る':''}`
+    :`🏆 #1 in ${count} ${count===1?'region':'regions'} ${count?'▼ View places':''}`;
+  if(count){
+    box.classList.add('isClickable');
+    box.setAttribute('role','button');
+    box.setAttribute('tabindex','0');
+    box.onclick=showMyTerritoryList;
+    box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showMyTerritoryList();}};
+  }
 }
 
 const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
