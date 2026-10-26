@@ -5,9 +5,25 @@ if(!host||typeof supabaseClient==='undefined')return;
 const card=document.createElement('section');
 card.id='rrPersonalProgress';
 card.setAttribute('aria-live','polite');
+card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','今月の走りを月間振り返り動画で見る');
 card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;max-width:600px';
-card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
+card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
 host.insertAdjacentElement('afterend',card);
+card.style.cursor='pointer';
+function openMonthlyReview(){
+ const opener=document.getElementById('timelapseOpenButton');
+ const panel=document.getElementById('timelapsePanel');
+ const monthInput=document.getElementById('timelapseReviewMonth');
+ const review=document.querySelector('.timelapseMonthlyReview');
+ if(!opener||!panel||!monthInput||!review)return;
+ if(!panel.classList.contains('isOpen'))opener.click();
+ if(!panel.classList.contains('isOpen'))return;
+ monthInput.value=day().slice(0,7);
+ review.scrollIntoView({behavior:'smooth',block:'center'});
+ log('runner_monthly_review_entry_click');
+}
+card.addEventListener('click',e=>{if(e.target.closest('a,button'))return;openMonthlyReview();});
+card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openMonthlyReview();}});
 const day=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
 const log=(event,params={})=>{if(typeof gtag==='function')gtag('event',event,{feature:'runner_engagement',...params})};
 const localKey='RREngagement:v1:';
