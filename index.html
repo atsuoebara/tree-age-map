@@ -6843,6 +6843,10 @@ let photoLayerEnabled = (() => {
   try { return localStorage.getItem(PHOTO_LAYER_SETTING_KEY) !== 'false'; }
   catch (_) { return true; }
 })();
+function trackCommunityPhotoEvent(action) {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', 'community_photo_' + action, {feature: 'community_photos'});
+}
 function updatePhotoToggleLabel() {
   if (!photoToggle) return;
   photoToggle.setAttribute('aria-pressed', String(photoLayerEnabled));
@@ -6883,6 +6887,7 @@ function updatePhotoPublicNamePreview(user) {
 }
 
 function showPhotoViewer(photo) {
+  trackCommunityPhotoEvent('viewer_open');
   const overlay = document.createElement('div');
   overlay.className = 'photoViewerOverlay';
   overlay.setAttribute('role','dialog');
@@ -6951,6 +6956,7 @@ function makePhotoPopup(photo) {
   newTab.href = photo.url;
   newTab.target = '_blank';
   newTab.rel = 'noopener noreferrer';
+  newTab.addEventListener('click', () => trackCommunityPhotoEvent('new_tab_open'));
   newTab.textContent = photoText('↗ 新しいタブで開く','↗ Open in new tab');
   actions.append(enlarge,newTab);
   box.appendChild(actions);
@@ -6987,6 +6993,7 @@ async function openPhotoPopup(marker, photo) {
     return;
   }
   marker.setPopupContent(makePhotoPopup({...photo,url:data.signedUrl}));
+  trackCommunityPhotoEvent('popup_open');
 }
 
 function drawPhotoMarkers() {
@@ -7056,6 +7063,7 @@ async function loadApprovedMapPhotos() {
 
 photoToggle?.addEventListener('click', async () => {
   photoLayerEnabled = !photoLayerEnabled;
+  trackCommunityPhotoEvent(photoLayerEnabled ? 'layer_on' : 'layer_off');
   try { localStorage.setItem(PHOTO_LAYER_SETTING_KEY, String(photoLayerEnabled)); } catch (_) {}
   updatePhotoToggleLabel();
   if (photoLayerEnabled) {
@@ -7157,6 +7165,7 @@ photoFileInput?.addEventListener('change', async () => {
     });
     if (insertError) throw insertError;
     setPhotoStatus('送信しました。審査・最終承認まで写真は非公開です。','Submitted. Your photo remains private until review and final approval.');
+    trackCommunityPhotoEvent('submit_success');
     if (photoCaption) photoCaption.value = '';
     photoFileInput.value = '';
     await loadPendingPhotoReviews();
