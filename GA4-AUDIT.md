@@ -98,4 +98,8 @@ Google reference: https://developers.google.com/analytics/devguides/collection/g
 
 ## Deployment
 
-Pending publication and production verification. This section will be updated with observed evidence, not inferred success.
+Runtime commit: 7bbd50fdd9380206e0913a7dd75db0e42be646ff — fix(analytics): restore missing GA4 pageviews and track timelapse usage.
+
+GitHub Pages build/deployment succeeded at 2026-10-26 18:03:21 JST: https://github.com/atsuoebara/tree-age-map/actions/runs/40296448847 . All 27 changed public HTML responses were HTTP 200, exactly matched the committed HTML after newline normalization, and contained one correct loader.
+
+Production Edge test of https://runnersrings.com/today.html observed exactly one page_view with tid=G-CX6V4G2ML5 and dt=Rings Today | Runner's Rings. The Google Analytics collection endpoint responded HTTP 204. Standard GA4 report processing and DebugView were not inspected.
