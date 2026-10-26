@@ -1,0 +1,60 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Rings Tree | Runner's Rings</title><link rel="icon" href="./icon.PNG"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>*{box-sizing:border-box}body{margin:0;background:#0c1722;color:#f5f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto;padding:20px 15px 60px}a{color:#91e9cc}.head{color:#83e4ac;font-size:12px;letter-spacing:.14em;font-weight:900;margin-top:30px}h1{font-size:32px;margin:10px 0}.intro{line-height:1.7;color:#b5c8d3}.treePanel{border-radius:22px;background:linear-gradient(170deg,#143b3b,#132638 75%);border:1px solid #438a73;padding:16px 10px;text-align:center}.treeSvg{width:min(100%,420px);display:block;margin:auto;max-height:490px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}.stat{border-radius:12px;background:#17353e;padding:12px 5px}.stat b{display:block;color:#8df3ae;font-size:20px}.stat small{font-size:11px;color:#c3d7d7}.annual{margin:15px 0;padding:15px;border:1px solid #315d63;background:#132638;border-radius:14px}.annual h2{font-size:17px;margin:0 0 10px}.yearRow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #284851;font-size:13px}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}button{border:0;border-radius:12px;background:#83e4ac;color:#0c2725;padding:13px 16px;font:inherit;font-weight:900;cursor:pointer}button.secondary{background:#193b48;border:1px solid #83e4ac;color:#e8f5ed}button:disabled{opacity:.5}#status{color:#b4c8d1;margin:14px 0;line-height:1.6}.note{font-size:12px;color:#b1c4c9;line-height:1.7}</style></head>
+<body><main><a href="./index.html">← Runner's Rings</a><div class="head">🌳 MY RINGS TREE</div><h1>一生に一本、あなただけの木。</h1><p class="intro">走るたびに枝と葉が育ち、走った年が年輪になる。休んでも枯れず、過去のランも一緒に成長します。</p>
+<div class="treePanel"><svg id="treeSvg" class="treeSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 490" role="img" aria-label="走行記録で育つ一本の木"><rect width="420" height="490" fill="#143a39" rx="18"/><circle cx="210" cy="210" r="157" fill="#225044" opacity=".38"/><path d="M42 435 Q210 418 378 435" fill="none" stroke="#98c99b" stroke-width="3"/><g id="branches"></g><g id="leaves"></g><path id="trunk" d="M203 430 Q197 345 207 275 L213 275 Q225 340 217 430 Z" fill="#8a5a3b" stroke="#b5885d" stroke-width="2"/><g id="rings"></g></svg>
+<div class="stats"><div class="stat"><b id="km">—</b><small>累計 km</small></div><div class="stat"><b id="days">—</b><small>走った日数</small></div><div class="stat"><b id="years">—</b><small>走った年</small></div></div></div>
+<div class="annual"><h2>🪵 年輪の記録</h2><div id="yearList">読み込み中…</div></div>
+<div class="buttons"><button id="share" disabled>📷 Instagramへ共有</button><button id="save" class="secondary" disabled>画像を保存</button></div><p id="status" role="status">ランニングデータを読み込み中…</p><p class="note">木の成長は累計距離・走行日数・記録年をもとに表現します。順位や速さで優劣をつけず、ランのない期間も木は減りません。共有画像には名前・GPS座標・ルートを載せません。</p></main>
+<script>
+const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co','sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',{auth:{persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
+let summary=null;
+function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const [key,val] of Object.entries(attrs))n.setAttribute(key,String(val));parent.append(n);return n;}
+function grow(summary){
+ const branches=$('branches'),leaves=$('leaves'),rings=$('rings');branches.replaceChildren();leaves.replaceChildren();rings.replaceChildren();
+ const level=Math.min(1,Math.log1p(summary.km)/Math.log(1+2500));
+ const heights=summary.days?90+level*115:0;
+ if(!summary.days)return;
+ // Deterministic pseudo-random geometry: the same running history gives the same tree.
+ let seed=613+summary.days*13+Math.floor(summary.km*10);
+ const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+ const count=7+Math.floor(level*36);
+ for(let i=0;i<count;i++){
+  const side=i%2===0?-1:1, y=365-random()*(70+heights), length=35+random()*(58+70*level),x=210+side*length;
+  el('path',{d:'M 210 '+Math.round(y+35)+' Q '+Math.round(210+side*length*.54)+' '+Math.round(y+10)+' '+Math.round(x)+' '+Math.round(y-17),stroke:'#936640','stroke-width':Math.max(2,7*(1-i/(count+3))),fill:'none','stroke-linecap':'round'},branches);
+  const n=3+Math.floor(random()*5);
+  for(let j=0;j<n;j++){
+   const tx=x+side*(random()*15-8),ty=y-14+(random()-.5)*42,r=6+random()*11;
+   el('ellipse',{cx:tx,cy:ty,rx:r,ry:r*(.7+random()*.5),fill:['#76bf78','#9add86','#53a96d','#b9d878'][Math.floor(random()*4)],opacity:.85},leaves);
+  }
+ }
+ const extra=Math.min(180,Math.floor(Math.sqrt(summary.days)*9));
+ for(let i=0;i<extra;i++){const theta=random()*Math.PI*2,r=Math.sqrt(random())*(55+level*116),x=210+Math.cos(theta)*r,y=233+Math.sin(theta)*r*.78;if(y>365)continue;el('circle',{cx:x,cy:y,r:3+random()*6,fill:['#6eb96f','#9ed783','#54a36f'][Math.floor(random()*3)],opacity:.8},leaves);}
+ const trunk=$('trunk');const width=6+Math.min(22,summary.days/20);
+ trunk.setAttribute('d','M '+(210-width)+' 430 Q '+(206-width)+' 345 206 275 L 216 275 Q '+(214+width)+' 345 '+(210+width)+' 430 Z');
+ for(let i=0;i<Math.min(summary.years.length,12);i++)el('ellipse',{cx:210,cy:409-i*11,rx:5+i*.8,ry:2.3,fill:'none',stroke:'#d0aa79','stroke-width':1.5,opacity:.85},rings);
+}
+async function load(){
+ try{const {data:{user},error:e}=await sb.auth.getUser();if(e||!user){$('status').textContent='ランリングからログインして開いてください。';$('yearList').textContent='ログインが必要です';return;}
+ let rows=[],from=0;for(;;){const {data,error}=await sb.from('runs').select('id,activity_date,distance_km').eq('user_id',user.id).is('deleted_at',null).order('id',{ascending:true}).range(from,from+499);if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)break;from+=500;if(from>=30000)throw Error('Too many records');}
+ const byYear=new Map(),dates=new Set();let km=0;
+ for(const r of rows){const dist=Math.max(0,Number(r.distance_km||0));km+=dist;const d=String(r.activity_date||'').slice(0,10);if(/^\d{4}-\d{2}-\d{2}$/.test(d)){dates.add(d);const y=d.slice(0,4),v=byYear.get(y)||{km:0,runs:0};v.km+=dist;v.runs++;byYear.set(y,v);}}
+ summary={km,days:dates.size,years:[...byYear.keys()].sort(),runs:rows.length};$('km').textContent=km.toFixed(1);$('days').textContent=dates.size;$('years').textContent=summary.years.length;grow(summary);
+ const list=$('yearList');list.replaceChildren();for(const y of [...summary.years].reverse()){const v=byYear.get(y),r=document.createElement('div');r.className='yearRow';r.textContent=y+'年　'+v.runs+'本';const span=document.createElement('strong');span.textContent=v.km.toFixed(1)+' km';r.append(span);list.append(r);}
+ if(!summary.years.length)list.textContent='最初のランを取り込むと、木が芽生えます。';
+ $('share').disabled=$('save').disabled=!summary.runs;$('status').textContent=summary.runs?'あなたの木が育っています。共有画像も作成できます。':'まだランニング記録がありません。';
+ }catch(e){console.error(e);$('status').textContent='記録を取得できませんでした。再読み込みしてください。';$('yearList').textContent='集計できませんでした。';}
+}
+function makeCard(){
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;const c=canvas.getContext('2d'),gradient=c.createLinearGradient(0,0,1080,1920);gradient.addColorStop(0,'#113b37');gradient.addColorStop(1,'#10192c');c.fillStyle=gradient;c.fillRect(0,0,1080,1920);
+ const draw=(str,x,y,size,color)=>{c.fillStyle=color;c.font='bold '+size+'px sans-serif';c.fillText(str,x,y,950)};
+ draw('MY RINGS TREE',70,165,62,'#8cf3b4');draw('一生に一本、あなただけの木。',70,260,43,'#fff');
+ const svg=$('treeSvg').cloneNode(true);svg.setAttribute('xmlns',NS);const serialized=new XMLSerializer().serializeToString(svg),uri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(serialized);
+ return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{c.drawImage(img,85,345,910,1062);draw(summary.km.toFixed(1)+' km',70,1530,70,'#fff');draw(summary.days+' days    '+summary.years.length+' years',70,1620,47,'#8cf3b4');draw("Runner's Rings",70,1802,45,'#fff');draw('runnersrings.com/tree.html',70,1868,31,'#acdec6');canvas.toBlob(b=>b?resolve(b):reject(Error('PNG failed')),'image/png')};img.onerror=()=>reject(Error('Tree rendering failed'));img.src=uri;});
+}
+async function exportTree(saveOnly){$('share').disabled=$('save').disabled=true;$('status').textContent='画像を作成中…';try{const blob=await makeCard(),file=new File([blob],'my-rings-tree.png',{type:'image/png'});if(typeof gtag==='function')gtag('event','rings_tree_image_generated');
+ if(!saveOnly&&navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'My Rings Tree'});$('status').textContent='共有メニューからInstagramを選んでください。';return}catch(e){if(e.name==='AbortError'){$('status').textContent='';return;}}}
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);$('status').textContent='画像を保存しました。Instagramで選んで投稿できます。';
+ }catch(e){console.error(e);$('status').textContent='画像の生成に失敗しました。もう一度お試しください。';}finally{$('share').disabled=$('save').disabled=!summary?.runs;}}
+$('share').onclick=()=>exportTree(false);$('save').onclick=()=>exportTree(true);load();
+</script></body></html>
