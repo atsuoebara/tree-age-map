@@ -11,15 +11,17 @@ card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあ�
 host.insertAdjacentElement('afterend',card);
 card.style.cursor='pointer';
 function openMonthlyReview(){
- const opener=document.getElementById('timelapseOpenButton');
  const panel=document.getElementById('timelapsePanel');
  const monthInput=document.getElementById('timelapseReviewMonth');
  const review=document.querySelector('.timelapseMonthlyReview');
- if(!opener||!panel||!monthInput||!review)return;
- if(!panel.classList.contains('isOpen'))opener.click();
- if(!panel.classList.contains('isOpen'))return;
+ if(!panel||!monthInput||!review)return;
+ // Navigate directly: the normal period-video launcher may refuse to open
+ // when its default range is unavailable, even though monthly review exists.
+ panel.classList.add('isOpen');
+ panel.style.display='block';
  monthInput.value=day().slice(0,7);
- review.scrollIntoView({behavior:'smooth',block:'center'});
+ monthInput.dispatchEvent(new Event('change',{bubbles:true}));
+ requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
  log('runner_monthly_review_entry_click');
 }
 card.addEventListener('click',e=>{if(e.target.closest('a,button'))return;openMonthlyReview();});
