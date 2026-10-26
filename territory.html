@@ -156,6 +156,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 .myTerritoryRegions{display:flex;flex-wrap:wrap;gap:8px}
 .myTerritoryRegion{font:inherit;font-size:13px;font-weight:700;color:#fff;background:#21344e;border:1px solid #5cff9d;border-radius:100px;padding:9px 12px;cursor:pointer}
 .myTerritoryRegion:focus-visible,.myTerritoryCount.isClickable:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
+.storyActions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}.storyActions button{padding:11px 15px;border:1px solid #5cff9d;border-radius:12px;background:#173d38;color:#fff;font-weight:850}.storyMessage{color:#a8d6c9;font-size:12px;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -198,7 +199,7 @@ html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 </section>
 
   <section id="myTerritoryCount" class="myTerritoryCount" aria-live="polite" hidden></section>
-  <div id="myTerritoryList" class="myTerritoryList" hidden aria-live="polite"></div>
+  <div id="myTerritoryList" class="myTerritoryList" hidden aria-live="polite"></div><div id="territoryStoryActions" class="storyActions" hidden><button id="territoryStoryShare" type="button">📷 Instagramへ共有</button><button id="territoryStorySave" type="button">画像を保存</button></div><div id="territoryStoryMessage" class="storyMessage" role="status"></div>
   <div id="yearBar" class="yearBar" aria-label="Year"></div>
   <div id="countryBar" class="countryBar" aria-label="Country"></div>
 
@@ -492,6 +493,7 @@ async function refreshMyTerritoryCount(){
   const box=$('myTerritoryCount'),seq=++myCountRequest;
   closeMyTerritoryList();
   myRegionRows=[];
+  $('territoryStoryActions').hidden=true;
   box.classList.remove('isClickable');
   box.onclick=null;
   box.onkeydown=null;
@@ -507,6 +509,7 @@ async function refreshMyTerritoryCount(){
   if(seq!==myCountRequest)return;
   if(error||!Array.isArray(data)){console.error(error);box.textContent=lang()==='ja'?'制覇した地域を取得できませんでした':'Unable to load territories';return;}
   myRegionRows=data;
+  $('territoryStoryActions').hidden=!data.length;
   const count=data.length,unit=c.kind==='japan'?'市町村':'地域';
   box.textContent=lang()==='ja'
     ?`🏆 ${count}${unit}で1位！ ${count?'▼ 場所を見る':''}`
@@ -519,6 +522,37 @@ async function refreshMyTerritoryCount(){
     box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showMyTerritoryList();}};
   }
 }
+
+function territoryShareCanvas(){
+ if(!currentUser||!settingsRow?.join_territory||!myRegionRows.length)throw Error('No own territories');
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+ const c=canvas.getContext('2d'),g=c.createLinearGradient(0,0,1080,1920);g.addColorStop(0,'#162f3f');g.addColorStop(1,'#101322');c.fillStyle=g;c.fillRect(0,0,1080,1920);
+ function line(text,y,size,color='#fff'){c.font='bold '+size+'px sans-serif';c.fillStyle=color;c.fillText(text,70,y,940);}
+ line('RINGS TERRITORY',130,48,'#5cff9d');line(String(selectedYear)+' · '+config().mapLabel,230,43,'#c4e4db');
+ line(lang()==='ja'?myRegionRows.length+'地域で1位！':'#1 in '+myRegionRows.length+' regions!',390,80,'#fff');
+ line(lang()==='ja'?'制覇した地域':'My territories',510,45,'#5cff9d');
+ const max=12;
+ myRegionRows.slice(0,max).forEach((r,i)=>{let label=[r.parent_region_name,r.region_name].filter(Boolean).join(' ');c.fillStyle='#193546';c.fillRect(60,555+i*90,960,75);line(label,607+i*90,32);});
+ if(myRegionRows.length>max)line(lang()==='ja'?'ほか'+(myRegionRows.length-max)+'地域':'+'+(myRegionRows.length-max)+' more',1710,35,'#abdbc9');
+ line("Runner's Rings",1820,47,'#5cff9d');line('runnersrings.com/territory.html',1875,30,'#bdd4dd');
+ return canvas;
+}
+async function territoryShare(saveOnly){
+ const message=$('territoryStoryMessage');message.textContent=lang()==='ja'?'画像を作成中…':'Creating image…';
+ try{
+  const canvas=territoryShareCanvas();
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG failed')),'image/png'));
+  const file=new File([blob],'rings-territory-'+selectedYear+'.png',{type:'image/png'});
+  if(!saveOnly&&navigator.share&&navigator.canShare?.({files:[file]})){
+   try{await navigator.share({files:[file],title:'Rings Territory'});message.textContent=lang()==='ja'?'共有先でInstagramを選んでください':'Choose Instagram in sharing';return}catch(e){if(e.name==='AbortError'){message.textContent='';return}}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  message.textContent=lang()==='ja'?'画像を保存しました':'Image saved';
+  if(typeof gtag==='function')gtag('event','territory_story_image_saved');
+ }catch(e){console.error(e);message.textContent=lang()==='ja'?'画像を作成できませんでした':'Unable to create image';}
+}
+$('territoryStoryShare').onclick=()=>territoryShare(false);
+$('territoryStorySave').onclick=()=>territoryShare(true);
 
 const territoryIntroKey=userId=>'RunnerRingsTerritoryIntroSeen:'+userId;
 function updateTerritoryParticipationPrompt(){
