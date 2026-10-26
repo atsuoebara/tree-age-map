@@ -27002,21 +27002,21 @@ if (timelapseCloseButton) {
 if (timelapseGenerateButton) {
   timelapseGenerateButton.addEventListener(
     'click',
-    () => generateTimelapseShareVideo(false)
+    () => { if (typeof gtag === 'function') gtag('event','timelapse_start',{video_type:'period'}); generateTimelapseShareVideo(false); }
   );
 }
 
 if (timelapseMonthlyReviewButton) {
   timelapseMonthlyReviewButton.addEventListener(
     'click',
-    () => generateTimelapseShareVideo(true)
+    () => { if (typeof gtag === 'function') gtag('event','timelapse_start',{video_type:'monthly_review'}); generateTimelapseShareVideo(true); }
   );
 }
 
 if (timelapseShareButton) {
   timelapseShareButton.addEventListener(
     'click',
-    shareTimelapseVideo
+    () => { if (typeof gtag === 'function') gtag('event','timelapse_share_click'); shareTimelapseVideo(); }
   );
 }
 
