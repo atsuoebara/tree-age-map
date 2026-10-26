@@ -990,6 +990,7 @@ $('saveTerritory').onclick=async()=>{
     return;
   }
   settingsRow=saved;
+  if(typeof gtag==='function')gtag('event','territory_participation_saved',{participation_status:joining?'on':'off'});
   $('settingsMessage').textContent=joining
     ?(lang()==='ja'?'参加ONにしました。ランキング反映は次回の検証・集計処理後です。':'Participation is ON. Results appear after the next verification/sync run.')
     :(lang()==='ja'?'参加OFFにしました。Runner’s Ringsのラン記録は削除されません。':'Participation is OFF. Your Runner’s Rings run records are not deleted.');
