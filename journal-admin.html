@@ -366,9 +366,9 @@
         try { const url = new URL(link); if (!['https:','http:'].includes(url.protocol)) throw new Error(); }
         catch (_) { return showStatus(saveMessage,'SNS・Webリンクは https:// から始まるURLを入力してください。','error'); }
       }
-      const profile = [name ? '【お名前】\\n'+name : '',activity ? '【活動紹介】\\n'+activity : '',link ? '【SNS・Web】\\n'+link : ''].filter(Boolean).join('\\n\\n');
+      const profile = [name ? '【お名前】\n'+name : '',activity ? '【活動紹介】\n'+activity : '',link ? '【SNS・Web】\n'+link : ''].filter(Boolean).join('\n\n');
       if (!$('bodyJa').value.trim() || window.confirm('プロフィールを日本語本文の先頭に追加しますか？同じ内容がすでにあれば重複します。')) {
-        $('bodyJa').value = profile + ($('bodyJa').value.trim() ? '\\n\\n' + $('bodyJa').value.trim() : '');
+        $('bodyJa').value = profile + ($('bodyJa').value.trim() ? '\n\n' + $('bodyJa').value.trim() : '');
         showStatus(saveMessage,'プロフィールを本文に挿入しました。内容を確認して保存してください。','ok');
       }
     });
