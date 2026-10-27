@@ -123,6 +123,19 @@
             <option value="other">その他</option>
           </select>
         </div>
+        <div id="interviewFields" class="field hidden">
+          <div class="statusBox notice">Rings People専用：プロフィールを本文に挿入できます。個人情報やリンクは本人の掲載許可を確認してください。</div>
+          <label for="interviewName">掲載するお名前（ニックネーム可・任意）</label>
+          <input id="interviewName" type="text" maxlength="120" placeholder="本人が許可した掲載名">
+          <label for="interviewActivity" style="margin-top:12px">紹介したい活動・プロフィール（任意）</label>
+          <textarea id="interviewActivity" placeholder="本人が掲載を希望する活動・紹介文"></textarea>
+          <label for="interviewSocial" style="margin-top:12px">公開を許可されたSNS・Webリンク（任意）</label>
+          <input id="interviewSocial" type="url" placeholder="https://...">
+          <button type="button" class="secondary" id="insertInterviewProfile">プロフィールを日本語本文の先頭に挿入</button>
+          <div class="help">挿入後は通常の本文として編集・下書き保存できます。写真は既存の画像欄から1枚登録してください。</div>
+          <label style="margin-top:16px"><input id="interviewApproved" type="checkbox" style="width:auto;min-height:auto;margin-right:8px">本人が完成記事・掲載名・写真・リンクの公開を了承済み</label>
+          <div class="help">公開時に必須。確認記録はこの画面のチェックのみで、DBには保存されません。下書きを読み直した場合は再確認してください。</div>
+        </div>
         <div class="field">
           <label for="journalImage">写真・1コマ漫画（任意）</label>
           <input id="journalImage" name="journalImage" type="file" accept="image/*">
@@ -237,6 +250,8 @@
           imageInfo.textContent = '保存済み画像（変更しない場合はそのまま）';
         }
         articlePreview.classList.add('hidden');
+        $('interviewApproved').checked = false;
+        updateInterviewFields();
         saveMessage.classList.add('hidden');
         showStatus(loadMessage, '下書き ID: ' + id + ' を読み込みました。', 'ok');
       } catch (error) {
@@ -334,8 +349,30 @@
         const category = categoryMap[categoryText.split(/[\\r\\n]/)[0].trim()] || categoryText.trim();
         if ([...$('category').options].some(option => option.value === category)) $('category').value = category;
       }
+      updateInterviewFields();
       showStatus(output, found.size + '項目を反映しました。画像は下の欄から選択してください。', 'ok');
     });
+
+    function updateInterviewFields() {
+      $('interviewFields').classList.toggle('hidden', $('category').value !== 'rings-people');
+    }
+    $('category').addEventListener('change', updateInterviewFields);
+    $('insertInterviewProfile').addEventListener('click', () => {
+      const name = $('interviewName').value.trim();
+      const activity = $('interviewActivity').value.trim();
+      const link = $('interviewSocial').value.trim();
+      if (!name && !activity && !link) return showStatus(saveMessage,'プロフィールの項目を入力してください。','notice');
+      if (link) {
+        try { const url = new URL(link); if (!['https:','http:'].includes(url.protocol)) throw new Error(); }
+        catch (_) { return showStatus(saveMessage,'SNS・Webリンクは https:// から始まるURLを入力してください。','error'); }
+      }
+      const profile = [name ? '【お名前】\\n'+name : '',activity ? '【活動紹介】\\n'+activity : '',link ? '【SNS・Web】\\n'+link : ''].filter(Boolean).join('\\n\\n');
+      if (!$('bodyJa').value.trim() || window.confirm('プロフィールを日本語本文の先頭に追加しますか？同じ内容がすでにあれば重複します。')) {
+        $('bodyJa').value = profile + ($('bodyJa').value.trim() ? '\\n\\n' + $('bodyJa').value.trim() : '');
+        showStatus(saveMessage,'プロフィールを本文に挿入しました。内容を確認して保存してください。','ok');
+      }
+    });
+    updateInterviewFields();
 
     function collectFields() {
       const titleJa = $('titleJa').value.trim();
@@ -420,6 +457,7 @@
         if (draftId != null && imageStoragePath && file && file !== initialImage) {
           throw new Error('画像アップロード済みです。この画面では画像変更せず再保存してください。');
         }
+        if (publish && $('category').value === 'rings-people' && !$('interviewApproved').checked) throw new Error('Rings Peopleの記事は本人の公開了承を確認し、チェックを入れてから公開してください。');
         if (publish && !window.confirm('この記事を一般公開します。内容・画像・日英プレビューを確認しましたか？')) return;
       } catch (error) {
         showStatus(saveMessage, error.message, 'error');
