@@ -63,6 +63,39 @@ const footerItems=[...links,['./faq.html','よくある質問','FAQ'],['./privac
 function updateFooter(){const en=english();footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));}
 update();
 document.body.append(footer);
+/* The same visible language control on every page, including phones. */
+const languageBox=document.createElement('div');
+languageBox.id='rrNavLanguage';
+languageBox.setAttribute('role','group');
+languageBox.setAttribute('aria-label','Language / 言語');
+for(const [code,label] of [['ja','日本語'],['en','EN']]){
+ const button=document.createElement('button');button.type='button';button.dataset.rrLang=code;button.textContent=label;
+ button.addEventListener('click',()=>{
+  const native=document.querySelector(code==='ja'?'#jaBtn,button.languageButton[data-language="ja"],.languages button[data-language="ja"],.langs button[data-language="ja"]':'#enBtn,button.languageButton[data-language="en"],.languages button[data-language="en"],.langs button[data-language="en"]');
+  if(native){native.click();updateLanguageBox();return;}
+  try{localStorage.setItem('runners-rings-language',code)}catch(_){}
+  location.reload();
+ });
+ languageBox.append(button);
+}
+row.append(languageBox);
+const langCss=document.createElement('style');
+langCss.textContent=`
+#rrNavLanguage{display:flex;gap:4px;flex-shrink:0}
+#rrNavLanguage button{background:#172e45;color:#fff;border:1px solid #74869c;border-radius:8px;padding:9px 10px;min-height:40px;font:700 13px system-ui;cursor:pointer}
+#rrNavLanguage button[aria-pressed="true"]{background:#31577a;border-color:#85dbf2}
+#rrGlobalNavigation .rrNavRow{flex-wrap:wrap}
+#rrGlobalNavigation #rrNavLanguage{margin-left:auto}
+body #languageSwitch,body>.languageSwitch,body header .languageSwitch,body header .languages,body .top>.lang,body main>.langs{display:none!important}
+@media(max-width:620px){#rrGlobalNavigation .rrNavRow{gap:8px}#rrGlobalNavigation #rrNavLanguage{order:2;margin-left:0}#rrGlobalNavigation .rrNavMobile{order:3;margin-left:auto}}
+`;
+document.head.append(langCss);
+function updateLanguageBox(){
+const en=english()||document.querySelector('#enBtn.active')!==null;
+languageBox.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.rrLang===(en?'en':'ja'))));
+}
+updateLanguageBox();
+document.addEventListener('click',event=>{if(event.target.closest('[data-language],#jaBtn,#enBtn'))setTimeout(updateLanguageBox,0)});
 const firstHeader=document.querySelector('body > header');if(firstHeader)firstHeader.before(nav);else document.body.prepend(nav);
 // Legacy navigation is superseded by the shared menu.
 document.querySelectorAll('.rrAuditNav').forEach(el=>el.remove());
