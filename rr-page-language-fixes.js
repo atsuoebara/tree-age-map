@@ -24,12 +24,26 @@ const dict={
 'Runner\'s Ringsとは？':'About Runner\'s Rings',
 '日本語':'日本語',
 'TCX形式のファイルにも対応しています。':'TCX files are also supported.',
+'TCXはRunningとして記録され、GPS座標が含まれているデータを取り込み対象とします。':'TCX imports must contain GPS coordinates and be recorded as Running.',
 '今日のランニング':'Today’s running',
 'すべて':'All'
 };
 const keys=Object.keys(dict).sort((a,b)=>b.length-a.length);
 function active(){try{return document.documentElement.lang==='en'||localStorage.getItem('runners-rings-language')==='en'}catch(_){return document.documentElement.lang==='en'}}
-function run(){if(!active())return; const walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;const nodes=[];while((n=walk.nextNode()))nodes.push(n);
+function dynamicControls(){
+if(!active())return;
+const set=(sel,label)=>{const e=document.querySelector(sel);if(e&&e.textContent!==label)e.textContent=label};
+if(path==='ranking.html'){
+ set('#saveRanking','Save');set('#shareRanking','Share link');set('#rankingStoryShare','Share to Instagram');set('#rankingStorySave','Save image');
+ const country=document.querySelector('#nationChoice');if(country&&typeof Intl.DisplayNames==='function'){const dn=new Intl.DisplayNames(['en'],{type:'region'});for(const option of country.options){const c=option.value.toUpperCase();if(/^[A-Z]{2}$/.test(c)){const name=dn.of(c);if(name)option.textContent=name;}}}
+}
+if(path==='today.html'){
+ const e=document.querySelector('#shareScope');if(e){e.setAttribute('aria-label','Sharing scope');const labels={all:'🌍 All',country:'By country',prefecture:'State / prefecture',city:'City / region'};for(const o of e.options)if(labels[o.value])o.textContent=labels[o.value];}
+ const area=document.querySelector('#shareArea');if(area)area.setAttribute('aria-label','Area to share');
+ set('#shareImageBtn','Share to Instagram');set('#saveImageBtn','Save image');
+}
+}
+function run(){if(!active())return;dynamicControls(); const walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;const nodes=[];while((n=walk.nextNode()))nodes.push(n);
 for(const node of nodes){if(!/[\u3040-\u9fff]/.test(node.nodeValue||''))continue;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,option,[data-lang="ja"],[lang="ja"]'))continue;let value=node.nodeValue;for(const key of keys)value=value.split(key).join(dict[key]);if(value!==node.nodeValue)node.nodeValue=value;}
 // Visibility is controlled by each page's CSS; never persist hidden attributes.
 }
