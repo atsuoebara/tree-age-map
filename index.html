@@ -29484,6 +29484,49 @@ updateScrollToTopButton();
   }else{start();}
 })();
 </script>
+<script>
+/* Home Journal: reuse the published Journal dataset; preserve original cards on failure. */
+(function initLatestJournalCards(){
+  const grid=document.querySelector('#authJournalFeature .authJournalGrid');
+  if(!grid || !window.supabase) return;
+  const endpoint='https://fhwvntpzwyenendhcgbw.supabase.co';
+  const key='sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
+  const client=window.supabase.createClient(endpoint,key,{
+    auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+  });
+  const original=grid.innerHTML;
+  const fmt=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toISOString().slice(0,10).replace(/-/g,'.');};
+  let posts=null;
+  function render(){
+    if(!posts || !posts.length)return;
+    const lang=document.documentElement.lang==='en'?'en':'ja';
+    const fragment=document.createDocumentFragment();
+    for(const [i,post] of posts.entries()){
+      if(!post.slug)continue;
+      const card=document.createElement('a');
+      card.className='authJournalCard'+(i===0?' authJournalCardFeatured':'');
+      card.href='./journal/articles/'+encodeURIComponent(post.slug)+'/';
+      const label=document.createElement('span');
+      label.className='authJournalTag';
+      label.textContent=i===0?(lang==='ja'?'最新記事':'Latest article'):(lang==='ja'?'新着記事':'Recent article');
+      const date=document.createElement('span');date.className='authJournalDate';date.textContent=fmt(post.published_at);
+      const title=document.createElement('span');title.className='authJournalTitle';
+      title.textContent=post['title_'+lang]||post.title_ja||post.title_en||'Rings Journal';
+      const more=document.createElement('span');more.className='authJournalRead';
+      more.textContent=lang==='ja'?'記事を読む →':'Read article →';
+      card.append(label,date,title,more);fragment.append(card);
+    }
+    if(fragment.childElementCount!==3)return;
+    grid.replaceChildren(fragment);
+  }
+  client.from('journal_posts').select('slug,title_ja,title_en,published_at,status')
+    .eq('status','published').order('published_at',{ascending:false}).limit(3)
+    .then(({data,error})=>{if(error||!data||data.length!==3)return;posts=data;render();})
+    .catch(()=>{grid.innerHTML=original;});
+  new MutationObserver(m=>{if(posts && m.some(x=>x.attributeName==='lang'))render();})
+    .observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+})();
+</script>
 <script defer src="/rr-engagement.js?v=2026102701"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 </body>
