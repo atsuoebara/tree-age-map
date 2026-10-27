@@ -5,7 +5,7 @@ const links=[
 ['./index.html','ホーム','Home'],['./journal.html','Journal','Journal'],
 ['./ranking.html','Ranking','Ranking'],['./territory.html','Territory','Territory'],
 ['./today.html','Today','Today'],['./gps-art.html','GPS Art','GPS Art'],
-['./about-runners-rings.html','About','About'],['./how-to.html','使い方','How to use'],
+['./about-runners-rings.html','About','About'],['./team.html','チーム','Team'],['./how-to.html','使い方','How to use'],
 ['./partners.html','パートナー','Partners'],['./contact.html','お問い合わせ','Contact']];
 const css=document.createElement('style');css.textContent=`
 #rrGlobalNavigation{position:relative;z-index:1200;padding:8px 12px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
