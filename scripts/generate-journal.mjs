@@ -234,14 +234,23 @@ if (!DRY_RUN && !FIXTURE_PREVIEW) {
   const coreUrls = [...previous.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map(match => match[1])
     .filter(url => !url.startsWith(SITE + '/journal/articles/'));
-  const articleUrls = posts.map(post =>
-    SITE + '/journal/articles/' + encodeURIComponent(post.slug) + '/');
+  // Published date is the reliable date currently available from Journal rows.
+  // Do not claim that a page changed today merely because the job ran.
+  const articleEntries = posts.map(post => {
+    const loc = SITE + '/journal/articles/' + encodeURIComponent(post.slug) + '/';
+    const date = new Date(post.published_at);
+    if (!Number.isFinite(date.getTime())) throw new Error('Invalid published_at for ' + post.slug);
+    return { loc, lastmod: date.toISOString().slice(0, 10) };
+  });
+  const escapeXml = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
   const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    [...new Set([...coreUrls, ...articleUrls])].map(url =>
-      '  <url><loc>' + url + '</loc></url>').join('\n') +
-    '\n</urlset>\n';
+    [...new Set(coreUrls)].map(loc => '  <url><loc>' + escapeXml(loc) + '</loc></url>')
+      .concat(articleEntries.map(({ loc, lastmod }) =>
+        '  <url><loc>' + escapeXml(loc) + '</loc><lastmod>' + lastmod + '</lastmod></url>'))
+      .join('\n') + '\n</urlset>\n';
   await writeFile(sitemapPath, xml, 'utf8');
-  console.log('Updated sitemap: ' + articleUrls.length + ' published Journal pages.');
+  console.log('Updated sitemap: ' + articleEntries.length + ' published Journal pages.');
 }
 console.log(`Journal pages: ${posts.length}. ${DRY_RUN ? 'No files written.' : FIXTURE_PREVIEW ? 'Private fixture artifact generated.' : 'Files generated in journal/articles/.'}`);
