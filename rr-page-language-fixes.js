@@ -31,7 +31,7 @@ const keys=Object.keys(dict).sort((a,b)=>b.length-a.length);
 function active(){try{return document.documentElement.lang==='en'||localStorage.getItem('runners-rings-language')==='en'}catch(_){return document.documentElement.lang==='en'}}
 function run(){if(!active())return; const walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;const nodes=[];while((n=walk.nextNode()))nodes.push(n);
 for(const node of nodes){if(!/[\u3040-\u9fff]/.test(node.nodeValue||''))continue;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,option,[data-lang="ja"],[lang="ja"]'))continue;let value=node.nodeValue;for(const key of keys)value=value.split(key).join(dict[key]);if(value!==node.nodeValue)node.nodeValue=value;}
-document.querySelectorAll('[data-lang="ja"]').forEach(el=>{el.hidden=true;});document.querySelectorAll('[data-lang="en"]').forEach(el=>{el.hidden=false;});
+// Visibility is controlled by each page's CSS; never persist hidden attributes.
 }
 run();document.addEventListener('click',e=>{if(e.target.closest('[data-language]'))setTimeout(run,40)});
 let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;run()})}).observe(document.body,{childList:true,subtree:true});
