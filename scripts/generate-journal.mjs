@@ -225,4 +225,23 @@ for (const post of posts) {
   }
   console.log(`${DRY_RUN ? '[DRY RUN] Validated' : 'Generated'}: ${slug}`);
 }
+
+// Keep sitemap in sync with published Journal rows whenever pages are generated.
+// Retain static/core entries and replace only generated article entries.
+if (!DRY_RUN && !FIXTURE_PREVIEW) {
+  const sitemapPath = resolve('sitemap.xml');
+  const previous = await readFile(sitemapPath, 'utf8');
+  const coreUrls = [...previous.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map(match => match[1])
+    .filter(url => !url.startsWith(SITE + '/journal/articles/'));
+  const articleUrls = posts.map(post =>
+    SITE + '/journal/articles/' + encodeURIComponent(post.slug) + '/');
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    [...new Set([...coreUrls, ...articleUrls])].map(url =>
+      '  <url><loc>' + url + '</loc></url>').join('\n') +
+    '\n</urlset>\n';
+  await writeFile(sitemapPath, xml, 'utf8');
+  console.log('Updated sitemap: ' + articleUrls.length + ' published Journal pages.');
+}
 console.log(`Journal pages: ${posts.length}. ${DRY_RUN ? 'No files written.' : FIXTURE_PREVIEW ? 'Private fixture artifact generated.' : 'Files generated in journal/articles/.'}`);
