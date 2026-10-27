@@ -87,6 +87,12 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
   .featureNavCard .featureNavText{font-size:11px}
 }
 
+/* Journal filtering and chronological sorting */
+.journalFilters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:14px 0 24px;padding:14px;background:#132237;border:1px solid rgba(255,255,255,.12);border-radius:14px}
+.journalFilters label{display:flex;flex:1 1 180px;flex-direction:column;gap:6px;color:#cbd5e1;font-weight:800;font-size:12px}
+.journalFilters select{width:100%;min-height:44px;border:1px solid #48617b;border-radius:9px;background:#0b1422;color:white;padding:9px;font-size:16px}
+.journalFilters select:focus-visible{outline:2px solid #eaff00;outline-offset:2px}
+.journalEmpty{padding:20px;text-align:center;color:#b9c6d6}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -316,12 +322,17 @@ applyLanguage(savedLanguage);
   let published = [];
   let failed = false;
   let page = 0;
+  let categoryFilter = new URLSearchParams(location.search).get("category") || "all";
+  let sortOrder = "new";
+  const allowedCategories = ["all","rings-people","development","runner","gps-art","discovery","other","legacy"];
+  if (!allowedCategories.includes(categoryFilter)) categoryFilter = "all";
   let dynamicCards = {ja:[],en:[]};
   Object.entries(lists).forEach(([lang, el]) => {
     oldCards[lang] = Array.from(el.querySelectorAll('a.articleCard')).map((node, index) => ({
       element: node,
       date: (node.querySelector('.articleDate')?.textContent || '').replace(/\./g, '-'),
-      index
+      index,
+      category: "legacy"
     }));
   });
   function textElement(tag, klass, value) {
@@ -385,21 +396,65 @@ applyLanguage(savedLanguage);
     if(window.RRJournalInstagram) window.RRJournalInstagram.attach(row,{url,image,lang,status});
     return row;
   }
+  const categoryOptions = [
+    ['all','すべて','All articles'],
+    ['rings-people','Rings People','Rings People'],
+    ['development','開発日記','Development'],
+    ['runner','世界のランナー','Runners'],
+    ['gps-art','GPSアート','GPS Art'],
+    ['discovery','今週の発見','Discoveries'],
+    ['other','その他','Other'],
+    ['legacy','過去の記事','Archive']
+  ];
+  for (const [lang, section] of Object.entries(lists)) {
+    const filters=document.createElement('div');
+    filters.className='journalFilters';
+    const categoryLabel=document.createElement('label');
+    categoryLabel.textContent=lang==='ja'?'カテゴリー':'Category';
+    const select=document.createElement('select');
+    select.setAttribute('aria-label',lang==='ja'?'記事カテゴリー':'Article category');
+    for(const [value,ja,en] of categoryOptions) {
+      const option=document.createElement('option');option.value=value;option.textContent=lang==='ja'?ja:en;select.append(option);
+    }
+    select.value=categoryFilter;
+    select.addEventListener('change',()=>{
+      categoryFilter=select.value;page=0;
+      const url=new URL(location.href);
+      if(categoryFilter==='all')url.searchParams.delete('category');else url.searchParams.set('category',categoryFilter);
+      history.replaceState(null,'',url);
+      render();
+    });
+    categoryLabel.append(select);
+    const sortLabel=document.createElement('label');
+    sortLabel.textContent=lang==='ja'?'並び順':'Sort by';
+    const sortSelect=document.createElement('select');
+    sortSelect.setAttribute('aria-label',lang==='ja'?'記事の並び順':'Article sort order');
+    [['new',lang==='ja'?'新しい順':'Newest first'],['old',lang==='ja'?'古い順':'Oldest first']].forEach(([value,label])=>{
+      const option=document.createElement('option');option.value=value;option.textContent=label;sortSelect.append(option);
+    });
+    sortSelect.addEventListener('change',()=>{sortOrder=sortSelect.value;page=0;render();});
+    sortLabel.append(sortSelect);filters.append(categoryLabel,sortLabel);
+    section.querySelector('.lead').after(filters);
+  }
   function render() {
     for (const [lang, section] of Object.entries(lists)) {
-      section.querySelectorAll('.pageButtons,.listNotice,.shareRow').forEach(el=>el.remove());
+      section.querySelectorAll('.pageButtons,.listNotice,.shareRow,.journalEmpty').forEach(el=>el.remove());
       dynamicCards[lang].forEach(el=>el.remove());
       dynamicCards[lang] = [];
       // Remove old cards from the DOM without recreating or changing their links/content.
-      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Rings Journal',image:old.element.querySelector('img.cardImage')?.src||null}));
-      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Rings Journal',image:safeImage(post.image_url)});});
-      items.sort((a,b)=>b.date.localeCompare(a.date)||b.order-a.order);
+      const items = oldCards[lang].map(old=>({node:old.element,date:old.date,order:old.index,href:old.element.getAttribute('href'),title:old.element.querySelector('.articleTitle')?.textContent||'Rings Journal',image:old.element.querySelector('img.cardImage')?.src||null,category:old.category}));
+      published.forEach((post,i)=>{const node=makeCard(post,lang);dynamicCards[lang].push(node);items.push({node,date:post.published_at || '',order:100+i,href:node.getAttribute('href'),title:node.querySelector('.articleTitle')?.textContent||'Rings Journal',image:safeImage(post.image_url),category:post.category||"other"});});
+      items.sort((a,b)=>sortOrder==="old"?(a.date.localeCompare(b.date)||a.order-b.order):(b.date.localeCompare(a.date)||b.order-a.order));
+      const filtered=items.filter(item=>categoryFilter==="all"||item.category===categoryFilter);
+      section.querySelector(".journalFilters select").value=categoryFilter;
+      section.querySelectorAll(".journalFilters select")[1].value=sortOrder;
       items.forEach(item=>item.node.remove());
-      const total = Math.max(1,Math.ceil(items.length / PAGE_SIZE));
+      const total = Math.max(1,Math.ceil(filtered.length / PAGE_SIZE));
       page = Math.min(page,total-1);
       const anchor = section.querySelector('.lead');
-      const visible=items.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
-      let previous=anchor;
+      const visible=filtered.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
+      let previous=section.querySelector(".journalFilters");
+      if(filtered.length===0){const empty=textElement("p","journalEmpty",lang==="ja"?"該当する記事はまだありません。":"No articles in this category yet.");previous.after(empty);previous=empty;}
       visible.forEach(item=>{previous.after(item.node);const controls=makeShareRow(item.href,item.title,lang,item.image);item.node.after(controls);previous=controls;});
       const notice=textElement('p','listNotice', failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
       if(failed) previous.after(notice);
