@@ -117,6 +117,7 @@
           <select id="category" name="category">
             <option value="development">開発日記</option>
             <option value="runner">世界のランナー</option>
+            <option value="rings-people">Rings People（インタビュー）</option>
             <option value="gps-art">GPSアート</option>
             <option value="discovery">今週の発見</option>
             <option value="other">その他</option>
@@ -327,7 +328,7 @@
       }
       for (const [field, value] of found) $(field).value = value;
       const categoryText = found.get('category') || '';
-      const categoryMap = { '開発日記':'development', '世界のランナー':'runner',
+      const categoryMap = { '開発日記':'development', '世界のランナー':'runner', 'Rings People':'rings-people', 'インタビュー':'rings-people',
         'GPSアート':'gps-art', '今週の発見':'discovery', 'その他':'other' };
       if (categoryText) {
         const category = categoryMap[categoryText.split(/[\\r\\n]/)[0].trim()] || categoryText.trim();
