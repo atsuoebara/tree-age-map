@@ -5,7 +5,7 @@ const links=[
 ['./index.html','ホーム','Home'],['./journal.html','Journal','Journal'],
 ['./ranking.html','Ranking','Ranking'],['./territory.html','Territory','Territory'],
 ['./today.html','Today','Today'],['./gps-art.html','GPS Art','GPS Art'],
-['./about-runners-rings.html','About','About'],['./index.html#authImportGuide','使い方','How to use'],
+['./about-runners-rings.html','About','About'],['./how-to.html','使い方','How to use'],
 ['./partners.html','パートナー','Partners'],['./contact.html','お問い合わせ','Contact']];
 const css=document.createElement('style');css.textContent=`
 #rrGlobalNavigation{position:relative;z-index:1200;padding:8px 12px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
@@ -36,8 +36,30 @@ details.append(summary,dropdown);row.append(brand,desktop,details);nav.append(ro
 const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
 function english(){return document.documentElement.lang==='en'||(document.querySelector('.languageButton[data-language="en"].active,.languageButton[data-language="en"][aria-pressed="true"]')!==null);}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
-function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));}
+function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));if(typeof updateFooter==='function')updateFooter();}
 update();
+const footer=document.createElement('footer');
+footer.id='rrGlobalFooter';
+footer.setAttribute('aria-label','Runner\'s Rings footer');
+const footerCSS=document.createElement('style');
+footerCSS.textContent=`
+#rrGlobalFooter{margin-top:32px;padding:28px 16px;background:#0a1526;border-top:1px solid #486078;color:#dceeff;font:600 13px/1.6 system-ui,sans-serif}
+#rrGlobalFooter .rrFooterInner{max-width:1120px;margin:auto}
+#rrGlobalFooter .rrFooterLinks{display:flex;flex-wrap:wrap;gap:4px 13px;margin:12px 0}
+#rrGlobalFooter a{color:#b8dffe;text-decoration:underline;text-underline-offset:3px;padding:4px}
+#rrGlobalFooter a:focus-visible{outline:2px solid #eaff00}
+`;
+document.head.append(footerCSS);
+const footerInner=document.createElement('div');
+footerInner.className='rrFooterInner';
+const footerBrand=document.createElement('strong');footerBrand.textContent='Runner’s Rings';
+const footerLinks=document.createElement('nav');footerLinks.className='rrFooterLinks';
+footerLinks.setAttribute('aria-label','Footer navigation');
+footerInner.append(footerBrand,footerLinks);footer.append(footerInner);
+const footerItems=[...links,['./faq.html','よくある質問','FAQ'],['./privacy.html','プライバシー','Privacy'],['./terms.html','利用規約','Terms']];
+function updateFooter(){const en=english();footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));}
+updateFooter();
+document.body.append(footer);
 const firstHeader=document.querySelector('body > header');if(firstHeader)firstHeader.before(nav);else document.body.prepend(nav);
 dropdown.addEventListener('click',e=>{if(e.target.closest('a'))details.open=false;});
 document.addEventListener('click',e=>{if(details.open && !details.contains(e.target))details.open=false;});
