@@ -37,7 +37,6 @@ const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
 function english(){return document.documentElement.lang==='en'||(document.querySelector('.languageButton[data-language="en"].active,.languageButton[data-language="en"][aria-pressed="true"]')!==null);}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
 function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));if(typeof updateFooter==='function')updateFooter();}
-update();
 const footer=document.createElement('footer');
 footer.id='rrGlobalFooter';
 footer.setAttribute('aria-label','Runner\'s Rings footer');
@@ -58,7 +57,7 @@ footerLinks.setAttribute('aria-label','Footer navigation');
 footerInner.append(footerBrand,footerLinks);footer.append(footerInner);
 const footerItems=[...links,['./faq.html','よくある質問','FAQ'],['./privacy.html','プライバシー','Privacy'],['./terms.html','利用規約','Terms']];
 function updateFooter(){const en=english();footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));}
-updateFooter();
+update();
 document.body.append(footer);
 const firstHeader=document.querySelector('body > header');if(firstHeader)firstHeader.before(nav);else document.body.prepend(nav);
 dropdown.addEventListener('click',e=>{if(e.target.closest('a'))details.open=false;});
