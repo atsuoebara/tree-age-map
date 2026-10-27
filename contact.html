@@ -282,7 +282,42 @@
     内容に合う項目を選ぶと、必要事項を入力したメールが開きます。
   </p>
 
-  <div class="card">
+  <section class="card" id="contactCompose" aria-labelledby="contactComposeTitle">
+<h3 id="contactComposeTitle"><span data-lang="ja">お問い合わせ内容を入力</span><span data-lang="en">Write your inquiry</span></h3>
+<p data-lang="ja">入力後にメールアプリを開きます。送信はメールアプリで確定してください（サイトから自動送信はされません）。</p>
+<p data-lang="en">Complete the form to prepare an email. Review and send it in your email app; this website does not send the message automatically.</p>
+<form id="rrContactMailForm" style="display:grid;gap:12px">
+<label><span data-lang="ja">お名前（ニックネーム可）</span><span data-lang="en">Name (nickname OK)</span><input id="rrContactName" required maxlength="80" autocomplete="name" style="display:block;width:100%;padding:12px;border-radius:8px;background:#0b1422;color:white;border:1px solid #60758d;font-size:16px"></label>
+<label><span data-lang="ja">返信先メールアドレス</span><span data-lang="en">Reply-to email address</span><input id="rrContactEmail" type="email" required maxlength="180" autocomplete="email" style="display:block;width:100%;padding:12px;border-radius:8px;background:#0b1422;color:white;border:1px solid #60758d;font-size:16px"></label>
+<label><span data-lang="ja">お問い合わせの種類</span><span data-lang="en">Topic</span><select id="rrContactTopic" style="display:block;width:100%;padding:12px;border-radius:8px;background:#0b1422;color:white;border:1px solid #60758d;font-size:16px"><option value="question">Question / 質問</option><option value="bug">Bug report / 不具合</option><option value="suggestion">Suggestion / 提案</option><option value="other">Other / その他</option></select></label>
+<label><span data-lang="ja">本文</span><span data-lang="en">Message</span><textarea id="rrContactMessage" required minlength="5" maxlength="3000" rows="6" style="display:block;width:100%;padding:12px;border-radius:8px;background:#0b1422;color:white;border:1px solid #60758d;font-size:16px"></textarea></label>
+<p data-lang="ja" style="font-size:12px">入力した内容は、メール作成用に利用します。サイト側には保存しません。GPSログ・パスワードなどの機密情報は送らないでください。</p>
+<p data-lang="en" style="font-size:12px">Your entries are used only to compose an email and are not stored on this site. Do not send GPS logs, passwords, or other sensitive information.</p>
+<button type="submit" class="contactButton" style="border:0;cursor:pointer"><span data-lang="ja">メールを作成する</span><span data-lang="en">Prepare email</span></button>
+</form>
+<p id="rrContactMailStatus" role="status" aria-live="polite"></p>
+</section>
+<script>
+(function(){
+const form=document.getElementById('rrContactMailForm');
+if(!form)return;
+form.addEventListener('submit',function(event){
+event.preventDefault();
+if(!form.reportValidity())return;
+const name=document.getElementById('rrContactName').value.trim();
+const email=document.getElementById('rrContactEmail').value.trim();
+const topic=document.getElementById('rrContactTopic').value;
+const message=document.getElementById('rrContactMessage').value.trim();
+const status=document.getElementById('rrContactMailStatus');
+if(!name||!email||message.length<5)return;
+const subject='Runner’s Rings contact: '+topic;
+const body='Name: '+name+'\nReply-to: '+email+'\nTopic: '+topic+'\n\n'+message;
+status.textContent=document.documentElement.lang==='en'?'Your email app will open. Please press Send there.':'メールアプリが開きます。送信ボタンはメールアプリ側で押してください。';
+window.location.href='mailto:runnersrings.contact@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+});
+})();
+</script>
+<div class="card">
     <h3><span class="accent">世界対応</span>にご協力ください</h3>
 
     <p>
