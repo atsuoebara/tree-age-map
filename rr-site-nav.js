@@ -24,6 +24,8 @@ const css=document.createElement('style');css.textContent=`
 #rrGlobalNavigation .rrNavDropdown a:hover{background:#263d59}
 #rrGlobalNavigation .rrNavDesktop{display:flex;flex-wrap:wrap;gap:2px;align-items:center}
 #rrGlobalNavigation .rrNavMobile{display:none}
+/* Duplicate five-card navigation is replaced by the global site menu. */
+body>.featureNav, nav.featureNav{display:none!important}
 @media(max-width:960px){#rrGlobalNavigation .rrNavDesktop{display:none}#rrGlobalNavigation .rrNavMobile{display:block}}
 `;document.head.append(css);
 const nav=document.createElement('nav');nav.id='rrGlobalNavigation';nav.setAttribute('aria-label','Runner\'s Rings site navigation');
