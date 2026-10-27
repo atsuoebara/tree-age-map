@@ -337,6 +337,10 @@
   
 /* Keep authored bilingual content mutually exclusive. */
 html[lang="ja"] [data-lang="en"],html[lang="en"] [data-lang="ja"]{display:none!important}
+
+/* Keep the language switch visible alongside shared navigation on mobile. */
+body>.languageSwitch{position:relative!important;top:auto!important;right:auto!important;z-index:1201!important;width:max-content;margin:12px 18px 0 auto}
+body>.languageSwitch .languageButton{min-height:38px}
 </style>
 </head>
 
