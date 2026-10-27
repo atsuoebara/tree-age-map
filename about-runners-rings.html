@@ -334,7 +334,10 @@
         padding:26px;
       }
     }
-  </style>
+  
+/* Keep authored bilingual content mutually exclusive. */
+html[lang="ja"] [data-lang="en"],html[lang="en"] [data-lang="ja"]{display:none!important}
+</style>
 </head>
 
 <body>
@@ -659,6 +662,7 @@
       location.reload();
     });
   });
+  document.documentElement.lang = language;
   if (language !== 'en') return;
 
   const translations = {
@@ -734,6 +738,7 @@
   while (walker.nextNode()) nodes.push(walker.currentNode);
   nodes.forEach((node) => {
     const key = node.nodeValue.replace(/\s+/g, ' ').trim();
+    if (node.parentElement?.closest('[data-lang]')) return;
     if (!translations[key]) return;
     node.nodeValue = node.nodeValue.match(/^\s*/)[0] + translations[key] + node.nodeValue.match(/\s*$/)[0];
   });
