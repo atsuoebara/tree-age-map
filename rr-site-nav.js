@@ -71,11 +71,10 @@ languageBox.setAttribute('aria-label','Language / 言語');
 for(const [code,label] of [['ja','日本語'],['en','EN']]){
  const button=document.createElement('button');button.type='button';button.dataset.rrLang=code;button.textContent=label;
  button.addEventListener('click',()=>{
-  const native=document.querySelector(code==='ja'?'#jaBtn,button.languageButton[data-language="ja"],.languages button[data-language="ja"],.langs button[data-language="ja"]':'#enBtn,button.languageButton[data-language="en"],.languages button[data-language="en"],.langs button[data-language="en"]');
-  if(native){native.click();updateLanguageBox();return;}
   try{localStorage.setItem('runners-rings-language',code)}catch(_){}
+  // Rebuild page content from its source to avoid mixed translated DOM state.
   location.reload();
- });
+ });;
  languageBox.append(button);
 }
 row.append(languageBox);
