@@ -34,7 +34,7 @@ const details=document.createElement('details');details.className='rrNavMobile';
 const summary=document.createElement('summary');const dropdown=document.createElement('div');dropdown.className='rrNavDropdown';
 details.append(summary,dropdown);row.append(brand,desktop,details);nav.append(row);
 const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
-function english(){return document.documentElement.lang==='en'||(document.querySelector('.languageButton[data-language="en"].active,.languageButton[data-language="en"][aria-pressed="true"]')!==null);}
+function english(){return document.documentElement.lang==='en'||(document.querySelector('.languageButton[data-language="en"].active,.languageButton[data-language="en"].isActive,.languageButton[data-language="en"][aria-pressed="true"]')!==null);}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
 function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));if(typeof updateFooter==='function')updateFooter();}
 const footer=document.createElement('footer');
@@ -60,6 +60,8 @@ function updateFooter(){const en=english();footerLinks.replaceChildren(...footer
 update();
 document.body.append(footer);
 const firstHeader=document.querySelector('body > header');if(firstHeader)firstHeader.before(nav);else document.body.prepend(nav);
+// Legacy navigation is superseded by the shared menu.
+document.querySelectorAll('.rrAuditNav').forEach(el=>el.remove());
 dropdown.addEventListener('click',e=>{if(e.target.closest('a'))details.open=false;});
 document.addEventListener('click',e=>{if(details.open && !details.contains(e.target))details.open=false;});
 document.addEventListener('click',e=>{if(e.target.closest('[data-language],#languageSwitch,.languageSwitch'))setTimeout(update,0);});
