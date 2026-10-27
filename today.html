@@ -119,7 +119,7 @@ const today=localDate(new Date());
 dateInput.value=today;
 function updateDateButton(){datePickerBtn.textContent=dateInput.value.replaceAll('-','/');}
 function updateArrowState(){futureBtn.disabled=dateInput.value>=today;}
-function setLang(next){lang=next;document.documentElement.lang=next;document.getElementById('jaBtn').classList.toggle('active',next==='ja');document.getElementById('enBtn').classList.toggle('active',next==='en');futureBtn.setAttribute('aria-label',next==='ja'?'未来の日へ':'Newer date');pastBtn.setAttribute('aria-label',next==='ja'?'過去の日へ':'Older date');datePickerBtn.setAttribute('aria-label',next==='ja'?'日付を選択':'Choose date');load();}
+function setLang(next){try{localStorage.setItem('runners-rings-language',next)}catch(_){}lang=next;document.documentElement.lang=next;document.getElementById('jaBtn').classList.toggle('active',next==='ja');document.getElementById('enBtn').classList.toggle('active',next==='en');futureBtn.setAttribute('aria-label',next==='ja'?'未来の日へ':'Newer date');pastBtn.setAttribute('aria-label',next==='ja'?'過去の日へ':'Older date');datePickerBtn.setAttribute('aria-label',next==='ja'?'日付を選択':'Choose date');load();}
 document.getElementById('jaBtn').onclick=()=>setLang('ja');document.getElementById('enBtn').onclick=()=>setLang('en');
 function shiftDate(days){const d=new Date(dateInput.value+'T12:00:00');d.setDate(d.getDate()+days);const v=localDate(d);if(v<=today){dateInput.value=v;updateDateButton();load();}}
 futureBtn.onclick=()=>shiftDate(1);pastBtn.onclick=()=>shiftDate(-1);
@@ -233,7 +233,7 @@ async function load(){
     list.innerHTML=rows.map(r=>`<div class="regionRow"><div><div class="regionName">${escapeHtml(regionLabel(r))}</div><div class="regionSub">${escapeHtml(countryLabel(r.country_code))}</div></div><div class="regionNums"><strong>${Number(r.runner_count).toLocaleString()}${lang==='ja'?'人':' runners'}</strong><small>${Number(r.distance_km).toFixed(1)} km</small></div></div>`).join('');
   }catch(e){console.error(e);document.getElementById('regionList').innerHTML=`<div class="error">${lang==='ja'?'読み込みに失敗しました。時間をおいてもう一度お試しください。':'Could not load Rings Today. Please try again later.'}</div>`;}
 }
-fillYears();fillMonths();updateDateButton();setLang('ja');
+fillYears();fillMonths();updateDateButton();let savedLang='ja';try{savedLang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja'}catch(_){}setLang(savedLang);
 </script>
 <script defer src="/rr-site-nav.js?v=2026102805"></script>
 <script defer src="/rr-page-language-fixes.js?v=2026102801"></script>
