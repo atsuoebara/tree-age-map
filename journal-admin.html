@@ -147,6 +147,8 @@
           <button id="saveDraftButton" type="submit">下書き保存</button>
           <button id="publishButton" type="button" class="secondary">記事を公開する</button>
           <button id="previewButton" type="button" class="secondary">公開前プレビュー（日英）</button>
+          <button id="reviewLinkButton" type="button" class="secondary">本人確認用URLを発行（下書き保存後）</button>
+          <div id="reviewLinkStatus" class="statusBox hidden" aria-live="polite"></div>
         </div>
         <div id="saveMessage" class="statusBox hidden" aria-live="polite"></div>
         <div id="articlePreview" class="previewPanel hidden" aria-live="polite"></div>
@@ -509,6 +511,31 @@
         button.textContent = '下書き保存';
       }
     }
+    $('reviewLinkButton').addEventListener('click',async()=>{
+      const output=$('reviewLinkStatus');
+      if(busy)return;
+      if(!draftId){showStatus(output,'先に「下書き保存」を押してください。','notice');return;}
+      busy=true;$('reviewLinkButton').disabled=true;
+      try{
+        await requireAdmin();
+        const {data:session,error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError||!session?.session?.access_token)throw new Error('再ログインしてください。');
+        const response=await fetch(SUPABASE_URL+'/functions/v1/journal-review',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.session.access_token,'apikey':SUPABASE_KEY},
+          body:JSON.stringify({action:'create',id:draftId})
+        });
+        const result=await response.json();
+        if(!response.ok||!result.url)throw new Error(result.error||'URL発行に失敗しました。');
+        output.replaceChildren();
+        const explain=document.createElement('p');
+        explain.textContent='7日間有効。記事を編集・公開するとこのURLは無効になります。URLを知っている人は閲覧できるため、本人以外に転送しないでください。';
+        const field=document.createElement('textarea');field.readOnly=true;field.rows=3;field.value=result.url;
+        const copy=document.createElement('button');copy.type='button';copy.textContent='確認URLをコピー';
+        copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(field.value);copy.textContent='コピーしました';}catch{field.select();}});
+        output.className='statusBox ok';output.append(explain,field,copy);
+      }catch(error){showStatus(output,error.message||'URL発行失敗','error');}
+      finally{busy=false;$('reviewLinkButton').disabled=false;}
+    });
     form.addEventListener('submit', event => { event.preventDefault(); saveArticle(false); });
     publishButton.addEventListener('click', () => saveArticle(true));
     checkAdmin();
