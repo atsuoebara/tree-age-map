@@ -742,6 +742,19 @@ html[lang="ja"] [data-lang="en"],html[lang="en"] [data-lang="ja"]{display:none!i
     if (!translations[key]) return;
     node.nodeValue = node.nodeValue.match(/^\s*/)[0] + translations[key] + node.nodeValue.match(/\s*$/)[0];
   });
+  // Paragraphs with nested <strong> are split into text nodes; translate the whole card.
+  const uniqueCardEnglish = [
+    'In Japan, explore from the country level down to prefectures and municipalities. Check the number and percentage of regions explored, see what remains, and browse visited and unvisited places.',
+    'ALL shows your lifetime running map. Select a year to see the routes and regions added in that year, and compare how your running journey has grown.',
+    'Switch between Auto, Area, and Route. Area shows where you have explored broadly, while Route shows the actual roads you have run.',
+    'Share a dedicated image of a country or prefecture, with completed regions highlighted and the number, percentage, and remaining regions clearly displayed.',
+    'Explore from countries down to supported local regions. Coverage continues to expand as geographic boundary data becomes available.',
+    'Discovering places you have not run yet can give you a new reason to head out and explore, turning past runs into inspiration for the next one.'
+  ];
+  document.querySelectorAll('.unique-value-card').forEach((card,index)=>{
+    const paragraph=card.querySelector('p');
+    if(paragraph && uniqueCardEnglish[index]) paragraph.textContent=uniqueCardEnglish[index];
+  });
   const altTranslations = {
     "累計距離、ラン数、訪れた地域と走行ルートを表示したRunner's Ringsの画面": "Runner's Rings showing total distance, runs, visited regions, and routes",
     "都道府県別と市町村別の走行距離とラン数を表示したRunner's Ringsの画面": "Runner's Rings showing distance and runs by region",
