@@ -25,7 +25,6 @@ const pairs=[
 ['Strava経由','Via Strava'],['Intervals.icu経由','Via Intervals.icu'],['COROSから直接','Direct from COROS'],['自動連携','Automatic sync'],
 ['気づいたことを伝える・質問する ↗','Send feedback or ask a question ↗'],
 ['日本・海外どちらからでも歓迎です。','Runners from around the world are welcome.'],
-['人','people'],
 ['走った記録ではなく、','Not just your running records,'],
 ['走った人生を残す。','Preserve the life you ran.'],
 ['Runner\'s Rings（ランナーズリングス）は、','Runner\'s Rings is'],
