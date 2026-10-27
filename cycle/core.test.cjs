@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+require('./core.js');
+const C=globalThis.CycleCore;
+const ride={id:'fixture',name:'test',bike:'road',date:'2026-10-27',segments:[[[0,0],[0,1]],[[50,50],[50,51]]],seconds:3600};
+assert(C.validate(ride));
+assert(Math.abs(C.distance([0,0],[0,1])-111.195)<.01);
+assert(C.stats(ride.segments)<200,'Separate GPX segments must not be joined across gaps');
+assert.equal(C.merge([ride],[{...ride,id:'second',bike:'city'}]).duplicates,1);
+assert.equal(C.merge([ride],[{...ride,date:'2026-10-28'}]).rides.length,2);
+assert(!C.validate({...ride,bike:'run'}));
+assert(!C.validate({...ride,segments:[[[91,0],[0,1]]]}));
+assert(!C.validate({...ride,seconds:-1}));
+assert.throws(()=>C.merge([ride],[{...ride,segments:[[[NaN,0],[0,1]]]}]));
+assert.equal(C.KEY,'cyclists-rings:rides:v1');
+console.log('Cycling core: 10 checks passed');
