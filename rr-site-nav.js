@@ -49,6 +49,8 @@ footerCSS.textContent=`
 #rrGlobalFooter .rrFooterLinks{display:flex;flex-wrap:wrap;gap:4px 13px;margin:12px 0}
 #rrGlobalFooter a{color:#b8dffe;text-decoration:underline;text-underline-offset:3px;padding:4px}
 #rrGlobalFooter a:focus-visible{outline:2px solid #eaff00}
+/* The common footer replaces each page's legacy footer. */
+body > footer:not(#rrGlobalFooter),main > footer:not(#rrGlobalFooter){display:none!important}
 `;
 document.head.append(footerCSS);
 const footerInner=document.createElement('div');
