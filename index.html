@@ -29144,6 +29144,25 @@ window.rrRememberMonthlyLanguageContext = function() {
   }
 };
 
+// English can be applied in place: do not discard the authenticated map session.
+window.rrApplyEnglishWithoutReload = function() {
+  if (rrUiLanguage === 'en') return true;
+  const app = document.getElementById('appRoot');
+  if (!app || getComputedStyle(app).display === 'none' || !currentSession || !currentUser) return false;
+  rrUiLanguage = 'en';
+  document.documentElement.lang = 'en';
+  document.title = "Runner's Rings | Map the life you ran";
+  translateUiNode(document.body);
+  document.querySelectorAll('.languageButton').forEach(button => {
+    const active = button.dataset.language === 'en';
+    button.classList.toggle('isActive',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  document.getElementById('timelapseReviewMonth')?.dispatchEvent(new Event('change',{bubbles:true}));
+  window.dispatchEvent(new Event('rr-language-changed'));
+  return true;
+};
+
 function setRunnerRingsLanguage(
   language
 ) {
@@ -29157,6 +29176,7 @@ function setRunnerRingsLanguage(
   catch(error) {
     console.warn(error);
   }
+  if (language === 'en' && window.rrApplyEnglishWithoutReload?.()) return;
   location.reload();
 }
 
