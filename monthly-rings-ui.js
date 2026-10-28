@@ -44,15 +44,25 @@
     ctx.fillStyle='#1b354a';ctx.fillRect(44,194,992,858);
     const all = data.series.flatMap(item => item.routes.flat()).filter(a=>a.length===2);
     if(all.length){
-      let minLat=90,maxLat=-90,minLng=180,maxLng=-180;
-      for(const p of all){if(p[0]<minLat)minLat=p[0];if(p[0]>maxLat)maxLat=p[0];if(p[1]<minLng)minLng=p[1];if(p[1]>maxLng)maxLng=p[1];}
-      // Keep geographic aspect ratio and protect single-coordinate spans.
+      // Ignore isolated GPS spikes when choosing the sharing-card viewport.
+      // Coordinates are not deleted; routes are clipped to the visible frame.
+      const percentile = (values, fraction) => {
+        const sorted = values.slice().sort((a,b)=>a-b);
+        const position = Math.floor((sorted.length-1)*fraction);
+        return sorted[Math.max(0,Math.min(sorted.length-1,position))];
+      };
+      const lats=all.map(p=>p[0]), lngs=all.map(p=>p[1]);
+      const minLat=percentile(lats,.025), maxLat=percentile(lats,.975);
+      const minLng=percentile(lngs,.025), maxLng=percentile(lngs,.975);
       const scaleLng=Math.max(.05,Math.cos((minLat+maxLat)*Math.PI/360));
-      const dx=Math.max((maxLng-minLng)*scaleLng, .0002);
+      const dx=Math.max((maxLng-minLng)*scaleLng,.0002);
       const dy=Math.max(maxLat-minLat,.0002);
-      const scale=Math.min(860/dx,720/dy);
+      // Keep the main network centered in the 992×858 map window.
+      const scale=Math.min(890/dx,755/dy);
       const cx=(minLng+maxLng)/2,cy=(minLat+maxLat)/2;
-      const project=p=>[540+(p[1]-cx)*scaleLng*scale,620-(p[0]-cy)*scale];
+      const project=p=>[540+(p[1]-cx)*scaleLng*scale,623-(p[0]-cy)*scale];
+      ctx.save();
+      ctx.beginPath();ctx.rect(44,194,992,858);ctx.clip();
       for (const series of data.series.slice().reverse()){
         ctx.strokeStyle=palette[series.key];ctx.lineWidth=series.key==='current'?5:3;ctx.globalAlpha=series.key==='current'?1:.65;
         for(const route of series.routes) {
@@ -60,6 +70,7 @@
           ctx.beginPath();route.forEach((p,i)=>{const [x,y]=project(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
         }
       }
+      ctx.restore();
       ctx.globalAlpha=1;
     } else {
       ctx.fillStyle='#d5e7f0';ctx.font='32px sans-serif';ctx.textAlign='center';
