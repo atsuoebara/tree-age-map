@@ -35,7 +35,12 @@ if(!active())return;
 const set=(sel,label)=>{const e=document.querySelector(sel);if(e&&e.textContent!==label)e.textContent=label};
 if(path==='ranking.html'){
  set('#saveRanking','Save');set('#shareRanking','Share link');set('#rankingStoryShare','Share to Instagram');set('#rankingStorySave','Save image');
- const country=document.querySelector('#nationChoice');if(country&&typeof Intl.DisplayNames==='function'){const dn=new Intl.DisplayNames(['en'],{type:'region'});for(const option of country.options){const c=option.value.toUpperCase();if(/^[A-Z]{2}$/.test(c)){const name=dn.of(c);if(name)option.textContent=name;}}}
+ const activeEn=document.documentElement.lang==='en';
+ document.querySelectorAll('[data-setting]').forEach(input=>{const label=input.getAttribute('aria-label');if(label&&label.includes(' / ')){const split=label.split(' / ');input.setAttribute('aria-label',activeEn?split[0]:split[1]);}});
+ const extra={en:{'#rankingSearch':'Search rankings','#rankingSearchButton':'Search rankings'},ja:{}};
+ for(const el of document.querySelectorAll('button,label,summary,option')){if(el.childElementCount===0){const value=(el.textContent||'').trim();if(value==='ランキング検索 / Search rankings'||value==='ランキング検索')el.textContent='Search rankings';}}
+const country=document.querySelector('#nationChoice');if(country){const placeholder=country.querySelector('option[value=""]');if(placeholder)placeholder.textContent='🌎 Choose your country';}
+ if(country&&typeof Intl.DisplayNames==='function'){const dn=new Intl.DisplayNames(['en'],{type:'region'});for(const option of country.options){const c=option.value.toUpperCase();if(/^[A-Z]{2}$/.test(c)){const name=dn.of(c);if(name)option.textContent=name;}}}
 }
 if(path==='today.html'){
  const e=document.querySelector('#shareScope');if(e){e.setAttribute('aria-label','Sharing scope');const labels={all:'🌍 All',country:'By country',prefecture:'State / prefecture',city:'City / region'};for(const o of e.options)if(labels[o.value])o.textContent=labels[o.value];}
