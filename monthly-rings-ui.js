@@ -138,7 +138,7 @@
     container.innerHTML=
       '<h3 style="font-size:19px;margin:0 0 8px;color:#78eaff">🌱 '+tr('今月の年輪','Monthly Rings')+'</h3>'+
       '<p style="font-size:12px;margin:0 0 10px;color:#aac5d4">'+tr('自分が走った軌跡を、先月と前年同月に重ねて振り返ります。','Revisit your own routes alongside last month and the same month last year.')+'</p>'+
-      '<div style="display:flex;gap:8px;margin:0 0 9px"><button type="button" id="monthlyRingsFocus" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='focus'?'#78eaff':'#18364a')+';color:'+(mapScope==='focus'?'#0e2537':'#e7f6ff')+'">'+tr('主要エリア','Main area')+'</button><button type="button" id="monthlyRingsAll" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='all'?'#78eaff':'#18364a')+';color:'+(mapScope==='all'?'#0e2537':'#e7f6ff')+'">'+tr('全エリア','All areas')+'</button><button type="button" id="monthlyRingsEnglish" style="margin-left:auto;padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:#18364a;color:#e7f6ff">'+tr('EN','日本語に戻す')+'</button></div>'+
+      '<div style="display:flex;gap:8px;margin:0 0 9px"><button type="button" id="monthlyRingsFocus" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='focus'?'#78eaff':'#18364a')+';color:'+(mapScope==='focus'?'#0e2537':'#e7f6ff')+'">'+tr('主要エリア','Main area')+'</button><button type="button" id="monthlyRingsAll" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='all'?'#78eaff':'#18364a')+';color:'+(mapScope==='all'?'#0e2537':'#e7f6ff')+'">'+tr('全エリア','All areas')+'</button></div>'+
       '<div id="monthlyRingsMap" role="img" aria-label="'+tr('月別GPS軌跡の重ね合わせ','Monthly GPS route overlay')+'" style="height:270px;border-radius:10px;background:#19364c;overflow:hidden"></div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;font-size:11px">'+totals.map(r=>'<span style="border-left:4px solid '+palette[r.key]+';padding:4px 8px;background:#1b354a">'+r.label+' ('+safe(label(r.value.month))+')</span>').join('')+'</div>'+
       '<div style="display:grid;gap:7px;font-size:13px">'+totals.map(r=>'<div style="padding:7px 10px;border:1px solid #395870;border-radius:8px"><strong>'+r.label+'</strong>'+tr('：',': ')+r.value.runCount+' '+tr('回','runs')+' / '+km(r.value.distanceKm)+' km</div>').join('')+'</div>'+
@@ -150,17 +150,6 @@
     container.querySelector('#monthlyRingsShare')?.addEventListener('click',shareImage);
     container.querySelector('#monthlyRingsFocus')?.addEventListener('click',()=>{mapScope='focus';render();});
     container.querySelector('#monthlyRingsAll')?.addEventListener('click',()=>{mapScope='all';render();});
-    container.querySelector('#monthlyRingsEnglish')?.addEventListener('click',()=>{
-      if(!english()){
-        try{localStorage.setItem('runners-rings-language','en');}catch(_e){}
-        window.rrApplyEnglishWithoutReload?.();
-        render();
-      } else {
-        // The Japanese switch is handled by the main navigation to avoid
-        // incomplete partial reverse translations.
-        document.querySelector('#rrNavLanguage [data-rr-lang="ja"]')?.click();
-      }
-    });
     if(previewMap){previewMap.remove();previewMap=null;}
     const el=container.querySelector('#monthlyRingsMap');
     previewMap=L.map(el,{attributionControl:true,zoomControl:false,scrollWheelZoom:false,dragging:false,keyboard:false,touchZoom:false, doubleClickZoom:false});
