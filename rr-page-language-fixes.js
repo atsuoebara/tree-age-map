@@ -34,6 +34,7 @@ function dynamicControls(){
 if(!active())return;
 const set=(sel,label)=>{const e=document.querySelector(sel);if(e&&e.textContent!==label)e.textContent=label};
 if(path==='ranking.html'){
+ const search=document.querySelector('#rankingSearch');if(search){search.placeholder='Public name or rank';search.setAttribute('aria-label','Search rankings');}
  set('#saveRanking','Save');set('#shareRanking','Share link');set('#rankingStoryShare','Share to Instagram');set('#rankingStorySave','Save image');
  const activeEn=document.documentElement.lang==='en';
  document.querySelectorAll('[data-setting]').forEach(input=>{const label=input.getAttribute('aria-label');if(label&&label.includes(' / ')){const split=label.split(' / ');input.setAttribute('aria-label',activeEn?split[0]:split[1]);}});
