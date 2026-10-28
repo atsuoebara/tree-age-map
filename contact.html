@@ -470,6 +470,16 @@ finally{button.disabled=false;}
       }
     })();
 
+  // Short phrases are translated separately because HTML whitespace splits paragraphs.
+  const extraContactCopy = [
+    ['Runner\'s Ringsに関するご質問、不具合のご報告、','Questions and bug reports about Runner\'s Rings,'],
+    ['ご意見・ご要望を受け付けています。','feedback, and feature requests are welcome.'],
+    ['内容に合う項目を選ぶと、必要事項を入力したメールが開きます。','Choose a topic to open a prefilled email.'],
+    ['Runner\'s Ringsでは、走った国や州・地域を地図に残せるよう、','Runner\'s Rings is working to map the countries, states and regions'],
+    ['世界地図への対応を進めています。','you have run in.'],
+    ['ランニングデータについて','About your running data'],
+    ['日本・海外どちらからでも歓迎です。','Runners from Japan and beyond are welcome.']
+  ];
   const contactEnglishReplacements = [
     ['走った記録ではなく、走った人生を残す。','Preserve the life you ran, not just the records.'],
     ['Runner\'s Ringsに関するご質問、不具合のご報告、\n    ご意見・ご要望を受け付けています。\n    内容に合う項目を選ぶと、必要事項を入力したメールが開きます。','Questions, bug reports, feedback, and requests are welcome. Choose a topic below to open a pre-filled email.'],
@@ -519,7 +529,7 @@ finally{button.disabled=false;}
       return value;
     }
     let translated = value;
-    contactEnglishReplacements.forEach(
+    [...extraContactCopy,...contactEnglishReplacements].forEach(
       ([source,target]) => {
         translated = translated.split(source).join(target);
       }
