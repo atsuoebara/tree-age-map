@@ -130,8 +130,22 @@
     data.series.slice().reverse().forEach(s=>s.routes.forEach(route=>{
       if(route.length>=2)L.polyline(route,{color:palette[s.key],weight:s.key==='current'?4:3,opacity:s.key==='current'?1:.62}).addTo(routeGroup);
     }));
-    if(routeGroup.getLayers().length)previewMap.fitBounds(routeGroup.getBounds().pad(.15),{animate:false,maxZoom:13});
-    else previewMap.setView([36,139],4,{animate:false});
+    // The preview uses the same primary-route framing as the PNG.
+    // A distant GPS point must not shrink all of the meaningful local routes.
+    const points = data.series.flatMap(item=>item.routes.flat()).filter(p=>p.length===2);
+    if(points.length>=2){
+      const sortedLat=points.map(p=>p[0]).sort((a,b)=>a-b);
+      const sortedLng=points.map(p=>p[1]).sort((a,b)=>a-b);
+      const at=(items,q)=>items[Math.floor((items.length-1)*q)];
+      const bounds=L.latLngBounds(
+        [at(sortedLat,.025),at(sortedLng,.025)],
+        [at(sortedLat,.975),at(sortedLng,.975)]
+      );
+      if(bounds.isValid())previewMap.fitBounds(bounds.pad(.20),{animate:false,maxZoom:13});
+      else previewMap.fitBounds(routeGroup.getBounds().pad(.15),{animate:false,maxZoom:13});
+    } else if(routeGroup.getLayers().length){
+      previewMap.fitBounds(routeGroup.getBounds().pad(.15),{animate:false,maxZoom:13});
+    } else previewMap.setView([36,139],4,{animate:false});
     requestAnimationFrame(()=>previewMap?.invalidateSize());
   }
   input.addEventListener('change',render);
