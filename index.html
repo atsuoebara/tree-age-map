@@ -29144,6 +29144,19 @@ window.rrRememberMonthlyLanguageContext = function() {
   }
 };
 
+let rrLiveTranslationObserver = null;
+function rrEnableLiveEnglishTranslation() {
+  if (rrLiveTranslationObserver || !document.body) return;
+  rrLiveTranslationObserver = new MutationObserver(mutations => {
+    if (rrUiLanguage !== 'en') return;
+    for (const mutation of mutations) {
+      if (mutation.type === 'characterData') translateUiNode(mutation.target);
+      for (const node of mutation.addedNodes) translateUiNode(node);
+    }
+  });
+  rrLiveTranslationObserver.observe(document.body,{childList:true,characterData:true,subtree:true});
+}
+
 // English can be applied in place: do not discard the authenticated map session.
 window.rrApplyEnglishWithoutReload = function() {
   // Do not reload the app just to change its language: a reload can expose the
@@ -29152,7 +29165,7 @@ window.rrApplyEnglishWithoutReload = function() {
   document.documentElement.lang = 'en';
   document.title = "Runner's Rings | Map the life you ran";
   // Translate both the public and authenticated UI already on screen.
-  try { translateUiNode(document.body); }
+  try { translateUiNode(document.body); rrEnableLiveEnglishTranslation(); }
   catch(error) { console.warn('English UI translation failed:',error); }
   document.querySelectorAll('.languageButton').forEach(button => {
     const active = button.dataset.language === 'en';
@@ -29253,34 +29266,7 @@ if (
       )
     );
 
-  const translationObserver =
-    new MutationObserver(
-      mutations => {
-        mutations.forEach(
-          mutation => {
-            if (
-              mutation.type === 'characterData'
-            ) {
-              translateUiNode(
-                mutation.target
-              );
-            }
-            mutation.addedNodes.forEach(
-              node => translateUiNode(node)
-            );
-          }
-        );
-      }
-    );
-
-  translationObserver.observe(
-    document.body,
-    {
-      childList:true,
-      characterData:true,
-      subtree:true
-    }
-  );
+  rrEnableLiveEnglishTranslation();
 }
 
 function finishLaunchSplash() {
