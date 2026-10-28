@@ -29146,18 +29146,20 @@ window.rrRememberMonthlyLanguageContext = function() {
 
 // English can be applied in place: do not discard the authenticated map session.
 window.rrApplyEnglishWithoutReload = function() {
-  if (rrUiLanguage === 'en') return true;
-  const app = document.getElementById('appRoot');
-  if (!app || getComputedStyle(app).display === 'none' || !currentSession || !currentUser) return false;
+  // Do not reload the app just to change its language: a reload can expose the
+  // sign-in screen while the asynchronously restored session is still pending.
   rrUiLanguage = 'en';
   document.documentElement.lang = 'en';
   document.title = "Runner's Rings | Map the life you ran";
-  translateUiNode(document.body);
+  // Translate both the public and authenticated UI already on screen.
+  try { translateUiNode(document.body); }
+  catch(error) { console.warn('English UI translation failed:',error); }
   document.querySelectorAll('.languageButton').forEach(button => {
     const active = button.dataset.language === 'en';
     button.classList.toggle('isActive',active);
     button.setAttribute('aria-pressed',String(active));
   });
+  // The monthly card uses its own live bilingual text and must rerender.
   document.getElementById('timelapseReviewMonth')?.dispatchEvent(new Event('change',{bubbles:true}));
   window.dispatchEvent(new Event('rr-language-changed'));
   return true;
