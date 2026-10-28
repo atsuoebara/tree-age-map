@@ -299,7 +299,7 @@ $('rankingStorySave').onclick=()=>exportRankingStory(true);
 $('shareRanking').onclick=async()=>{const url=location.origin+'/ranking.html';const text=lang()==='ja'?'走った人生を一緒に讃えよう！Rings Ranking 🌍':'Celebrate the miles we run together! Rings Ranking 🌍';if(navigator.share){try{await navigator.share({title:'Rings Ranking',text,url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text+' '+url);alert(lang()==='ja'?'招待文とURLをコピーしました':'Invite link copied')}catch(e){prompt('Copy / コピー',text+' '+url)}};
 init();
 </script><script defer src="/rr-ondevice-translate.js"></script>
-<script defer src="/rr-site-nav.js?v=2026102806"></script>
+<script defer src="/rr-site-nav.js?v=2026102807"></script>
 <script defer src="/rr-page-language-fixes.js?v=2026102803"></script>
 </body></html>
 
