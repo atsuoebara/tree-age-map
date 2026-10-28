@@ -5,6 +5,9 @@ if(document.documentElement.lang==='en')en=true;
 if(!en)return;
 document.documentElement.lang='en';
 const pairs=[
+['※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。','Calculated from running activities actually imported into Runner’s Rings.'],
+['まずは','Start with '],
+
 ['で表示を確認してください。利用を始めたら、対応サービスとの連携やGPX・FITなどのファイル取り込みで自分のランを地図に表示できます。個人の走行ルートや記録は、本人が共有操作をしない限り一般公開しない設計です。','to see the app. Then connect a supported service or import GPX/FIT files to map your runs. Your routes remain private unless you explicitly share them.'],
 ['も確認できます。','for more information.'],
 ['※Runner\'s Ringsへ実際に取り込まれたランニングデータをもとに集計します。','Calculated from running activities actually imported into Runner\'s Rings.'],
@@ -103,8 +106,9 @@ try{const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);c
 document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for(const attr of ['aria-label','title','placeholder']){if(!el.hasAttribute(attr))continue;let v=el.getAttribute(attr);for(const [ja,enValue] of pairs)v=v.split(ja).join(enValue);el.setAttribute(attr,v);}});
 }finally{busy=false}}
 scan();
+const intro=document.querySelector('#publicRunningGuide p:nth-of-type(1)');
 const users=document.querySelector('[data-public-stat="users"]');if(users){const unit=users.querySelector('strong + span');if(unit)unit.textContent='people';}
-const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.style.display='none';});const hint=document.createElement('p');hint.textContent='The screenshots illustrate the Japanese-language setup flow. For up-to-date English instructions, please refer to Intervals.icu.';guide.append(hint);}
+const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.style.display='none';});const hint=document.createElement('p');hint.textContent='For current English-language setup steps, please consult the Intervals.icu instructions.';guide.append(hint);}
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;scan()})});
 observer.observe(document.body,{childList:true,subtree:true});
 })();
