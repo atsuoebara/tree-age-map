@@ -128,7 +128,10 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors',crossOrigin:true}).addTo(previewMap);
     routeGroup=L.featureGroup().addTo(previewMap);
     data.series.slice().reverse().forEach(s=>s.routes.forEach(route=>{
-      if(route.length>=2)L.polyline(route,{color:palette[s.key],weight:s.key==='current'?4:3,opacity:s.key==='current'?1:.62}).addTo(routeGroup);
+      if(route.length>=2){
+        L.polyline(route,{color:'#092236',weight:s.key==='current'?8:7,opacity:.9,interactive:false}).addTo(routeGroup);
+        L.polyline(route,{color:palette[s.key],weight:s.key==='current'?4:3,opacity:s.key==='current'?1:.85,interactive:false}).addTo(routeGroup);
+      }
     }));
     // The preview uses the same primary-route framing as the PNG.
     // A distant GPS point must not shrink all of the meaningful local routes.
