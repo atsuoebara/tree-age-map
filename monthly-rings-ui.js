@@ -104,9 +104,9 @@
       '<p style="font-size:12px;margin:0 0 10px;color:#aac5d4">'+tr('自分が走った軌跡を、先月と前年同月に重ねて振り返ります。','Revisit your own routes alongside last month and the same month last year.')+'</p>'+
       '<div id="monthlyRingsMap" role="img" aria-label="'+tr('月別GPS軌跡の重ね合わせ','Monthly GPS route overlay')+'" style="height:270px;border-radius:10px;background:#19364c;overflow:hidden"></div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;font-size:11px">'+totals.map(r=>'<span style="border-left:4px solid '+palette[r.key]+';padding:4px 8px;background:#1b354a">'+r.label+' ('+safe(label(r.value.month))+')</span>').join('')+'</div>'+
-      '<div style="display:grid;gap:7px;font-size:13px">'+totals.map(r=>'<div style="padding:7px 10px;border:1px solid #395870;border-radius:8px"><strong>'+r.label+'</strong>：'+r.value.runCount+' '+tr('回','runs')+' / '+km(r.value.distanceKm)+' km</div>').join('')+'</div>'+
-      '<p style="font-size:12px;margin:10px 0">'+tr('先月との差','Vs. last month')+'：'+(data.previousDelta.runs>0?'+':'')+data.previousDelta.runs+' '+tr('回','runs')+' / '+signed(data.previousDelta.km)+' km<br>'+
-      tr('前年同月との差','Vs. last year')+'：'+(data.priorYearDelta.runs>0?'+':'')+data.priorYearDelta.runs+' '+tr('回','runs')+' / '+signed(data.priorYearDelta.km)+' km</p>'+
+      '<div style="display:grid;gap:7px;font-size:13px">'+totals.map(r=>'<div style="padding:7px 10px;border:1px solid #395870;border-radius:8px"><strong>'+r.label+'</strong>'+tr('：',': ')+r.value.runCount+' '+tr('回','runs')+' / '+km(r.value.distanceKm)+' km</div>').join('')+'</div>'+
+      '<p style="font-size:12px;margin:10px 0">'+tr('先月との差','Vs. last month')+''+tr('：',': ')+(data.previousDelta.runs>0?'+':'')+data.previousDelta.runs+' '+tr('回','runs')+' / '+signed(data.previousDelta.km)+' km<br>'+
+      tr('前年同月との差','Vs. last year')+''+tr('：',': ')+(data.priorYearDelta.runs>0?'+':'')+data.priorYearDelta.runs+' '+tr('回','runs')+' / '+signed(data.priorYearDelta.km)+' km</p>'+
       (data.current.runCount===0?'<p>'+tr('この月はまだ走っていません。','No runs recorded for this month.')+'</p>':'')+
       '<button id="monthlyRingsShare" type="button" style="background:#78eaff;color:#102332;border:0;border-radius:8px;padding:10px 15px;font-weight:800;cursor:pointer">'+tr('年輪画像を保存・共有','Save or share rings image')+'</button>'+
       '<p style="font-size:11px;color:#a6bfd0;margin:9px 0 0">'+tr('画像にはGPS軌跡が含まれます。公開先を確認してから共有してください。','The image contains GPS routes. Review the destination before sharing.')+'</p>';
