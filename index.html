@@ -28359,6 +28359,32 @@ if (savedAvatarPath) {
 
     await start();
 
+    // Restore the authenticated monthly review after a language-triggered reload.
+    // Never open private app content unless the session was verified above.
+    try {
+      const saved = sessionStorage.getItem('rr-language-return-monthly');
+      if (saved) {
+        sessionStorage.removeItem('rr-language-return-monthly');
+        const state = JSON.parse(saved);
+        const panel = document.getElementById('timelapsePanel');
+        const month = document.getElementById('timelapseReviewMonth');
+        if (state?.open && panel && month) {
+          panel.classList.add('isOpen');
+          panel.style.display = 'block';
+          if (/^\\d{4}-\\d{2}$/.test(state.month || '')) {
+            month.value = state.month;
+            month.dispatchEvent(new Event('change', {bubbles:true}));
+          }
+          setTimeout(() => {
+            document.getElementById('monthlyRingsCard')?.scrollIntoView({block:'start',behavior:'instant'});
+            map.invalidateSize();
+          }, 250);
+        }
+      }
+    } catch (error) {
+      console.warn('Monthly review language-state restore failed:', error);
+    }
+
     const stravaFullSyncRequested =
       new URLSearchParams(
         location.search
@@ -29103,9 +29129,25 @@ function translateUiNode(
   );
 }
 
+window.rrRememberMonthlyLanguageContext = function() {
+  try {
+    const panel = document.getElementById('timelapsePanel');
+    const app = document.getElementById('appRoot');
+    if (!panel || !app || getComputedStyle(app).display === 'none') return;
+    if (!panel.classList.contains('isOpen') && getComputedStyle(panel).display === 'none') return;
+    sessionStorage.setItem('rr-language-return-monthly', JSON.stringify({
+      open:true,
+      month:document.getElementById('timelapseReviewMonth')?.value || ''
+    }));
+  } catch (error) {
+    console.warn('Could not preserve monthly review language context:', error);
+  }
+};
+
 function setRunnerRingsLanguage(
   language
 ) {
+  window.rrRememberMonthlyLanguageContext?.();
   try {
     localStorage.setItem(
       RR_LANGUAGE_STORAGE_KEY,
