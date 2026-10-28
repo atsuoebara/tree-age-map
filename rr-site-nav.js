@@ -1,6 +1,9 @@
 /* Runner's Rings shared site navigation — isolated from app/feature scripts. */
 (()=>{'use strict';
 if(document.getElementById('rrGlobalNavigation'))return;
+// Persisted language is the sole authority for the shared navigation.
+try{const selected=localStorage.getItem('runners-rings-language');if(selected==='en'||selected==='ja')document.documentElement.lang=selected;}catch(_){}
+
 const links=[
 ['./index.html','ホーム','Home'],['./journal.html','Journal','Journal'],
 ['./ranking.html','Ranking','Ranking'],['./territory.html','Territory','Territory'],
@@ -36,7 +39,7 @@ const details=document.createElement('details');details.className='rrNavMobile';
 const summary=document.createElement('summary');const dropdown=document.createElement('div');dropdown.className='rrNavDropdown';
 details.append(summary,dropdown);row.append(brand,desktop,details);nav.append(row);
 const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
-function english(){return document.documentElement.lang==='en'||(document.querySelector('.languageButton[data-language="en"].active,.languageButton[data-language="en"].isActive,.languageButton[data-language="en"][aria-pressed="true"]')!==null);}
+function english(){try{const selected=localStorage.getItem('runners-rings-language');if(selected==='en'||selected==='ja')return selected==='en';}catch(_){}return document.documentElement.lang==='en';}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
 function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));if(typeof updateFooter==='function')updateFooter();}
 const footer=document.createElement('footer');
