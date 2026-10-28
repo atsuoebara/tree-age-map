@@ -18,4 +18,4 @@
 (()=>{const key='runners-rings-language';let saved='ja';try{saved=localStorage.getItem(key)==='en'?'en':'ja'}catch(_){}
 function apply(lang){document.documentElement.lang=lang;document.querySelectorAll('button[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===lang)));}
 document.querySelectorAll('button[data-language]').forEach(b=>b.addEventListener('click',()=>{try{localStorage.setItem(key,b.dataset.language)}catch(_){}apply(b.dataset.language)}));apply(saved)})();
-</script><script defer src="./rr-site-nav.js?v=2026102805"></script></body></html>
+</script><script defer src="./rr-site-nav.js?v=2026102807"></script></body></html>
