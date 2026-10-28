@@ -90,7 +90,7 @@
     setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
   function render(){
-    if(!input.value)return;
+    if(!input.value){const today=new Date();input.value=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');}
     let data;
     try {
       if(typeof activities==='undefined')return;
