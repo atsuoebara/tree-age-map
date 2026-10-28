@@ -91,9 +91,8 @@ langCss.textContent=`
 #rrGlobalNavigation .rrNavRow{flex-wrap:wrap}
 #rrGlobalNavigation #rrNavLanguage{margin-left:auto}
 body>.languageSwitch,body header .languageSwitch,body header .languages,body .top>.lang,body main>.langs{display:none!important}
-/* Keep the original homepage language controls tappable alongside shared navigation. */
-body #languageSwitch{display:flex!important;z-index:1401;pointer-events:auto;touch-action:manipulation}
-body #languageSwitch button{pointer-events:auto;touch-action:manipulation;min-height:40px;min-width:44px}
+/* One canonical language switch in the shared navigation; remove the old homepage pair. */
+body #languageSwitch{display:none!important}
 @media(max-width:620px){#rrGlobalNavigation .rrNavRow{gap:8px}#rrGlobalNavigation #rrNavLanguage{order:2;margin-left:0}#rrGlobalNavigation .rrNavMobile{order:3;margin-left:auto}}
 `;
 document.head.append(langCss);
