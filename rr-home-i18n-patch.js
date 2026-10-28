@@ -96,10 +96,10 @@ const pairs=[
 ['各ランの全距離をスタート地点の国に集計しています。','Each run is counted toward the country where it began.'],
 ['Runner\'s Ringsとは？','About Runner\'s Rings'],['開発者からのメッセージ','Developer message'],['使い方','How to use'],['利用規約','Terms'],['お問い合わせ','Contact'],['プライバシーポリシー','Privacy policy']
 ].sort((a,b)=>b[0].length-a[0].length);
-function translateText(node){if(!node.nodeValue||!/[ぁ-んァ-ヶ一-龯]/.test(node.nodeValue))return;
+function translateText(node){if(!node.nodeValue)return;
 const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,select,[data-lang="ja"]'))return;
 let value=node.nodeValue;for(const [ja,enValue] of pairs)value=value.split(ja).join(enValue);
-value=value.replace(/registrationto\b/g,'registration to').replace(/them\.Privacy/g,'them. Privacy').replace(/policyfor\b/g,'policy for').replace(/records,Preserve/g,'records, Preserve');
+value=value.replace(/registrationto\b/g,'registration to').replace(/them\.Privacy/g,'them. Privacy').replace(/policyfor\b/g,'policy for').replace(/records,Preserve/g,'records, Preserve').replace(/stories inRings Journal/g,'stories in Rings Journal').replace(/Journal indexas/g,'Journal index as');
 if(value!==node.nodeValue)node.nodeValue=value;}
 let busy=false;
 function scan(){if(busy)return;busy=true;
