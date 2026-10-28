@@ -11,7 +11,7 @@ const links=[
 ['./about-runners-rings.html','About','About'],['./team.html','チーム','Team'],['./how-to.html','使い方','How to use'],
 ['./partners.html','パートナー','Partners'],['./contact.html','お問い合わせ','Contact']];
 const css=document.createElement('style');css.textContent=`
-#rrGlobalNavigation{position:relative;z-index:1200;padding:8px 12px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
+#rrGlobalNavigation{position:sticky;top:0;z-index:2147483000;isolation:isolate;pointer-events:auto;padding:8px 12px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
 #rrGlobalNavigation *,#rrGlobalNavigation *:before{box-sizing:border-box}
 #rrGlobalNavigation .rrNavRow{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1120px;margin:0 auto}
 #rrGlobalNavigation .rrNavBrand{color:#fff;font-weight:850;text-decoration:none;letter-spacing:.2px;white-space:nowrap}
@@ -85,8 +85,8 @@ for(const [code,label] of [['ja','日本語'],['en','EN']]){
 row.append(languageBox);
 const langCss=document.createElement('style');
 langCss.textContent=`
-#rrNavLanguage{display:flex;gap:4px;flex-shrink:0}
-#rrNavLanguage button{background:#172e45;color:#fff;border:1px solid #74869c;border-radius:8px;padding:9px 10px;min-height:40px;font:700 13px system-ui;cursor:pointer}
+#rrNavLanguage{display:flex;gap:4px;flex-shrink:0;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
+#rrNavLanguage button{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;background:#172e45;color:#fff;border:1px solid #74869c;border-radius:8px;padding:9px 10px;min-height:40px;font:700 13px system-ui;cursor:pointer}
 #rrNavLanguage button[aria-pressed="true"]{background:#31577a;border-color:#85dbf2}
 #rrGlobalNavigation .rrNavRow{flex-wrap:wrap}
 #rrGlobalNavigation #rrNavLanguage{margin-left:auto}
