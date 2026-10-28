@@ -76,7 +76,8 @@ for(const [code,label] of [['ja','日本語'],['en','EN']]){
  button.addEventListener('click',()=>{
   window.rrRememberMonthlyLanguageContext?.();
   try{localStorage.setItem('runners-rings-language',code)}catch(_){}
-  // Rebuild page content from its source to avoid mixed translated DOM state.
+  // Preserve the authenticated map when switching to English.
+  if(code==='en' && window.rrApplyEnglishWithoutReload?.()) {update();updateFooter();return;}
   location.reload();
  });;
  languageBox.append(button);
