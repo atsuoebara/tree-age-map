@@ -82,6 +82,14 @@ function applyEnglishLeftoverFixes() {
     const value = node.nodeValue?.trim();
     if (!value) continue;
 
+    // English copy spacing cleanup from the sixth public-site audit.
+    const spaced = node.nodeValue
+      .replace(/registrationto/g, 'registration to')
+      .replace(/them\.Privacy/g, 'them. Privacy')
+      .replace(/policyfor/g, 'policy for')
+      .replace(/records,Preserve/g, 'records, Preserve');
+    if (spaced !== node.nodeValue) node.nodeValue = spaced;
+
     const japaneseMonth = value.match(/^(\d{4})年(\d{1,2})月$/);
     if (japaneseMonth) {
       const year = Number(japaneseMonth[1]);
