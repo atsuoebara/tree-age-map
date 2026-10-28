@@ -5,6 +5,15 @@ if(document.documentElement.lang==='en')en=true;
 if(!en)return;
 document.documentElement.lang='en';
 const pairs=[
+['で表示を確認してください。利用を始めたら、対応サービスとの連携やGPX・FITなどのファイル取り込みで自分のランを地図に表示できます。個人の走行ルートや記録は、本人が共有操作をしない限り一般公開しない設計です。','to see the app. Then connect a supported service or import GPX/FIT files to map your runs. Your routes remain private unless you explicitly share them.'],
+['も確認できます。','for more information.'],
+['※Runner\'s Ringsへ実際に取り込まれたランニングデータをもとに集計します。','Calculated from running activities actually imported into Runner\'s Rings.'],
+['詳しい手順を見る →','View detailed instructions →'],
+['Intervals.icu 初期登録＋データ連携ガイド','Intervals.icu sign-up and sync guide'],
+['初期登録ガイド','Getting started guide'],
+['Runner\'s Ringsの使い方と価値','How Runner\'s Rings works and why it matters'],
+['FIT・GPX・TCX・ZIP','FIT / GPX / TCX / ZIP'],
+['records,Preserve','records, Preserve'],
 ['ペースや順位だけでは残しきれない「どこを走ってきたか」を、道・地域・年の積み重ねとして振り返れます。','Look beyond pace and race results: revisit the roads, regions and years that make up your running journey.'],
 ['昔のランも取り込めば、これまでのランニングそのものが一枚の地図に育っていきます。','Import older runs too, and your entire running history grows into one map.'],
 ['トレーニング分析とは、少し違う役割。','A different perspective from training analytics.'],
