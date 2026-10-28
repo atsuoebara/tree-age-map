@@ -99,10 +99,12 @@ const pairs=[
 function translateText(node){if(!node.nodeValue||!/[ぁ-んァ-ヶ一-龯]/.test(node.nodeValue))return;
 const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,select,[data-lang="ja"]'))return;
 let value=node.nodeValue;for(const [ja,enValue] of pairs)value=value.split(ja).join(enValue);
+value=value.replace(/registrationto\b/g,'registration to').replace(/them\.Privacy/g,'them. Privacy').replace(/policyfor\b/g,'policy for').replace(/records,Preserve/g,'records, Preserve');
 if(value!==node.nodeValue)node.nodeValue=value;}
 let busy=false;
 function scan(){if(busy)return;busy=true;
 try{const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(translateText);
+for(const el of document.querySelectorAll('button,summary,label,span')){if(el.childElementCount===0&&el.textContent?.trim()==='補助翻訳')el.textContent='Supplemental translation';}
 document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for(const attr of ['aria-label','title','placeholder']){if(!el.hasAttribute(attr))continue;let v=el.getAttribute(attr);for(const [ja,enValue] of pairs)v=v.split(ja).join(enValue);el.setAttribute(attr,v);}});
 }finally{busy=false}}
 scan();
