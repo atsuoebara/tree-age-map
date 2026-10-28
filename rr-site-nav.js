@@ -73,13 +73,23 @@ languageBox.setAttribute('role','group');
 languageBox.setAttribute('aria-label','Language / 言語');
 for(const [code,label] of [['ja','日本語'],['en','EN']]){
  const button=document.createElement('button');button.type='button';button.dataset.rrLang=code;button.textContent=label;
- button.addEventListener('click',()=>{
-  window.rrRememberMonthlyLanguageContext?.();
-  try{localStorage.setItem('runners-rings-language',code)}catch(_){}
-  // Preserve the authenticated map when switching to English.
-  if(code==='en' && window.rrApplyEnglishWithoutReload?.()) {update();updateFooter();return;}
-  location.reload();
- });;
+ button.addEventListener('click',(event)=>{
+  event.preventDefault();
+  event.stopPropagation();
+  try{localStorage.setItem('runners-rings-language',code)}catch(error){console.warn('Language preference:',error);}
+  document.documentElement.lang=code;
+  if(code==='en'){
+    try{window.rrApplyEnglishWithoutReload?.()}catch(error){console.error('English switch:',error);}
+    // Never reload an authenticated running session on an English switch.
+  } else {
+    window.rrRememberMonthlyLanguageContext?.();
+    location.reload();
+    return;
+  }
+  update();
+  updateFooter();
+  updateLanguageBox();
+ });
  languageBox.append(button);
 }
 row.append(languageBox);
