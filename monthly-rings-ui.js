@@ -44,8 +44,8 @@
     ctx.fillStyle='#1b354a';ctx.fillRect(44,194,992,858);
     const all = data.series.flatMap(item => item.routes.flat()).filter(a=>a.length===2);
     if(all.length){
-      let minLat=Math.min(...all.map(p=>p[0])),maxLat=Math.max(...all.map(p=>p[0]));
-      let minLng=Math.min(...all.map(p=>p[1])),maxLng=Math.max(...all.map(p=>p[1]));
+      let minLat=90,maxLat=-90,minLng=180,maxLng=-180;
+      for(const p of all){if(p[0]<minLat)minLat=p[0];if(p[0]>maxLat)maxLat=p[0];if(p[1]<minLng)minLng=p[1];if(p[1]>maxLng)maxLng=p[1];}
       // Keep geographic aspect ratio and protect single-coordinate spans.
       const scaleLng=Math.max(.05,Math.cos((minLat+maxLat)*Math.PI/360));
       const dx=Math.max((maxLng-minLng)*scaleLng, .0002);
