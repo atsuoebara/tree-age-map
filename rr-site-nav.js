@@ -74,6 +74,7 @@ languageBox.setAttribute('aria-label','Language / 言語');
 for(const [code,label] of [['ja','日本語'],['en','EN']]){
  const button=document.createElement('button');button.type='button';button.dataset.rrLang=code;button.textContent=label;
  button.addEventListener('click',()=>{
+  window.rrRememberMonthlyLanguageContext?.();
   try{localStorage.setItem('runners-rings-language',code)}catch(_){}
   // Rebuild page content from its source to avoid mixed translated DOM state.
   location.reload();
