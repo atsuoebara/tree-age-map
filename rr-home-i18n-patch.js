@@ -103,6 +103,8 @@ try{const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);c
 document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for(const attr of ['aria-label','title','placeholder']){if(!el.hasAttribute(attr))continue;let v=el.getAttribute(attr);for(const [ja,enValue] of pairs)v=v.split(ja).join(enValue);el.setAttribute(attr,v);}});
 }finally{busy=false}}
 scan();
+const users=document.querySelector('[data-public-stat="users"]');if(users){const unit=users.querySelector('strong + span');if(unit)unit.textContent='people';}
+const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.hidden=true;});const hint=document.createElement('p');hint.textContent='The screenshots illustrate the Japanese-language setup flow. For up-to-date English instructions, please refer to Intervals.icu.';guide.append(hint);}
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;scan()})});
 observer.observe(document.body,{childList:true,subtree:true});
 })();
