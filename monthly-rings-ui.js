@@ -34,6 +34,39 @@
       {key:'priorYear',label:tr('前年同月','Same month last year'),value:data.priorYear}
     ];
   }
+  let mapScope='focus';
+  // Pick the densest local area by route (not by GPS point frequency).
+  // Keep all runs and totals; only the viewport is focused.
+  function routeViewport(data,scope='focus'){
+    const routes=data.series.flatMap(item=>item.routes).filter(route=>route.length>=2);
+    if(!routes.length)return null;
+    const all=routes.flat();
+    if(scope==='all')return boundsOf(all);
+    const centers=routes.map(route=>{
+      const p=route[Math.floor(route.length/2)];
+      return {lat:p[0],lng:p[1]};
+    });
+    const bins=new Map(),size=.20;
+    centers.forEach((c,i)=>{const key=Math.floor(c.lat/size)+','+Math.floor(c.lng/size);if(!bins.has(key))bins.set(key,[]);bins.get(key).push(i);});
+    let best=[],bestKey='';
+    for(const key of bins.keys()){
+      const [a,b]=key.split(',').map(Number);
+      const subset=[];
+      centers.forEach((c,i)=>{
+        if(Math.abs(Math.floor(c.lat/size)-a)<=1&&Math.abs(Math.floor(c.lng/size)-b)<=1)subset.push(i);
+      });
+      if(subset.length>best.length||(subset.length===best.length&&key<bestKey)){best=subset;bestKey=key;}
+    }
+    const focused=best.flatMap(i=>routes[i]);
+    return boundsOf(focused.length?focused:all);
+  }
+  function boundsOf(points){
+    if(!points.length)return null;
+    const lat=points.map(p=>p[0]).sort((a,b)=>a-b);
+    const lng=points.map(p=>p[1]).sort((a,b)=>a-b);
+    const at=(arr,q)=>arr[Math.floor((arr.length-1)*q)];
+    return {minLat:at(lat,.01),maxLat:at(lat,.99),minLng:at(lng,.01),maxLng:at(lng,.99)};
+  }
   function routeImage(data) {
     const canvas = document.createElement('canvas');
     canvas.width = 1080; canvas.height = 1350;
@@ -44,16 +77,8 @@
     ctx.fillStyle='#1b354a';ctx.fillRect(44,194,992,858);
     const all = data.series.flatMap(item => item.routes.flat()).filter(a=>a.length===2);
     if(all.length){
-      // Ignore isolated GPS spikes when choosing the sharing-card viewport.
-      // Coordinates are not deleted; routes are clipped to the visible frame.
-      const percentile = (values, fraction) => {
-        const sorted = values.slice().sort((a,b)=>a-b);
-        const position = Math.floor((sorted.length-1)*fraction);
-        return sorted[Math.max(0,Math.min(sorted.length-1,position))];
-      };
-      const lats=all.map(p=>p[0]), lngs=all.map(p=>p[1]);
-      const minLat=percentile(lats,.025), maxLat=percentile(lats,.975);
-      const minLng=percentile(lngs,.025), maxLng=percentile(lngs,.975);
+      const view=routeViewport(data,'focus');
+      const {minLat,maxLat,minLng,maxLng}=view;
       const scaleLng=Math.max(.05,Math.cos((minLat+maxLat)*Math.PI/360));
       const dx=Math.max((maxLng-minLng)*scaleLng,.0002);
       const dy=Math.max(maxLat-minLat,.0002);
@@ -113,6 +138,7 @@
     container.innerHTML=
       '<h3 style="font-size:19px;margin:0 0 8px;color:#78eaff">🌱 '+tr('今月の年輪','Monthly Rings')+'</h3>'+
       '<p style="font-size:12px;margin:0 0 10px;color:#aac5d4">'+tr('自分が走った軌跡を、先月と前年同月に重ねて振り返ります。','Revisit your own routes alongside last month and the same month last year.')+'</p>'+
+      '<div style="display:flex;gap:8px;margin:0 0 9px"><button type="button" id="monthlyRingsFocus" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='focus'?'#78eaff':'#18364a')+';color:'+(mapScope==='focus'?'#0e2537':'#e7f6ff')+'">'+tr('主要エリア','Main area')+'</button><button type="button" id="monthlyRingsAll" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='all'?'#78eaff':'#18364a')+';color:'+(mapScope==='all'?'#0e2537':'#e7f6ff')+'">'+tr('全エリア','All areas')+'</button></div>'+
       '<div id="monthlyRingsMap" role="img" aria-label="'+tr('月別GPS軌跡の重ね合わせ','Monthly GPS route overlay')+'" style="height:270px;border-radius:10px;background:#19364c;overflow:hidden"></div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;font-size:11px">'+totals.map(r=>'<span style="border-left:4px solid '+palette[r.key]+';padding:4px 8px;background:#1b354a">'+r.label+' ('+safe(label(r.value.month))+')</span>').join('')+'</div>'+
       '<div style="display:grid;gap:7px;font-size:13px">'+totals.map(r=>'<div style="padding:7px 10px;border:1px solid #395870;border-radius:8px"><strong>'+r.label+'</strong>'+tr('：',': ')+r.value.runCount+' '+tr('回','runs')+' / '+km(r.value.distanceKm)+' km</div>').join('')+'</div>'+
@@ -122,6 +148,8 @@
       '<button id="monthlyRingsShare" type="button" style="background:#78eaff;color:#102332;border:0;border-radius:8px;padding:10px 15px;font-weight:800;cursor:pointer">'+tr('年輪画像を保存・共有','Save or share rings image')+'</button>'+
       '<p style="font-size:11px;color:#a6bfd0;margin:9px 0 0">'+tr('画像にはGPS軌跡が含まれます。公開先を確認してから共有してください。','The image contains GPS routes. Review the destination before sharing.')+'</p>';
     container.querySelector('#monthlyRingsShare')?.addEventListener('click',shareImage);
+    container.querySelector('#monthlyRingsFocus')?.addEventListener('click',()=>{mapScope='focus';render();});
+    container.querySelector('#monthlyRingsAll')?.addEventListener('click',()=>{mapScope='all';render();});
     if(previewMap){previewMap.remove();previewMap=null;}
     const el=container.querySelector('#monthlyRingsMap');
     previewMap=L.map(el,{attributionControl:true,zoomControl:false,scrollWheelZoom:false,dragging:false,keyboard:false,touchZoom:false, doubleClickZoom:false});
@@ -133,21 +161,10 @@
         L.polyline(route,{color:palette[s.key],weight:s.key==='current'?4:3,opacity:s.key==='current'?1:.85,interactive:false}).addTo(routeGroup);
       }
     }));
-    // The preview uses the same primary-route framing as the PNG.
-    // A distant GPS point must not shrink all of the meaningful local routes.
-    const points = data.series.flatMap(item=>item.routes.flat()).filter(p=>p.length===2);
-    if(points.length>=2){
-      const sortedLat=points.map(p=>p[0]).sort((a,b)=>a-b);
-      const sortedLng=points.map(p=>p[1]).sort((a,b)=>a-b);
-      const at=(items,q)=>items[Math.floor((items.length-1)*q)];
-      const bounds=L.latLngBounds(
-        [at(sortedLat,.025),at(sortedLng,.025)],
-        [at(sortedLat,.975),at(sortedLng,.975)]
-      );
-      if(bounds.isValid())previewMap.fitBounds(bounds.pad(.20),{animate:false,maxZoom:13});
-      else previewMap.fitBounds(routeGroup.getBounds().pad(.15),{animate:false,maxZoom:13});
-    } else if(routeGroup.getLayers().length){
-      previewMap.fitBounds(routeGroup.getBounds().pad(.15),{animate:false,maxZoom:13});
+    const view=routeViewport(data,mapScope);
+    if(view){
+      const bounds=L.latLngBounds([view.minLat,view.minLng],[view.maxLat,view.maxLng]);
+      previewMap.fitBounds(bounds.pad(.20),{animate:false,maxZoom:13});
     } else previewMap.setView([36,139],4,{animate:false});
     requestAnimationFrame(()=>previewMap?.invalidateSize());
   }
