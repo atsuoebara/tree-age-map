@@ -168,6 +168,24 @@
     } else previewMap.setView([36,139],4,{animate:false});
     requestAnimationFrame(()=>previewMap?.invalidateSize());
   }
+  // Activity imports are asynchronous. Reconcile cards rendered before data arrived.
+  // Do not treat a temporary empty activities array as a completed 0-run month.
+  let lastActivityCount = -1;
+  let lastMonthValue = '';
+  function refreshWhenDataArrives() {
+    if (typeof activities === 'undefined' || !Array.isArray(activities)) return;
+    const count=activities.length;
+    if (count!==lastActivityCount || input.value!==lastMonthValue) {
+      lastActivityCount=count;
+      lastMonthValue=input.value;
+      render();
+    }
+  }
+  // Stop after one minute; user interaction and month changes continue to refresh normally.
+  const importWatch=setInterval(refreshWhenDataArrives,1200);
+  setTimeout(()=>clearInterval(importWatch),60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshWhenDataArrives();});
+  window.addEventListener('focus',refreshWhenDataArrives);
   input.addEventListener('change',render);
   // Data may be imported after page load; recompute on opening the parent panel.
   const open=document.getElementById('timelapseOpenButton');
