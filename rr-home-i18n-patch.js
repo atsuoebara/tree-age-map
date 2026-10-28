@@ -104,7 +104,7 @@ document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for
 }finally{busy=false}}
 scan();
 const users=document.querySelector('[data-public-stat="users"]');if(users){const unit=users.querySelector('strong + span');if(unit)unit.textContent='people';}
-const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.hidden=true;});const hint=document.createElement('p');hint.textContent='The screenshots illustrate the Japanese-language setup flow. For up-to-date English instructions, please refer to Intervals.icu.';guide.append(hint);}
+const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.style.display='none';});const hint=document.createElement('p');hint.textContent='The screenshots illustrate the Japanese-language setup flow. For up-to-date English instructions, please refer to Intervals.icu.';guide.append(hint);}
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;scan()})});
 observer.observe(document.body,{childList:true,subtree:true});
 })();
