@@ -233,6 +233,8 @@ document.getElementById('saveImageBtn').onclick=()=>shareTodayImage(true);
 
 const todayCachePrefix='rr-public-today-v1:';
 function todayCacheGet(date){try{const v=JSON.parse(localStorage.getItem(todayCachePrefix+date)||'null');const ttl=date===today?10*60*1000:60*60*1000;return v&&Date.now()-v.savedAt<ttl&&Array.isArray(v.data)?v.data:null}catch(_){return null}}
+// Fallback only: expired public aggregates can be shown with an explicit stale notice if the API fails.
+function todayCacheGetStale(date){try{const v=JSON.parse(localStorage.getItem(todayCachePrefix+date)||'null');return v&&Array.isArray(v.data)&&Number.isFinite(v.savedAt)&&v.savedAt<=Date.now()?v:null}catch(_){return null}}
 function todayCachePut(date,data){if(!Array.isArray(data))return;try{localStorage.setItem(todayCachePrefix+date,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
 let todayLoadRequest=0,todayLoadController=null;
 function renderTodayRows(rows){
@@ -256,7 +258,7 @@ async function load(){
     if(!res.ok)throw new Error(await res.text());const rows=await res.json();if(request!==todayLoadRequest)return;todayShareRows=rows;todayShareLoaded=true;fillShareAreas();todayCachePut(requestedDate,rows);
     renderTodayRows(rows);
     console.info('[Rings Today] API load', Math.round(performance.now()-startedAt), 'ms');
-  }catch(e){if(request!==todayLoadRequest)return;console.error('[Rings Today] API load failed after', Math.round(performance.now()-startedAt), 'ms', e);if(cached)return;const list=document.getElementById('regionList');list.replaceChildren();const message=document.createElement('div');message.className='error';message.textContent=lang==='ja'?'読み込みに失敗しました。もう一度お試しください。':'Could not load Rings Today. Please try again.';const retry=document.createElement('button');retry.type='button';retry.textContent=lang==='ja'?'再試行':'Retry';retry.onclick=load;list.append(message,retry);}finally{clearTimeout(deadline);if(todayLoadController===controller)todayLoadController=null;}
+  }catch(e){if(request!==todayLoadRequest)return;console.error('[Rings Today] API load failed after', Math.round(performance.now()-startedAt), 'ms', e);if(cached)return;const stale=todayCacheGetStale(requestedDate);if(stale){todayShareRows=stale.data;todayShareLoaded=false;renderTodayRows(stale.data);const notice=document.createElement('div');notice.className='error';notice.textContent=lang==='ja'?'最新情報を取得できませんでした。過去に取得した集計を表示しています。':'Latest data unavailable. Showing previously saved totals.';const retry=document.createElement('button');retry.type='button';retry.textContent=lang==='ja'?'再試行':'Retry';retry.onclick=load;document.getElementById('regionList').prepend(notice,retry);return;}const list=document.getElementById('regionList');list.replaceChildren();const message=document.createElement('div');message.className='error';message.textContent=lang==='ja'?'読み込みに失敗しました。もう一度お試しください。':'Could not load Rings Today. Please try again.';const retry=document.createElement('button');retry.type='button';retry.textContent=lang==='ja'?'再試行':'Retry';retry.onclick=load;list.append(message,retry);}finally{clearTimeout(deadline);if(todayLoadController===controller)todayLoadController=null;}
 }
 fillYears();fillMonths();updateDateButton();let savedLang='ja';try{savedLang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja'}catch(_){}setLang(savedLang);
 </script>
