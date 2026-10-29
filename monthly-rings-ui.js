@@ -275,6 +275,10 @@
   // Data may be imported after page load; recompute on opening the parent panel.
   const open=document.getElementById('timelapseOpenButton');
   open?.addEventListener('click',()=>setTimeout(render,0));
-  document.getElementById('rrPersonalProgress')?.addEventListener('click',()=>setTimeout(render,0));
+  window.addEventListener('rr-open-monthly-rings',()=>{
+    disclosure.open=true;
+    render();
+    requestAnimationFrame(()=>disclosure.scrollIntoView({behavior:'smooth',block:'start'}));
+  });
   render();
 })();
