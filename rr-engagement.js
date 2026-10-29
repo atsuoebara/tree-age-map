@@ -48,6 +48,8 @@ anniversary.querySelector('#rrYearAgoReview').addEventListener('click',()=>{
  if(!panel||!monthInput||!review)return;
  panel.classList.add('isOpen');
  panel.style.display='block';
+ const mode=document.getElementById('timelapseMode');
+ if(mode)mode.value='route';
  monthInput.value=anniversaryState.date.slice(0,7);
  monthInput.dispatchEvent(new Event('change',{bubbles:true}));
  requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
@@ -80,6 +82,8 @@ function openMonthlyReview(){
  // when its default range is unavailable, even though monthly review exists.
  panel.classList.add('isOpen');
  panel.style.display='block';
+ const mode=document.getElementById('timelapseMode');
+ if(mode)mode.value='route';
  monthInput.value=day().slice(0,7);
  monthInput.dispatchEvent(new Event('change',{bubbles:true}));
  requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
