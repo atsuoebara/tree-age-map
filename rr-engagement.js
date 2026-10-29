@@ -37,7 +37,8 @@ function renderAnniversary(){
   const km=anniversaryState.items.reduce((sum,r)=>sum+(Number.isFinite(Number(r.distance_km))?Math.max(0,Number(r.distance_km)):0),0);
   body.textContent=(en?anniversaryState.date+' · '+anniversaryState.items.length+' runs · ':anniversaryState.date+' ・ '+anniversaryState.items.length+'回 ・ ')+km.toFixed(1)+' km';
  }
- button.textContent=en?'▶ Watch that month’s timelapse':'▶ あの月のタイムラプスを見る';
+ const [year,month]=anniversaryState.date.split('-');
+ button.textContent=en?'▶ Create a running recap for '+year+'-'+month:'▶ '+year+'年'+Number(month)+'月の走りを動画で振り返る';
  button.hidden=anniversaryState.error || !anniversaryState.items.length;
 }
 anniversary.querySelector('#rrYearAgoReview').addEventListener('click',()=>{
