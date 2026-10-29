@@ -4012,7 +4012,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.29.03'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.29.04'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -29256,9 +29256,9 @@ if (
       'Runner\'s Rings maps your accumulated running routes, distance, and visited regions around the world.';
   }
 
-  translateUiNode(
-    document.body
-  );
+  // Apply translations only after authentication initialization finishes.
+  // Translating the DOM during startup can interfere with Safari restoration.
+  window.rrTranslateAfterInit = () => translateUiNode(document.body);
 
   document.querySelector(
     '[data-language="ja"]'
@@ -29285,7 +29285,7 @@ if (
       )
     );
 
-  rrEnableLiveEnglishTranslation();
+  // The live observer is started after init(), never during auth restoration.
 }
 
 function finishLaunchSplash() {
@@ -29345,9 +29345,17 @@ function finishLaunchSplash() {
 }
 
 
-init().finally(
-  finishLaunchSplash
-);
+init().finally(() => {
+  finishLaunchSplash();
+  if (rrUiLanguage === 'en') {
+    try {
+      window.rrTranslateAfterInit?.();
+      rrEnableLiveEnglishTranslation();
+    } catch (error) {
+      console.error('Post-auth English rendering failed',error);
+    }
+  }
+});
 
 const backToMapButton =
   document.getElementById(
@@ -29610,7 +29618,7 @@ updateScrollToTopButton();
 <script defer src="/rr-engagement.js?v=2026102701"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 <script defer src="/rr-site-nav.js?v=2026102908"></script>
-<script defer src="/rr-home-i18n-patch.js?v=2026102903"></script>
+<script defer src="/rr-home-i18n-patch.js?v=2026102904"></script>
 </body>
 </html>
 
