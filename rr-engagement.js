@@ -9,6 +9,66 @@ card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAtt
 card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;max-width:600px';
 card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
 host.insertAdjacentElement('afterend',card);
+
+/* A-3: private anniversary memory; does not publish activity or auto-create video. */
+const anniversary=document.createElement('section');
+anniversary.id='rrYearAgoToday';
+anniversary.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;max-width:600px';
+anniversary.hidden=true;
+anniversary.innerHTML='<strong id="rrYearAgoTitle" style="color:#78eaff;font-size:16px"></strong><div id="rrYearAgoBody" role="status" aria-live="polite" style="font-size:14px;margin-top:6px"></div><button id="rrYearAgoReview" type="button" style="margin-top:10px;padding:8px 12px;border:1px solid #78eaff;border-radius:9px;background:#173c50;color:#fff;font-weight:bold"></button>';
+card.insertAdjacentElement('afterend',anniversary);
+let anniversaryState={loaded:false,items:[],date:'',error:false,loggedIn:false};
+function anniversaryDate(today){
+ const [y,m,d]=today.split('-').map(Number);
+ // Feb 29 has no exact anniversary in a non-leap year: use Feb 28.
+ const lastDay=new Date(y-1,m,0).getDate();
+ return [y-1,String(m).padStart(2,'0'),String(Math.min(d,lastDay)).padStart(2,'0')].join('-');
+}
+function renderAnniversary(){
+ const en=document.documentElement.lang==='en';
+ const title=document.getElementById('rrYearAgoTitle');
+ const body=document.getElementById('rrYearAgoBody');
+ const button=document.getElementById('rrYearAgoReview');
+ title.textContent=en?'📅 On this day last year':'📅 1年前の今日';
+ if(!anniversaryState.loaded) body.textContent=en?'Loading your memories…':'思い出を確認中…';
+ else if(anniversaryState.error) body.textContent=en?'Could not load past runs. Please try again later.':'過去のランを読み込めませんでした。後でもう一度お試しください。';
+ else if(!anniversaryState.items.length) body.textContent=en?'No run found for '+anniversaryState.date+'. Imported records may be incomplete.':'前年の'+anniversaryState.date+'のランは見つかりませんでした（未取り込みの可能性もあります）。';
+ else {
+  const km=anniversaryState.items.reduce((sum,r)=>sum+(Number.isFinite(Number(r.distance_km))?Math.max(0,Number(r.distance_km)):0),0);
+  body.textContent=(en?anniversaryState.date+' · '+anniversaryState.items.length+' runs · ':anniversaryState.date+' ・ '+anniversaryState.items.length+'回 ・ ')+km.toFixed(1)+' km';
+ }
+ button.textContent=en?'▶ Watch that month’s timelapse':'▶ あの月のタイムラプスを見る';
+ button.hidden=anniversaryState.error || !anniversaryState.items.length;
+}
+anniversary.querySelector('#rrYearAgoReview').addEventListener('click',()=>{
+ const panel=document.getElementById('timelapsePanel');
+ const monthInput=document.getElementById('timelapseReviewMonth');
+ const review=document.querySelector('.timelapseMonthlyReview');
+ if(!panel||!monthInput||!review)return;
+ panel.classList.add('isOpen');
+ panel.style.display='block';
+ monthInput.value=anniversaryState.date.slice(0,7);
+ monthInput.dispatchEvent(new Event('change',{bubbles:true}));
+ requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
+});
+async function refreshAnniversary(user,today){
+ if(!user){anniversary.hidden=true;anniversaryState={loaded:false,items:[],date:'',error:false,loggedIn:false};return;}
+ const target=anniversaryDate(today);
+ anniversary.hidden=false;
+ anniversaryState={loaded:false,items:[],date:target,error:false,loggedIn:true};
+ renderAnniversary();
+ try{
+  const {data,error}=await supabaseClient.from('runs').select('id,activity_date,distance_km')
+    .eq('user_id',user.id).is('deleted_at',null).eq('activity_date',target).limit(1000);
+  if(error)throw error;
+  if(anniversaryState.date!==target||!anniversaryState.loggedIn)return;
+  anniversaryState={loaded:true,items:data||[],date:target,error:false,loggedIn:true};
+ }catch(e){console.warn('Anniversary unavailable',e);anniversaryState={loaded:true,items:[],date:target,error:true,loggedIn:true};}
+ renderAnniversary();
+}
+window.addEventListener('rr-language-changed',renderAnniversary);
+new MutationObserver(renderAnniversary).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+
 card.style.cursor='pointer';
 function openMonthlyReview(){
  const panel=document.getElementById('timelapsePanel');
@@ -54,8 +114,9 @@ let previousTodayCount=null;let userId=null;
 async function refresh(){
  try{
   const {data:{user}}=await supabaseClient.auth.getUser();
-  if(!user){card.hidden=true;return;}card.hidden=false;userId=user.id;
+  if(!user){card.hidden=true;await refreshAnniversary(null,'');return;}card.hidden=false;userId=user.id;
   const today=day(),month=today.slice(0,7),start=month+'-01';
+  await refreshAnniversary(user,today);
   const {data:runs,error}=await supabaseClient.from('runs').select('id,activity_date,distance_km').eq('user_id',user.id).is('deleted_at',null).gte('activity_date',start).lte('activity_date',today).limit(1000);
   if(error)throw error;
   const distance=(runs||[]).reduce((a,r)=>a+Number(r.distance_km||0),0);
