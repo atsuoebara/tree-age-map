@@ -138,7 +138,6 @@
   }
   async function shareImage(){
     if(!lastData)return;
-    // Let the same-origin logo finish loading before rendering.
     if(!logoImage.complete){
       await new Promise(resolve=>{
         logoImage.addEventListener('load',resolve,{once:true});
@@ -146,18 +145,45 @@
         setTimeout(resolve,3000);
       });
     }
-    const canvas=routeImage(lastData);
+    const snapshot=lastData;
+    const canvas=routeImage(snapshot);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob)return;
-    const file=new File([blob],'runners-rings-monthly-'+lastData.current.month+'.png',{type:'image/png'});
-    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
-      try{await navigator.share({files:[file],title:'Runner’s Rings — Monthly Rings'});}
-      catch(e){if(e?.name!=='AbortError')console.warn('Monthly Rings share:',e);}
-      return;
-    }
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=file.name;a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    const file=new File([blob],'runners-rings-monthly-'+snapshot.current.month+'.png',{type:'image/png'});
+    const overlay=document.createElement('div');
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label',tr('年輪画像のプレビュー','Rings image preview'));
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(4,13,26,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;box-sizing:border-box';
+    const img=document.createElement('img');
+    img.src=url;img.alt=tr('保存する年輪画像','Rings image to be saved');
+    img.style.cssText='display:block;max-width:100%;max-height:calc(100dvh - 170px);object-fit:contain;border-radius:12px';
+    const actions=document.createElement('div');
+    actions.style.cssText='display:flex;flex-wrap:wrap;justify-content:center;gap:10px';
+    function action(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.style.cssText='padding:11px 16px;border-radius:9px;border:1px solid #78eaff;background:#17374b;color:white;font-weight:700';b.onclick=fn;actions.append(b);return b}
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    let closed=false;
+    function close(){if(closed)return;closed=true;overlay.remove();document.body.style.overflow=previousOverflow;document.removeEventListener('keydown',onKey);URL.revokeObjectURL(url)}
+    function onKey(e){if(e.key==='Escape')close()}
+    action(tr('画像を保存','Save image'),()=>{const a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove()});
+    action(tr('共有する','Share'),async()=>{
+      if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+        try{await navigator.share({files:[file],title:'Runner’s Rings — Monthly Rings'});}
+        catch(e){if(e?.name!=='AbortError')console.warn('Monthly Rings share:',e)}
+      }else{
+        const a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();
+      }
+    });
+    action(tr('閉じる','Close'),close);
+    const note=document.createElement('p');note.textContent=tr('この画像にはGPS軌跡は含まれません。','GPS routes are not included in this image.');
+    note.style.cssText='color:#bbd4e0;text-align:center;font-size:12px;margin:0';
+    overlay.append(img,actions,note);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
+    document.addEventListener('keydown',onKey);
+    document.body.append(overlay);
+    actions.querySelector('button')?.focus();
   }
   function render(){
     if(!input.value){const today=new Date();input.value=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');}
