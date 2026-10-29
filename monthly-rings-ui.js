@@ -67,67 +67,85 @@
     // Use extrema so no selected route is cropped by percentile trimming.
     return {minLat:lat[0],maxLat:lat[lat.length-1],minLng:lng[0],maxLng:lng[lng.length-1]};
   }
-  function routeImage(data) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1080; canvas.height = 1350;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#122538';ctx.fillRect(0,0,1080,1350);
-    ctx.fillStyle = '#f2f8fc';ctx.font = 'bold 54px sans-serif';ctx.fillText(tr('今月の年輪','Monthly Rings'),64,92);
-    ctx.font='34px sans-serif';ctx.fillText(label(data.current.month),64,148);
-    ctx.fillStyle='#1B364B';ctx.fillRect(44,194,992,858);
-    // Subtle growth-ring watermark, drawn beneath all running routes.
-    ctx.save();
-    ctx.beginPath();ctx.rect(44,194,992,858);ctx.clip();
-    ctx.strokeStyle='#7FB2D9';ctx.globalAlpha=.06;ctx.lineWidth=12;
-    const ringX=44+992*.85,ringY=194+858*.90;
-    for(let i=0;i<8;i++){
-      ctx.beginPath();ctx.arc(ringX,ringY,120+i*90,0,Math.PI*2);ctx.stroke();
-    }
-    ctx.restore();
-    const all = data.series.flatMap(item => item.routes.flat()).filter(a=>a.length===2);
-    if(all.length){
-      const view=routeViewport(data,'focus');
-      const {minLat,maxLat,minLng,maxLng}=view;
-      const scaleLng=Math.max(.05,Math.cos((minLat+maxLat)*Math.PI/360));
-      const dx=Math.max((maxLng-minLng)*scaleLng,.0002);
-      const dy=Math.max(maxLat-minLat,.0002);
-      // Keep the main network centered in the 992×858 map window.
-      // Keep at least 64px on all sides, including stroke width.
-      const scale=Math.min(864/dx,730/dy);
-      const cx=(minLng+maxLng)/2,cy=(minLat+maxLat)/2;
-      const project=p=>[540+(p[1]-cx)*scaleLng*scale,623-(p[0]-cy)*scale];
-      ctx.save();
-      ctx.beginPath();ctx.rect(44,194,992,858);ctx.clip();
-      for (const series of data.series.slice().reverse()){
-        ctx.strokeStyle=palette[series.key];ctx.lineWidth=series.key==='current'?6:4;ctx.globalAlpha=series.key==='current'?1:.65;
-        for(const route of series.routes) {
-          if(route.length<2)continue;
-          ctx.beginPath();route.forEach((p,i)=>{const [x,y]=project(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
-        }
-      }
+  // The in-app map remains unchanged. The saved image deliberately uses
+  // three copies of the SAME brand emblem, sized by distance (area scale).
+  const logoImage = new Image();
+  logoImage.src = './icon.PNG';
+  function drawEmblemFallback(ctx,cx,cy,r){
+    // Graceful fallback if the site's logo file is unavailable.
+    const gradient=ctx.createLinearGradient(cx-r,cy,cx+r,cy);
+    gradient.addColorStop(0,'#ff087d');gradient.addColorStop(.55,'#ff598e');gradient.addColorStop(1,'#ffe800');
+    ctx.strokeStyle=gradient;ctx.lineWidth=Math.max(5,r*.085);ctx.lineCap='round';
+    for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(cx,cy,r*(.95-i*.25),-.25,Math.PI*1.59);ctx.stroke();}
+    ctx.font='bold '+Math.round(r*.82)+'px sans-serif';
+    ctx.fillStyle=gradient;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('R',cx,cy+5);
+  }
+  function drawEmblem(ctx,cx,cy,r){
+    if(logoImage.complete&&logoImage.naturalWidth>0){
+      // The top emblem occupies the upper ~70% of the supplied square icon;
+      // omit its Runner's Rings wordmark to keep three comparisons uncluttered.
+      const w=logoImage.naturalWidth,h=logoImage.naturalHeight;
+      const sx=w*.17,sy=h*.025,sw=w*.66,sh=h*.665;
+      ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+      ctx.drawImage(logoImage,sx,sy,sw,sh,cx-r,cy-r,2*r,2*r);
       ctx.restore();
-      ctx.globalAlpha=1;
-    } else {
-      ctx.fillStyle='#d5e7f0';ctx.font='32px sans-serif';ctx.textAlign='center';
-      ctx.fillText(tr('GPS軌跡はありません','No GPS routes'),540,650);ctx.textAlign='left';
-    }
-    ctx.font='bold 31px sans-serif';
-    data.series.forEach((item,i)=>{
-      const y=1105+i*55;ctx.fillStyle=palette[item.key];ctx.fillRect(64,y-25,24,24);
-      ctx.fillStyle='#f2f8fc';
-      ctx.fillText(label(item.month)+'   '+item.runCount+' '+tr('回','runs')+'   '+km(item.distanceKm)+' km',106,y);
+    }else drawEmblemFallback(ctx,cx,cy,r);
+  }
+  function routeImage(data) {
+    const canvas=document.createElement('canvas');
+    canvas.width=1080;canvas.height=1350;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#122438';ctx.fillRect(0,0,1080,1350);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#f2f8fc';ctx.font='bold 54px sans-serif';
+    ctx.fillText(tr('今月の年輪','Monthly Rings'),64,92);
+    ctx.font='28px sans-serif';ctx.fillStyle='#b5d2e1';
+    ctx.fillText(tr('走った距離が、年輪の大きさになる。','Each ring grows with the distance you run.'),64,143);
+    const periods=[
+      {item:data.current,title:tr('今月','This month')},
+      {item:data.previous,title:tr('先月','Last month')},
+      {item:data.priorYear,title:tr('前年同月','Same month last year')}
+    ];
+    const maxDistance=Math.max(1,...periods.map(p=>Number(p.item.distanceKm)||0));
+    const centers=[192,540,888];
+    const baseR=139;
+    periods.forEach((period,i)=>{
+      const item=period.item,amount=Math.max(0,Number(item.distanceKm)||0);
+      // Area proportional: radius proportional to sqrt(distance / max).
+      const radius=amount>0?Math.max(28,baseR*Math.sqrt(amount/maxDistance)):28;
+      const x=centers[i],y=460;
+      drawEmblem(ctx,x,y,radius);
+      ctx.textAlign='center';ctx.fillStyle='#eff8fd';
+      ctx.font='bold 31px sans-serif';ctx.fillText(period.title,x,674);
+      ctx.fillStyle='#b5d2e1';ctx.font='26px sans-serif';ctx.fillText(label(item.month),x,716);
+      ctx.fillStyle='#fff';ctx.font='bold 38px sans-serif';ctx.fillText(km(amount)+' km',x,785);
+      ctx.fillStyle='#b5d2e1';ctx.font='28px sans-serif';ctx.fillText(item.runCount+' '+tr('回','runs'),x,832);
     });
-    ctx.font='28px sans-serif';ctx.fillStyle='#9fbbcb';ctx.fillText('Runner’s Rings  |  runnersrings.com',64,1310);
+    ctx.strokeStyle='#39566a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(64,938);ctx.lineTo(1016,938);ctx.stroke();
+    ctx.textAlign='center';ctx.fillStyle='#e8f8ff';ctx.font='bold 35px sans-serif';
+    ctx.fillText(tr('3つの期間、走った努力を比較','Compare your running across three periods'),540,1026);
+    ctx.fillStyle='#a9c5d5';ctx.font='25px sans-serif';
+    ctx.fillText(tr('年輪の面積は走行距離に比例します','Ring area is proportional to running distance'),540,1086);
+    ctx.textAlign='left';ctx.fillStyle='#a9c5d5';ctx.font='28px sans-serif';
+    ctx.fillText('Runner’s Rings  |  runnersrings.com',64,1305);
     return canvas;
   }
   async function shareImage(){
     if(!lastData)return;
+    // Let the same-origin logo finish loading before rendering.
+    if(!logoImage.complete){
+      await new Promise(resolve=>{
+        logoImage.addEventListener('load',resolve,{once:true});
+        logoImage.addEventListener('error',resolve,{once:true});
+        setTimeout(resolve,3000);
+      });
+    }
     const canvas=routeImage(lastData);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob)return;
-    const file=new File([blob], 'runners-rings-monthly-'+lastData.current.month+'.png',{type:'image/png'});
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-      try {await navigator.share({files:[file],title:'Runner’s Rings — Monthly Rings'});}
+    const file=new File([blob],'runners-rings-monthly-'+lastData.current.month+'.png',{type:'image/png'});
+    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+      try{await navigator.share({files:[file],title:'Runner’s Rings — Monthly Rings'});}
       catch(e){if(e?.name!=='AbortError')console.warn('Monthly Rings share:',e);}
       return;
     }
