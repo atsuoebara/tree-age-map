@@ -104,8 +104,7 @@ const pairs=[
   ['COROSから取り込む','Import from COROS'],
   ['Intervalsと連携','Connect Intervals'],
   ['ランを追加','Add a run'],
-  ['今月','This month'],['今日','Today'],
-  ['地域','regions'],['本',' runs'],['人',' people'],
+  ['今月 38本','38 runs this month'],
 ].sort((a,b)=>b[0].length-a[0].length);
 const originals=new WeakMap(), lastEnglish=new WeakMap();
 const originalAttrs=new WeakMap(), lastEnglishAttrs=new WeakMap();
