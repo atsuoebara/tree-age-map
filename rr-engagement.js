@@ -95,6 +95,9 @@ function openMonthlyRings(){
  if(!panel||!monthInput)return;
  panel.classList.add('isOpen');
  panel.style.display='block';
+ // This entry also opens the video settings panel: never retain area mode.
+ const mode=document.getElementById('timelapseMode');
+ if(mode)mode.value='route';
  monthInput.value=day().slice(0,7);
  monthInput.dispatchEvent(new Event('change',{bubbles:true}));
  window.dispatchEvent(new Event('rr-open-monthly-rings'));
