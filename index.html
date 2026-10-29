@@ -8480,75 +8480,29 @@ function collectCoordinates(
 function getFeatureBBox(
   feature
 ) {
+  // C-1: compute bounds in one traversal without allocating an
+  // intermediate array containing every GeoJSON coordinate.
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
 
-  const points =
-    [];
-
-
-  collectCoordinates(
-    feature.geometry.coordinates,
-    points
-  );
-
-
-  let minLon =
-    Infinity;
-
-  let minLat =
-    Infinity;
-
-  let maxLon =
-    -Infinity;
-
-  let maxLat =
-    -Infinity;
-
-
-  points.forEach(
-    (
-      [
-        lon,
-        lat
-      ]
-    ) => {
-
-      minLon =
-        Math.min(
-          minLon,
-          lon
-        );
-
-      minLat =
-        Math.min(
-          minLat,
-          lat
-        );
-
-      maxLon =
-        Math.max(
-          maxLon,
-          lon
-        );
-
-      maxLat =
-        Math.max(
-          maxLat,
-          lat
-        );
-
+  function visit(coords) {
+    if (typeof coords[0] === 'number') {
+      const lon = coords[0];
+      const lat = coords[1];
+      minLon = Math.min(minLon, lon);
+      minLat = Math.min(minLat, lat);
+      maxLon = Math.max(maxLon, lon);
+      maxLat = Math.max(maxLat, lat);
+      return;
     }
-  );
+    coords.forEach(visit);
+  }
 
-
-  return {
-    minLon,
-    minLat,
-    maxLon,
-    maxLat
-  };
-
+  visit(feature.geometry.coordinates);
+  return { minLon, minLat, maxLon, maxLat };
 }
-
 
 /* =====================================
    都道府県・市町村
