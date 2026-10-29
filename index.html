@@ -29346,6 +29346,8 @@ function finishLaunchSplash() {
 
 
 init().finally(() => {
+  window.rrHomeStartupReady = true;
+  window.dispatchEvent(new Event('rr-home-startup-ready'));
   finishLaunchSplash();
   if (rrUiLanguage === 'en') {
     try {
