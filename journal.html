@@ -335,6 +335,8 @@ applyLanguage(savedLanguage);
   const oldCards = {};
   let published = [];
   let failed = false;
+  // Keep pagination inactive until the initial published-article fetch settles.
+  let loading = true;
   let page = 0;
   let categoryFilter = new URLSearchParams(location.search).get("category") || "all";
   let sortOrder = "new";
@@ -464,30 +466,30 @@ applyLanguage(savedLanguage);
       section.querySelectorAll(".journalFilters select")[1].value=sortOrder;
       items.forEach(item=>item.node.remove());
       const total = Math.max(1,Math.ceil(filtered.length / PAGE_SIZE));
-      page = Math.min(page,total-1);
+      page = Math.max(0,Math.min(page,total-1));
       const anchor = section.querySelector('.lead');
       const visible=filtered.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
       let previous=section.querySelector(".journalFilters");
       if(filtered.length===0){const empty=textElement("p","journalEmpty",lang==="ja"?"該当する記事はまだありません。":"No articles in this category yet.");previous.after(empty);previous=empty;}
       visible.forEach(item=>{previous.after(item.node);const controls=makeShareRow(item.href,item.title,lang,item.image);item.node.after(controls);previous=controls;});
-      const notice=textElement('p','listNotice', failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
-      if(failed) previous.after(notice);
+      const notice=textElement('p','listNotice', loading ? (lang==='ja'?'新着記事を読み込み中です…':'Loading recent articles…') : failed ? (lang==='ja'?'新着記事の取得に失敗しました。現在、既存記事のみを表示しています。':'New articles could not be loaded. Existing articles are shown.') : '');
+      if(loading || failed) { previous.after(notice); previous=notice; }
       const nav=document.createElement('div');nav.className='pageButtons';
-      const prev=textElement('button','',lang==='ja'?'前へ':'Previous');prev.type='button';prev.disabled=page===0;
+      const prev=textElement('button','',lang==='ja'?'前へ':'Previous');prev.type='button';prev.disabled=loading||page===0;
       prev.addEventListener('click',()=>{page--;render();section.scrollIntoView({behavior:'smooth'});});
       const indicator=textElement('span','',`${page+1} / ${total}`);
-      const next=textElement('button','',lang==='ja'?'次へ':'Next');next.type='button';next.disabled=page>=total-1;
+      const next=textElement('button','',lang==='ja'?'次へ':'Next');next.type='button';next.disabled=loading||page>=total-1;
       next.addEventListener('click',()=>{page++;render();section.scrollIntoView({behavior:'smooth'});});
       nav.append(prev,indicator,next);previous.after(nav);
     }
   }
   render();
-  if(!window.supabase){failed=true;render();return;}
+  if(!window.supabase){failed=true;loading=false;render();return;}
   const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
   db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,image_url,category,published_at,status')
     .eq('status','published').order('published_at',{ascending:false}).limit(200)
-    .then(({data,error})=>{ if(error){failed=true;console.error(error);} else {published=data||[];} render(); })
-    .catch(error=>{failed=true;console.error(error);render();});
+    .then(({data,error})=>{ if(error){failed=true;console.error(error);} else {published=data||[];} loading=false;page=0;render(); })
+    .catch(error=>{failed=true;console.error(error);loading=false;page=0;render();});
 })();
 </script>
 <script defer src="/rr-ondevice-translate.js"></script>
