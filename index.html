@@ -1134,6 +1134,11 @@
       background:rgba(234,255,0,.045);
     }
 
+    /* iOS Safari: avoid overlapping native month/date glyph layers while keeping the native picker tappable. */
+    .rrReviewMonthPicker{position:relative;width:100%;min-width:0;}
+    .rrReviewMonthPicker #timelapseReviewMonth{position:relative;z-index:2;width:100%;min-width:0;min-height:44px;box-sizing:border-box;opacity:0;cursor:pointer;}
+    .rrReviewMonthPicker #rrReviewMonthText{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0f1d2f;color:white;font-size:16px;font-weight:700;pointer-events:none;}
+    .rrReviewMonthPicker:focus-within #rrReviewMonthText{outline:2px solid #78eaff;outline-offset:1px;}
     .timelapseMonthlyReviewLead{
       grid-column:1 / -1;
       margin:0;
@@ -3750,7 +3755,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <p class="timelapseMonthlyReviewLead">月の振り返り動画は、ランニング1回ごとにコースを積み上げ、その回のコースを強調します。同じ日に複数回走った場合も、走った回数分だけ場面が続きます。地図は各コースの範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。</p>
       <div class="timelapseField">
         <label for="timelapseReviewMonth">振り返る月</label>
-        <input id="timelapseReviewMonth" type="month">
+        <div class="rrReviewMonthPicker"><input id="timelapseReviewMonth" type="month" aria-label="振り返る月"><span id="rrReviewMonthText" aria-hidden="true"></span></div>
       </div>
       <button id="timelapseMonthlyReviewButton" type="button">📅 月の振り返り動画を作る</button>
     </div>
@@ -29686,6 +29691,25 @@ updateScrollToTopButton();
     .catch(()=>{grid.innerHTML=original;});
   new MutationObserver(m=>{if(posts && m.some(x=>x.attributeName==='lang'))render();})
     .observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+})();
+</script>
+<script>
+/* Stable visible month label for Safari; actual type=month input stays interactive. */
+(function(){
+ const input=document.getElementById('timelapseReviewMonth');
+ const label=document.getElementById('rrReviewMonthText');
+ if(!input||!label)return;
+ function update(){
+  const match=/^(\d{4})-(\d{2})$/.exec(input.value||'');
+  const en=document.documentElement.lang==='en';
+  label.textContent=match?(en?match[1]+'-'+match[2]:match[1]+'年'+Number(match[2])+'月'):(en?'Choose a month':'月を選択');
+ }
+ input.addEventListener('change',update);
+ input.addEventListener('input',update);
+ new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ window.addEventListener('rr-language-changed',update);
+ requestAnimationFrame(update);
+ window.addEventListener('load',update,{once:true});
 })();
 </script>
 <script defer src="/monthly-rings-core.js?v=20261028-01"></script>
