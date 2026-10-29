@@ -4012,7 +4012,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.29.11'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.29.12'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -28441,6 +28441,43 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+  // Consolidated former supplemental translations (audited build .11).
+  ["毎週走る家の近くの道、旅先で初めて通った街、大会で挑戦したコース。ランニングの記録は距離やペースだけではありません。Runner's Ringsは走ったルートを地図に重ね、年月とともに広がる自分だけの足跡を残すためのアプリです。何度も走った道も、初めて走った道も、後から振り返ると違った意味を持ちます。","Your familiar neighborhood routes, new streets explored while traveling, and courses tackled on race day are more than pace and distance. Runner's Rings brings those routes onto one map to preserve a journey that grows over time."],
+  ["いつもの練習場所がどれだけ広がったか見たいランナーは、年・月別の地図で変化を確認できます。旅行や大会で訪れた地域を残したい人は、走破した場所を地図で振り返れます。長く走り続けている人なら、過去の記録を取り込み、何年にもわたるランニングの積み重ねを一枚の地図で見ることができます。","Compare your running maps by year or month, revisit regions explored during travel and races, or import older activities to see years of running history on one map."],
+  ["で表示を確認してください。利用を始めたら、対応サービスとの連携やGPX・FITなどのファイル取り込みで自分のランを地図に表示できます。個人の走行ルートや記録は、本人が共有操作をしない限り一般公開しない設計です。"," to see the app. Then connect a supported service or import GPX/FIT files to map your runs. Your routes remain private unless you explicitly share them. "],
+  ["都道府県や国の走破状況を、地域だけを切り出した専用画像で共有。走破した地域はRunner's Ringsカラーで表示されます。","Share images showing the countries or prefectures you have explored."],
+  ["に追加されます。ニュースの紹介だけでなく、機能を作った理由、修正の経緯、実際のランニング体験も公開しています。"," as they are published, including development decisions, improvements and running experiences."],
+  ["Strava、Intervals.icu、COROS、FIT・GPX・TCX・ZIPなどから取り込めます。","Import runs from Strava, Intervals.icu, COROS or FIT, GPX, TCX and ZIP files."],
+  ["※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。","Calculated from running activities actually imported into Runner’s Rings."],
+  ["※Runner's Ringsへ実際に取り込まれたランニングデータをもとに集計します。","Calculated from running activities actually imported into Runner's Rings."],
+  ["🌍 Rings Ranking｜世界のランナーの記録を見る →","🌍 Rings Ranking | Explore runners worldwide →"],
+  ["🗾 Rings Territory｜市町村ごとの順位を見る →","🗾 Rings Territory | Explore local rankings →"],
+  ["🔒 距離・ラン数・地図は、登録した本人だけに表示されます。","🔒 Your distance, activity count and personal map are private to your account."],
+  ["Log inすると、 あなたのランニングマップを表示します。","Log in to view your running map."],
+  ["Log inすると、あなたのランニングマップを表示します。","Log in to view your running map."],
+  ["Runner's RingsのHow to Useと価値","How Runner's Rings works and why it matters"],
+  ["Intervals.icu 初期登録＋データ連携ガイド","Intervals.icu sign-up and sync guide"],
+  ["Runner's Rings（ランナーズリングス）は、","Runner's Rings is"],
+  ["機能をつくった理由、失敗と修正、ランニングの実体験を","Explore why features were built, what was fixed, and first-hand running stories in "],
+  ["各ランの全距離をスタート地点の国に集計しています。","Each run is counted toward the country where it began."],
+  ["Runner's Ringsの使い方と価値","How Runner's Rings works and why it matters"],
+  ["あなたのランニングマップを表示します。","view your running map."],
+  ["🗺️ あなたの走った地図は、ここから","🗺️ Your running map starts here"],
+  ["Journalでは開発の過程も公開中。","Read about the development journey in Rings Journal."],
+  ["走った道を、年輪として残す理由","Why preserve your running routes as growth rings?"],
+  ["前回のデータを表示しています…","Showing your previous data…"],
+  ["FIT・GPX・TCX・ZIP","FIT / GPX / TCX / ZIP"],
+  ["走った歴史を、一枚の地図に。","Your running history on one map"],
+  ["世界のランナーの記録を見る","Explore runners around the world"],
+  ["Passwordを忘れた方","Forgot your password?"],
+  ["現在のデータ取り込み割合","Current import method distribution"],
+  ["最新の記事は公開のたびに","New stories are added to the "],
+  ["Intervalsと連携","Connect Intervals"],
+  ["市町村ごとの順位を見る","Explore local rankings"],
+  ["どんな人が、どう使う？","Who is it for, and how can you use it?"],
+  ["始め方とプライバシー","Getting started and privacy"],
+  ["登録不要のサンプル","sample without registration"],
+
   ["🌈 Rainbowの見方（走行回数と色）","🌈 How Rainbow works (run counts and colors)"],
   ["同じ道を走る回数が10回増えるごとに、虹の色が1本ずつ増えます。","Each additional 10 runs along the same road adds another rainbow color."],
   ["1〜9回：薄い赤","1–9 runs: light red"],
