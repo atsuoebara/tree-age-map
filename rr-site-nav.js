@@ -86,9 +86,13 @@ for(const [code,label] of [['ja','日本語'],['en','EN']]){
       if(applied!==true)console.warn('English live translation unavailable; reload intentionally suppressed');
     }catch(error){console.error('English live translation failed; reload suppressed',error);}
   } else {
-    // Keep Japanese switching local as well until authenticated reload is safe.
+    // Restore translated copy in reverse order; never reload the authenticated page.
+    try{
+      window.rrRestoreSupplementalJapanese?.();
+      const restored=window.rrRestoreJapaneseWithoutReload?.();
+      if(restored!==true)console.warn('Japanese live restore not available');
+    }catch(error){console.error('Japanese live restore failed',error);}
     document.documentElement.lang='ja';
-    console.info('Japanese preference saved; no automatic reload');
   }
   update();
   updateFooter();
