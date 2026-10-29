@@ -9,7 +9,26 @@
   container.id = 'monthlyRingsCard';
   container.setAttribute('aria-live','polite');
   container.style.cssText='margin:12px 0;padding:14px;background:#122538;color:#f2f8fc;border:1px solid #78eaff;border-radius:14px;min-width:0';
-  host.insertAdjacentElement('afterend',container);
+  const disclosure=document.createElement('details');
+  disclosure.id='monthlyRingsDisclosure';
+  disclosure.style.cssText='margin:12px 0;border:1px solid #78eaff;border-radius:14px;background:#122538;color:#f2f8fc;min-width:0;overflow:hidden';
+  const summary=document.createElement('summary');
+  summary.style.cssText='padding:14px;color:#78eaff;font-size:16px;font-weight:800;cursor:pointer;line-height:1.6';
+  disclosure.append(summary,container);
+  container.style.margin='0';
+  container.style.border='0';
+  container.style.borderTop='1px solid #395870';
+  host.insertAdjacentElement('afterend',disclosure);
+  function updateDisclosureLabel(){
+    const value=input.value;
+    const [year,month]=(value||'').split('-');
+    const localized=value?(document.documentElement.lang==='en'?value:year+'年'+Number(month)+'月'):'';
+    summary.textContent=(document.documentElement.lang==='en'?'🌱 View monthly growth rings comparison':'🌱 月別の年輪比較を見る')+(localized?' — '+localized:'');
+  }
+  input.addEventListener('change',updateDisclosureLabel);
+  window.addEventListener('rr-language-changed',updateDisclosureLabel);
+  new MutationObserver(updateDisclosureLabel).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+  updateDisclosureLabel();
   let previewMap = null;
   let routeGroup = null;
   let lastData = null;
@@ -194,6 +213,8 @@
       data.series=Core.series(activities,input.value);
     } catch(e) {console.warn('Monthly Rings:',e);return;}
     lastData=data;
+    updateDisclosureLabel();
+    if(!disclosure.open)return;
     const totals=rows(data);
     container.innerHTML=
       '<h3 style="font-size:19px;margin:0 0 8px;color:#78eaff">🌱 '+tr('月別の年輪比較','Monthly Rings Comparison')+' — '+safe(label(input.value))+'</h3>'+
@@ -228,6 +249,10 @@
     } else previewMap.setView([36,139],4,{animate:false});
     requestAnimationFrame(()=>previewMap?.invalidateSize());
   }
+  disclosure.addEventListener('toggle',()=>{
+    if(disclosure.open){render();}
+    else if(previewMap){previewMap.remove();previewMap=null;routeGroup=null;}
+  });
   // Activity imports are asynchronous. Reconcile cards rendered before data arrived.
   // Do not treat a temporary empty activities array as a completed 0-run month.
   let lastActivityCount = -1;
