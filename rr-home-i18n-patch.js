@@ -175,7 +175,13 @@ function schedule(){
   setTimeout(()=>{scheduled=false;scan();},0);
 }
 // Exposed to the existing EN button, without refreshing or disturbing login state.
-window.rrApplyEnglishWithoutReload=()=>scan();
+const originalLiveEnglish=window.rrApplyEnglishWithoutReload;
+window.rrApplyEnglishWithoutReload=()=>{
+  // Preserve the app's full dictionary and authenticated UI hooks.
+  const applied=typeof originalLiveEnglish==='function' ? originalLiveEnglish() : false;
+  const supplemental=scan();
+  return applied===true || supplemental===true;
+};
 scan();
 new MutationObserver(schedule).observe(document.documentElement,{
   attributes:true,attributeFilter:['lang'],childList:true,characterData:true,subtree:true
