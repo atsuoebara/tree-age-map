@@ -174,6 +174,8 @@ function schedule(){
   scheduled=true;
   setTimeout(()=>{scheduled=false;scan();},0);
 }
+// Restore supplemental translations before the main app restores Japanese.
+window.rrRestoreSupplementalJapanese=()=>scan();
 // Exposed to the existing EN button, without refreshing or disturbing login state.
 const originalLiveEnglish=window.rrApplyEnglishWithoutReload;
 window.rrApplyEnglishWithoutReload=()=>{
