@@ -220,18 +220,23 @@ async function shareTodayImage(downloadOnly){
 document.getElementById('shareImageBtn').onclick=()=>shareTodayImage(false);
 document.getElementById('saveImageBtn').onclick=()=>shareTodayImage(true);
 
+let todayLoadRequest=0,todayLoadController=null;
 async function load(){
+  const request=++todayLoadRequest;
+  if(todayLoadController)todayLoadController.abort();
+  const controller=new AbortController();todayLoadController=controller;
+  const deadline=setTimeout(()=>controller.abort(),15000);
   todayShareLoaded=false;todayShareRows=[];fillShareAreas();shareStatus.textContent='';
   updateDateButton();renderDateLabel();updateArrowState();document.getElementById('regionList').innerHTML='<div class="empty">Loading…</div>';
   try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_rings_today`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({target_date:dateInput.value})});
-    if(!res.ok)throw new Error(await res.text());const rows=await res.json();todayShareRows=rows;todayShareLoaded=true;fillShareAreas();
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_rings_today`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({target_date:dateInput.value}),signal:controller.signal});
+    if(!res.ok)throw new Error(await res.text());const rows=await res.json();if(request!==todayLoadRequest)return;todayShareRows=rows;todayShareLoaded=true;fillShareAreas();
     const totalRunners=rows.reduce((s,r)=>s+Number(r.runner_count||0),0),totalKm=rows.reduce((s,r)=>s+Number(r.distance_km||0),0);
     document.getElementById('regionCount').textContent=rows.length.toLocaleString();document.getElementById('runnerCount').textContent=totalRunners.toLocaleString();document.getElementById('distanceTotal').textContent=`${totalKm.toFixed(1)} km`;
     const list=document.getElementById('regionList');
     if(!rows.length){list.innerHTML=`<div class="empty">${lang==='ja'?'この日の地域集計はまだありません。':'No regional activity is available for this date yet.'}</div>`;return;}
     list.innerHTML=rows.map(r=>`<div class="regionRow"><div><div class="regionName">${escapeHtml(regionLabel(r))}</div><div class="regionSub">${escapeHtml(countryLabel(r.country_code))}</div></div><div class="regionNums"><strong>${Number(r.runner_count).toLocaleString()}${lang==='ja'?'人':' runners'}</strong><small>${Number(r.distance_km).toFixed(1)} km</small></div></div>`).join('');
-  }catch(e){console.error(e);document.getElementById('regionList').innerHTML=`<div class="error">${lang==='ja'?'読み込みに失敗しました。時間をおいてもう一度お試しください。':'Could not load Rings Today. Please try again later.'}</div>`;}
+  }catch(e){if(request!==todayLoadRequest)return;console.error(e);const list=document.getElementById('regionList');list.replaceChildren();const message=document.createElement('div');message.className='error';message.textContent=lang==='ja'?'読み込みに失敗しました。もう一度お試しください。':'Could not load Rings Today. Please try again.';const retry=document.createElement('button');retry.type='button';retry.textContent=lang==='ja'?'再試行':'Retry';retry.onclick=load;list.append(message,retry);}finally{clearTimeout(deadline);if(todayLoadController===controller)todayLoadController=null;}
 }
 fillYears();fillMonths();updateDateButton();let savedLang='ja';try{savedLang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja'}catch(_){}setLang(savedLang);
 </script>
