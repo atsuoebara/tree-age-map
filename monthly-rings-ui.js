@@ -114,7 +114,13 @@
       // Area proportional: radius proportional to sqrt(distance / max).
       const radius=amount>0?Math.max(28,baseR*Math.sqrt(amount/maxDistance)):28;
       const x=centers[i],y=460;
-      drawEmblem(ctx,x,y,radius);
+      if(amount===0){
+        // No running in this period: show an empty, neutral ring, not a branded
+        // full-color achievement. This is a visual placeholder, not a distance scale.
+        ctx.save();ctx.strokeStyle='#6b8294';ctx.lineWidth=5;ctx.setLineDash([9,9]);
+        ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }else drawEmblem(ctx,x,y,radius);
       ctx.textAlign='center';ctx.fillStyle=['#78EAFF','#EAFF00','#FF76BC'][i];
       ctx.font='bold 31px sans-serif';ctx.fillText(period.title,x,674);
       ctx.fillStyle='#b5d2e1';ctx.font='26px sans-serif';ctx.fillText(label(item.month),x,716);
@@ -174,7 +180,7 @@
       tr('前年同月との差','Vs. last year')+tr('：',': ')+(data.priorYearDelta.runs>0?'+':'')+data.priorYearDelta.runs+' '+tr('回','runs')+' / '+signed(data.priorYearDelta.km)+' km</p>'+
       (data.current.runCount===0?'<p>'+tr('この月はまだ走っていません。','No runs recorded for this month.')+'</p>':'')+
       '<button id="monthlyRingsShare" type="button" style="background:#78eaff;color:#102332;border:0;border-radius:8px;padding:10px 15px;font-weight:800;cursor:pointer">'+tr('年輪画像を保存・共有','Save or share rings image')+'</button>'+
-      '<p style="font-size:11px;color:#a6bfd0;margin:9px 0 0">'+tr('画像にはGPS軌跡が含まれます。公開先を確認してから共有してください。','The image contains GPS routes. Review the destination before sharing.')+'</p>';
+      '<p style="font-size:11px;color:#a6bfd0;margin:9px 0 0">'+tr('共有画像にはGPS軌跡は含まれません。期間・距離・回数が表示されます。','The shared image contains no GPS routes; it shows periods, distances and run counts.')+'</p>';
     container.querySelector('#monthlyRingsShare')?.addEventListener('click',shareImage);
     container.querySelector('#monthlyRingsFocus')?.addEventListener('click',()=>{mapScope='focus';render();});
     container.querySelector('#monthlyRingsAll')?.addEventListener('click',()=>{mapScope='all';render();});
