@@ -29212,28 +29212,9 @@ window.rrApplyEnglishWithoutReload = function() {
   document.documentElement.lang = 'en';
   document.title = "Runner's Rings | Map the life you ran";
   // Translate both the public and authenticated UI already on screen.
-  // Resilient live translation for Safari: translate the actual text nodes with
-  // the same dictionary used at initial page load, without relying on TreeWalker.
+  // Use the same reversible translator as initial page load.
   try {
-    const stack=[document.body];
-    while(stack.length){
-      const node=stack.pop();
-      if(!node)continue;
-      if(node.nodeType===3){
-        const previous=node.nodeValue;
-        const next=translateUiText(previous);
-        if(next!==previous)node.nodeValue=next;
-        continue;
-      }
-      if(node.nodeType!==1 || /^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/.test(node.tagName))continue;
-      for(const attr of ['placeholder','aria-label','title','alt']){
-        if(node.hasAttribute?.(attr)){
-          const original=node.getAttribute(attr),translated=translateUiText(original);
-          if(original!==translated)node.setAttribute(attr,translated);
-        }
-      }
-      for(let j=node.childNodes.length-1;j>=0;j--)stack.push(node.childNodes[j]);
-    }
+    translateUiNode(document.body);
     rrEnableLiveEnglishTranslation();
   } catch(error) {
     console.error('English UI translation failed:',error);
