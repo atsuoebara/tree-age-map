@@ -3743,7 +3743,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <label for="timelapseMode">表示</label>
         <select id="timelapseMode">
           <option value="area">面</option>
-          <option value="route">コース</option>
+          <option value="route" selected>コース</option>
         </select>
       </div>
     </div>
@@ -24696,6 +24696,11 @@ const timelapseMode =
     'timelapseMode'
   );
 
+// Only a deliberate change by the visitor overrides the course-first default.
+timelapseMode?.addEventListener('change', () => {
+  timelapseMode.dataset.userChosen = '1';
+});
+
 const timelapseCloseButton =
   document.getElementById(
     'timelapseCloseButton'
@@ -24937,23 +24942,10 @@ function syncTimelapseDefaults() {
       defaultEndValue;
   }
 
-  if (
-    mapViewMode === 'route'
-  ) {
-    timelapseMode.value =
-      'route';
-  }
-  else if (
-    mapViewMode === 'area'
-  ) {
-    timelapseMode.value =
-      'area';
-  }
-  else {
-    timelapseMode.value =
-      map.getZoom() >= 12
-        ? 'route'
-        : 'area';
+  // Default to routes for videos, independently of the main map's display mode.
+  // Keep the visitor's explicit choice for subsequent opens in this page.
+  if (timelapseMode.dataset.userChosen !== '1') {
+    timelapseMode.value = 'route';
   }
 
   return true;
