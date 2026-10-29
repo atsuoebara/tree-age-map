@@ -1,0 +1,433 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="走った努力を年輪として可視化したい。そんな思いから始まったRunner’s Ringsの新機能「今月の年輪」。開発中には、英語に切り替わらない、日本語へ戻らない、ログアウトしたように見える、さらには「Japan語」になる珍事件まで発生。AIとの試行錯誤、第三者監査、そして一人の人間の発想によって、ようやく完成へたどり着">
+  <title>年輪を作るはずが、ログアウト！？「今月の年輪」完成までの長い開発記録 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261029-133407-a10dbae4/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261029-133407-a10dbae4/">
+  <meta property="og:title" content="年輪を作るはずが、ログアウト！？「今月の年輪」完成までの長い開発記録">
+  <meta property="og:description" content="走った努力を年輪として可視化したい。そんな思いから始まったRunner’s Ringsの新機能「今月の年輪」。開発中には、英語に切り替わらない、日本語へ戻らない、ログアウトしたように見える、さらには「Japan語」になる珍事件まで発生。AIとの試行錯誤、第三者監査、そして一人の人間の発想によって、ようやく完成へたどり着いた開発の舞台裏を紹介します。">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/47/19ab0a21-2da4-41b3-a424-fbb87d163a4f.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/47/19ab0a21-2da4-41b3-a424-fbb87d163a4f.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-10-29T04:39:36.063Z">
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-10-29">2026-10-29</time>
+      <h1>年輪を作るはずが、ログアウト！？「今月の年輪」完成までの長い開発記録</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/47/19ab0a21-2da4-41b3-a424-fbb87d163a4f.png" alt="" loading="lazy">
+      <p class="summary">走った努力を年輪として可視化したい。そんな思いから始まったRunner’s Ringsの新機能「今月の年輪」。開発中には、英語に切り替わらない、日本語へ戻らない、ログアウトしたように見える、さらには「Japan語」になる珍事件まで発生。AIとの試行錯誤、第三者監査、そして一人の人間の発想によって、ようやく完成へたどり着いた開発の舞台裏を紹介します。</p>
+      <div class="body">そもそも、何を作りたかったのか？
+
+Runner’s Rings（ランナーズリングス）は、走った道が地図に刻まれ、努力が年輪のように積み重なるアプリです。
+
+今回作ろうとしたのは「今月の年輪」。
+
+今月どれだけ走ったのか。先月と比べてどうだったのか。1年前の自分はどうだったのか。
+
+日々のランニングを、少し違う視点から振り返る機能です。
+
+比較するのは次の3期間。
+
+* 対象月
+* 先月
+* 前年同月
+
+走行回数と距離に加えて、走った道も比較できるようにしたい。
+
+そんな構想から開発が始まりました。
+
+ENを押しても、日本語のまま
+
+ところが、開発を進めるうちに別の問題が見つかりました。
+
+日本語・英語の切り替えです。
+
+「EN」を押すと、ボタンは英語を選んだ状態になる。
+
+しかし、画面の文章は日本語のまま。
+
+ページを更新すると英語になることもありましたが、一部の文章は取り残されていました。
+
+調べていくと、言語設定を保存する処理と、実際の画面を翻訳する処理がうまく連携していないことが分かりました。
+
+しかも、複数のJavaScriptがそれぞれ翻訳を担当していました。
+
+一つを直しても、別の処理が表示を書き換えてしまう。
+
+思った以上に複雑な問題でした。
+
+今度はログアウト！？
+
+翻訳の修正を繰り返していると、今度は別の症状が現れました。
+
+英語表示に切り替えたり、画面を更新したりすると、ログイン画面に戻ってしまうのです。
+
+言語を変えたいだけなのに、自分のランニングデータが見えなくなる。
+
+これでは安心して使えません。
+
+そこで、ログイン情報を復元する処理と、翻訳を開始するタイミングを見直しました。
+
+認証の初期化が終わってから翻訳を動かすように調整し、再読み込みを必要としない言語切り替えを目指しました。
+
+なお、この症状は、認証情報そのものが消えていたのか、画面の初期化によってログアウトしたように見えていたのか、完全には特定できていません。
+
+それでも、何度も実機で確認しながら改善を重ねました。
+
+「日本語」が「Japan語」に！
+
+そして今回、忘れられない珍事件が起こりました。
+
+日本を英語に翻訳する処理が、言語切り替えボタンの「日本語」にまで作用してしまったのです。
+
+結果は、まさかの「Japan語」。
+
+直したはずの英語表示から日本語へ戻れなくなる問題も発生しました。
+
+翻訳は、ただ言葉を置き換えればよいわけではありません。
+
+どの文章を翻訳するのか。いつ翻訳するのか。元の日本語をどう保存し、どう復元するのか。
+
+その仕組みが大切だと痛感しました。
+
+むせの監査で見つかった問題
+
+開発を担当するAI「チャッピー」だけでは、修正したつもりでも見落としが残ります。
+
+そこで、もう一人のAI「むせ」に第三者監査をお願いしました。
+
+むせは公開サイトとGitHubのコードを確認し、問題を具体的に指摘してくれました。
+
+補完翻訳ファイルの記述ミス。複数の翻訳処理の競合。日本語へ戻す際の復元漏れ。英文の途中に残る日本語。
+
+さらに、登録者数などの集計が毎回読み込み直され、表示まで時間がかかる問題にも取り組みました。
+
+公開集計には24時間のキャッシュを導入し、初回取得が遅い場合でも次回以降は保存済みの値を使えるようにしました。
+
+修正して、監査して、また指摘される。
+
+その繰り返しです。
+
+途中では、一つの修正を優先するあまり、別の依頼を置き去りにしてしまうこともありました。
+
+開発を急ぐだけでは、完成には近づかない。
+
+問題を記録し、直した箇所と残っている箇所を区別することの重要性も学びました。
+
+最終的に、2026年10月29日のBuild 2026.10.29.13について、むせから多言語対応の一区切りという判定を受けました。
+
+ようやく「今月の年輪」に戻った
+
+翻訳の問題が落ち着き、ようやく本来の開発へ戻りました。
+
+最初の共有画像は、3期間のGPSルートを水色・黄色・ピンクで重ねたもの。
+
+開発した本人たちには意味が分かります。
+
+しかし、画像を初めて見た人にはどうでしょうか。
+
+色のついた線が並んでいるだけで、何を伝えたいのか分かりにくい。
+
+背景に薄い年輪模様を入れたり、ルートを太くしたり、表示範囲を調整したりもしました。
+
+それでも、根本的な問題は残りました。
+
+「そもそも、何を見せたいのか？」
+
+この問いが、デザインを変えるきっかけになりました。
+
+地図を捨てて、ロゴを使おう
+
+そこで考え方を変えました。
+
+アプリ内では、これまでどおり走った道を地図で確認できればいい。
+
+一方、SNSで共有する画像には、走った努力の比較が一目で分かる表現が必要です。
+
+それなら、無理に地図を使う必要はありません。
+
+Runner’s Ringsには、ピンクから黄色へと変化する年輪のロゴがあります。
+
+この年輪を3つ並べ、走行距離に応じて大きさを変えたらどうだろう。
+
+今月も、先月も、前年同月も、まったく同じロゴを使う。
+
+最大距離の月を基準に、ほかの2期間を縮小する。
+
+色ではなく、大きさによって走った量を表します。
+
+距離に比例するのは円の直径ではなく、面積です。
+
+そして期間の見出しと距離だけを、水色・黄色・ピンクで区別しました。
+
+38回、261.3kmの年輪
+
+完成した共有画像には、次の記録が並びました。
+
+2026年10月：38回、261.3km。
+
+2026年9月：29回、248.3km。
+
+2025年10月：17回、138.2km。
+
+同じ年輪ロゴなのに、走った距離によって大きさが違う。
+
+これなら、1年前から積み重ねたランニングの量も視覚的に比較できます。
+
+むせによる最終監査では、実際の共有画像からロゴの大きさを測定し、距離と面積の比例関係が正しいことも確認されました。
+
+監査で指摘された0kmの期間の表示と、共有画像の注意文も追加調整しました。
+
+今回の新しい共有画像にはGPS軌跡を含めず、期間・走行距離・回数を掲載する設計です。
+
+AIだけでは完成しなかった
+
+今回の開発で印象に残ったのは、AIの技術だけではありません。
+
+AIはコードを書き、翻訳の問題を調べ、画像を描き、監査することができます。
+
+しかし、最初の画像を見て「これでは何を見せたいのか分からない」と指摘したのは人間でした。
+
+同じロゴを3つ並べればいい。
+
+そのシンプルな発想が、複雑になっていたデザインを変えました。
+
+チャッピーが実装し、むせが監査し、人間が方向を決める。
+
+開発中には失敗も遠回りもありましたが、そこから得られたものは小さくありません。
+
+Runner’s Ringsが残したいのは、ただのランニング記録ではありません。
+
+昨日も、今日も、そして1年前からも続いている、走った人生そのもの。
+
+「今月の年輪」は、その思いを小さな3つのロゴに込めた機能になりました。
+
+まだ改善できることはあるでしょう。
+
+それでも、今回の開発はここで一つの年輪を刻んだと思います。</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=%E5%B9%B4%E8%BC%AA%E3%82%92%E4%BD%9C%E3%82%8B%E3%81%AF%E3%81%9A%E3%81%8C%E3%80%81%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%EF%BC%81%EF%BC%9F%E3%80%8C%E4%BB%8A%E6%9C%88%E3%81%AE%E5%B9%B4%E8%BC%AA%E3%80%8D%E5%AE%8C%E6%88%90%E3%81%BE%E3%81%A7%E3%81%AE%E9%95%B7%E3%81%84%E9%96%8B%E7%99%BA%E8%A8%98%E9%8C%B2&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261029-133407-a10dbae4%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-10-29">2026-10-29</time>
+      <h1>From Growth Rings to Login Trouble: The Unexpected Journey Behind Monthly Rings</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/47/19ab0a21-2da4-41b3-a424-fbb87d163a4f.png" alt="" loading="lazy">
+      <p class="summary">Monthly Rings began with a simple idea: visualize a runner’s accumulated effort as growth rings. But development uncovered unexpected problems with language switching, session restoration, and competing translation systems. After repeated fixes, independent audits, and a fundamental rethink of the share-image design, the feature finally found its identity in the Runner’s Rings logo itself.</p>
+      <div class="body">It Started with a Simple Idea
+
+Runner’s Rings was created to preserve the roads you have run and the effort you have accumulated over time.
+
+The idea behind Monthly Rings was straightforward: compare your current running month with the previous month and the same month a year earlier.
+
+We wanted runners to see how much they had run, how often they had gone out, and how their running history had grown.
+
+At first, the plan included overlaying GPS routes from all three periods.
+
+But the journey toward that feature turned out to be anything but simple.
+
+The Language Switch That Wouldn’t Switch
+
+During development, we discovered a frustrating problem.
+
+Tapping the EN button changed the selected language, but much of the page remained in Japanese.
+
+Sometimes refreshing the page helped. Sometimes only part of the interface changed.
+
+The language preference was being saved, but the live translation process was not behaving consistently.
+
+As we investigated, we found that several JavaScript components were independently translating different parts of the same page.
+
+Fixing one layer did not always fix another.
+
+Why Am I Seeing the Login Screen?
+
+Then another problem appeared.
+
+Changing the language or refreshing the page sometimes brought the user back to the login screen.
+
+The goal was simply to switch languages, not interrupt access to personal running records.
+
+We reviewed the timing of authentication initialization and translation, allowing session restoration to complete before applying language changes.
+
+Although we could not conclusively determine whether the session had actually been lost or the interface had merely displayed the login screen, the experience clearly needed improvement.
+
+The Day Japanese Became “Japan語”
+
+One of the most memorable mistakes came from an overly broad text replacement.
+
+A rule intended to translate the Japanese word for Japan also changed the language button itself.
+
+Instead of 日本語, the button displayed “Japan語.”
+
+It was funny in hindsight, but it revealed a serious design problem: translation cannot rely on indiscriminate string replacement.
+
+The system also needed a reliable way to restore the original Japanese after switching back from English.
+
+An Independent AI Audit
+
+Our development AI, Chappy, worked through the fixes. A second AI, Muse, reviewed the implementation independently.
+
+The audits uncovered a broken supplemental translation script, competing translation layers, incomplete restoration of Japanese text, and English sentences containing untranslated fragments.
+
+We also improved the loading of public statistics by introducing a 24-hour browser cache.
+
+The development cycle became familiar: fix, review, discover another issue, and fix again.
+
+On October 29, 2026, Build 2026.10.29.13 received Muse’s approval as a milestone for the bilingual interface.
+
+Back to Monthly Rings
+
+With the language problems largely resolved, we returned to the feature that had started the entire journey.
+
+The original share image combined GPS routes from three different periods in cyan, yellow, and pink.
+
+It made sense to those who had built it. But to someone seeing it for the first time, the image was difficult to understand.
+
+We experimented with background patterns, stronger route lines, and better map framing.
+
+Yet the most important question remained unanswered:
+
+What exactly are we trying to show?
+
+A Simpler Answer: Three Growth Rings
+
+The breakthrough was to separate the purposes of the in-app map and the saved image.
+
+The map would continue showing where the runner had been.
+
+The saved image would show how much the runner had accumulated.
+
+Instead of overlaying GPS routes, we reused the existing Runner’s Rings emblem: a vibrant pink-to-yellow growth-ring symbol.
+
+Three periods, three identical emblems, and three different sizes.
+
+Each emblem’s area is proportional to the distance run during its period, using the highest-distance month as the reference.
+
+The period headings and distance figures use cyan, yellow, and pink, while the emblem itself retains the same brand colors in all three positions.
+
+A Running Journey in Three Numbers
+
+The finished comparison used real running data:
+
+October 2026: 38 runs, 261.3 km.
+
+September 2026: 29 runs, 248.3 km.
+
+October 2025: 17 runs, 138.2 km.
+
+The three emblems now communicate a simple idea without requiring the viewer to interpret an unfamiliar route map.
+
+Muse also measured the actual exported image and confirmed that the emblem areas closely matched the intended distance proportions.
+
+The share image does not include GPS route traces; it focuses on periods, distances, and run counts.
+
+What We Learned
+
+AI helped write the code, investigate failures, create the visuals, and audit the results.
+
+But the turning point came from a human question: what are we really trying to show?
+
+That question led to a simpler design, one that expressed the purpose of Runner’s Rings more clearly than the original technical approach.
+
+This development journey was not smooth. It involved translation failures, confusing login behavior, repeated audits, and several design reversals.
+
+Yet every correction became part of the process.
+
+Runner’s Rings is about more than recording workouts. It is about preserving the life you have run.
+
+Monthly Rings now expresses that idea through three simple symbols of accumulated effort.</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=From%20Growth%20Rings%20to%20Login%20Trouble%3A%20The%20Unexpected%20Journey%20Behind%20Monthly%20Rings&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261029-133407-a10dbae4%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261029-133407-a10dbae4/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
