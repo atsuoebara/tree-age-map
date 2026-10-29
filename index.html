@@ -19752,6 +19752,22 @@ function getPrefectureConquest(
 }
 
 
+// A-2: focus an unvisited municipality without opening run history.
+let nextRunHighlightLayer = null;
+function focusNextRunMunicipality(cityKey) {
+  if (!geojsonData || !Array.isArray(geojsonData.features)) return;
+  const matching = geojsonData.features.filter(feature => getCityKey(feature) === cityKey);
+  if (!matching.length) return;
+  if (nextRunHighlightLayer) map.removeLayer(nextRunHighlightLayer);
+  nextRunHighlightLayer = L.geoJSON({type:'FeatureCollection',features:matching},{
+    style:{color:'#5cff9d',weight:4,opacity:1,fillColor:'#5cff9d',fillOpacity:0.12},
+    interactive:false
+  }).addTo(map);
+  const bounds = nextRunHighlightLayer.getBounds();
+  if (bounds.isValid()) map.fitBounds(bounds,{padding:[28,28],maxZoom:12});
+  document.getElementById('map').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 // A-2: find municipality neighbors only when a conquest card is opened.
 // Shared GeoJSON boundary segments are evidence of adjacency; a single
 // corner touch or a bounding-box overlap is not counted.
@@ -24255,11 +24271,28 @@ function updatePrefectureDashboard(
         const nextRun = document.createElement('p');
         nextRun.style.cssText = 'margin:12px 0 4px;padding:11px 12px;border:1px solid rgba(92,255,157,.45);border-radius:10px;background:#12332d;color:#e7fff0;font-size:13px;line-height:1.6';
         if (adjacent.length) {
-          const names = adjacent.slice(0, 5).map(key =>
-            getDisplayMunicipalityName(splitCityKey(key).city));
-          nextRun.textContent = isRunnerRingsEnglish()
-            ? 'Next run? Unvisited neighboring areas: ' + names.join(', ') + ' (based on shared map boundaries; no route generated)'
-            : '次はどこを走ろう？ 走破済み市町村に隣接する未走破候補：' + names.join('、') + '（地図境界による判定・ルート未生成）';
+          const label = document.createElement('span');
+          label.textContent = isRunnerRingsEnglish()
+            ? 'Next run? Unvisited neighboring areas (tap to view on map): '
+            : '次はどこを走ろう？ 隣接する未走破候補（タップで地図へ）：';
+          nextRun.appendChild(label);
+          adjacent.slice(0, 5).forEach(key => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = getDisplayMunicipalityName(splitCityKey(key).city);
+            button.style.cssText = 'display:inline-block;margin:5px 6px 2px 0;padding:8px 11px;border:1px solid #5cff9d;border-radius:8px;background:#173e34;color:white;font:inherit;cursor:pointer';
+            button.addEventListener('click', event => {
+              event.stopPropagation();
+              focusNextRunMunicipality(key);
+            });
+            nextRun.appendChild(button);
+          });
+          const note = document.createElement('small');
+          note.style.display = 'block';
+          note.textContent = isRunnerRingsEnglish()
+            ? 'Based on shared map boundaries; no route is generated.'
+            : '地図境界による候補です。ルートは生成しません。';
+          nextRun.appendChild(note);
         } else {
           nextRun.textContent = isRunnerRingsEnglish()
             ? 'Next run? No shared-boundary neighbors could be confirmed from this map.'
