@@ -24696,11 +24696,6 @@ const timelapseMode =
     'timelapseMode'
   );
 
-// Only a deliberate change by the visitor overrides the course-first default.
-timelapseMode?.addEventListener('change', () => {
-  timelapseMode.dataset.userChosen = '1';
-});
-
 const timelapseCloseButton =
   document.getElementById(
     'timelapseCloseButton'
@@ -24942,11 +24937,8 @@ function syncTimelapseDefaults() {
       defaultEndValue;
   }
 
-  // Default to routes for videos, independently of the main map's display mode.
-  // Keep the visitor's explicit choice for subsequent opens in this page.
-  if (timelapseMode.dataset.userChosen !== '1') {
-    timelapseMode.value = 'route';
-  }
+  // Every new opening starts with course, regardless of a previous area choice.
+  timelapseMode.value = 'route';
 
   return true;
 }
