@@ -105,6 +105,11 @@ function improveLanguageSwitchDiscoverability() {
     const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
     moreLanguages.textContent = isEnglish ? 'More languages' : '補助翻訳';
     moreLanguages.setAttribute('aria-label', isEnglish ? 'More languages' : '補助翻訳を開く');
+    const summary=document.getElementById('rrTranslateSummary');
+    if(summary){
+      summary.textContent=isEnglish?'Supplemental translation':'補助翻訳';
+      summary.setAttribute('aria-label',summary.textContent);
+    }
   };
   refreshMoreLanguagesLabel();
   applyEnglishLeftoverFixes();
