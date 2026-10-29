@@ -30,7 +30,7 @@
   function rows(data) {
     return [
       {key:'current',label:tr('対象月','Selected month'),value:data.current},
-      {key:'previous',label:tr('先月','Previous month'),value:data.previous},
+      {key:'previous',label:tr('前月','Previous month'),value:data.previous},
       {key:'priorYear',label:tr('前年同月','Same month last year'),value:data.priorYear}
     ];
   }
@@ -98,11 +98,11 @@
     ctx.fillStyle='#122438';ctx.fillRect(0,0,1080,1350);
     ctx.textAlign='left';ctx.textBaseline='alphabetic';
     ctx.fillStyle='#f2f8fc';ctx.font='bold 54px sans-serif';
-    ctx.fillText(tr('今月の年輪','Monthly Rings'),64,92);
+    ctx.fillText(tr('月別の年輪比較','Monthly Rings Comparison'),64,92);
     ctx.font='28px sans-serif';ctx.fillStyle='#b5d2e1';
     ctx.fillText(tr('走った距離が、年輪の大きさになる。','Each ring grows with the distance you run.'),64,143);
     const periods=[
-      {item:data.current,title:tr('今月','This month')},
+      {item:data.current,title:tr('対象月','Selected month')},
       {item:data.previous,title:tr('先月','Last month')},
       {item:data.priorYear,title:tr('前年同月','Same month last year')}
     ];
@@ -196,15 +196,15 @@
     lastData=data;
     const totals=rows(data);
     container.innerHTML=
-      '<h3 style="font-size:19px;margin:0 0 8px;color:#78eaff">🌱 '+tr('今月の年輪','Monthly Rings')+'</h3>'+
-      '<p style="font-size:12px;margin:0 0 10px;color:#aac5d4">'+tr('自分が走った軌跡を、先月と前年同月に重ねて振り返ります。','Revisit your own routes alongside last month and the same month last year.')+'</p>'+
+      '<h3 style="font-size:19px;margin:0 0 8px;color:#78eaff">🌱 '+tr('月別の年輪比較','Monthly Rings Comparison')+' — '+safe(label(input.value))+'</h3>'+
+      '<p style="font-size:12px;margin:0 0 10px;color:#aac5d4">'+tr('選択した月の走行ルートを、前月・前年同月と比較します。動画は上の「月の振り返り動画を作る」から作成できます。','Compare the selected month with the previous month and the same month last year. Create a video using the monthly recap button above.')+'</p>'+
       '<div style="display:flex;gap:8px;margin:0 0 9px"><button type="button" id="monthlyRingsFocus" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='focus'?'#78eaff':'#18364a')+';color:'+(mapScope==='focus'?'#0e2537':'#e7f6ff')+'">'+tr('主要エリア','Main area')+'</button><button type="button" id="monthlyRingsAll" style="padding:7px 12px;border-radius:8px;border:1px solid #78eaff;background:'+(mapScope==='all'?'#78eaff':'#18364a')+';color:'+(mapScope==='all'?'#0e2537':'#e7f6ff')+'">'+tr('全エリア','All areas')+'</button></div>'+
       '<div id="monthlyRingsMap" role="img" aria-label="'+tr('月別GPS軌跡の重ね合わせ','Monthly GPS route overlay')+'" style="height:270px;border-radius:10px;background:#19364c;overflow:hidden"></div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;font-size:11px">'+totals.map(r=>'<span style="border-left:4px solid '+palette[r.key]+';padding:4px 8px;background:#1b354a">'+r.label+' ('+safe(label(r.value.month))+')</span>').join('')+'</div>'+
       '<div style="display:grid;gap:7px;font-size:13px">'+totals.map(r=>'<div style="padding:7px 10px;border:1px solid #395870;border-radius:8px"><strong>'+r.label+'</strong>'+tr('：',': ')+r.value.runCount+' '+tr('回','runs')+' / '+km(r.value.distanceKm)+' km</div>').join('')+'</div>'+
-      '<p style="font-size:12px;margin:10px 0">'+tr('先月との差','Vs. last month')+tr('：',': ')+(data.previousDelta.runs>0?'+':'')+data.previousDelta.runs+' '+tr('回','runs')+' / '+signed(data.previousDelta.km)+' km<br>'+
+      '<p style="font-size:12px;margin:10px 0">'+tr('前月との差','Vs. previous month')+tr('：',': ')+(data.previousDelta.runs>0?'+':'')+data.previousDelta.runs+' '+tr('回','runs')+' / '+signed(data.previousDelta.km)+' km<br>'+
       tr('前年同月との差','Vs. last year')+tr('：',': ')+(data.priorYearDelta.runs>0?'+':'')+data.priorYearDelta.runs+' '+tr('回','runs')+' / '+signed(data.priorYearDelta.km)+' km</p>'+
-      (data.current.runCount===0?'<p>'+tr('この月はまだ走っていません。','No runs recorded for this month.')+'</p>':'')+
+      (data.current.runCount===0?'<p>'+tr('選択した月のランニング記録はありません。','No runs recorded for the selected month.')+'</p>':'')+
       '<button id="monthlyRingsShare" type="button" style="background:#78eaff;color:#102332;border:0;border-radius:8px;padding:10px 15px;font-weight:800;cursor:pointer">'+tr('年輪画像を保存・共有','Save or share rings image')+'</button>'+
       '<p style="font-size:11px;color:#a6bfd0;margin:9px 0 0">'+tr('共有画像にはGPS軌跡は含まれません。期間・距離・回数が表示されます。','The shared image contains no GPS routes; it shows periods, distances and run counts.')+'</p>';
     container.querySelector('#monthlyRingsShare')?.addEventListener('click',shareImage);
