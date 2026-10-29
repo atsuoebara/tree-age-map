@@ -26,6 +26,27 @@ function openMonthlyReview(){
 }
 card.addEventListener('click',e=>{if(e.target.closest('a,button'))return;openMonthlyReview();});
 card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openMonthlyReview();}});
+const english=()=>document.documentElement.lang==='en';
+let progress={count:0,distance:0,regions:null,error:false};
+function renderLanguage(){
+ const en=english();
+ card.querySelector('strong').textContent=en?'🌱 Your growth rings this month':'🌱 今月のあなたの年輪';
+ card.querySelector('[style*="font-weight:800"]').textContent=en?'▶ Review this month’s runs in a video':'▶ 今月の走りを動画で振り返る';
+ card.setAttribute('aria-label',en?'Open this month’s running recap':'今月の走りを月間振り返り動画で見る');
+ const body=document.getElementById('rrProgressBody');
+ if(progress.error){body.textContent=en?'Monthly running data is temporarily unavailable.':'今月の記録は現在確認できません。';}
+ else if(progress.loaded){
+   body.textContent=en
+     ? 'This month: '+progress.count+' runs · '+progress.distance.toFixed(1)+' km'+(progress.regions===null?'':' · Today: '+progress.regions+' regions')
+     : '今月 '+progress.count+'本・'+progress.distance.toFixed(1)+'km'+(progress.regions===null?'':'・今日 '+progress.regions+'地域');
+ }else body.textContent=en?'Calculating…':'集計中…';
+ const share=card.querySelector('#rrShareNudge a'),dismiss=card.querySelector('#rrShareDismiss');
+ if(share)share.textContent=en?'📷 Share today’s run':'📷 今日のランニングを共有する';
+ if(dismiss)dismiss.textContent=en?'Close':'閉じる';
+}
+window.addEventListener('rr-language-changed',renderLanguage);
+new MutationObserver(renderLanguage).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+renderLanguage();
 const day=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
 const log=(event,params={})=>{if(typeof gtag==='function')gtag('event',event,{feature:'runner_engagement',...params})};
 const localKey='RREngagement:v1:';
@@ -43,7 +64,7 @@ async function refresh(){
   let todayRegions='';
   const {data:regions,error:regionsError}=await supabaseClient.rpc('my_today_regions',{p_date:today});
   if(!regionsError&&Array.isArray(regions))todayRegions='・今日 '+regions.length+'地域';
-  document.getElementById('rrProgressBody').textContent='今月 '+count+'本・'+distance.toFixed(1)+'km'+todayRegions;
+  progress={count,distance,regions:!regionsError&&Array.isArray(regions)?regions.length:null,loaded:true,error:false};renderLanguage();
   const key=localKey+user.id,stored=localStorage.getItem(key);
   let state;try{state=stored?JSON.parse(stored):null}catch(e){state=null}
   if(!state||!state.first){state={first:today,last:today};log('runner_engagement_first_seen')}
@@ -60,7 +81,7 @@ async function refresh(){
    prompt.hidden=false;log('runner_share_nudge_shown');
   }
   previousTodayCount=todayCount;
- }catch(e){console.warn('Progress unavailable:',e);document.getElementById('rrProgressBody').textContent='今月の記録は現在確認できません。'}
+ }catch(e){console.warn('Progress unavailable:',e);progress={...progress,error:true};renderLanguage()}
 }
 document.getElementById('rrShareDismiss').onclick=()=>{
  document.getElementById('rrShareNudge').hidden=true;
