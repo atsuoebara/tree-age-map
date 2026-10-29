@@ -79,31 +79,16 @@ for(const [code,label] of [['ja','日本語'],['en','EN']]){
   try{localStorage.setItem('runners-rings-language',code)}catch(error){console.warn('Language preference:',error);}
   document.documentElement.lang=code;
   if(code==='en'){
-    let applied=false;
-    try {
-      applied=window.rrApplyEnglishWithoutReload?.() === true;
-    } catch(error) {
-      console.error('English live translation failed:',error);
-    }
-    // The saved preference is authoritative. Safari can fail to apply the
-    // live DOM translation without throwing. In that case use the existing
-    // proven boot-time translator rather than leaving a false EN-selected UI.
-    const untranslated=()=>{
-      const header=document.querySelector('body > header');
-      const app=document.getElementById('appRoot');
-      const check=(root)=>root && /アカウント設定|ランニング記録|走った記録ではなく|走った人生を残す|国別走行距離/.test(root.textContent||'');
-      return check(header)||check(app);
-    };
-    setTimeout(()=>{
-      if(!applied || untranslated()){
-        window.rrRememberMonthlyLanguageContext?.();
-        location.reload();
-      }
-    },180);
+    // Never force reload while a running session is active; Safari can show
+    // the login gate after reinitialization. Record failure for debugging.
+    try{
+      const applied=window.rrApplyEnglishWithoutReload?.();
+      if(applied!==true)console.warn('English live translation unavailable; reload intentionally suppressed');
+    }catch(error){console.error('English live translation failed; reload suppressed',error);}
   } else {
-    window.rrRememberMonthlyLanguageContext?.();
-    location.reload();
-    return;
+    // Keep Japanese switching local as well until authenticated reload is safe.
+    document.documentElement.lang='ja';
+    console.info('Japanese preference saved; no automatic reload');
   }
   update();
   updateFooter();
