@@ -7,7 +7,7 @@ card.id='rrPersonalProgress';
 card.setAttribute('aria-live','polite');
 card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','今月の走りを月間振り返り動画で見る');
 card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;width:100%;max-width:600px;box-sizing:border-box';
-card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
+card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div id="rrMonthlyVideoEntry" role="button" tabindex="0" style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
 host.insertAdjacentElement('afterend',card);
 
 /* A-3: private anniversary memory; does not publish activity or auto-create video. */
@@ -85,8 +85,27 @@ function openMonthlyReview(){
  requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
  log('runner_monthly_review_entry_click');
 }
-card.addEventListener('click',e=>{if(e.target.closest('a,button'))return;openMonthlyReview();});
-card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openMonthlyReview();}});
+function openMonthlyRings(){
+ const panel=document.getElementById('timelapsePanel');
+ const monthInput=document.getElementById('timelapseReviewMonth');
+ if(!panel||!monthInput)return;
+ panel.classList.add('isOpen');
+ panel.style.display='block';
+ monthInput.value=day().slice(0,7);
+ monthInput.dispatchEvent(new Event('change',{bubbles:true}));
+ window.dispatchEvent(new Event('rr-open-monthly-rings'));
+}
+card.addEventListener('click',e=>{
+ if(e.target.closest('a,button'))return;
+ if(e.target.closest('#rrMonthlyVideoEntry'))openMonthlyReview();
+ else openMonthlyRings();
+});
+card.addEventListener('keydown',e=>{
+ if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openMonthlyRings();}
+});
+document.getElementById('rrMonthlyVideoEntry').addEventListener('keydown',e=>{
+ if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();openMonthlyReview();}
+});
 const english=()=>document.documentElement.lang==='en';
 let progress={count:0,distance:0,regions:null,error:false};
 function renderLanguage(){
