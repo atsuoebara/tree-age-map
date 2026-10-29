@@ -64,6 +64,7 @@ function articlePage(post) {
       </div><p class="feedback" aria-live="polite"></p>
       <a class="back" href="/journal.html">${language === 'ja' ? 'Journal一覧へ戻る' : 'Back to Journal'}</a>
     </article>`;
+  const jsonLd = JSON.stringify({"@context":"https://schema.org","@type":"BlogPosting","headline":titleJa,"description":summaryJa.slice(0,200),"inLanguage":"ja","datePublished":dateObj.toISOString(),"url":permalink,"mainEntityOfPage":{"@type":"WebPage","@id":permalink},"isPartOf":{"@type":"Blog","name":"Rings Journal","url":"https://runnersrings.com/journal.html"},...(img?{"image":img}:{})}).replace(/</g,'\\u003c');
   return `<!doctype html>
 <!-- RR_JOURNAL_GENERATED_PAGE -->
 <html lang="ja">
@@ -88,6 +89,7 @@ function articlePage(post) {
   <meta property="og:title" content="${html(titleJa)}">
   <meta property="og:description" content="${html(summaryJa.slice(0, 200))}">${ogImage}
   <meta property="article:published_time" content="${html(dateObj.toISOString())}">
+  <script type="application/ld+json">${jsonLd}</script>
   <style>
   *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
   header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
