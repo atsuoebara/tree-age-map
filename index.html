@@ -23899,6 +23899,13 @@ function updatePrefectureDashboard(
   stats
 ) {
 
+  // A-2 audit fix: remove a stale suggestion highlight whenever
+  // the selected period's prefecture cards are rebuilt.
+  if (nextRunHighlightLayer) {
+    map.removeLayer(nextRunHighlightLayer);
+    nextRunHighlightLayer = null;
+  }
+
   const section =
     document.getElementById(
       'prefectureSection'
