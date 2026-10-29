@@ -1,3 +1,11 @@
+### B-4 SEO・構造化データ整備 正式完了（2026-10-29）
+- **判定：正式完了。** むせによる第1〜4弾の独立監査をすべて通過。2026-10-29 17:43〜17:52 JST の最終監査では、公開 sitemap 全65 URLを照合。
+- **canonical：** 全65 URLで自己参照を各1件設定、重複・誤指定ゼロ。旧Journal12件は新記事と内容重複がないため自己参照に統一。
+- **OG・SNS：** 主要16ページ、旧Journal12件、Journal新形式37件に必要なOG情報を整備。主要ページの`og:image`は既存の`runners-rings-map-preview.jpg`（640×360）。Xの`twitter:card=summary_large_image`および画像寸法・altを確認。
+- **JSON-LD：** トップに`WebSite`と`Organization`、旧12件＋新37件の計49記事に`BlogPosting`。全件JSON構文パース合格。新記事用`scripts/generate-journal.mjs`も対応し、新規投稿でも継続。
+- **任意の将来改善（今回の完了条件外）：** BlogPostingの`author`・`publisher`追加、旧記事の出典が確認できる公開日、専用1200×630 OG画像、`og:locale`表記統一。推測の日付や著者名を補わない。
+- **注意：** SEOメタデータの整備完了であり、Google AdSenseの審査合格を保証しない。旧い保留記録は当時の履歴として維持。
+
 ### A-1「今月の年輪」正式完了（2026-10-29 追記）
 
 - **状態：正式完了。** この節がA-1の最新状態。下の「完成保留」「未確認」は当時の履歴として残す。
