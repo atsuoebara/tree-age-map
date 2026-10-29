@@ -6,16 +6,16 @@ const card=document.createElement('section');
 card.id='rrPersonalProgress';
 card.setAttribute('aria-live','polite');
 card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','今月の走りを月間振り返り動画で見る');
-card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;max-width:600px';
+card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;width:100%;max-width:600px;box-sizing:border-box';
 card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
 host.insertAdjacentElement('afterend',card);
 
 /* A-3: private anniversary memory; does not publish activity or auto-create video. */
 const anniversary=document.createElement('section');
 anniversary.id='rrYearAgoToday';
-anniversary.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;max-width:600px';
+anniversary.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;width:100%;max-width:600px;box-sizing:border-box';
 anniversary.hidden=true;
-anniversary.innerHTML='<strong id="rrYearAgoTitle" style="color:#78eaff;font-size:16px"></strong><div id="rrYearAgoBody" role="status" aria-live="polite" style="font-size:14px;margin-top:6px"></div><button id="rrYearAgoReview" type="button" style="margin-top:10px;padding:8px 12px;border:1px solid #78eaff;border-radius:9px;background:#173c50;color:#fff;font-weight:bold"></button>';
+anniversary.innerHTML='<strong id="rrYearAgoTitle" style="color:#78eaff;font-size:16px"></strong><div id="rrYearAgoBody" role="status" aria-live="polite" style="font-size:14px;margin-top:6px"></div><button id="rrYearAgoReview" type="button" style="display:block;max-width:100%;margin-top:7px;padding:0;border:0;background:transparent;color:#aef1ff;font-size:12px;font-weight:800;text-align:left;line-height:1.6;cursor:pointer"></button>';
 card.insertAdjacentElement('afterend',anniversary);
 let anniversaryState={loaded:false,items:[],date:'',error:false,loggedIn:false};
 function anniversaryDate(today){
