@@ -115,7 +115,7 @@
       const radius=amount>0?Math.max(28,baseR*Math.sqrt(amount/maxDistance)):28;
       const x=centers[i],y=460;
       drawEmblem(ctx,x,y,radius);
-      ctx.textAlign='center';ctx.fillStyle='#eff8fd';
+      ctx.textAlign='center';ctx.fillStyle=['#78EAFF','#EAFF00','#FF76BC'][i];
       ctx.font='bold 31px sans-serif';ctx.fillText(period.title,x,674);
       ctx.fillStyle='#b5d2e1';ctx.font='26px sans-serif';ctx.fillText(label(item.month),x,716);
       ctx.fillStyle='#fff';ctx.font='bold 38px sans-serif';ctx.fillText(km(amount)+' km',x,785);
