@@ -64,8 +64,8 @@
     if(!points.length)return null;
     const lat=points.map(p=>p[0]).sort((a,b)=>a-b);
     const lng=points.map(p=>p[1]).sort((a,b)=>a-b);
-    const at=(arr,q)=>arr[Math.floor((arr.length-1)*q)];
-    return {minLat:at(lat,.01),maxLat:at(lat,.99),minLng:at(lng,.01),maxLng:at(lng,.99)};
+    // Use extrema so no selected route is cropped by percentile trimming.
+    return {minLat:lat[0],maxLat:lat[lat.length-1],minLng:lng[0],maxLng:lng[lng.length-1]};
   }
   function routeImage(data) {
     const canvas = document.createElement('canvas');
@@ -74,7 +74,16 @@
     ctx.fillStyle = '#122538';ctx.fillRect(0,0,1080,1350);
     ctx.fillStyle = '#f2f8fc';ctx.font = 'bold 54px sans-serif';ctx.fillText(tr('今月の年輪','Monthly Rings'),64,92);
     ctx.font='34px sans-serif';ctx.fillText(label(data.current.month),64,148);
-    ctx.fillStyle='#1b354a';ctx.fillRect(44,194,992,858);
+    ctx.fillStyle='#1B364B';ctx.fillRect(44,194,992,858);
+    // Subtle growth-ring watermark, drawn beneath all running routes.
+    ctx.save();
+    ctx.beginPath();ctx.rect(44,194,992,858);ctx.clip();
+    ctx.strokeStyle='#7FB2D9';ctx.globalAlpha=.06;ctx.lineWidth=12;
+    const ringX=44+992*.85,ringY=194+858*.90;
+    for(let i=0;i<8;i++){
+      ctx.beginPath();ctx.arc(ringX,ringY,120+i*90,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.restore();
     const all = data.series.flatMap(item => item.routes.flat()).filter(a=>a.length===2);
     if(all.length){
       const view=routeViewport(data,'focus');
@@ -83,13 +92,14 @@
       const dx=Math.max((maxLng-minLng)*scaleLng,.0002);
       const dy=Math.max(maxLat-minLat,.0002);
       // Keep the main network centered in the 992×858 map window.
-      const scale=Math.min(890/dx,755/dy);
+      // Keep at least 64px on all sides, including stroke width.
+      const scale=Math.min(864/dx,730/dy);
       const cx=(minLng+maxLng)/2,cy=(minLat+maxLat)/2;
       const project=p=>[540+(p[1]-cx)*scaleLng*scale,623-(p[0]-cy)*scale];
       ctx.save();
       ctx.beginPath();ctx.rect(44,194,992,858);ctx.clip();
       for (const series of data.series.slice().reverse()){
-        ctx.strokeStyle=palette[series.key];ctx.lineWidth=series.key==='current'?5:3;ctx.globalAlpha=series.key==='current'?1:.65;
+        ctx.strokeStyle=palette[series.key];ctx.lineWidth=series.key==='current'?6:4;ctx.globalAlpha=series.key==='current'?1:.65;
         for(const route of series.routes) {
           if(route.length<2)continue;
           ctx.beginPath();route.forEach((p,i)=>{const [x,y]=project(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
