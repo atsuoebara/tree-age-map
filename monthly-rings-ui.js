@@ -118,7 +118,7 @@
       ctx.textAlign='center';ctx.fillStyle=['#78EAFF','#EAFF00','#FF76BC'][i];
       ctx.font='bold 31px sans-serif';ctx.fillText(period.title,x,674);
       ctx.fillStyle='#b5d2e1';ctx.font='26px sans-serif';ctx.fillText(label(item.month),x,716);
-      ctx.fillStyle='#fff';ctx.font='bold 38px sans-serif';ctx.fillText(km(amount)+' km',x,785);
+      ctx.fillStyle=['#78EAFF','#EAFF00','#FF76BC'][i];ctx.font='bold 38px sans-serif';ctx.fillText(km(amount)+' km',x,785);
       ctx.fillStyle='#b5d2e1';ctx.font='28px sans-serif';ctx.fillText(item.runCount+' '+tr('回','runs'),x,832);
     });
     ctx.strokeStyle='#39566a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(64,938);ctx.lineTo(1016,938);ctx.stroke();
