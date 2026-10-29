@@ -3999,7 +3999,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="./runner_rings_archive.js?v=20261022-08"></script>
-<script type="module" src="./fit_importer.js"></script>
+<script type="module" src="./fit_importer.js?v=2026102911"></script>
 
 <script>
 
@@ -4012,7 +4012,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.29.10'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.29.11'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -4213,6 +4213,10 @@ function rrUpdateCountryOnLanguageChange(){
   if(rrLastPublicCountryData)updatePublicCountryStats(rrLastPublicCountryData);
 }
 window.addEventListener('rr-language-changed',rrUpdateCountryOnLanguageChange);
+window.addEventListener('rr-language-changed',()=>{
+  const unit=document.querySelector('[data-public-stat="users"] > span');
+  if(unit)unit.textContent=document.documentElement.lang==='en'?'people':'人';
+});
 new MutationObserver(rrUpdateCountryOnLanguageChange).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 function updatePublicCountryStats(data = {}) {
   rrLastPublicCountryData=data;
@@ -4286,6 +4290,9 @@ function updatePublicSiteStats(data = {}) {
     )
   };
 
+  // Keep the standalone count unit bilingual without broad substitutions.
+  const peopleUnit=document.querySelector('[data-public-stat="users"] > span');
+  if(peopleUnit)peopleUnit.textContent=document.documentElement.lang==='en'?'people':'人';
   Object.entries(stats).forEach(
     ([key, value]) => {
       const element =
@@ -28912,6 +28919,13 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['Q&A ↗','FAQ ↗'],
   ['使い方で迷ったら聞く ↗','Ask us if you get stuck ↗'],
   ['連携で迷ったらQ&Aを見る ↗','View import FAQ ↗'],
+  ["Runner's Ringsの始め方","How to get started with Runner's Rings"],
+  ["Runner's Ringsに無料登録","Create your free Runner's Rings account"],
+  ['ランニングデータを取り込む','Import your running data'],
+  ['自分だけのランニングマップを楽しむ','Enjoy your personal running map'],
+  ['走った道、地域走破、ALL・年別の広がりを地図で振り返れます。','Review your routes, explored regions and yearly progress on the map.'],
+  ['メールアドレスとパスワードでアカウントを作成します。','Create an account with your email address and password.'],
+  ['Strava、Intervals.icu、COROS、FIT / GPX / TCX / ZIPなどから取り込めます。','Import from Strava, Intervals.icu, COROS, FIT, GPX, TCX or ZIP.'],
   ['日本語','日本語'],['アメリカ合衆国','United States of America'],
   ['My Rings Tree｜一生に一本の木を見る','My Rings Tree | See your lifelong tree'],
   ['一生に一本の木を見る','See your lifelong tree'],
@@ -29600,7 +29614,7 @@ updateScrollToTopButton();
 <script defer src="/rr-engagement.js?v=2026102909"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 <script defer src="/rr-site-nav.js?v=2026102907"></script>
-<script defer src="/rr-home-i18n-patch.js?v=2026102910"></script>
+<!-- Duplicate homepage translation patch retired: index.html is canonical. -->
 </body>
 </html>
 
