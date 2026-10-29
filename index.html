@@ -24206,6 +24206,19 @@ function updatePrefectureDashboard(
         '</div>';
 
 
+      // A-2 first step: an opt-in, private next-run suggestion drawn
+      // only from the existing municipality conquest calculation.
+      // It does not imply adjacency or create a route.
+      if (remainingNames.length && completedNames.length) {
+        const nextRun = document.createElement('p');
+        nextRun.style.cssText = 'margin:12px 0 4px;padding:11px 12px;border:1px solid rgba(92,255,157,.45);border-radius:10px;background:#12332d;color:#e7fff0;font-size:13px;line-height:1.6';
+        const candidate = remainingNames[0];
+        nextRun.textContent = isRunnerRingsEnglish()
+          ? 'Next run? An unvisited place in this prefecture: ' + candidate + ' (not a route or proximity recommendation)'
+          : '次はどこを走ろう？ この県の未走破候補：' + candidate + '（近さ・隣接・ルートは未判定）';
+        details.appendChild(nextRun);
+      }
+
       conquestButton.onclick =
         event => {
 
