@@ -56,9 +56,9 @@ function syncEnglishMonthInputs() {
       wrapper.appendChild(display);
     }
 
-    wrapper.classList.add('isEnglish');
-    input.classList.add('rrEnglishMonthInput');
-    display.hidden = false;
+    wrapper.classList.toggle('isEnglish',document.documentElement.lang==='en');
+    input.classList.toggle('rrEnglishMonthInput',document.documentElement.lang==='en');
+    display.hidden = document.documentElement.lang!=='en';
     display.textContent = formatEnglishMonthValue(input.value);
 
     if (!input.dataset.rrEnglishMonthBound) {
@@ -69,44 +69,9 @@ function syncEnglishMonthInputs() {
   });
 }
 
+// Translation of homepage copy belongs to the reversible homepage translator.
+// This FIT module only manages its month-input presentation.
 function applyEnglishLeftoverFixes() {
-  const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
-  if (!isEnglish) {
-    syncEnglishMonthInputs();
-    return;
-  }
-
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    const value = node.nodeValue?.trim();
-    if (!value) continue;
-
-    // English copy spacing cleanup from the sixth public-site audit.
-    const spaced = node.nodeValue
-      .replace(/registrationto/g, 'registration to')
-      .replace(/them\.Privacy/g, 'them. Privacy')
-      .replace(/policyfor/g, 'policy for')
-      .replace(/records,Preserve/g, 'records, Preserve');
-    if (spaced !== node.nodeValue) node.nodeValue = spaced;
-
-    const japaneseMonth = value.match(/^(\d{4})年(\d{1,2})月$/);
-    if (japaneseMonth) {
-      const year = Number(japaneseMonth[1]);
-      const month = Number(japaneseMonth[2]);
-      if (month >= 1 && month <= 12) {
-        const translatedMonth = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' })
-          .format(new Date(Date.UTC(year, month - 1, 1)));
-        node.nodeValue = node.nodeValue.replace(value, translatedMonth);
-      }
-      continue;
-    }
-
-    if (!RR_ENGLISH_FIXES.has(value)) continue;
-    const translated = RR_ENGLISH_FIXES.get(value);
-    node.nodeValue = node.nodeValue.replace(value, translated);
-  }
-
   syncEnglishMonthInputs();
 }
 
