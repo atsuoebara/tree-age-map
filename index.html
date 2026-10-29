@@ -4012,7 +4012,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.10.29.07'; // Increment for each future index.html release.
+const APP_BUILD = '2026.10.29.08'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -4330,120 +4330,56 @@ function updatePublicSiteStats(data = {}) {
    データ取り込み割合
 ===================================== */
 
+const RR_PUBLIC_STATS_CACHE_KEY='rr-public-overview-v1';
+const RR_PUBLIC_STATS_CACHE_MS=24*60*60*1000;
+function rrReadPublicStatsCache(){
+  try{
+    const cached=JSON.parse(localStorage.getItem(RR_PUBLIC_STATS_CACHE_KEY)||'null');
+    if(!cached||typeof cached.savedAt!=='number'||!cached.data||typeof cached.data!=='object')return null;
+    if(cached.savedAt>Date.now()+60000)return null;
+    return cached;
+  }catch(_){return null;}
+}
+function rrPaintPublicOverview(data){
+  updatePublicSiteStats(data);
+  updatePublicCountryStats(data);
+  const shares={strava:Number(data.strava),intervals:Number(data.intervals),coros:Number(data.coros),garmin:Number(data.garmin),file:Number(data.file)};
+  for(const [key,raw] of Object.entries(shares)){
+    if(!Number.isFinite(raw))continue;
+    const value=Math.max(0,Math.min(100,Math.round(raw*10)/10));
+    document.querySelectorAll('[data-import-share-value="'+key+'"]').forEach(el=>el.textContent=value+'%');
+    document.querySelectorAll('[data-import-share-fill="'+key+'"]').forEach(el=>el.style.width=value+'%');
+  }
+}
+let rrPublicOverviewInFlight=null;
 async function updateImportShareDisplay() {
-  const valueElements =
-    document.querySelectorAll(
-      '[data-import-share-value]'
-    );
-
-  const fillElements =
-    document.querySelectorAll(
-      '[data-import-share-fill]'
-    );
-
-  if (
-    !valueElements.length ||
-    !fillElements.length
-  ) {
-    return;
-  }
-
-  try {
-    const response =
-      await fetch(
-        SUPABASE_URL +
-        '/functions/v1/import-share',
-        {
-          headers: {
-            apikey: SUPABASE_KEY
-          }
-        }
-      );
-
-    if (!response.ok) {
-      throw new Error(
-        'import-share HTTP ' +
-        response.status
-      );
-    }
-
-    const data =
-      await response.json();
-
-    updatePublicSiteStats(
-      data
-    );
-
-    updatePublicCountryStats(data);
-
-    const shares = {
-      strava:
-        Number(data?.strava),
-      intervals:
-        Number(data?.intervals),
-      coros:
-        Number(data?.coros),
-      garmin: Number(data?.garmin),
-      file:
-        Number(data?.file)
-    };
-
-    Object.entries(shares)
-      .forEach(
-        ([key, rawValue]) => {
-          if (
-            !Number.isFinite(
-              rawValue
-            )
-          ) {
-            return;
-          }
-
-          const value =
-            Math.max(
-              0,
-              Math.min(
-                100,
-                Math.round(
-                  rawValue * 10
-                ) / 10
-              )
-            );
-
-          document
-            .querySelectorAll(
-              '[data-import-share-value="' +
-              key +
-              '"]'
-            )
-            .forEach(
-              element => {
-                element.textContent =
-                  value + '%';
-              }
-            );
-
-          document
-            .querySelectorAll(
-              '[data-import-share-fill="' +
-              key +
-              '"]'
-            )
-            .forEach(
-              element => {
-                element.style.width =
-                  value + '%';
-              }
-            );
-        }
-      );
-
-  } catch (error) {
-    console.warn(
-      'Import share load error:',
-      error
-    );
-  }
+  // Public aggregates only: reused for 24 hours to avoid expensive reloads.
+  // Never cache the signed-in user's runs, tokens, private map or profile.
+  const cached=rrReadPublicStatsCache();
+  if(cached)rrPaintPublicOverview(cached.data);
+  if(cached && Date.now()-cached.savedAt<RR_PUBLIC_STATS_CACHE_MS)return;
+  if(rrPublicOverviewInFlight)return rrPublicOverviewInFlight;
+  rrPublicOverviewInFlight=(async()=>{
+    try{
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),12000);
+      let response;
+      try{
+        response=await fetch(SUPABASE_URL+'/functions/v1/import-share',{
+          headers:{apikey:SUPABASE_KEY},signal:controller.signal
+        });
+      }finally{clearTimeout(timeout);}
+      if(!response.ok)throw new Error('import-share HTTP '+response.status);
+      const data=await response.json();
+      if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Invalid public stats');
+      rrPaintPublicOverview(data);
+      try{localStorage.setItem(RR_PUBLIC_STATS_CACHE_KEY,JSON.stringify({savedAt:Date.now(),data}));}
+      catch(error){console.warn('Public overview cache unavailable',error);}
+    }catch(error){
+      console.warn('Public overview refresh failed; cached data retained:',error);
+    }finally{rrPublicOverviewInFlight=null;}
+  })();
+  return rrPublicOverviewInFlight;
 }
 
 let currentSession =
@@ -29654,7 +29590,7 @@ updateScrollToTopButton();
 <script defer src="/rr-engagement.js?v=2026102701"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 <script defer src="/rr-site-nav.js?v=2026102907"></script>
-<script defer src="/rr-home-i18n-patch.js?v=2026102907"></script>
+<script defer src="/rr-home-i18n-patch.js?v=2026102908"></script>
 </body>
 </html>
 
