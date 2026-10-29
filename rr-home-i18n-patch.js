@@ -1,9 +1,6 @@
 /* English fallback for public landing copy; independent of run-data boot. */
 (()=>{'use strict';
-let en=false;try{en=localStorage.getItem('runners-rings-language')==='en'}catch(_){}
-if(document.documentElement.lang==='en')en=true;
-if(!en)return;
-document.documentElement.lang='en';
+// Keep this script active in both languages so the header switch works without reload.
 const pairs=[
 ['※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。','Calculated from running activities actually imported into Runner’s Rings.'],
 ['まずは','Start with '],
@@ -95,22 +92,93 @@ const pairs=[
 ['登録者','Members'],['登録ラン','Runs'],['総走行距離','Total distance'],['国別走行距離','Distance by country'],
 ['各ランの全距離をスタート地点の国に集計しています。','Each run is counted toward the country where it began.'],
 ['Runner\'s Ringsとは？','About Runner\'s Rings'],['開発者からのメッセージ','Developer message'],['使い方','How to use'],['利用規約','Terms'],['お問い合わせ','Contact'],['プライバシーポリシー','Privacy policy']
+  ['今月のあなたの年輪','Your growth rings this month'],
+  ['制覇カードコレクション','Achievement card collection'],
+  ['初期設定：データ連携・取り込み方法','Getting started: Connect and import'],
+  ['前回のデータを表示しています…','Showing your previous data…'],
+  ['ランニング記録','Running activities'],
+  ['今日のランニングを共有','Share today’s run'],
+  ['端末保存','On device'],
+  ['アカウント設定','Account settings'],
+  ['Garmin接続を解除','Disconnect Garmin'],
+  ['COROSから取り込む','Import from COROS'],
+  ['Intervalsと連携','Connect Intervals'],
+  ['ランを追加','Add a run'],
+  ['今月','This month'],['今日','Today'],
+  ['地域','regions'],['本',' runs'],['人',' people'],
 ].sort((a,b)=>b[0].length-a[0].length);
-function translateText(node){if(!node.nodeValue)return;
-const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,select,[data-lang="ja"]'))return;
-let value=node.nodeValue;for(const [ja,enValue] of pairs)value=value.split(ja).join(enValue);
-value=value.replace(/registrationto\b/g,'registration to').replace(/them\.Privacy/g,'them. Privacy').replace(/policyfor\b/g,'policy for').replace(/records,Preserve/g,'records, Preserve').replace(/stories inRings Journal/g,'stories in Rings Journal').replace(/Journal indexas/g,'Journal index as');
-if(value!==node.nodeValue)node.nodeValue=value;}
-let busy=false;
-function scan(){if(busy)return;busy=true;
-try{const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(translateText);
-for(const el of document.querySelectorAll('button,summary,label,span')){if(el.childElementCount===0&&el.textContent?.trim()==='補助翻訳')el.textContent='Supplemental translation';}
-document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for(const attr of ['aria-label','title','placeholder']){if(!el.hasAttribute(attr))continue;let v=el.getAttribute(attr);for(const [ja,enValue] of pairs)v=v.split(ja).join(enValue);el.setAttribute(attr,v);}});
-}finally{busy=false}}
+const originals=new WeakMap(), lastEnglish=new WeakMap();
+const originalAttrs=new WeakMap(), lastEnglishAttrs=new WeakMap();
+let scheduled=false, busy=false;
+function isEnglish(){
+  // The root lang is changed synchronously by the shared header control.
+  return document.documentElement.lang==='en';
+}
+function convert(value){
+  let result=value;
+  for(const [ja,en] of pairs)result=result.split(ja).join(en);
+  return result.replace(/registrationto\\b/g,'registration to')
+    .replace(/them\\.Privacy/g,'them. Privacy')
+    .replace(/policyfor\\b/g,'policy for')
+    .replace(/records,Preserve/g,'records, Preserve')
+    .replace(/stories inRings Journal/g,'stories in Rings Journal')
+    .replace(/Journal indexas/g,'Journal index as');
+}
+function translateText(node,en){
+  const parent=node.parentElement;
+  if(!parent||parent.closest('script,style,textarea,select,option,[data-lang="ja"],[translate="no"]'))return;
+  const current=node.nodeValue||'', previous=lastEnglish.get(node);
+  if(en){
+    if(previous!==undefined&&current===previous)return;
+    originals.set(node,current);
+    const translated=convert(current);
+    if(translated!==current){lastEnglish.set(node,translated);node.nodeValue=translated;}
+    else lastEnglish.delete(node);
+  }else if(previous!==undefined){
+    if(current===previous&&originals.has(node))node.nodeValue=originals.get(node);
+    lastEnglish.delete(node);originals.delete(node);
+  }
+}
+function translateAttrs(el,en){
+  const keys=['aria-label','title','placeholder'];
+  let saved=originalAttrs.get(el),translated=lastEnglishAttrs.get(el);
+  if(!saved){saved=new Map();originalAttrs.set(el,saved);}
+  if(!translated){translated=new Map();lastEnglishAttrs.set(el,translated);}
+  for(const key of keys){
+    if(!el.hasAttribute(key))continue;
+    const current=el.getAttribute(key),previous=translated.get(key);
+    if(en){
+      if(previous!==undefined&&current===previous)continue;
+      saved.set(key,current);
+      const result=convert(current);
+      if(result!==current){translated.set(key,result);el.setAttribute(key,result);}
+      else translated.delete(key);
+    }else if(previous!==undefined){
+      if(current===previous&&saved.has(key))el.setAttribute(key,saved.get(key));
+      translated.delete(key);saved.delete(key);
+    }
+  }
+}
+function scan(){
+  if(busy||!document.body)return false;
+  busy=true;
+  try{
+    const en=isEnglish(), walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(node=>translateText(node,en));
+    document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>translateAttrs(el,en));
+    return true;
+  }finally{busy=false;}
+}
+function schedule(){
+  if(scheduled)return;
+  scheduled=true;
+  setTimeout(()=>{scheduled=false;scan();},0);
+}
+// Exposed to the existing EN button, without refreshing or disturbing login state.
+window.rrApplyEnglishWithoutReload=()=>scan();
 scan();
-const intro=document.querySelector('#publicRunningGuide p:nth-of-type(1)');
-const users=document.querySelector('[data-public-stat="users"]');if(users){const unit=users.querySelector('strong + span');if(unit)unit.textContent='people';}
-const guide=document.querySelector('.intervalsGuide');if(guide){guide.querySelectorAll('img').forEach(img=>{img.style.display='none';});const hint=document.createElement('p');hint.textContent='For current English-language setup steps, please consult the Intervals.icu instructions.';guide.append(hint);}
-let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;scan()})});
-observer.observe(document.body,{childList:true,subtree:true});
+new MutationObserver(schedule).observe(document.documentElement,{
+  attributes:true,attributeFilter:['lang'],childList:true,characterData:true,subtree:true
+});
 })();
