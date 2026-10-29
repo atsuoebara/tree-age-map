@@ -19752,6 +19752,45 @@ function getPrefectureConquest(
 }
 
 
+// A-2: find municipality neighbors only when a conquest card is opened.
+// Shared GeoJSON boundary segments are evidence of adjacency; a single
+// corner touch or a bounding-box overlap is not counted.
+function getAdjacentUnvisitedMunicipalities(prefecture, conquest) {
+  const visited = new Set(conquest.completedCityKeys);
+  const remaining = new Set(conquest.remainingCityKeys);
+  const edges = new Map();
+  const matches = new Set();
+  const vertex = point => Number(point[0]).toFixed(5) + ',' + Number(point[1]).toFixed(5);
+  function visitRings(coords, add) {
+    if (!Array.isArray(coords) || !coords.length) return;
+    if (typeof coords[0]?.[0] === 'number') {
+      for (let i = 1; i < coords.length; i++) {
+        const a = vertex(coords[i-1]), b = vertex(coords[i]);
+        if (a !== b) add(a < b ? a + '|' + b : b + '|' + a);
+      }
+      return;
+    }
+    coords.forEach(child => visitRings(child, add));
+  }
+  municipalityFeatures.forEach(({feature}) => {
+    if (getPrefecture(feature) !== prefecture) return;
+    const city = getCityKey(feature);
+    if (!visited.has(city)) return;
+    visitRings(feature.geometry?.coordinates, edge => edges.set(edge, true));
+  });
+  if (!edges.size) return [];
+  municipalityFeatures.forEach(({feature}) => {
+    if (getPrefecture(feature) !== prefecture) return;
+    const city = getCityKey(feature);
+    if (!remaining.has(city) || matches.has(city)) return;
+    visitRings(feature.geometry?.coordinates, edge => {
+      if (edges.has(edge)) matches.add(city);
+    });
+  });
+  return conquest.remainingCityKeys.filter(key => matches.has(key));
+}
+
+
 /* =====================================
    国別走破シェア
    日本は都道府県、アメリカは州・地域を表示。
@@ -24206,16 +24245,26 @@ function updatePrefectureDashboard(
         '</div>';
 
 
-      // A-2 first step: an opt-in, private next-run suggestion drawn
-      // only from the existing municipality conquest calculation.
-      // It does not imply adjacency or create a route.
-      if (remainingNames.length && completedNames.length) {
+      // Build the suggestion only on demand, avoiding boundary scans on
+      // every year/month change and on unopened cards.
+      let nextRunReady = false;
+      function showNextRun() {
+        if (nextRunReady || !remainingNames.length || !completedNames.length) return;
+        nextRunReady = true;
+        const adjacent = getAdjacentUnvisitedMunicipalities(prefecture, conquest);
         const nextRun = document.createElement('p');
         nextRun.style.cssText = 'margin:12px 0 4px;padding:11px 12px;border:1px solid rgba(92,255,157,.45);border-radius:10px;background:#12332d;color:#e7fff0;font-size:13px;line-height:1.6';
-        const candidate = remainingNames[0];
-        nextRun.textContent = isRunnerRingsEnglish()
-          ? 'Next run? An unvisited place in this prefecture: ' + candidate + ' (not a route or proximity recommendation)'
-          : '次はどこを走ろう？ この県の未走破候補：' + candidate + '（近さ・隣接・ルートは未判定）';
+        if (adjacent.length) {
+          const names = adjacent.slice(0, 5).map(key =>
+            getDisplayMunicipalityName(splitCityKey(key).city));
+          nextRun.textContent = isRunnerRingsEnglish()
+            ? 'Next run? Unvisited neighboring areas: ' + names.join(', ') + ' (based on shared map boundaries; no route generated)'
+            : '次はどこを走ろう？ 走破済み市町村に隣接する未走破候補：' + names.join('、') + '（地図境界による判定・ルート未生成）';
+        } else {
+          nextRun.textContent = isRunnerRingsEnglish()
+            ? 'Next run? No shared-boundary neighbors could be confirmed from this map.'
+            : '次はどこを走ろう？ この地図から隣接する未走破市町村は確認できませんでした。';
+        }
         details.appendChild(nextRun);
       }
 
@@ -24237,6 +24286,8 @@ function updatePrefectureDashboard(
               isOpen
             )
           );
+
+          if (isOpen) showNextRun();
 
         };
 
