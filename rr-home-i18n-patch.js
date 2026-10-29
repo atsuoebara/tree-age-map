@@ -159,7 +159,7 @@ function translateAttrs(el,en){
   }
 }
 function scan(){
-  if(busy||!document.body)return false;
+  if(busy||!document.body||!window.rrHomeStartupReady)return false;
   busy=true;
   try{
     const en=isEnglish(), walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
@@ -182,7 +182,8 @@ window.rrApplyEnglishWithoutReload=()=>{
   const supplemental=scan();
   return applied===true || supplemental===true;
 };
-scan();
+if(window.rrHomeStartupReady)scan();
+window.addEventListener('rr-home-startup-ready',scan);
 new MutationObserver(schedule).observe(document.documentElement,{
   attributes:true,attributeFilter:['lang'],childList:true,characterData:true,subtree:true
 });
