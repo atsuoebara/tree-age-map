@@ -1,3 +1,9 @@
+### B-1 公開APIの既存環境調査（2026-10-30）
+- 本番Supabaseの `information_schema` と関数名・Edge Function一覧を**読み取りのみ**で照合。既存の参加希望 `public.region_rings_consent`、正式同意用 `rr_private.region_rings_public_authorization`、非公開集計候補 `rr_private.region_rings_public_candidate`、失効・公開OFF状態 `rr_private.region_rings_refresh_state` のカラムを確認。
+- 本人専用の `get_my_region_rings` とToday用 `get_rings_today` は存在。地域の年輪の一般公開専用RPCは確認できず、正式同意を受け付ける製品APIも未実装。既存の非公開候補を直接配信してはいけない。
+- 調査と次の安全な実装境界は `docs/b1-public-server-inventory-20261030.md`（コミット `4c8053b`）に記録。別の承認済み公開スナップショット台帳、失効世代/再公開禁止、都度サーバー判定を合成環境で実装・検証する必要あり。
+- **本番DB・Edge Function・製品コードの変更なし、正式同意受付なし、一般公開OFF。**
+
 ### B-1 匿名集計ポリシー・むせ監査結果と配信方式（2026-10-30 19:02〜19:12 JST）
 - むせ設計監査は**条件付き合格**。条件4点：(1) 集計値を公開GitHub・静的ファイル・Git履歴に置かず、サーバー側で毎回同意版・公開フラグ・失効・世代を確認して配信する、(2) 確定済み年の締めを定義し遅延取り込みを公開値へ黙って反映しない、(3) 最小人数・寄与支配・丸め幅を合成データT1〜T9で定める、(4) 最終同意文面に年単位の公開条件・撤回反映の限界を明記する。
 - **設計案を作成**：`docs/b1-public-server-delivery-year-close-v02-20261030.md`（コミット `c09ffc3`）。静的画面はUIのみ、集計値は都度安全判定する専用サーバーAPIのみ。キャッシュ不可、停止・世代不一致・同意版不一致は空応答。公開リポジトリへ数値は置かない。
