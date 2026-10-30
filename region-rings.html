@@ -33,6 +33,17 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 <p class="muted small">将来の地域別匿名集計への参加希望を記録します。現在は一般公開の集計に使用されません。参加は初期OFFで、いつでも取り消せます。公開開始前に対象・保護条件を改めて案内します。</p>
 <label><input id="publicConsent" type="checkbox" disabled> 将来の地域別匿名集計への参加を希望する</label>
 <div class="controls"><button id="saveConsent" type="button" disabled>希望を保存</button></div><p class="small muted" id="consentStatus" role="status">ログイン確認中…</p></section>
+<section class="card" aria-labelledby="publicationDraftTitle">
+<h2 id="publicationDraftTitle">地域の年輪・正式公開同意（内容確認用）</h2>
+<p class="small muted warn">正式な公開同意の受付はまだ始まっていません。この案内を見ただけでは同意になりません。上の「参加希望」も公開同意ではありません。</p>
+<details><summary>公開する内容と公開しない内容（案）</summary>
+<ul><li>公開候補：国・地域・年月単位の、同意した複数ランナーの合計距離を大まかな数値として表示</li>
+<li>公開しない：個人名、アカウント、個人別距離、走行日・時刻、GPS軌跡、出発地点、写真</li>
+<li>少人数の地域・期間は表示しません。原則5人以上を検討中ですが、5人だけでは個人を推測される可能性があるため、差分推測を防ぐ追加条件を確定するまでは公開しません</li>
+<li>参加・撤回は本人が操作できるようにする予定です。撤回時の公開済みデータ更新・削除手順は未確定です</li></ul>
+</details>
+<p class="small muted">公開範囲と撤回手順を確定し、独立監査を受けてから、別の明示的な同意操作を提供します。現在、公開データは0件です。</p>
+</section>
 <p id="status" role="status">ログイン状態を確認しています…</p>
 </main><script>
 (()=>{'use strict';
