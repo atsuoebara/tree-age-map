@@ -59,11 +59,11 @@ function track(){var m=n('trackM'),s=n('trackS');if(!ok(m,1,30)||!ok(s,0,59)){er
 var result=$('trackMetrics'),pace=m*60+s;result.replaceChildren();[100,200,400,800,1000,1600].forEach(function(d){result.append(metric(d+' m',clock(d/1000*pace,true)))})}
 function fields(prefix,isInterval){
 var elements=[['Distance',lang==='ja'?'疾走距離 (m)':'Fast distance (m)','select',isInterval?1000:200],['Reps',lang==='ja'?'本数':'Repetitions','number',isInterval?5:6],['Min',lang==='ja'?'疾走ペース（分/km）':'Fast pace (min/km)','number',isInterval?4:3],['Sec',lang==='ja'?'疾走ペース（秒/km）':'Fast pace (sec/km)','number',30],['RestMode',lang==='ja'?'レスト方式':'Recovery method','select','time'],['RestS',lang==='ja'?'レスト（秒）':'Recovery (seconds)','number',isInterval?120:180],['JogDist',lang==='ja'?'ジョグ距離（m）':'Jog distance (m)','number',200],['JogMin',lang==='ja'?'ジョグペース（分/km）':'Jog pace (min/km)','number',7],['JogSec',lang==='ja'?'ジョグペース（秒/km）':'Jog pace (sec/km)','number',0]];
-var target=$(prefix+'Fields');target.replaceChildren();
+var target=$(prefix+'Fields');var preserved={};target.querySelectorAll('input,select').forEach(function(old){preserved[old.id]=old.value});target.replaceChildren();
 elements.forEach(function(spec){var div=document.createElement('div'),label=document.createElement('label'),el;div.className='field';label.setAttribute('for',prefix+spec[0]);label.textContent=spec[1];el=document.createElement(spec[2]==='select'?'select':'input');el.id=prefix+spec[0];
 if(spec[2]==='select'){var choices=spec[0]==='Distance'?[100,200,400,600,800,1000,1200,1600,2000,3000]:['time','jog'];choices.forEach(function(value){var op=document.createElement('option');op.value=value;op.textContent=spec[0]==='Distance'?value+' m':value==='time'?(lang==='ja'?'時間・停止／歩き':'Timed rest'):(lang==='ja'?'距離＋ジョグ':'Jog distance + pace');el.append(op)});el.value=String(spec[3])}
 else{el.type='number';el.min=spec[0]==='Reps'?1:0;el.max=spec[0]==='Reps'?50:3600;el.value=spec[3]}
-div.append(label,el);target.append(div);el.addEventListener('input',render);
+if(Object.prototype.hasOwnProperty.call(preserved,el.id))el.value=preserved[el.id];div.append(label,el);target.append(div);el.addEventListener('input',render);
 })}
 function workout(prefix){var distance=n(prefix+'Distance'),reps=n(prefix+'Reps'),min=n(prefix+'Min'),sec=n(prefix+'Sec'),mode=$(prefix+'RestMode').value,jog=mode==='jog';
 ['RestS','JogDist','JogMin','JogSec'].forEach(function(x){$(prefix+x).parentElement.hidden=jog?(x==='RestS'):(x!=='RestS')});
