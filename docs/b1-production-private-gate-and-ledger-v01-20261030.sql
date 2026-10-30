@@ -35,7 +35,7 @@ BEGIN
   IF OLD.approved AND (
       NEW.approved IS DISTINCT FROM OLD.approved
       OR (OLD.permanently_suppressed AND NOT NEW.permanently_suppressed)
-      NEW.rounded_distance_km IS DISTINCT FROM OLD.rounded_distance_km
+      OR NEW.rounded_distance_km IS DISTINCT FROM OLD.rounded_distance_km
       OR NEW.generation IS DISTINCT FROM OLD.generation
       OR NEW.policy_version IS DISTINCT FROM OLD.policy_version
       OR NEW.country_code IS DISTINCT FROM OLD.country_code
