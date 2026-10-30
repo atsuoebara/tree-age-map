@@ -1,3 +1,10 @@
+### B-1 非公開集計基盤・性能再監査（2026-10-30 15:25〜15:33 JST）
+- **むせ再判定：条件付き合格を維持。条件1（失効トリガーの発火）は解消済み。** ロールバックで同意・撤回・ラン変更・削除扱い・地域データ変更を検証し、候補失効を確認。
+- **条件2は縮小して継続。** B-1単体負荷は隔離テスト（10,000件×12回のあり／なし比較）で大きな遅延なし。未検証は「行ごとのToday外部送信フックと組み合わせた本番相当の取り込み」。
+- **監査推奨の残工程：** (1) 本番の通常同期を変更せずEdge Function実行時間・件数・失敗、DBロック待ちを観測して基準値を蓄積、(2) 公開前に別の使い捨てSupabase環境で合成ラン・ダミー送信先を使用し、実取り込みと同じSQL方式でB-1あり／なし・並列ロック・Today送信件数を比較する。
+- **不要な修正は実施しない。** 既存Today同期の外部フックに本番データを使ったロールバック試験は行わない。匿名性・正式同意・撤回後の公開キャッシュは公開前の別要件。
+- **現在：一般公開OFF、非公開候補0件、正式公開同意0件（直近確認時）。** 本工程全体の完了や一般公開はまだ承認されていない。
+
 ### B-1 split safe trigger retest (2026-10-30)
 - Using a transaction rolled back in full, an isolated temporary table received 1,000 rows with the real private B-1 invalidation function attached as a statement-level trigger. EXPLAIN ANALYZE confirms one trigger call, 6.927ms; total statement 7.907ms. No production runs modified.
 - This retests the B-1 component independently. The real Today external-call trigger was deliberately not invoked, so combined end-to-end ingestion impact remains unverified; Muse conditional performance gate stays open. No public data release.
