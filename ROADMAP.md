@@ -1,3 +1,9 @@
+### B-1 Today ingestion structure and lock review (2026-10-30)
+- Read-only inspection confirmed two enabled triggers on public.runs: existing trg_rings_today_live_sync (row-level AFTER INSERT or UPDATE of route/distance_km/activity_date/deleted_at; sends async net.http_post to the Today Edge Function) and B-1 b1_runs_invalidate (statement-level AFTER INSERT/UPDATE/DELETE; invalidates private staging).
+- Snapshot pg_stat_activity showed 0 waiting Lock events, not evidence of no contention across time. pg_stat_statements is present but lacks a pre-change baseline; existing aggregate numbers cannot prove regression absence.
+- Previous synthetic 1k/10k probe and rollback-only run updates establish limited function overhead and invalidation, not real bulk-import/Today performance or concurrent load. **Muse condition 2 remains open; no completion or publication approval.**
+- Next test: controlled staging or bounded production-equivalent ingestion with same Today hook, compare with/without B-1 trigger under load and concurrent sessions, examine p95 latency/timeouts/lock waits; do not mutate user runs solely for benchmarking. Keep publication OFF.
+
 ### B-1 rollback-only real-row invalidation verification (2026-10-30)
 - On the production Supabase database, executed three separate BEGIN/ROLLBACK tests with lock_timeout 1500ms and statement_timeout 8s. Used temporary synthetic aggregate candidate rows while changing a single existing run or region-distance row inside the transaction only.
 - Runs UPDATE (no-op) triggered public.runs:UPDATE and cleared candidate; runs soft-delete simulation (setting deleted_at=now()) triggered public.runs:UPDATE and cleared candidate; region-distance UPDATE (no-op) triggered public.rings_today_run_region_distance:UPDATE and cleared candidate. Each query returned remaining=0. The UPDATE cases validate trigger operation; region sync's actual full batch performance remains untested.
