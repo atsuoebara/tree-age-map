@@ -1,3 +1,10 @@
+### B-1 SQL独立監査M1〜M3対応＋隔離自動試験追加（2026-10-30）
+- むせ監査は非公開ゲート・公開台帳SQLに**条件付き合格**、隔離試験前にM1（既存public flag矛盾）、M2（台帳TRUNCATE・承認済み削除等）、M3（approve/start値必須）の修正を指示。
+- SQL修正をGitHubに反映（`02291f0`、追加不可逆ガード `4148b78`）。旧 `publication_enabled` を読取条件から除き、旧 `is_dirty` を失効判定として維持。台帳TRUNCATE・承認済みDELETE/承認情報変更・承認取消・抑制解除・スナップショットTRUNCATEを禁止し、approve/start台帳の正の値を必須化。
+- 独立PG合成テスト追加：`docs/b1-private-gate-ledger-isolated.test.sql`（`3f2d411`）、GitHub Actions：`.github/workflows/b1-private-gate-ledger-isolated.yml`（`355b5bf`）。M1〜M3＋旧dirty＋停止冪等性＋非公開ロール権限を検査。**静的確認PASS。CI実行ログ未確認につき隔離DB合格は未認定。**
+- むせ用報告書：`docs/b1-private-gate-ledger-m1-m3-fix-audit-20261030.md`（`4b5840d`）。本番Supabase・Edge Function・一般公開ページには変更なし。正式同意受付OFF／一般公開OFF。
+- 残工程：隔離PG実行ログ確認→M1〜M3差分再監査→承認/配信開始経路の安全実装と再監査→HTTP/匿名性/同意最終審査→本番適用個別承認。
+
 ### B-1 本番非公開ゲート・公開台帳：SQL実装案（未適用／むせ監査待ち、2026-10-30）
 - むせが隔離並列試験を正式合格と判定したため、次工程の私有スキーマ向けSQL実装案を作成。既存DBメタデータは読み取りのみ。SQL：`docs/b1-production-private-gate-and-ledger-v01-20261030.sql`（`7c75cbe`）。新旧二重ゲート、国×確定年の承認済みスナップショット、追記専用台帳、撤回時の条件付き世代増加、内部読取ゲート、公開ロール権限禁止を定義。
 - 監査依頼・未完了事項：`docs/b1-private-gate-ledger-audit-request-20261030.md`（`54edc1b`）。同意/匿名性の承認ワークフロー、細粒度の監査台帳、実HTTP配信、T1〜T9、実行可能性の隔離テストは未完了。
