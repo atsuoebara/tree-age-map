@@ -1,3 +1,9 @@
+### B-1 Today integration review (2026-10-30)
+- Read-only DB inspection reconfirmed the two active runs triggers: b1_runs_invalidate (AFTER INSERT/UPDATE/DELETE FOR EACH STATEMENT) and trg_rings_today_live_sync (AFTER INSERT or selected UPDATE columns FOR EACH ROW). Database lock waiters observed at query time: 0; B-1 publication flag: false.
+- The original Today hook sends an external Edge Function HTTP request. A direct production runs mutation would therefore have external effects even if the SQL transaction were rolled back; no such mutation was made for this review.
+- A proposed isolated combined-trigger simulation was not executed due to an execution safety restriction. Do not represent Today integration latency, queue behavior or actual concurrency as tested.
+- Remaining performance gate for Muse: use an isolated staging environment with a stubbed outbound Today hook and representative ingest, or observe safe real traffic with baseline metrics; include lock contention, ingestion p95 and sync failures. General publication remains OFF.
+
 ### B-1 repeated isolated performance A/B (2026-10-30)
 - In a single transaction rolled back, temporary 10,000-row bulk INSERT was tested 12 times each for no trigger vs the identical B-1 invalidation function as an AFTER INSERT statement trigger. Order alternated each iteration, with no existing production run data mutated.
 - No trigger: mean 7.084ms, median 6.003ms, p95 11.810ms, min 5.668ms, max 15.639ms (n=12). With trigger: mean 7.066ms, median 6.502ms, p95 9.408ms, min 5.728ms, max 10.667ms (n=12). No major delay seen in this isolated workload; small sample and different table workload, not proof of real-ingest performance.
