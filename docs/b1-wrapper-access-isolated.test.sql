@@ -20,12 +20,12 @@ BEGIN
  THEN RAISE EXCEPTION 'operator has direct table privilege'; END IF;
 END $$;
 \echo 'B1_WRAPPER_PUBLIC_DENY_PASS'
-CREATE ROLE b1_test_approver LOGIN INHERIT;
-CREATE ROLE b1_test_publisher LOGIN INHERIT;
-GRANT b1_approver TO b1_test_approver;
-GRANT b1_publisher TO b1_test_publisher;
+CREATE ROLE isolated_alice LOGIN INHERIT;
+CREATE ROLE isolated_bob LOGIN INHERIT;
+GRANT b1_approver TO isolated_alice;
+GRANT b1_publisher TO isolated_bob;
 -- Positive EXECUTE via dedicated login, without changing session_user.
-SET SESSION AUTHORIZATION b1_test_approver;
+SET SESSION AUTHORIZATION isolated_alice;
 DO $$
 BEGIN
  IF NOT has_function_privilege(current_user,'rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
@@ -35,9 +35,10 @@ BEGIN
  IF has_table_privilege(current_user,'rr_private.region_rings_approved_year','SELECT')
  THEN RAISE EXCEPTION 'approver can read table'; END IF;
 END $$;
+DO $ BEGIN IF rr_private.b1_wrapped_approve('JP',2023) THEN RAISE EXCEPTION 'unexpected approval'; END IF; END $;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_APPROVER_SCOPE_PASS'
-SET SESSION AUTHORIZATION b1_test_publisher;
+SET SESSION AUTHORIZATION isolated_bob;
 DO $$
 BEGIN
  IF NOT has_function_privilege(current_user,'rr_private.b1_wrapped_start()','EXECUTE')
@@ -45,12 +46,13 @@ BEGIN
  IF has_function_privilege(current_user,'rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
  THEN RAISE EXCEPTION 'publisher can approve'; END IF;
 END $$;
+DO $ BEGIN IF rr_private.b1_wrapped_start() THEN RAISE EXCEPTION 'unexpected start'; END IF; END $;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_PUBLISHER_SCOPE_PASS'
 -- Role escalation test: a member of two roles must fail closed even when
 -- the session has EXECUTE privilege on the selected wrapper.
-GRANT b1_publisher TO b1_test_approver;
-SET SESSION AUTHORIZATION b1_test_approver;
+GRANT b1_publisher TO isolated_alice;
+SET SESSION AUTHORIZATION isolated_alice;
 DO $$
 DECLARE denied boolean:=false;
 BEGIN
@@ -61,11 +63,11 @@ BEGIN
 END $$;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_MULTIPLE_ROLES_DENIED_PASS'
-REVOKE b1_publisher FROM b1_test_approver;
-REVOKE b1_approver FROM b1_test_approver;
+REVOKE b1_publisher FROM isolated_alice;
+REVOKE b1_approver FROM isolated_alice;
 DO $$
 BEGIN
- IF has_function_privilege('b1_test_approver','rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
+ IF has_function_privilege('isolated_alice','rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
  THEN RAISE EXCEPTION 'revoked approver still has execute'; END IF;
 END $$;
 \echo 'B1_WRAPPER_REVOKE_PASS'
