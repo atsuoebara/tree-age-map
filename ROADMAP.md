@@ -1,3 +1,9 @@
+### B-1 actual-function isolation & numerical concurrency evidence prepared (2026-10-30)
+- Following Muse 17:41–17:50 second performance audit, integrated the **exact production trigger function body** `rr_private.invalidate_region_rings_cache()` from read-only `pg_get_functiondef` into disposable PostgreSQL A/B (same private state/candidate table names, standalone minimal schema). Commits: `6cd7ee3` repeated A/B, `aa5c5ba` two-client fixture.
+- Enhanced `docs/b1-concurrency-benchmark.sh` to output `B1_METRICS` with pgbench average latency, TPS, max sampled lock waiters and sampling count for each of 12 alternating trial modes; log also verifies exactly 1000 Today stub event rows per trial. Commit `a0dab68`.
+- Product code and production DB unchanged. This is **implementation only**, no post-change Actions run yet. Today outbound HTTP remains a local stub as Muse allowed. Sampling is periodic/sparse, so a max 0 result cannot prove zero lock contention.
+- Remaining: manually dispatch the benchmark, inspect whether all real-function A/B and parallel metrics are captured; if issues, correct harness. In parallel gather weeks of production read-only Today/lock observations. Muse condition 2 stays open; general publication OFF.
+
 ### B-1 Muse second performance re-audit 2026-10-30 17:41–17:50 JST
 - Muse independent audit judgment: **condition 2 mostly resolved but NOT final pass**; no mandatory product code changes. Condition 1 previously cleared. Public publication remains OFF.
 - Remaining (i): run isolated A/B using **actual definition** of `rr_private.invalidate_region_rings_cache()` and corresponding nonpublic tables, Today local stub permitted; no need to reproduce pg_net.
