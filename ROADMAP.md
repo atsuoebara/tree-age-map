@@ -1,3 +1,7 @@
+### B-1 split safe trigger retest (2026-10-30)
+- Using a transaction rolled back in full, an isolated temporary table received 1,000 rows with the real private B-1 invalidation function attached as a statement-level trigger. EXPLAIN ANALYZE confirms one trigger call, 6.927ms; total statement 7.907ms. No production runs modified.
+- This retests the B-1 component independently. The real Today external-call trigger was deliberately not invoked, so combined end-to-end ingestion impact remains unverified; Muse conditional performance gate stays open. No public data release.
+
 ### B-1 Today integration review (2026-10-30)
 - Read-only DB inspection reconfirmed the two active runs triggers: b1_runs_invalidate (AFTER INSERT/UPDATE/DELETE FOR EACH STATEMENT) and trg_rings_today_live_sync (AFTER INSERT or selected UPDATE columns FOR EACH ROW). Database lock waiters observed at query time: 0; B-1 publication flag: false.
 - The original Today hook sends an external Edge Function HTTP request. A direct production runs mutation would therefore have external effects even if the SQL transaction were rolled back; no such mutation was made for this review.
