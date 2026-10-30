@@ -96,6 +96,98 @@ third_generation="$(scalar "SELECT b1_gate_test.withdraw()")"
 }
 assert_empty
 echo "PASS: stale generation and repeated withdrawal are idempotent and fail closed"
+echo "TEST4: simultaneous withdrawals only advance one generation"
+scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false,generation=1,policy_version='v1'" >/dev/null
+w1="$(mktemp)"; w2="$(mktemp)"
+psql -v ON_ERROR_STOP=1 -Atc "SELECT b1_gate_test.withdraw()" > "$w1" &
+pid1=$!
+psql -v ON_ERROR_STOP=1 -Atc "SELECT b1_gate_test.withdraw()" > "$w2" &
+pid2=$!
+wait "$pid1"
+wait "$pid2"
+[[ "$(tail -1 "$w1")" == "2" && "$(tail -1 "$w2")" == "2" ]] || {
+  echo "FAIL: concurrent withdrawal generation mismatch"
+  cat "$w1" "$w2"
+  exit 1
+}
+assert_empty
+echo "PASS: two simultaneous withdrawals advanced generation exactly once"
+
+echo "TEST5: reapproval with stale generation must lose to withdrawal"
+scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false,generation=1,policy_version='v1'" >/dev/null
+revoke5="$(mktemp)"; approve5="$(mktemp)"
+psql -v ON_ERROR_STOP=1 -At > "$revoke5" <<'SQL' &
+BEGIN;
+SET LOCAL application_name='b1_gate_revoke5';
+SELECT b1_gate_test.withdraw();
+SELECT pg_sleep(1);
+COMMIT;
+SQL
+pid_rev5=$!
+ready=0
+for _ in $(seq 1 100); do
+  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='b1_gate_revoke5' AND state='active'")"
+  if [[ "$count" -ge 1 ]]; then ready=1; break; fi
+  sleep 0.02
+done
+[[ "$ready" -eq 1 ]] || { echo "FAIL: revocation session not ready"; wait "$pid_rev5" || true; exit 1; }
+psql -v ON_ERROR_STOP=1 -Atc "SELECT b1_gate_test.try_reapprove(1)" > "$approve5" &
+pid_ap5=$!
+wait "$pid_rev5"
+wait "$pid_ap5"
+[[ "$(tail -1 "$approve5")" == f ]] || { echo "FAIL: reapproval succeeded after revoke"; cat "$approve5"; exit 1; }
+assert_empty
+echo "PASS: revoke wins against stale-generation reapproval"
+
+echo "TEST6: dirty state concurrent with read must return NULL"
+scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false,generation=1,policy_version='v1'" >/dev/null
+dirty6="$(mktemp)"
+psql -v ON_ERROR_STOP=1 -At > "$dirty6" <<'SQL' &
+BEGIN;
+SET LOCAL application_name='b1_gate_dirty6';
+UPDATE b1_gate_test.state SET dirty=true WHERE singleton;
+SELECT pg_sleep(1);
+COMMIT;
+SQL
+pid_dirty6=$!
+ready=0
+for _ in $(seq 1 100); do
+  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='b1_gate_dirty6' AND state='active'")"
+  if [[ "$count" -ge 1 ]]; then ready=1; break; fi
+  sleep 0.02
+done
+[[ "$ready" -eq 1 ]] || { echo "FAIL: dirty session not ready"; wait "$pid_dirty6" || true; exit 1; }
+assert_empty
+wait "$pid_dirty6"
+assert_empty
+echo "PASS: concurrent dirty state prevents read"
+
+echo "TEST7: policy-version change concurrent with read must return NULL"
+scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false,generation=1,policy_version='v1'" >/dev/null
+policy7="$(mktemp)"
+psql -v ON_ERROR_STOP=1 -At > "$policy7" <<'SQL' &
+BEGIN;
+SET LOCAL application_name='b1_gate_policy7';
+SELECT b1_gate_test.change_policy('v2');
+SELECT pg_sleep(1);
+COMMIT;
+SQL
+pid_pol7=$!
+ready=0
+for _ in $(seq 1 100); do
+  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='b1_gate_policy7' AND state='active'")"
+  if [[ "$count" -ge 1 ]]; then ready=1; break; fi
+  sleep 0.02
+done
+[[ "$ready" -eq 1 ]] || { echo "FAIL: policy session not ready"; wait "$pid_pol7" || true; exit 1; }
+assert_empty
+wait "$pid_pol7"
+assert_empty
+[[ "$(scalar "SELECT policy_version FROM b1_gate_test.state WHERE singleton")" == v2 ]] || {
+  echo "FAIL: policy change not committed"; exit 1;
+}
+echo "PASS: concurrent policy change invalidates public reads"
+
 psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA b1_gate_test CASCADE" >/dev/null
-rm -f "$writerlog" "$readerlog" "$holdlog" "$withdrawlog"
+rm -f "$writerlog" "$readerlog" "$holdlog" "$withdrawlog" "$w1" "$w2" "$revoke5" "$approve5" "$dirty6" "$policy7"
 echo "B1_GATE_POSTGRES_CONCURRENCY_COMPLETE"
