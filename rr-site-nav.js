@@ -8,6 +8,7 @@ const links=[
 ['./index.html','ホーム','Home'],['./journal.html','Journal','Journal'],
 ['./ranking.html','Ranking','Ranking'],['./territory.html','Territory','Territory'],
 ['./today.html','Today','Today'],['./gps-art.html','GPS Art','GPS Art'],
+['./ring-tools.html','Ring Tools','Ring Tools'],
 ['./about-runners-rings.html','About','About'],['./team.html','チーム','Team'],['./how-to.html','使い方','How to use'],
 ['./partners.html','パートナー','Partners'],['./contact.html','お問い合わせ','Contact']];
 const css=document.createElement('style');css.textContent=`
