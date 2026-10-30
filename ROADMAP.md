@@ -1,3 +1,10 @@
+### B-1 isolated GitHub Actions performance run #2 (2026-10-30 16:16 JST)
+- Manually triggered GitHub Actions workflow #2 succeeded (20s job). 100 synthetic runs and local stand-in Today row trigger; 12 alternating trials each across batch/single-row and B-1 on/off, 48 recorded measurements.
+- **Mean / median / p95 / max in ms (n=12 each):** batch B-1 OFF 0.428 / 0.421 / 0.465 / 0.471; batch ON 0.505 / 0.446 / 0.801 / 1.190; single-row OFF 0.631 / 0.628 / 0.665 / 0.675; single-row ON 2.353 / 2.366 / 3.106 / 3.149.
+- Today stand-in event count =100 under all four modes in every trial. Mean latency increase for batch +0.077ms / 100 rows; single-row +1.722ms / 100 rows. These figures are for **simplified synthetic local triggers**, not production function/pg_net. Concurrency, live load, HTTP and actual SQL source are outside this test.
+- Repository ingestion pattern check: supabase/garmin-activity-reliability.sql function public.garmin_commit_activity inserts at most one Garmin run per call with INSERT INTO public.runs ... ON CONFLICT DO NOTHING. Thus at least this ingestion path executes individual INSERT statements. Other import paths (Strava, COROS, GPX/FIT) not yet exhaustively verified. Do not extrapolate the batch-only test to all ingestion.
+- Muse condition 2 (narrowed) remains open pending complete ingestion paths, production-equivalent Today hook/dummy outbound sink and parallel contention checks. Publication OFF.
+
 ### B-1 isolated GitHub Actions performance run #1 (2026-10-30 16:10 JST)
 - GitHub Actions manually initiated by user: [workflow run #41018433555](https://github.com/atsuoebara/tree-age-map/actions/runs/41018433555), completed successfully. Synthetic-only PostgreSQL 16 environment; SQL harness uses temporary tables and ROLLBACK; production Supabase not contacted.
 - For 100 synthetic rows inserted in one statement, B-1 local simulated statement trigger + row-level Today stand-in: EXPLAIN ANALYZE execution 0.709 ms, B-1 trigger 0.177 ms / 1 call, Today stand-in 0.406 ms / 100 calls, event count 100.
