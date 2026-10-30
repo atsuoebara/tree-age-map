@@ -1,3 +1,10 @@
+### B-1 Muse second performance re-audit 2026-10-30 17:41–17:50 JST
+- Muse independent audit judgment: **condition 2 mostly resolved but NOT final pass**; no mandatory product code changes. Condition 1 previously cleared. Public publication remains OFF.
+- Remaining (i): run isolated A/B using **actual definition** of `rr_private.invalidate_region_rings_cache()` and corresponding nonpublic tables, Today local stub permitted; no need to reproduce pg_net.
+- Remaining (ii): collect actual numeric pgbench TPS/latency and concurrent lock-wait samples, and continue read-only production Today success/duration and DB lock observations across several weeks including around the marathon and bulk import. Investigate repeated lock waits or sync failures.
+- Separate publication gates remain: distinct formal publication permission, differencing/anonymity suppression, and revocation cache handling. Do not mark B-1 public version complete.
+- Preparation commit `b5793da`: `docs/b1-production-invalidation-isolated-fixture.sql` contains the function body read-only from production `pg_get_functiondef`, plus minimal private fixture tables for disposable PostgreSQL. It has **not** yet been run or integrated into benchmark workflow and is not proof of performance.
+
 ### B-1 isolated workflow #6 repeated A/B measurements (2026-10-30)
 - User screenshot of workflow #6, successful; v2 local benchmark output: for 100 rows per trial, 12 trials each with stubbed Today events:
   - batch100 B-1 OFF avg 0.391 ms, median 0.392 ms, p95 0.418 ms, max 0.431 ms.
