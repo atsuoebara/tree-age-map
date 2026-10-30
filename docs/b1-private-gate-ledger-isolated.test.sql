@@ -121,13 +121,29 @@ BEGIN
 END $b1_t4$;
 \echo 'B1_M2_LEDGER_APPEND_ONLY_PASS'
 
--- Legacy trigger dirty must close the new read, even with gate ON.
-UPDATE rr_private.region_rings_approved_year SET permanently_suppressed=true WHERE country_code='JP' AND activity_year=2024;
+-- Independent M1/M2 proof: a *different, unsuppressed* cell must first
+-- return a value, then legacy dirty alone must close it.
+INSERT INTO rr_private.region_rings_approved_year
+(country_code,activity_year,rounded_distance_km,generation,policy_version,approved,approved_at,closed_after)
+VALUES('US',2024,900,1,'v1',true,now(),timestamptz '2025-04-01 00:00+00');
+DO $b1_t5_before$
+BEGIN
+ IF (SELECT distance_km FROM rr_private.b1_read_approved_year('US',2024)) IS DISTINCT FROM 900 THEN
+   RAISE EXCEPTION 'dirty precondition: unsuppressed synthetic cell must be visible';
+ END IF;
+END $b1_t5_before$;
+\echo 'B1_LEGACY_DIRTY_BASELINE_VISIBLE_PASS'
 UPDATE rr_private.region_rings_refresh_state SET is_dirty=true WHERE singleton;
 DO $b1_t5$
 BEGIN
- IF EXISTS(SELECT 1 FROM rr_private.b1_read_approved_year('JP',2024)) THEN
-  RAISE EXCEPTION 'legacy dirty gate leaked';
+ IF (SELECT publication_enabled FROM rr_private.region_rings_publication_state WHERE singleton) IS DISTINCT FROM true THEN
+  RAISE EXCEPTION 'dirty test accidentally disabled new gate';
+ END IF;
+ IF (SELECT permanently_suppressed FROM rr_private.region_rings_approved_year WHERE country_code='US' AND activity_year=2024) IS DISTINCT FROM false THEN
+  RAISE EXCEPTION 'dirty test accidentally suppressed cell';
+ END IF;
+ IF EXISTS(SELECT 1 FROM rr_private.b1_read_approved_year('US',2024)) THEN
+  RAISE EXCEPTION 'legacy dirty gate leaked unsuppressed cell';
  END IF;
 END $b1_t5$;
 \echo 'B1_LEGACY_DIRTY_FAIL_CLOSED_PASS'
