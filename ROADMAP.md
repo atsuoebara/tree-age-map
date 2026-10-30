@@ -1,3 +1,8 @@
+### B-1 isolated trigger performance probe (2026-10-30)
+- Real runs zero-row UPDATE trigger 1.669ms and 1.739ms, one call per statement. Not a real import.
+- Temporary table transaction/rollback performance probes using identical invalidation function: 1,000 inserted rows, one trigger call at 1.631ms (total 2.635ms); 10,000 rows, one call at 2.168ms (total 12.269ms). No production run records modified.
+- No concurrent-session locks or actual Today sync measured. This is a limited smoke test. Muse bulk-ingestion performance condition remains open. Public publication OFF.
+
 ### B-1 consent revocation rollback tests (2026-10-30)
 - Temporary transactional SQL tests, always ROLLBACK. Synthetic candidate records disappeared after preference UPDATE, formal authorization INSERT, and formal authorization UPDATE from true to false (revocation). Each check returned zero remaining candidates and the corresponding invalidation reason.
 - Afterward candidate rows 0, formal authorizations 0, preference records 1, publication flag false. No permanent user or running data modifications.
