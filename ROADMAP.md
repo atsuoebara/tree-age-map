@@ -1,3 +1,8 @@
+### B-1 isolated 10k A/B timing (2026-10-30)
+- 10,000-row temporary-table insert without invalidation trigger: EXPLAIN ANALYZE total 7.353 ms. Same-size temporary-table insert using the existing B-1 invalidation function as statement trigger: total 23.226 ms; trigger 16.047 ms, invoked once. Difference ~15.873 ms in two single measurements; not a statistically valid performance estimate.
+- Both tests ran inside transactions rolled back, with no user run changes. Different temp tables and separate executions mean environmental effects are uncontrolled. Real runs table, original Today Edge Function hook, concurrent contention and p95/p99 not covered.
+- **Muse condition 2 remains open** pending production-equivalent ingestion comparison and lock/Today-impact measurements; publication remains OFF.
+
 ### B-1 Today ingestion structure and lock review (2026-10-30)
 - Read-only inspection confirmed two enabled triggers on public.runs: existing trg_rings_today_live_sync (row-level AFTER INSERT or UPDATE of route/distance_km/activity_date/deleted_at; sends async net.http_post to the Today Edge Function) and B-1 b1_runs_invalidate (statement-level AFTER INSERT/UPDATE/DELETE; invalidates private staging).
 - Snapshot pg_stat_activity showed 0 waiting Lock events, not evidence of no contention across time. pg_stat_statements is present but lacks a pre-change baseline; existing aggregate numbers cannot prove regression absence.
