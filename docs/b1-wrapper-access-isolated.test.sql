@@ -71,3 +71,35 @@ BEGIN
  THEN RAISE EXCEPTION 'revoked approver still has execute'; END IF;
 END $$;
 \echo 'B1_WRAPPER_REVOKE_PASS'
+
+
+-- Exercise emergency-stop and private-read entry points through individual identities.
+CREATE ROLE isolated_carol LOGIN INHERIT;
+CREATE ROLE isolated_dan LOGIN INHERIT;
+GRANT b1_emergency_stopper TO isolated_carol;
+GRANT b1_private_reader TO isolated_dan;
+SET SESSION AUTHORIZATION isolated_carol;
+DO $b1_stop_wrapper$
+DECLARE gen bigint;
+BEGIN
+ IF has_function_privilege(current_user,'rr_private.b1_wrapped_start()','EXECUTE')
+ THEN RAISE EXCEPTION 'stopper can start'; END IF;
+ IF has_table_privilege(current_user,'rr_private.region_rings_publication_state','UPDATE')
+ THEN RAISE EXCEPTION 'stopper can update state directly'; END IF;
+ gen:=rr_private.b1_wrapped_stop('isolated emergency stop test');
+ IF gen IS NULL THEN RAISE EXCEPTION 'stop wrapper returned NULL'; END IF;
+END $b1_stop_wrapper$;
+RESET SESSION AUTHORIZATION;
+\echo 'B1_WRAPPER_STOP_EXECUTED_PASS'
+SET SESSION AUTHORIZATION isolated_dan;
+DO $b1_read_wrapper$
+BEGIN
+ IF has_function_privilege(current_user,'rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
+ THEN RAISE EXCEPTION 'reader can approve'; END IF;
+ IF has_table_privilege(current_user,'rr_private.region_rings_approved_year','SELECT')
+ THEN RAISE EXCEPTION 'reader can read snapshots directly'; END IF;
+ IF EXISTS(SELECT 1 FROM rr_private.b1_wrapped_read('JP',2023))
+ THEN RAISE EXCEPTION 'private reader leaked stopped publication'; END IF;
+END $b1_read_wrapper$;
+RESET SESSION AUTHORIZATION;
+\echo 'B1_WRAPPER_READ_EXECUTED_PASS'
