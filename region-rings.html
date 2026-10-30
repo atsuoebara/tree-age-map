@@ -12,8 +12,8 @@ button,select{font:inherit;min-height:44px;border-radius:10px;padding:9px 13px;b
 button[aria-pressed=true]{background:#78eaff;color:#0b1422;font-weight:bold}
 button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
 .controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-#bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;min-height:0;height:205px;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
-.item{display:flex;flex:1;min-width:58px;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}
+#bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;height:205px;min-height:0;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
+.item{display:flex;flex:0 0 75px;min-width:58px;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}
 .item button{border:0;padding:0;min-height:3px;width:100%;max-width:70px;background:#78eaff;border-radius:6px 6px 2px 2px}
 .item button[aria-pressed=true]{background:#eaff00}.item span{font-size:12px;white-space:nowrap}
 #logo{width:90px;height:90px;object-fit:contain}
@@ -36,7 +36,7 @@ const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co'
 const $=id=>document.getElementById(id);let mode='year',rows=[],selection='',selectedYear=new Date().getFullYear(),generation=0;
 const num=x=>Number(x)||0;
 function chartEntries(){
- if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
+ if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>b-a);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
  return Array.from({length:12},(_,i)=>{const subset=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.period_month)===i+1);return {key:String(i+1),label:(i+1)+'月',km:subset.reduce((a,x)=>a+num(x.distance_km),0),runs:subset.reduce((a,x)=>a+num(x.run_count),0)}});
 }
 function render(){
@@ -44,7 +44,7 @@ function render(){
  $('year').hidden=mode!=='month';$('chartTitle').textContent=mode==='year'?'年別走行距離':selectedYear+'年の月別走行距離';
  const entries=chartEntries();const group=$('bars');group.replaceChildren();
  if(!entries.length){$('period').textContent='記録なし';$('km').textContent='0 km';$('runs').textContent='0 回';return;}
- if(!entries.some(x=>x.key===selection))selection=entries[entries.length-1].key;
+ if(!entries.some(x=>x.key===selection))selection=entries[0].key;
  const max=Math.max(1,...entries.map(x=>x.km));
  for(const row of entries){const item=document.createElement('div');item.className='item';
  const value=document.createElement('span');value.textContent=row.km.toFixed(1);
@@ -60,9 +60,9 @@ async function load(){const seq=++generation;const option=$('region').selectedOp
  $('status').textContent='集計中…';const {data,error}=await sb.rpc('get_my_region_rings',{p_country:option.dataset.country,p_region:option.value,p_year:null});
  if(seq!==generation)return;
  if(error){$('status').textContent='集計を取得できませんでした。';return;}
- rows=data||[];const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);
+ rows=data||[];const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>b-a);
  const select=$('year');select.replaceChildren();for(const y of years){const o=document.createElement('option');o.value=y;o.textContent=y+'年';select.append(o);}
- if(years.length&&!years.includes(selectedYear))selectedYear=years[years.length-1];select.value=String(selectedYear);
+ if(years.length&&!years.includes(selectedYear))selectedYear=years[0];select.value=String(selectedYear);
  selection=mode==='year'?String(selectedYear):'1';render();
  $('status').textContent=rows.length?'本人の地域別データを表示しています。':'この地域の集計データはまだありません。';
 }
