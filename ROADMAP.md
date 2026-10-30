@@ -1,3 +1,10 @@
+### B-1 isolated run #8 audit measurements (2026-10-30)
+- Verified full GitHub Actions job log for successful isolated run #8. Real B-1 invalidation function definition, synthetic private tables, Today local stub only.
+- 100-row repeated A/B (n=12 per mode): batch OFF 0.238ms / ON 0.330ms, individual OFF 0.363ms / ON 2.413ms; Today event count 100 in all cases.
+- Two-client 500 transactions each, six A/B trials per mode, all 12,000 transactions succeeded. Mean latency OFF 0.267ms / ON 0.313ms. Mean TPS OFF 7575.624 / ON 6385.650. Each trial produced 1000 Today stub events.
+- Sampled lock waiters: OFF zero in six trials; ON maximum one in three of six trials. No failures observed; this repeat lock signal requires Muse review, not automatic clearance. Samples are sparse.
+- This is local disposable PostgreSQL, not production or HTTP/pg_net. Continue normal read-only production monitoring. Condition 2 pending; publication OFF.
+
 ### B-1 workflow #7 harness metric parser error (2026-10-30)
 - Manual isolated Actions run #7 failed in concurrency trial 1 (B-1 OFF) **after** pgbench completed 1,000/1,000 transactions with 0 failures. Log showed 0.523ms average latency and 3827.707242 TPS (without initial connection time), followed by `ERROR: pgbench metrics missing`. This is a test-harness metric parser problem, not evidence of production or B-1 trigger failure.
 - Fixed `docs/b1-concurrency-benchmark.sh` metric capture from broken sed regex to awk field extraction, with numeric validation (commit `e38a418`). Verification: GitHub source inspection; **not yet rerun**, so no claim of passing full combined test.
