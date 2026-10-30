@@ -1,3 +1,10 @@
+### B-1 major import write shape confirmed (2026-10-30)
+- **Strava:** production Supabase Edge Function `strava-sync` was read; when `newRuns.length > 0`, it calls `supabase.from("runs").upsert(newRuns,{onConflict:"user_id,strava_id",ignoreDuplicates:true})` as one array write per sync invocation/page. Thus B-1 statement trigger fires once per batch statement, not once per Strava run. Page size and actual PostgREST behavior under large imports may still warrant staging verification.
+- **COROS:** `index.html` `importFromCoros()` invokes `coros-sync` to obtain file URLs, then iterates `files` and calls `saveActivityToCloud(activity)` once per parsed FIT activity. `saveActivityToCloud` sends one JSON object per POST to `/rest/v1/runs`. Thus COROS is individual-write path.
+- **GPX/FIT/ZIP:** import loops in `index.html` also call `saveActivityToCloud(activity)` per run; individual-write path.
+- **Garmin:** `public.garmin_commit_activity` uses one INSERT for one activity per function call; individual-write path.
+- Synthetic GitHub Actions benchmark #2 tested 100-row one-statement and 100 individual statements (12 trials each, B-1 on/off), but its Today/B-1 triggers are **stubs**, not complete production logic. Actual external HTTP behavior and parallel contention remain untested; Muse condition 2 (narrowed) remains OPEN. Public release remains OFF.
+
 ### B-1 import pathway source inspection (2026-10-30)
 - Inspected current main branch index.html. Function `saveActivityToCloud(activity)` performs a direct POST to `SUPABASE_RUNS_URL` (`/rest/v1/runs`) with one activity JSON payload; call sites include distinct file/import loops (around lines 5538, 5824, 14478, 15589). Therefore file-import path has **one SQL/HTTP write request per activity**, not a single bulk POST for all activities; some sync pathways may also call the same function.
 - Inspected `supabase/garmin-activity-reliability.sql`: `public.garmin_commit_activity` inserts at most one `public.runs` row per call, `ON CONFLICT DO NOTHING`. Garmin per-activity statement evidence established.
