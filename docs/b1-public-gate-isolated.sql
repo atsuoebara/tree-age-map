@@ -38,6 +38,35 @@ BEGIN
  WHERE singleton RETURNING generation INTO next_generation;
  RETURN next_generation;
 END $$;
+-- Synthetic re-approval must lock the gate and refuse dirty/closed generations.
+CREATE FUNCTION b1_gate_test.try_reapprove(p_expected_generation bigint)
+RETURNS boolean LANGUAGE plpgsql AS $
+DECLARE s b1_gate_test.state%ROWTYPE;
+BEGIN
+ SELECT * INTO s FROM b1_gate_test.state WHERE singleton FOR UPDATE;
+ IF NOT FOUND OR NOT s.enabled OR s.dirty OR s.generation<>p_expected_generation THEN
+   RETURN false;
+ END IF;
+ UPDATE b1_gate_test.snapshot
+ SET approved=true, generation=s.generation, policy_version=s.policy_version
+ WHERE country='JP' AND year=2026;
+ RETURN FOUND;
+END $;
+-- Policy changes invalidate the same global gate used for revocation.
+CREATE FUNCTION b1_gate_test.change_policy(p_version text)
+RETURNS bigint LANGUAGE plpgsql AS $
+DECLARE next_generation bigint;
+BEGIN
+ UPDATE b1_gate_test.state SET
+ policy_version=p_version,
+ enabled=false,
+ dirty=true,
+ generation=CASE WHEN policy_version IS DISTINCT FROM p_version
+                      THEN generation+1 ELSE generation END
+ WHERE singleton RETURNING generation INTO next_generation;
+ RETURN next_generation;
+END $;
+
 -- Baseline fail-closed, then test approval and stale snapshots.
 DO $$
 BEGIN
