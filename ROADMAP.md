@@ -1,3 +1,8 @@
+### B-1 workflow #7 harness metric parser error (2026-10-30)
+- Manual isolated Actions run #7 failed in concurrency trial 1 (B-1 OFF) **after** pgbench completed 1,000/1,000 transactions with 0 failures. Log showed 0.523ms average latency and 3827.707242 TPS (without initial connection time), followed by `ERROR: pgbench metrics missing`. This is a test-harness metric parser problem, not evidence of production or B-1 trigger failure.
+- Fixed `docs/b1-concurrency-benchmark.sh` metric capture from broken sed regex to awk field extraction, with numeric validation (commit `e38a418`). Verification: GitHub source inspection; **not yet rerun**, so no claim of passing full combined test.
+- Production data unaffected; public aggregation remains OFF. Pending isolated rerun and weeks of read-only Today monitoring per Muse audit.
+
 ### B-1 actual-function isolation & numerical concurrency evidence prepared (2026-10-30)
 - Following Muse 17:41–17:50 second performance audit, integrated the **exact production trigger function body** `rr_private.invalidate_region_rings_cache()` from read-only `pg_get_functiondef` into disposable PostgreSQL A/B (same private state/candidate table names, standalone minimal schema). Commits: `6cd7ee3` repeated A/B, `aa5c5ba` two-client fixture.
 - Enhanced `docs/b1-concurrency-benchmark.sh` to output `B1_METRICS` with pgbench average latency, TPS, max sampled lock waiters and sampling count for each of 12 alternating trial modes; log also verifies exactly 1000 Today stub event rows per trial. Commit `a0dab68`.
