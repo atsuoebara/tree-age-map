@@ -5,6 +5,7 @@ on:
     paths:
       - 'docs/b1-production-private-gate-and-ledger-v01-20261030.sql'
       - 'docs/b1-private-gate-ledger-isolated.test.sql'
+      - 'docs/b1-private-approval-start-v01-20261030.sql'
       - '.github/workflows/b1-private-gate-ledger-isolated.yml'
 permissions:
   contents: read
