@@ -29,6 +29,10 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 <p class="small muted"><span style="color:#ff76bc">■</span> ピンク＝最多距離　<span style="color:#eaff00">□</span> 黄緑の枠＝選択中。棒をタップして切り替え、最新の期間は右端です。過去を見るには左へスクロールしてください。</p></section>
 <section class="card" aria-live="polite"><h2 id="period">選択期間</h2><div class="hero"><img id="logo" src="./icon.PNG" alt="Runner's Ringsの年輪ロゴ"><div><div id="km">—</div><p class="muted" id="runs">—</p></div></div>
 <p class="muted small">距離は保存済みGPSの地域別推計値です。境界を横断する区間などで誤差が生じる場合があります。地域ごとに記録が反映されるまで時間差が生じることがあります。</p></section>
+<section class="card"><h2>地域の年輪・公開参加設定（準備中）</h2>
+<p class="muted small">将来の地域別匿名集計への参加希望を記録します。現在は一般公開の集計に使用されません。参加は初期OFFで、いつでも取り消せます。公開開始前に対象・保護条件を改めて案内します。</p>
+<label><input id="publicConsent" type="checkbox" disabled> 将来の地域別匿名集計への参加を希望する</label>
+<div class="controls"><button id="saveConsent" type="button" disabled>希望を保存</button></div><p class="small muted" id="consentStatus" role="status">ログイン確認中…</p></section>
 <p id="status" role="status">ログイン状態を確認しています…</p>
 </main><script>
 (()=>{'use strict';
@@ -74,7 +78,27 @@ $('yearMode').onclick=()=>{mode='year';selection=String(selectedYear);render(tru
 $('monthMode').onclick=()=>{mode='month';selection=latestMonthWithData();render(true)};
 $('year').onchange=e=>{selectedYear=Number(e.target.value);selection=latestMonthWithData();render(true)};
 $('region').onchange=load;
+let consentUser=null;
+async function loadConsent(userId){
+ consentUser=userId;
+ const {data,error}=await sb.from('region_rings_consent').select('consented').eq('user_id',userId).maybeSingle();
+ if(error){$('consentStatus').textContent='参加設定を取得できません。';return;}
+ $('publicConsent').checked=data?.consented===true;
+ $('publicConsent').disabled=false;$('saveConsent').disabled=false;
+ $('consentStatus').textContent='現在の希望：'+($('publicConsent').checked?'参加希望あり':'参加希望なし')+'（一般公開は未開始）';
+}
+$('saveConsent').onclick=async()=>{
+ if(!consentUser)return;
+ const checked=$('publicConsent').checked;
+ $('saveConsent').disabled=true;$('publicConsent').disabled=true;
+ $('consentStatus').textContent='保存中…';
+ const {error}=await sb.from('region_rings_consent').upsert({user_id:consentUser,consented:checked,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error){$('consentStatus').textContent='保存に失敗しました。もう一度お試しください。';}
+ else {$('consentStatus').textContent=checked?'参加希望を保存しました。まだ公開集計には使用されません。':'参加希望を取り消しました。';}
+ $('saveConsent').disabled=false;$('publicConsent').disabled=false;
+};
 (async()=>{try{const {data:{user},error:authError}=await sb.auth.getUser();if(authError||!user){$('status').textContent='Runner’s Ringsにログインしてから開いてください。';$('region').replaceChildren();return;}
+ await loadConsent(user.id);
  const {data,error}=await sb.rpc('get_my_ring_regions');if(error)throw error;
  const select=$('region');select.replaceChildren();for(const r of data||[]){const option=document.createElement('option');option.value=r.region_code;option.dataset.country=r.country_code;option.textContent=[r.parent_region_name,r.region_name].filter(Boolean).join(' / ');select.append(option);}
  if(!select.options.length){$('status').textContent='地域別に集計されたランがありません。';return;}await load();
