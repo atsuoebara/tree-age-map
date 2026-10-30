@@ -1,3 +1,8 @@
+### B-1 repeated isolated performance A/B (2026-10-30)
+- In a single transaction rolled back, temporary 10,000-row bulk INSERT was tested 12 times each for no trigger vs the identical B-1 invalidation function as an AFTER INSERT statement trigger. Order alternated each iteration, with no existing production run data mutated.
+- No trigger: mean 7.084ms, median 6.003ms, p95 11.810ms, min 5.668ms, max 15.639ms (n=12). With trigger: mean 7.066ms, median 6.502ms, p95 9.408ms, min 5.728ms, max 10.667ms (n=12). No major delay seen in this isolated workload; small sample and different table workload, not proof of real-ingest performance.
+- Remaining: production-equivalent runs import with Today live-sync, concurrent connection lock contention, and Muse independent final audit. Nonpublic candidate publication disabled; do not declare the performance gate fully cleared.
+
 ### B-1 isolated 10k A/B timing (2026-10-30)
 - 10,000-row temporary-table insert without invalidation trigger: EXPLAIN ANALYZE total 7.353 ms. Same-size temporary-table insert using the existing B-1 invalidation function as statement trigger: total 23.226 ms; trigger 16.047 ms, invoked once. Difference ~15.873 ms in two single measurements; not a statistically valid performance estimate.
 - Both tests ran inside transactions rolled back, with no user run changes. Different temp tables and separate executions mean environmental effects are uncontrolled. Real runs table, original Today Edge Function hook, concurrent contention and p95/p99 not covered.
