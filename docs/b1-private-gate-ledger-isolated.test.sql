@@ -10,6 +10,7 @@ CREATE TABLE rr_private.region_rings_refresh_state (
 );
 INSERT INTO rr_private.region_rings_refresh_state VALUES(true,false,false);
 \i docs/b1-production-private-gate-and-ledger-v01-20261030.sql
+\i docs/b1-private-approval-start-v01-20261030.sql
 
 -- Prove M1: the legacy public flag remains false, yet the new gate can read
 -- a specially created synthetic approved year once the review-only state is enabled.
@@ -174,4 +175,64 @@ BEGIN
  THEN RAISE EXCEPTION 'public roles unexpectedly granted privileges'; END IF;
 END $b1_perm$;
 \echo 'B1_PRIVATE_ROLES_DENIED_PASS'
+-- Full synthetic lifecycle: no review -> no approval; review -> approve but still OFF;
+-- start only with a current reviewed value; stop invalidates without replay.
+UPDATE rr_private.region_rings_approved_year SET permanently_suppressed=true
+ WHERE country_code='US' AND activity_year=2024;
+UPDATE rr_private.region_rings_refresh_state SET is_dirty=false WHERE singleton;
+UPDATE rr_private.region_rings_publication_state
+ SET policy_version='v2', publication_enabled=false,is_dirty=true
+ WHERE singleton;
+DO $b1_lifecycle0$
+BEGIN
+ IF rr_private.b1_private_approve_year('JP',2023,'synthetic operator') THEN
+  RAISE EXCEPTION 'approval without external privacy review';
+ END IF;
+ IF rr_private.b1_private_start('synthetic operator') THEN
+  RAISE EXCEPTION 'start without approved cell';
+ END IF;
+END $b1_lifecycle0$;
+\echo 'B1_NO_REVIEW_NO_RELEASE_PASS'
+INSERT INTO rr_private.region_rings_release_decision
+(country_code,activity_year,generation,policy_version,rounded_distance_km,closed_after,
+ privacy_review_ref,consent_review_ref,reviewed_by,reviewed_at,accepted)
+VALUES('JP',2023,2,'v2',600,timestamptz '2024-04-01 00:00+00',
+ 'synthetic-privacy-review','synthetic-consent-review','isolated reviewer',now(),true);
+DO $b1_lifecycle1$
+BEGIN
+ IF NOT rr_private.b1_private_approve_year('JP',2023,'synthetic operator') THEN
+  RAISE EXCEPTION 'reviewed current-generation approval rejected';
+ END IF;
+ IF EXISTS(SELECT 1 FROM rr_private.b1_read_approved_year('JP',2023)) THEN
+  RAISE EXCEPTION 'approval accidentally started delivery';
+ END IF;
+ IF rr_private.b1_private_approve_year('JP',2023,'synthetic operator') THEN
+  RAISE EXCEPTION 'duplicate approval unexpectedly accepted';
+ END IF;
+ IF NOT rr_private.b1_private_start('synthetic operator') THEN
+  RAISE EXCEPTION 'reviewed release start failed';
+ END IF;
+ IF (SELECT distance_km FROM rr_private.b1_read_approved_year('JP',2023)) IS DISTINCT FROM 600 THEN
+  RAISE EXCEPTION 'approved private gate did not return synthetic value';
+ END IF;
+END $b1_lifecycle1$;
+\echo 'B1_APPROVE_THEN_START_PASS'
+SELECT rr_private.b1_private_stop('lifecycle revocation','isolated test') AS revoked_generation;
+DO $b1_lifecycle2$
+BEGIN
+ IF EXISTS(SELECT 1 FROM rr_private.b1_read_approved_year('JP',2023)) THEN
+  RAISE EXCEPTION 'revoked publication still readable';
+ END IF;
+ IF rr_private.b1_private_start('synthetic operator') THEN
+  RAISE EXCEPTION 'stale accepted review restarted a stopped generation';
+ END IF;
+ IF rr_private.b1_private_approve_year('JP',2023,'synthetic operator') THEN
+  RAISE EXCEPTION 'old generation reapproval succeeded after revocation';
+ END IF;
+ IF (SELECT count(*) FROM rr_private.region_rings_publication_ledger
+     WHERE country_code='JP' AND activity_year=2023 AND action='start') <> 1 THEN
+  RAISE EXCEPTION 'missing single publication start audit event';
+ END IF;
+END $b1_lifecycle2$;
+\echo 'B1_REVOKE_STALE_APPROVAL_BLOCKED_PASS'
 \echo 'B1_PRIVATE_GATE_ISOLATED_COMPLETE'
