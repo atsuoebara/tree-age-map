@@ -1,0 +1,51 @@
+name: B-1 public gate isolation tests
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/b1-public-gate-isolated.sql'
+      - 'docs/b1-public-gate-isolated.sh'
+      - 'docs/b1-public-delivery-isolated.test.js'
+      - '.github/workflows/b1-public-gate-isolated.yml'
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bench
+          POSTGRES_PASSWORD: bench-only
+          POSTGRES_DB: b1_bench
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bench -d b1_bench"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: bench
+      PGPASSWORD: bench-only
+      PGDATABASE: b1_bench
+    steps:
+      - uses: actions/checkout@v4
+      - name: Synthetic JS gate checks
+        run: node docs/b1-public-delivery-isolated.test.js
+      - name: Isolated PostgreSQL concurrent withdrawal and reads
+        run: |
+          set -euo pipefail
+          bash docs/b1-public-gate-isolated.sh | tee b1-gate-concurrency.log
+      - name: Store concurrency evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-public-gate-isolated
+          path: b1-gate-concurrency.log
+          if-no-files-found: ignore
+          retention-days: 7
