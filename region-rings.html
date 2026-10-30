@@ -12,8 +12,8 @@ button,select{font:inherit;min-height:44px;border-radius:10px;padding:9px 13px;b
 button[aria-pressed=true]{background:#78eaff;color:#0b1422;font-weight:bold}
 button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
 .controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-#bars{display:flex;align-items:end;gap:8px;overflow-x:auto;min-height:210px;padding:15px 4px}
-.item{display:flex;flex:1;min-width:45px;flex-direction:column;align-items:center;gap:7px}
+#bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;min-height:0;height:205px;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
+.item{display:flex;flex:1;min-width:58px;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}
 .item button{border:0;padding:0;min-height:3px;width:100%;max-width:70px;background:#78eaff;border-radius:6px 6px 2px 2px}
 .item button[aria-pressed=true]{background:#eaff00}.item span{font-size:12px;white-space:nowrap}
 #logo{width:90px;height:90px;object-fit:contain}
@@ -25,8 +25,8 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 <p class="muted small warn">B-1 開発版：本人の記録だけを表示します。公開地域ページや他のランナーのデータはまだ表示しません。</p>
 <section class="card"><label for="region">地域</label><br><select id="region" style="width:100%;margin-top:8px"><option value="">読み込み中…</option></select>
 <div class="controls"><button id="yearMode" type="button" aria-pressed="true">年ごと</button><button id="monthMode" type="button" aria-pressed="false">月ごと</button><select id="year" aria-label="対象年" hidden></select></div>
-<h2 id="chartTitle">年別走行距離</h2><div id="bars" role="group" aria-label="期間を選ぶ棒グラフ"></div>
-<p class="small muted">棒をタップすると、その期間の年輪が変わります。</p></section>
+<h2 id="chartTitle">年別走行距離</h2><div id="bars" role="group" aria-label="期間を選ぶ棒グラフ" tabindex="0"></div>
+<p class="small muted">棒をタップすると、その期間の年輪が変わります。左右にスワイプして過去の年も確認できます。</p></section>
 <section class="card" aria-live="polite"><h2 id="period">選択期間</h2><div class="hero"><img id="logo" src="./icon.PNG" alt="Runner's Ringsの年輪ロゴ"><div><div id="km">—</div><p class="muted" id="runs">—</p></div></div>
 <p class="muted small">距離は保存済みGPSの地域別推計値です。境界を横断する区間などで誤差が生じる場合があります。地域ごとに記録が反映されるまで時間差が生じることがあります。</p></section>
 <p id="status" role="status">ログイン状態を確認しています…</p>
