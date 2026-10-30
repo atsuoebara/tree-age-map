@@ -25,7 +25,7 @@ check('before year closure blocks',()=>{const g=setup();g.enabled=true;g.now=Dat
 check('withdrawal invalidates old generation',()=>{const g=setup();g.enabled=true;const old=g.cells.get('JP:2026');assert.ok(g.read('JP',2026));g.withdraw('JP',2026);g.dirty=false;g.approve('JP',2026,{generation:old.generation});assert.equal(g.read('JP',2026),null);});
 check('repeat withdrawal stays closed',()=>{const g=setup();g.enabled=true;g.withdraw('JP',2026);g.withdraw('JP',2026);assert.equal(g.read('JP',2026),null);});
 check('repeated withdrawal advances generation only once',()=>{const g=setup();g.enabled=true;const a=g.withdraw('JP',2026).generation;const b=g.withdraw('JP',2026).generation;assert.equal(a,b);});
-check('fail closed despite enabled flag',()=>{const g=setup();g.enabled=true;g.withdraw('JP',2026);assert.equal(g.enabled,true);assert.equal(g.read('JP',2026),null);});
+check('withdrawal closes gate even if previously enabled',()=>{const g=setup();g.enabled=true;g.withdraw('JP',2026);assert.equal(g.enabled,false);assert.equal(g.read('JP',2026),null);});
 check('late import cannot edit approved snapshot',()=>{const g=setup();g.enabled=true;const original=g.read('JP',2026);const laterRaw=1299;assert.notEqual(original.distance_km,laterRaw);assert.deepEqual(g.read('JP',2026),original);});
 check('enabling flag alone does not approve cell',()=>{const g=new Gate();g.enabled=true;assert.equal(g.read('JP',2026),null);});
 console.log('B1_ISOLATED_DELIVERY_CONTRACT_PASS '+n+' checks; model only, not production or concurrent API proof');
