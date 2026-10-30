@@ -12,7 +12,7 @@ button,select{font:inherit;min-height:44px;border-radius:10px;padding:9px 13px;b
 button[aria-pressed=true]{background:#78eaff;color:#0b1422;font-weight:bold}
 button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
 .controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-#bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;height:205px;min-height:0;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
+#bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;height:auto;min-height:0;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
 .item{display:flex;flex:0 0 75px;min-width:58px;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}
 .item button{border:0;padding:0;min-height:3px;width:100%;max-width:70px;background:#78eaff;border-radius:6px 6px 2px 2px}
 .item button[aria-pressed=true]{background:#eaff00}.item span{font-size:12px;white-space:nowrap}
@@ -48,7 +48,7 @@ function render(){
  const max=Math.max(1,...entries.map(x=>x.km));
  for(const row of entries){const item=document.createElement('div');item.className='item';
  const value=document.createElement('span');value.textContent=row.km.toFixed(1);
- const bar=document.createElement('button');bar.type='button';bar.style.height=Math.max(3,150*row.km/max)+'px';
+ const bar=document.createElement('button');bar.type='button';bar.style.height=Math.max(3,150*row.km/max)+'px';bar.style.flexShrink='0';
  bar.setAttribute('aria-label',row.label+' '+row.km.toFixed(1)+'キロ');bar.setAttribute('aria-pressed',String(selection===row.key));
  bar.onclick=()=>{selection=row.key;render()};
  const name=document.createElement('span');name.textContent=row.label;item.append(value,bar,name);group.append(item);}
