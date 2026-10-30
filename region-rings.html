@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>地域の年輪（開発版） | Runner's Rings</title>
+<link rel="icon" href="./icon.PNG">
+<style>
+*{box-sizing:border-box}body{background:#0b1422;color:#eff9ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0}
+main{max-width:720px;margin:auto;padding:18px 14px 65px}a{color:#78eaff}
+.card{background:#132638;border:1px solid #345567;border-radius:16px;padding:16px;margin:15px 0}
+header{display:flex;align-items:center;gap:14px}header img{width:75px;height:75px;object-fit:contain}
+h1{font-size:24px;margin:8px 0}h2{font-size:18px}p{line-height:1.65}.muted{color:#b1cad9}.small{font-size:12px}
+button,select{font:inherit;min-height:44px;border-radius:10px;padding:9px 13px;border:1px solid #78eaff;background:#1d3a4e;color:white}
+button[aria-pressed=true]{background:#78eaff;color:#0b1422;font-weight:bold}
+button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+#bars{display:flex;align-items:end;gap:8px;overflow-x:auto;min-height:210px;padding:15px 4px}
+.item{display:flex;flex:1;min-width:45px;flex-direction:column;align-items:center;gap:7px}
+.item button{border:0;padding:0;min-height:3px;width:100%;max-width:70px;background:#78eaff;border-radius:6px 6px 2px 2px}
+.item button[aria-pressed=true]{background:#eaff00}.item span{font-size:12px;white-space:nowrap}
+#logo{width:90px;height:90px;object-fit:contain}
+.hero{display:flex;align-items:center;gap:20px}#km{font-size:30px;color:#eaff00;font-weight:900}
+#status{min-height:24px}.warn{border-left:3px solid #eaff00;padding-left:12px}
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
+<main><a href="./index.html">← Runner's Rings</a>
+<header><img src="./icon.PNG" alt="Runner's Rings"><div><h1>地域の年輪</h1><p class="muted">あなたがこの街に刻んだランニングの歴史</p></div></header>
+<p class="muted small warn">B-1 開発版：本人の記録だけを表示します。公開地域ページや他のランナーのデータはまだ表示しません。</p>
+<section class="card"><label for="region">地域</label><br><select id="region" style="width:100%;margin-top:8px"><option value="">読み込み中…</option></select>
+<div class="controls"><button id="yearMode" type="button" aria-pressed="true">年ごと</button><button id="monthMode" type="button" aria-pressed="false">月ごと</button><select id="year" aria-label="対象年" hidden></select></div>
+<h2 id="chartTitle">年別走行距離</h2><div id="bars" role="group" aria-label="期間を選ぶ棒グラフ"></div>
+<p class="small muted">棒をタップすると、その期間の年輪が変わります。</p></section>
+<section class="card" aria-live="polite"><h2 id="period">選択期間</h2><div class="hero"><img id="logo" src="./icon.PNG" alt="Runner's Ringsの年輪ロゴ"><div><div id="km">—</div><p class="muted" id="runs">—</p></div></div>
+<p class="muted small">距離は保存済みGPSの地域別推計値です。境界を横断する区間などで誤差が生じる場合があります。地域ごとに記録が反映されるまで時間差が生じることがあります。</p></section>
+<p id="status" role="status">ログイン状態を確認しています…</p>
+</main><script>
+(()=>{'use strict';
+const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co','sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM',{auth:{persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id);let mode='year',rows=[],selection='',selectedYear=new Date().getFullYear(),generation=0;
+const num=x=>Number(x)||0;
+function chartEntries(){
+ if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
+ return Array.from({length:12},(_,i)=>{const subset=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.period_month)===i+1);return {key:String(i+1),label:(i+1)+'月',km:subset.reduce((a,x)=>a+num(x.distance_km),0),runs:subset.reduce((a,x)=>a+num(x.run_count),0)}});
+}
+function render(){
+ $('yearMode').setAttribute('aria-pressed',String(mode==='year'));$('monthMode').setAttribute('aria-pressed',String(mode==='month'));
+ $('year').hidden=mode!=='month';$('chartTitle').textContent=mode==='year'?'年別走行距離':selectedYear+'年の月別走行距離';
+ const entries=chartEntries();const group=$('bars');group.replaceChildren();
+ if(!entries.length){$('period').textContent='記録なし';$('km').textContent='0 km';$('runs').textContent='0 回';return;}
+ if(!entries.some(x=>x.key===selection))selection=entries[entries.length-1].key;
+ const max=Math.max(1,...entries.map(x=>x.km));
+ for(const row of entries){const item=document.createElement('div');item.className='item';
+ const value=document.createElement('span');value.textContent=row.km.toFixed(1);
+ const bar=document.createElement('button');bar.type='button';bar.style.height=Math.max(3,150*row.km/max)+'px';
+ bar.setAttribute('aria-label',row.label+' '+row.km.toFixed(1)+'キロ');bar.setAttribute('aria-pressed',String(selection===row.key));
+ bar.onclick=()=>{selection=row.key;render()};
+ const name=document.createElement('span');name.textContent=row.label;item.append(value,bar,name);group.append(item);}
+ const selected=entries.find(x=>x.key===selection);
+ $('period').textContent=mode==='year'?selection+'年の年輪':selectedYear+'年'+selection+'月の年輪';
+ $('km').textContent=selected.km.toFixed(1)+' km';$('runs').textContent=selected.runs+' 地域内走行記録';
+}
+async function load(){const seq=++generation;const option=$('region').selectedOptions[0];if(!option||!option.dataset.country)return;
+ $('status').textContent='集計中…';const {data,error}=await sb.rpc('get_my_region_rings',{p_country:option.dataset.country,p_region:option.value,p_year:null});
+ if(seq!==generation)return;
+ if(error){$('status').textContent='集計を取得できませんでした。';return;}
+ rows=data||[];const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);
+ const select=$('year');select.replaceChildren();for(const y of years){const o=document.createElement('option');o.value=y;o.textContent=y+'年';select.append(o);}
+ if(years.length&&!years.includes(selectedYear))selectedYear=years[years.length-1];select.value=String(selectedYear);
+ selection=mode==='year'?String(selectedYear):'1';render();
+ $('status').textContent=rows.length?'本人の地域別データを表示しています。':'この地域の集計データはまだありません。';
+}
+$('yearMode').onclick=()=>{mode='year';selection=String(selectedYear);render()};
+$('monthMode').onclick=()=>{mode='month';selection='1';render()};
+$('year').onchange=e=>{selectedYear=Number(e.target.value);selection='1';render()};
+$('region').onchange=load;
+(async()=>{try{const {data:{user},error:authError}=await sb.auth.getUser();if(authError||!user){$('status').textContent='Runner’s Ringsにログインしてから開いてください。';$('region').replaceChildren();return;}
+ const {data,error}=await sb.rpc('get_my_ring_regions');if(error)throw error;
+ const select=$('region');select.replaceChildren();for(const r of data||[]){const option=document.createElement('option');option.value=r.region_code;option.dataset.country=r.country_code;option.textContent=[r.parent_region_name,r.region_name].filter(Boolean).join(' / ');select.append(option);}
+ if(!select.options.length){$('status').textContent='地域別に集計されたランがありません。';return;}await load();
+ }catch(e){console.error(e);$('status').textContent='取得に失敗しました。ページを再読み込みしてください。';}})();
+})();
+</script></body></html>
