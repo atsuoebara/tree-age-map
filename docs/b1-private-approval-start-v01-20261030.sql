@@ -81,7 +81,7 @@ CREATE OR REPLACE FUNCTION rr_private.b1_private_start(p_actor_reference text)
 RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $b1_start$
 DECLARE s rr_private.region_rings_publication_state%ROWTYPE;
         legacy rr_private.region_rings_refresh_state%ROWTYPE;
-        a record;
+        v_snapshot record;
         count_approved integer:=0;
 BEGIN
  IF nullif(btrim(p_actor_reference),'') IS NULL THEN RAISE EXCEPTION 'actor required'; END IF;
@@ -91,18 +91,18 @@ BEGIN
  SELECT * INTO legacy FROM rr_private.region_rings_refresh_state WHERE singleton FOR SHARE;
  IF NOT FOUND OR legacy.is_dirty THEN RETURN false; END IF;
  -- Every live, approved snapshot must have an exact accepted review decision.
- FOR a IN SELECT * FROM rr_private.region_rings_approved_year
+ FOR v_snapshot IN SELECT * FROM rr_private.region_rings_approved_year
           WHERE approved AND NOT permanently_suppressed FOR SHARE
  LOOP
-   IF a.generation<>s.generation OR a.policy_version<>s.policy_version
-      OR a.closed_after>statement_timestamp()
-      OR a.activity_year>=EXTRACT(YEAR FROM (statement_timestamp() AT TIME ZONE 'UTC'))
+   IF v_snapshot.generation<>s.generation OR v_snapshot.policy_version<>s.policy_version
+      OR v_snapshot.closed_after>statement_timestamp()
+      OR v_snapshot.activity_year>=EXTRACT(YEAR FROM (statement_timestamp() AT TIME ZONE 'UTC'))
       OR NOT EXISTS (
         SELECT 1 FROM rr_private.region_rings_release_decision d
-        WHERE d.country_code=a.country_code AND d.activity_year=a.activity_year
-          AND d.generation=a.generation AND d.policy_version=a.policy_version
-          AND d.rounded_distance_km=a.rounded_distance_km
-          AND d.closed_after=a.closed_after AND d.accepted
+        WHERE d.country_code=v_snapshot.country_code AND d.activity_year=v_snapshot.activity_year
+          AND d.generation=v_snapshot.generation AND d.policy_version=v_snapshot.policy_version
+          AND d.rounded_distance_km=v_snapshot.rounded_distance_km
+          AND d.closed_after=v_snapshot.closed_after AND d.accepted
       ) THEN RETURN false;
    END IF;
    count_approved:=count_approved+1;
