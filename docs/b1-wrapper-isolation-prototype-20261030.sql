@@ -56,7 +56,7 @@ GRANT EXECUTE ON FUNCTION rr_private.b1_session_actor() TO b1_wrapper_owner;
 -- Reject absent or multiple memberships. A login cannot acquire a second
 -- functional capability merely by changing SET ROLE.
 CREATE OR REPLACE FUNCTION rr_private.b1_require_single_role(p_expected name)
-RETURNS void LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $
+RETURNS void LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 DECLARE v_actor text := session_user;
         v_count integer;
 BEGIN
@@ -68,7 +68,7 @@ BEGIN
  IF v_count <> 1 OR NOT pg_catalog.pg_has_role(v_actor,p_expected,'MEMBER') THEN
   RAISE EXCEPTION 'B1: actor lacks exactly one expected operational role';
  END IF;
-END $;
+END $$;
 ALTER FUNCTION rr_private.b1_require_single_role(name) OWNER TO b1_wrapper_owner;
 REVOKE ALL ON FUNCTION rr_private.b1_require_single_role(name) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION rr_private.b1_require_single_role(name) TO b1_wrapper_owner;
