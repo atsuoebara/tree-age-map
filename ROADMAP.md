@@ -1,3 +1,9 @@
+### B-1 公開配信の隔離契約モデル・12項目検証（2026-10-30）
+- 公開配信の合成モデルをローカルNode.jsで12ケース試験し全件PASS。結果を基に `docs/b1-public-delivery-isolated.test.js` に再実行可能な12ケースをGitHubへ保存（コミット `a83b92f`）。再実行: `node docs/b1-public-delivery-isolated.test.js`。
+- 検証観点：全体公開OFF、承認済み最小応答、dirty、未承認/抑制、世代不一致、同意文面版不一致、年締め前、撤回後旧世代、撤回再実行時の非表示、停止中の旧公開フラグ、締め後の遅延同期、公開フラグONだけでは配信不可。
+- **限定**：あくまでJS合成状態モデルの動作確認で、実Supabase RPC/Edge Function・原子的な撤回競合・CDNキャッシュ失効・T1〜T9匿名安全基準の証明ではない。特に撤回のDB処理の冪等性は未実装・未証明。
+- 本番Supabase/Edge Function/公開ページへの変更なし。一般公開・正式同意取得ともOFF。次は本番DBに変更を加えずに隔離PostgreSQL上の原子的停止・世代一致・同時リクエストを検証し、むせ独立監査。
+
 ### B-1 公開APIの既存環境調査（2026-10-30）
 - 本番Supabaseの `information_schema` と関数名・Edge Function一覧を**読み取りのみ**で照合。既存の参加希望 `public.region_rings_consent`、正式同意用 `rr_private.region_rings_public_authorization`、非公開集計候補 `rr_private.region_rings_public_candidate`、失効・公開OFF状態 `rr_private.region_rings_refresh_state` のカラムを確認。
 - 本人専用の `get_my_region_rings` とToday用 `get_rings_today` は存在。地域の年輪の一般公開専用RPCは確認できず、正式同意を受け付ける製品APIも未実装。既存の非公開候補を直接配信してはいけない。
