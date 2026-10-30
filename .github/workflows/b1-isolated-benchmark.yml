@@ -1,0 +1,42 @@
+name: B-1 isolated PostgreSQL benchmark
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bench
+          POSTGRES_PASSWORD: bench-only
+          POSTGRES_DB: b1_bench
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bench -d b1_bench"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: bench
+      PGPASSWORD: bench-only
+      PGDATABASE: b1_bench
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run synthetic-only B-1 Today-stub comparison
+        run: |
+          psql -v ON_ERROR_STOP=1 -f docs/b1-local-benchmark.sql | tee b1-benchmark.log
+      - name: Save test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-isolated-benchmark
+          path: b1-benchmark.log
+          retention-days: 7
