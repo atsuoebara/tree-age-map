@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ring Tools｜ランニング計算ツール｜Runner's Rings</title>
+<meta name="description" content="無料で使えるランニング計算ツール。マラソンの目標ペース、400mトラックラップ、インターバル、高速レペ、レスト時間。登録不要。">
+<link rel="canonical" href="https://runnersrings.com/ring-tools.html"><link rel="icon" href="./icon.PNG">
+<meta property="og:type" content="website"><meta property="og:url" content="https://runnersrings.com/ring-tools.html"><meta property="og:title" content="Ring Tools｜Runner's Rings"><meta property="og:description" content="レースペース・トラック・インターバル・高速レペの無料計算">
+<style>
+:root{color-scheme:dark;--bg:#0a1424;--card:#14263c;--border:#36516b;--muted:#b8c9d9;--green:#6af5be}
+*{box-sizing:border-box}body{margin:0;min-width:320px;background:radial-gradient(ellipse at 90% 0%,#203854,transparent 40%),var(--bg);color:#f5f8ff;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--green)}header,main,footer{max-width:870px;margin:auto;padding:14px 18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px}header a{font-weight:750;text-decoration:none}
+h1{font-size:clamp(33px,8vw,46px);margin:18px 0 2px}h2{font-size:20px;margin:0 0 14px}
+p{margin:7px 0}.muted{color:var(--muted);font-size:14px}.eyebrow{color:var(--green);font-size:12px;letter-spacing:.14em;font-weight:800}
+button,input,select{font:inherit}button{padding:11px 9px;min-height:44px;border:1px solid var(--border);background:#1b3350;color:white;border-radius:10px;cursor:pointer}
+button[aria-pressed=true]{border-color:var(--green);background:#215347}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--green)}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:23px 0}.tabs button{font-weight:bold;font-size:14px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin:12px 0 20px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:13px;color:var(--muted);font-weight:700}.field input,.field select{min-width:0;width:100%;background:#091c30;border:1px solid #4b6580;border-radius:9px;color:white;padding:11px;min-height:46px}
+.pair{display:flex;align-items:center;gap:5px}.pair input{flex:1;min-width:0}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:17px 0}.metric{background:#0d2635;border:1px solid #2d5d61;border-radius:11px;padding:12px;min-width:0}
+.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;color:var(--green);font-size:clamp(18px,5vw,27px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{padding:10px 6px;border-bottom:1px solid #345068}th{text-align:left;color:var(--muted);font-size:13px}td:last-child,th:last-child{text-align:right}
+.tip{border-left:3px solid #e8f56a;background:#263248;border-radius:4px;padding:11px;font-size:13px;margin-top:12px}
+.warn{color:#ffca92}.lang{display:flex;gap:5px}.lang button{padding:7px 9px;font-size:13px;min-height:36px}
+[hidden]{display:none!important}footer{font-size:12px;color:var(--muted);padding-bottom:30px}
+@media(max-width:380px){.panel{padding:13px}.tabs button{font-size:12px}}
+</style></head><body>
+<header><a href="./index.html">◉ Runner's Rings</a><div class="lang"><button type="button" id="ja" aria-pressed="true">日本語</button><button type="button" id="en" aria-pressed="false">EN</button></div><a href="./index.html" data-ja="ホームへ" data-en="Home">ホームへ</a></header>
+<main><div class="eyebrow">FREE RUNNING CALCULATORS</div><h1>Ring Tools</h1><p class="muted" data-ja="走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。" data-en="Plan the pace, splits and recovery for your next run. Free and no sign-in.">走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。</p>
+<nav class="tabs" aria-label="Ring Tools"><button type="button" data-tab="race" aria-pressed="true" data-ja="🏁 レースペース" data-en="🏁 Race pace">🏁 レースペース</button><button type="button" data-tab="track" aria-pressed="false" data-ja="🏟 400mラップ" data-en="🏟 Track splits">🏟 400mラップ</button><button type="button" data-tab="interval" aria-pressed="false" data-ja="🔁 インターバル" data-en="🔁 Intervals">🔁 インターバル</button><button type="button" data-tab="rep" aria-pressed="false" data-ja="⚡ 高速レペ" data-en="⚡ Repetitions">⚡ 高速レペ</button></nav>
+<section id="race" class="panel"><h2 data-ja="レースペース計算" data-en="Race pace calculator">レースペース計算</h2><div class="grid">
+<div class="field"><label for="raceDist" data-ja="距離" data-en="Distance">距離</label><select id="raceDist"><option value="42.195">Full 42.195km</option><option value="21.0975">Half 21.0975km</option><option value="30">30km</option><option value="10">10km</option><option value="5">5km</option><option value="3">3km</option><option value="1.5">1500m</option></select></div>
+<div class="field"><label data-ja="目標タイム（時:分:秒）" data-en="Goal (h:m:s)">目標タイム（時:分:秒）</label><div class="pair"><input id="raceH" aria-label="hours" type="number" min="0" max="50" value="3"><span>:</span><input id="raceM" aria-label="minutes" type="number" min="0" max="59" value="30"><span>:</span><input id="raceS" aria-label="seconds" type="number" min="0" max="59" value="0"></div></div></div>
+<div class="metrics" id="raceMetrics" aria-live="polite"></div><table><thead><tr><th data-ja="通過地点" data-en="Distance">通過地点</th><th data-ja="経過タイム" data-en="Elapsed">経過タイム</th></tr></thead><tbody id="raceSplits"></tbody></table></section>
+<section id="track" class="panel" hidden><h2 data-ja="400mトラックの通過ラップ" data-en="Track split calculator">400mトラックの通過ラップ</h2><div class="grid"><div class="field"><label data-ja="設定ペース（分:秒/km）" data-en="Pace (m:s/km)">設定ペース（分:秒/km）</label><div class="pair"><input id="trackM" type="number" aria-label="pace minutes" min="1" max="30" value="4"><span>:</span><input id="trackS" type="number" aria-label="pace seconds" min="0" max="59" value="30"></div></div><div class="field"><label data-ja="トラック" data-en="Track">トラック</label><input value="400m · lane 1" disabled></div></div>
+<div class="metrics" id="trackMetrics" aria-live="polite"></div><p class="muted" data-ja="100m・200m・400m・800m・1000m・1600mの一定ペース換算。400mは第1レーンの距離です。" data-en="Constant-pace conversions for 100, 200, 400, 800, 1000 and 1600m; lane 1 assumption.">100m・200m・400m・800m・1000m・1600mの一定ペース換算。400mは第1レーンの距離です。</p></section>
+<section id="interval" class="panel" hidden><h2 data-ja="インターバル計算" data-en="Interval calculator">インターバル計算</h2><p class="muted" data-ja="疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。" data-en="Repeated fast efforts and recovery. Recovery occurs between repetitions, not after the last one.">疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。</p><div id="intervalFields" class="grid"></div><div id="intervalMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="intervalFoot"></p></section>
+<section id="rep" class="panel" hidden><h2 data-ja="高速レペティション計算" data-en="Fast repetition calculator">高速レペティション計算</h2><p class="muted" data-ja="スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。" data-en="Prioritize controlled speed, form and more complete recovery—not all-out sprinting.">スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。</p><div id="repFields" class="grid"></div><div id="repMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="repFoot"></p></section>
+<section class="panel"><h2 data-ja="レストの考え方" data-en="Understanding recovery">レストの考え方</h2><p data-ja="短いレストは回復途中で次の1本に進み、持久力への刺激を重視。長いレストは回復して、速さやフォームの質を保ちます。" data-en="Short rest maintains fatigue for endurance demands. Longer rest allows you to maintain speed and form.">短いレストは回復途中で次の1本に進み、持久力への刺激を重視。長いレストは回復して、速さやフォームの質を保ちます。</p><p class="tip" data-ja="時間指定（停止・歩き）と、距離＋ジョグペースの両方に対応。万能の正解時間はありません。練習目的・設定強度・暑さ・体調に応じて調整し、各本の質を保ちましょう。" data-en="Choose timed rest (standing/walking) or a distance at jogging pace. There is no universal ideal rest. Adjust for workout goals, intensity, heat and fatigue.">時間指定（停止・歩き）と、距離＋ジョグペースの両方に対応。万能の正解時間はありません。練習目的・設定強度・暑さ・体調に応じて調整し、各本の質を保ちましょう。</p></section>
+</main><footer><p>Runner's Rings — Ring Tools</p><p data-ja="表示結果は距離と時間から計算した目安です。個別のトレーニング・医療指導ではありません。" data-en="Arithmetic planning estimates; not personalized training or medical advice.">表示結果は距離と時間から計算した目安です。個別のトレーニング・医療指導ではありません。</p></footer>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)},lang='ja';
+try{if(localStorage.getItem('runners-rings-language')==='en')lang='en'}catch(e){}
+function n(id){var s=$(id).value;return s.trim()===''?NaN:Number(s)}
+function ok(v,a,b){return Number.isFinite(v)&&v>=a&&v<=b}
+function clock(sec,dec){if(!Number.isFinite(sec)||sec<0)return '—';if(dec){sec=Math.round(sec*10)/10;var m=Math.floor(sec/60);return m?m+':'+(sec%60).toFixed(1).padStart(4,'0'):sec.toFixed(1)+(lang==='ja'?'秒':'s')}sec=Math.round(sec);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
+function duration(sec){sec=Math.round(sec);var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=String(sec%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+s:m+':'+s}
+function metric(label,value){var box=document.createElement('div'),small=document.createElement('small'),strong=document.createElement('strong');box.className='metric';small.textContent=label;strong.textContent=value;box.append(small,strong);return box}
+function error(id){$(id).replaceChildren();var p=document.createElement('p');p.className='warn';p.textContent=lang==='ja'?'入力値を確認してね。':'Please check your inputs.';$(id).append(p)}
+function race(){var d=n('raceDist'),h=n('raceH'),m=n('raceM'),s=n('raceS'),t=h*3600+m*60+s;
+if(!ok(d,0.1,100)||!ok(h,0,50)||!ok(m,0,59)||!ok(s,0,59)||t<=0){error('raceMetrics');$('raceSplits').replaceChildren();return}
+var pace=t/d;var rm=$('raceMetrics');rm.replaceChildren(metric(lang==='ja'?'平均ペース /km':'Average pace /km',clock(pace)),metric(lang==='ja'?'目標タイム':'Goal time',duration(t)));
+var tbody=$('raceSplits');tbody.replaceChildren();var stops=[];for(var k=5;k<d-0.00001;k+=5)stops.push(k);stops.push(d);
+stops.forEach(function(v){var tr=document.createElement('tr'),a=document.createElement('td'),b=document.createElement('td');a.textContent=Number(v.toFixed(4))+' km';b.textContent=duration(t*v/d);tr.append(a,b);tbody.append(tr)})}
+function track(){var m=n('trackM'),s=n('trackS');if(!ok(m,1,30)||!ok(s,0,59)){error('trackMetrics');return}
+var result=$('trackMetrics'),pace=m*60+s;result.replaceChildren();[100,200,400,800,1000,1600].forEach(function(d){result.append(metric(d+' m',clock(d/1000*pace,true)))})}
+function fields(prefix,isInterval){
+var elements=[['Distance',lang==='ja'?'疾走距離 (m)':'Fast distance (m)','select',isInterval?1000:200],['Reps',lang==='ja'?'本数':'Repetitions','number',isInterval?5:6],['Min',lang==='ja'?'疾走ペース（分/km）':'Fast pace (min/km)','number',isInterval?4:3],['Sec',lang==='ja'?'疾走ペース（秒/km）':'Fast pace (sec/km)','number',30],['RestMode',lang==='ja'?'レスト方式':'Recovery method','select','time'],['RestS',lang==='ja'?'レスト（秒）':'Recovery (seconds)','number',isInterval?120:180],['JogDist',lang==='ja'?'ジョグ距離（m）':'Jog distance (m)','number',200],['JogMin',lang==='ja'?'ジョグペース（分/km）':'Jog pace (min/km)','number',7],['JogSec',lang==='ja'?'ジョグペース（秒/km）':'Jog pace (sec/km)','number',0]];
+var target=$(prefix+'Fields');target.replaceChildren();
+elements.forEach(function(spec){var div=document.createElement('div'),label=document.createElement('label'),el;div.className='field';label.setAttribute('for',prefix+spec[0]);label.textContent=spec[1];el=document.createElement(spec[2]==='select'?'select':'input');el.id=prefix+spec[0];
+if(spec[2]==='select'){var choices=spec[0]==='Distance'?[100,200,400,600,800,1000,1200,1600,2000,3000]:['time','jog'];choices.forEach(function(value){var op=document.createElement('option');op.value=value;op.textContent=spec[0]==='Distance'?value+' m':value==='time'?(lang==='ja'?'時間・停止／歩き':'Timed rest'):(lang==='ja'?'距離＋ジョグ':'Jog distance + pace');el.append(op)});el.value=String(spec[3])}
+else{el.type='number';el.min=spec[0]==='Reps'?1:0;el.max=spec[0]==='Reps'?50:3600;el.value=spec[3]}
+div.append(label,el);target.append(div);el.addEventListener('input',render);
+})}
+function workout(prefix){var distance=n(prefix+'Distance'),reps=n(prefix+'Reps'),min=n(prefix+'Min'),sec=n(prefix+'Sec'),mode=$(prefix+'RestMode').value,jog=mode==='jog';
+['RestS','JogDist','JogMin','JogSec'].forEach(function(x){$(prefix+x).parentElement.hidden=jog?(x==='RestS'):(x!=='RestS')});
+var restS=n(prefix+'RestS'),jogD=n(prefix+'JogDist'),jogM=n(prefix+'JogMin'),jogS=n(prefix+'JogSec');
+var yes=ok(distance,100,5000)&&ok(reps,1,50)&&Number.isInteger(reps)&&ok(min,1,30)&&ok(sec,0,59)&&(jog?(ok(jogD,50,5000)&&ok(jogM,1,30)&&ok(jogS,0,59)):ok(restS,0,3600));
+if(!yes){error(prefix+'Metrics');$(prefix+'Foot').textContent='';return}
+var one=distance/1000*(min*60+sec),rest=jog?jogD/1000*(jogM*60+jogS):restS,total=one*reps+rest*(reps-1);
+$(prefix+'Metrics').replaceChildren(metric(lang==='ja'?'1本の疾走タイム':'Fast rep time',clock(one,true)),metric(lang==='ja'?'疾走の合計距離':'Total fast distance',(distance*reps/1000).toFixed(2)+' km'),metric(lang==='ja'?'レスト1回':'One recovery',duration(rest)),metric(lang==='ja'?'所要時間（アップ等除く）':'Time excl. warmup',duration(total)));
+$(prefix+'Foot').textContent=lang==='ja'?'レストは'+(reps-1)+'回。'+(jog?'ジョグ込み総距離 '+((distance*reps+jogD*(reps-1))/1000).toFixed(2)+' km。':'停止・歩きは走行距離に含めません。'):'Recovery breaks: '+(reps-1)+'. '+(jog?'Total distance incl. jog: '+((distance*reps+jogD*(reps-1))/1000).toFixed(2)+' km.':'Standing/walking distance not included.') }
+function render(){race();track();workout('interval');workout('rep')}
+function translate(){document.documentElement.lang=lang;document.querySelectorAll('[data-ja][data-en]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang)});$('ja').setAttribute('aria-pressed',String(lang==='ja'));$('en').setAttribute('aria-pressed',String(lang==='en'));fields('interval',true);fields('rep',false);render()}
+['raceDist','raceH','raceM','raceS','trackM','trackS'].forEach(function(id){$(id).addEventListener('input',render)});
+document.querySelectorAll('[data-tab]').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('[data-tab]').forEach(function(b){var active=b===btn;b.setAttribute('aria-pressed',String(active));$(b.dataset.tab).hidden=!active})})});
+$('ja').addEventListener('click',function(){lang='ja';try{localStorage.setItem('runners-rings-language',lang)}catch(e){}translate()});
+$('en').addEventListener('click',function(){lang='en';try{localStorage.setItem('runners-rings-language',lang)}catch(e){}translate()});
+translate();
+})();
+</script></body></html>
