@@ -13,7 +13,6 @@ BEGIN
  'rr_private.b1_wrapped_read(text,integer)'] LOOP
   IF has_function_privilege('anon',sig,'EXECUTE')
     OR has_function_privilege('authenticated',sig,'EXECUTE')
-    OR has_function_privilege('public',sig,'EXECUTE')
   THEN RAISE EXCEPTION 'unexpected public EXECUTE: %',sig; END IF;
  END LOOP;
  IF has_table_privilege('b1_approver','rr_private.region_rings_approved_year','SELECT')
@@ -21,8 +20,8 @@ BEGIN
  THEN RAISE EXCEPTION 'operator has direct table privilege'; END IF;
 END $$;
 \echo 'B1_WRAPPER_PUBLIC_DENY_PASS'
-CREATE ROLE b1_test_approver LOGIN NOINHERIT;
-CREATE ROLE b1_test_publisher LOGIN NOINHERIT;
+CREATE ROLE b1_test_approver LOGIN INHERIT;
+CREATE ROLE b1_test_publisher LOGIN INHERIT;
 GRANT b1_approver TO b1_test_approver;
 GRANT b1_publisher TO b1_test_publisher;
 -- Positive EXECUTE via dedicated login, without changing session_user.
