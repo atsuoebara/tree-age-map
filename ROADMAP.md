@@ -1,3 +1,11 @@
+### B-1 非公開集計基盤・むせ最終監査判定（2026-10-30 18:04〜18:12 JST）
+- **独立監査判定：条件1・条件2とも解消。B-1 非公開集計基盤は監査合格、正式完了としてよい（Atsuo 最終承認待ち）。** 本判定は一般公開承認ではない。
+- 実関数での隔離A/B：一括100件 OFF 0.238ms / ON 0.330ms、個別100件 OFF 0.363ms / ON 2.413ms。並列2接続×500件、ON/OFF各6回、12,000件すべて成功、Today模擬通知件数一致。
+- 並列平均遅延 OFF 0.267ms / ON 0.313ms。平均TPS OFF 7,576 / ON 6,386。ロック待ち OFF 0/6試行、ON 3/6試行で最大1接続。むせ判断：予測可能な短い直列化で、公開前の必須修正なし。
+- 数週間の本番Today実行・ロック状態の読取専用観測は**合否条件から運用監視へ移管**。同期失敗やロック待ちの反復があれば調査する。11/3ぐんまマラソン前後も観測対象。
+- 状態行の更新をdirty=false時だけに限定する改善は**任意・未実施**。合格した製品コードは変更しない。
+- **一般公開は引き続きOFF**。別の必須工程は正式公開同意・差分推測対策・撤回後の公開キャッシュ/データ反映と再監査、Atsuo最終承認。現在の非公開参加希望は正式公開同意ではない。
+
 ### B-1 isolated run #8 audit measurements (2026-10-30)
 - Verified full GitHub Actions job log for successful isolated run #8. Real B-1 invalidation function definition, synthetic private tables, Today local stub only.
 - 100-row repeated A/B (n=12 per mode): batch OFF 0.238ms / ON 0.330ms, individual OFF 0.363ms / ON 2.413ms; Today event count 100 in all cases.
