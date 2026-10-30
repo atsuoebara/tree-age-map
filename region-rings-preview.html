@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>B-1 地域の年輪 | 開発用プレビュー</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#f6fbff}
+*{box-sizing:border-box}body{margin:0}main{max-width:720px;margin:auto;padding:22px 14px 70px}
+h1{font-size:25px;margin:12px 0}h2{font-size:18px;margin:0 0 12px}.muted{color:#adc2d0}.note{border:1px solid #f7cb48;background:#40310b;border-radius:12px;padding:12px;line-height:1.6}
+.card{background:#132638;border:1px solid #345567;border-radius:18px;margin-top:16px;padding:18px}
+.brand{display:flex;gap:14px;align-items:center}.brand img{width:68px;height:68px;object-fit:contain}.brand p{margin:5px 0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}button,select{font:inherit;color:white;background:#193447;border:1px solid #6aaac0;border-radius:11px;padding:11px 16px;min-height:44px}
+button[aria-pressed=true]{background:#78eaff;color:#071423;font-weight:800;border-color:#78eaff}
+#bars{display:flex;gap:8px;align-items:end;overflow-x:auto;padding:20px 4px 8px;min-height:230px}
+.barwrap{display:flex;align-items:center;flex-direction:column;flex:1;min-width:46px;gap:7px}
+.bar{width:100%;max-width:65px;min-height:3px;border:0;border-radius:8px 8px 3px 3px;background:linear-gradient(#78eaff,#3898ca);padding:0;cursor:pointer}
+.bar[aria-pressed=true]{background:linear-gradient(#eaff00,#83a300)}
+.bar:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.small{font-size:12px}.summary{font-size:17px;line-height:1.7}.value{font-weight:800;color:#eaff00}
+.visual{display:flex;align-items:center;gap:16px;margin:10px 0}.visual img{width:88px;height:88px;object-fit:contain;flex-shrink:0}
+.region{border:1px dashed #67879d;border-radius:12px;padding:20px;text-align:center;color:#abc5d2;line-height:1.8}
+footer{margin-top:24px;color:#abc5d2;font-size:12px}
+</style></head>
+<body><main>
+<div class="note" role="note"><strong>開発用・ダミーデータ</strong>：この画面はB-1の操作検証用です。実際の利用者データ・GPS・Supabaseには一切接続していません。公開集計ではありません。</div>
+<section class="card"><div class="brand"><img src="./icon.PNG" alt="Runner's Rings logo"><div><h1 id="title">前橋市の年輪</h1><p class="muted" id="subtitle">街に刻まれたランニングの積み重ね</p></div></div>
+<div class="controls" role="group" aria-label="表示期間"><button id="year" type="button" aria-pressed="true">年ごと</button><button id="month" type="button" aria-pressed="false">月ごと</button><select id="yearSelect" aria-label="対象年" hidden><option value="2026">2026年</option><option value="2025">2025年</option><option value="2024">2024年</option></select></div>
+<h2 id="chartTitle">年別走行距離</h2><div id="bars" aria-label="期間別走行距離の棒グラフ"></div>
+<p class="muted small" id="hint">棒グラフをタップすると選択期間の詳細を表示します。</p></section>
+<section class="card" aria-live="polite"><h2 id="detailTitle">2026年の地域の年輪</h2>
+<div class="visual"><img src="./icon.PNG" alt="Runner's Rings logo"><p class="summary"><span class="value" id="distance">920.0 km</span><br><span id="runCount">走行回数 110回</span></p></div>
+<div class="region" id="mapPlaceholder">地域の広がりを表示する場所<br><small>※ 実際の地図は未接続。GPS軌跡は公開しません。</small></div>
+<p class="muted small" id="insight">年月を切り替えて、積み重ねを比較できます。</p></section>
+<footer>Runner's Rings B-1 / branch preview only / noindex / no external API / no personal data</footer>
+</main>
+<script>
+(()=>{'use strict';
+const data={2024:[24,26,22,20,30,29,18,28,33,37,31,32],2025:[36,44,42,48,50,47,49,53,62,65,70,84],2026:[65,73,88,83,102,95,100,96,107,111,0,0]};
+let mode='year',targetYear=2026,selection='2026';
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const entries=()=>mode==='year'?Object.keys(data).map(y=>({key:y,label:y,value:sum(data[y])})):data[targetYear].map((v,i)=>({key:String(i+1),label:(i+1)+'月',value:v}));
+function render(){
+$('year').setAttribute('aria-pressed',String(mode==='year'));
+$('month').setAttribute('aria-pressed',String(mode==='month'));
+$('yearSelect').hidden=mode!=='month';
+$('yearSelect').value=String(targetYear);
+$('chartTitle').textContent=mode==='year'?'年別走行距離':targetYear+'年の月別走行距離';
+const list=entries();if(!list.some(x=>x.key===selection))selection=list[list.length-1].key;
+const max=Math.max(1,...list.map(x=>x.value));const parent=$('bars');parent.replaceChildren();
+for(const e of list){const wrap=document.createElement('div');wrap.className='barwrap';
+const value=document.createElement('span');value.className='small';value.textContent=e.value+'km';
+const bar=document.createElement('button');bar.type='button';bar.className='bar';bar.style.height=(Math.max(3,e.value/max*150))+'px';
+bar.setAttribute('aria-pressed',String(e.key===selection));bar.setAttribute('aria-label',e.label+' '+e.value+'km を表示');
+bar.addEventListener('click',()=>{selection=e.key;render()});
+const label=document.createElement('span');label.className='small';label.textContent=e.label;
+wrap.append(value,bar,label);parent.append(wrap)}
+const current=list.find(x=>x.key===selection);$('detailTitle').textContent=(mode==='year'?selection+'年':targetYear+'年'+selection+'月')+'の地域の年輪';
+$('distance').textContent=current.value.toFixed(1)+' km';
+$('runCount').textContent='走行回数：未接続（仮データでは算出しない）';
+$('insight').textContent='この数値はUI検証用の架空データです。地域内の実走距離は公開許諾と集計精度を検証してから接続します。';
+}
+$('year').addEventListener('click',()=>{mode='year';selection=String(targetYear);render()});
+$('month').addEventListener('click',()=>{mode='month';selection='10';render()});
+$('yearSelect').addEventListener('change',e=>{targetYear=Number(e.target.value);render()});
+render();
+})();
+</script></body></html>
