@@ -15,7 +15,7 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 #bars{display:flex;align-items:flex-end;gap:8px;overflow-x:auto;height:auto;min-height:0;padding:12px 4px 7px;scrollbar-width:thin;scrollbar-color:#78eaff #193447;-webkit-overflow-scrolling:touch}
 .item{display:flex;flex:0 0 75px;min-width:58px;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px}
 .item button{border:0;padding:0;min-height:3px;width:100%;max-width:70px;background:#78eaff;border-radius:6px 6px 2px 2px}
-.item button[aria-pressed=true]{background:#eaff00}.item span{font-size:12px;white-space:nowrap}
+.item button.is-maximum{background:#ff76bc}.item button[aria-pressed=true]{outline:3px solid #eaff00;outline-offset:2px;box-shadow:0 0 0 1px #071423}.item button.is-maximum[aria-pressed=true]{background:#ff76bc}.item span{font-size:12px;white-space:nowrap}
 #logo{width:90px;height:90px;object-fit:contain}
 .hero{display:flex;align-items:center;gap:20px}#km{font-size:30px;color:#eaff00;font-weight:900}
 #status{min-height:24px}.warn{border-left:3px solid #eaff00;padding-left:12px}
@@ -26,7 +26,7 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 <section class="card"><label for="region">地域</label><br><select id="region" style="width:100%;margin-top:8px"><option value="">読み込み中…</option></select>
 <div class="controls"><button id="yearMode" type="button" aria-pressed="true">年ごと</button><button id="monthMode" type="button" aria-pressed="false">月ごと</button><select id="year" aria-label="対象年" hidden></select></div>
 <h2 id="chartTitle">年別走行距離</h2><div id="bars" role="group" aria-label="期間を選ぶ棒グラフ" tabindex="0"></div>
-<p class="small muted">棒をタップすると、その期間の年輪が変わります。左右にスワイプして過去の年も確認できます。</p></section>
+<p class="small muted"><span style="color:#ff76bc">■</span> ピンク＝最多距離　<span style="color:#eaff00">□</span> 黄緑の枠＝選択中。棒をタップして切り替え、左右にスワイプできます。</p></section>
 <section class="card" aria-live="polite"><h2 id="period">選択期間</h2><div class="hero"><img id="logo" src="./icon.PNG" alt="Runner's Ringsの年輪ロゴ"><div><div id="km">—</div><p class="muted" id="runs">—</p></div></div>
 <p class="muted small">距離は保存済みGPSの地域別推計値です。境界を横断する区間などで誤差が生じる場合があります。地域ごとに記録が反映されるまで時間差が生じることがあります。</p></section>
 <p id="status" role="status">ログイン状態を確認しています…</p>
@@ -45,11 +45,11 @@ function render(){
  const entries=chartEntries();const group=$('bars');group.replaceChildren();
  if(!entries.length){$('period').textContent='記録なし';$('km').textContent='0 km';$('runs').textContent='0 回';return;}
  if(!entries.some(x=>x.key===selection))selection=entries[0].key;
- const max=Math.max(1,...entries.map(x=>x.km));
+ const highest=Math.max(0,...entries.map(x=>x.km));const max=Math.max(1,highest);
  for(const row of entries){const item=document.createElement('div');item.className='item';
  const value=document.createElement('span');value.textContent=row.km.toFixed(1);
- const bar=document.createElement('button');bar.type='button';bar.style.height=Math.max(3,150*row.km/max)+'px';bar.style.flexShrink='0';
- bar.setAttribute('aria-label',row.label+' '+row.km.toFixed(1)+'キロ');bar.setAttribute('aria-pressed',String(selection===row.key));
+ const bar=document.createElement('button');bar.type='button';if(highest>0&&row.km===highest)bar.classList.add('is-maximum');bar.style.height=Math.max(3,150*row.km/max)+'px';bar.style.flexShrink='0';
+ bar.setAttribute('aria-label',row.label+' '+row.km.toFixed(1)+'キロ'+(highest>0&&row.km===highest?' 最大距離':''));bar.setAttribute('aria-pressed',String(selection===row.key));
  bar.onclick=()=>{selection=row.key;render()};
  const name=document.createElement('span');name.textContent=row.label;item.append(value,bar,name);group.append(item);}
  const selected=entries.find(x=>x.key===selection);
