@@ -1,3 +1,9 @@
+### B-1 isolated concurrent ingestion benchmark added (2026-10-30)
+- Added `docs/b1-concurrency-setup.sql` and `docs/b1-concurrency-benchmark.sh`, integrated into manually dispatched `.github/workflows/b1-isolated-benchmark.yml` at commit `6730b8d`.
+- Synthetic-only disposable PostgreSQL: 2 concurrent pgbench clients, 500 individual INSERT transactions per client, 6 alternating A/B trials with B-1 statement-level invalidation ON/OFF (12 runs total). Each trial asserts exactly 1,000 row-level Today-stub notifications.
+- Measures pgbench end-to-end transaction latency and potential serialization/contention in a local test setup. This is **not** the real pg_net HTTP queue, actual production function or live runs; no measured result is available until workflow dispatch and inspection.
+- Watch for pgbench availability on GitHub hosted runner; workflow fails safely if absent. Do not claim Muse condition 2 complete, public aggregation remains OFF.
+
 ### B-1 major import write shape confirmed (2026-10-30)
 - **Strava:** production Supabase Edge Function `strava-sync` was read; when `newRuns.length > 0`, it calls `supabase.from("runs").upsert(newRuns,{onConflict:"user_id,strava_id",ignoreDuplicates:true})` as one array write per sync invocation/page. Thus B-1 statement trigger fires once per batch statement, not once per Strava run. Page size and actual PostgREST behavior under large imports may still warrant staging verification.
 - **COROS:** `index.html` `importFromCoros()` invokes `coros-sync` to obtain file URLs, then iterates `files` and calls `saveActivityToCloud(activity)` once per parsed FIT activity. `saveActivityToCloud` sends one JSON object per POST to `/rest/v1/runs`. Thus COROS is individual-write path.
