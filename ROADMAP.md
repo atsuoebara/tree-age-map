@@ -1,3 +1,8 @@
+### B-1 Today live sync observation baseline, first snapshot (2026-10-30)
+- Read-only Supabase unified logs query, default last-24-hour window, scoped to function_edge_logs and request.pathname=/functions/v1/rings-today-live-sync: total 4 invocations, HTTP 2xx 4, non-2xx 0, mean execution_time_ms 2989, p95 4627.1. Small sample; p95 is descriptive only and cannot show absence of regression.
+- Read-only DB snapshot: pg_stat_activity lock waiters 0, active sessions 1. This is a point-in-time sample, not continuous monitoring.
+- No user records, triggers, Edge Functions or publication controls changed. This is observation baseline only; recurring monitoring was NOT scheduled or enabled. Muse's remaining performance condition includes a staging reproduction with a dummy external hook and representative real ingestion pattern; public release remains OFF.
+
 ### B-1 非公開集計基盤・性能再監査（2026-10-30 15:25〜15:33 JST）
 - **むせ再判定：条件付き合格を維持。条件1（失効トリガーの発火）は解消済み。** ロールバックで同意・撤回・ラン変更・削除扱い・地域データ変更を検証し、候補失効を確認。
 - **条件2は縮小して継続。** B-1単体負荷は隔離テスト（10,000件×12回のあり／なし比較）で大きな遅延なし。未検証は「行ごとのToday外部送信フックと組み合わせた本番相当の取り込み」。
