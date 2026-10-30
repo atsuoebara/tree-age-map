@@ -13,6 +13,7 @@ echo "TEST1: withdrawal transaction holds state lock, concurrent reader must wai
 writerlog="$(mktemp)"; readerlog="$(mktemp)"
 psql -v ON_ERROR_STOP=1 -At >"$writerlog" <<'SQL' &
 BEGIN;
+SET LOCAL application_name='b1_gate_writer';
 SELECT b1_gate_test.withdraw();
 SELECT pg_sleep(1);
 COMMIT;
@@ -21,7 +22,7 @@ writer_pid=$!
 # Wait for writer's row lock to be visible, not a guessed sleep.
 ready=0
 for _ in $(seq 1 100); do
-  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND query LIKE '%pg_sleep(1)%' AND state='active'")"
+  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='b1_gate_writer' AND state='active'")"
   if [[ "$count" -ge 1 ]]; then ready=1; break; fi
   sleep 0.02
 done
@@ -40,6 +41,7 @@ scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false,generation=1,poli
 holdlog="$(mktemp)"; withdrawlog="$(mktemp)"
 psql -v ON_ERROR_STOP=1 -At >"$holdlog" <<'SQL' &
 BEGIN;
+SET LOCAL application_name='b1_gate_reader';
 SELECT b1_gate_test.read_value('JP',2026);
 SELECT pg_sleep(1);
 COMMIT;
@@ -47,7 +49,7 @@ SQL
 hold_pid=$!
 ready=0
 for _ in $(seq 1 100); do
-  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND query LIKE '%pg_sleep(1)%' AND state='active'")"
+  count="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='b1_gate_reader' AND state='active'")"
   if [[ "$count" -ge 1 ]]; then ready=1; break; fi
   sleep 0.02
 done
