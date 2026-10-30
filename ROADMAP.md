@@ -1,3 +1,8 @@
+### B-1 隔離撤回試験・冪等性テスト修正（2026-10-30）
+- 隔離 PostgreSQL 試験の監査で、撤回を2回実行すると世代番号が不要に増える問題を確認。試験用 `b1_gate_test.withdraw()` を、すでに停止/dirty の状態なら世代を増やさない冪等更新に変更（`docs/b1-public-gate-isolated.sql`, commit `0ca516f`）。
+- シェルテスト側も「初回撤回は世代+1、重複撤回は世代据え置き、旧セルは返さない」を明示検証するよう修正（`docs/b1-public-gate-isolated.sh`, commits `8d3b0b1`, `1ca9911`）。
+- GitHub Actionsはpushトリガー設定済みだが、現在のツールから直近のworkflow実行ログを取得できていないため、**並列PostgreSQL試験は合格未確認**。更新した試験コードを本番の正式同意/撤回RPCと混同しないこと。本番DBや公開フラグは変更していない。
+
 ### B-1 公開停止・同意撤回の隔離PostgreSQL並列試験（2026-10-30）
 - 合成データのみの隔離PostgreSQL 16テストを作成。 `docs/b1-public-gate-isolated.sql`（コミット `d21e658`）は公開OFF/dirty/規約版のDBチェックと、同じ状態行を `FOR SHARE` で読む試験用関数・撤回トランザクションを定義する。
 - `docs/b1-public-gate-isolated.sh`（コミット `327956a`、準備完了判定改善 `835e43f`）は2つの接続で「撤回が先のとき」「読み取りが先のとき」のロック順序を試し、撤回完了後の旧値返却を拒否。古い世代・繰返し撤回も非表示を要求。
