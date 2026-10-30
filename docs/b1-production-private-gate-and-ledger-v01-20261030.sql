@@ -33,6 +33,8 @@ CREATE OR REPLACE FUNCTION rr_private.b1_prevent_approved_value_mutation()
 RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $b1_immutable$
 BEGIN
   IF OLD.approved AND (
+      NEW.approved IS DISTINCT FROM OLD.approved
+      OR (OLD.permanently_suppressed AND NOT NEW.permanently_suppressed)
       NEW.rounded_distance_km IS DISTINCT FROM OLD.rounded_distance_km
       OR NEW.generation IS DISTINCT FROM OLD.generation
       OR NEW.policy_version IS DISTINCT FROM OLD.policy_version
@@ -58,6 +60,15 @@ BEGIN
   END IF;
   RETURN OLD;
 END $b1_del$;
+CREATE OR REPLACE FUNCTION rr_private.b1_block_snapshot_truncate()
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $b1_snap_trunc$
+BEGIN
+  RAISE EXCEPTION 'B-1 snapshot TRUNCATE forbidden; suppress rows';
+END $b1_snap_trunc$;
+DROP TRIGGER IF EXISTS b1_snapshot_no_truncate ON rr_private.region_rings_approved_year;
+CREATE TRIGGER b1_snapshot_no_truncate
+BEFORE TRUNCATE ON rr_private.region_rings_approved_year
+FOR EACH STATEMENT EXECUTE FUNCTION rr_private.b1_block_snapshot_truncate();
 DROP TRIGGER IF EXISTS b1_no_approved_delete ON rr_private.region_rings_approved_year;
 CREATE TRIGGER b1_no_approved_delete
 BEFORE DELETE ON rr_private.region_rings_approved_year
@@ -159,6 +170,7 @@ REVOKE ALL ON FUNCTION rr_private.b1_private_stop(text,text) FROM PUBLIC, anon, 
 REVOKE ALL ON FUNCTION rr_private.b1_prevent_approved_value_mutation() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION rr_private.b1_ledger_append_only() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION rr_private.b1_prevent_approved_snapshot_delete() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION rr_private.b1_block_snapshot_truncate() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_publication_state FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_approved_year FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_publication_ledger FROM PUBLIC, anon, authenticated;
