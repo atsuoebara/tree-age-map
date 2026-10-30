@@ -105,8 +105,12 @@ RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_READ_EXECUTED_PASS'
 
 
--- Negative execution tests: reject cross-role operations, invalid input and revoked actors.
-SET SESSION AUTHORIZATION isolated_alice;
+-- Negative execution tests use dedicated active principals, not previously revoked accounts.
+CREATE ROLE isolated_eve LOGIN INHERIT;
+CREATE ROLE isolated_frank LOGIN INHERIT;
+GRANT b1_approver TO isolated_eve;
+GRANT b1_emergency_stopper TO isolated_frank;
+SET SESSION AUTHORIZATION isolated_eve;
 DO $b1_cross_role$
 DECLARE denied boolean:=false;
 BEGIN
@@ -120,7 +124,7 @@ BEGIN
 END $b1_cross_role$;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_CROSS_ROLE_DENIED_PASS'
-SET SESSION AUTHORIZATION isolated_carol;
+SET SESSION AUTHORIZATION isolated_frank;
 DO $b1_cross_stop$
 DECLARE denied boolean:=false;
 BEGIN
