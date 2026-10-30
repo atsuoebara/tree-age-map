@@ -1,4 +1,4 @@
--- B-1 production-target PRIVATE gate + append-only publication ledger, v0.1.
+-- B-1 production-target PRIVATE gate + append-only publication ledger, v0.2 (M1-M3).
 -- REVIEW-ONLY: not applied to any Supabase project. Public release and consent stay OFF.
 -- Do NOT execute before independent audit + explicit release process approval.
 BEGIN;
@@ -38,6 +38,8 @@ BEGIN
       OR NEW.policy_version IS DISTINCT FROM OLD.policy_version
       OR NEW.country_code IS DISTINCT FROM OLD.country_code
       OR NEW.activity_year IS DISTINCT FROM OLD.activity_year
+      OR NEW.approved_at IS DISTINCT FROM OLD.approved_at
+      OR NEW.closed_after IS DISTINCT FROM OLD.closed_after
   ) THEN
     RAISE EXCEPTION 'B-1 approved snapshot is immutable';
   END IF;
@@ -47,6 +49,20 @@ DROP TRIGGER IF EXISTS b1_immutable_approved_value ON rr_private.region_rings_ap
 CREATE TRIGGER b1_immutable_approved_value
 BEFORE UPDATE ON rr_private.region_rings_approved_year
 FOR EACH ROW EXECUTE FUNCTION rr_private.b1_prevent_approved_value_mutation();
+-- An approved snapshot is evidence; suppress instead of deleting.
+CREATE OR REPLACE FUNCTION rr_private.b1_prevent_approved_snapshot_delete()
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $b1_del$
+BEGIN
+  IF OLD.approved THEN
+    RAISE EXCEPTION 'B-1 approved snapshot cannot be deleted; suppress it';
+  END IF;
+  RETURN OLD;
+END $b1_del$;
+DROP TRIGGER IF EXISTS b1_no_approved_delete ON rr_private.region_rings_approved_year;
+CREATE TRIGGER b1_no_approved_delete
+BEFORE DELETE ON rr_private.region_rings_approved_year
+FOR EACH ROW EXECUTE FUNCTION rr_private.b1_prevent_approved_snapshot_delete();
+
 
 -- Ledger contains sensitive unpublished values: NEVER mirror into repository, logs or web response.
 CREATE TABLE IF NOT EXISTS rr_private.region_rings_publication_ledger (
@@ -57,6 +73,10 @@ CREATE TABLE IF NOT EXISTS rr_private.region_rings_publication_ledger (
   policy_version text NOT NULL,
   rounded_distance_km numeric,
   action text NOT NULL CHECK (action IN ('approve','start','stop','suppress')),
+  CONSTRAINT b1_ledger_value_for_publication CHECK (
+    action NOT IN ('approve','start')
+    OR (rounded_distance_km IS NOT NULL AND rounded_distance_km > 0)
+  ),
   reason text NOT NULL,
   actor_reference text NOT NULL,
   recorded_at timestamptz NOT NULL DEFAULT clock_timestamp()
@@ -68,12 +88,16 @@ BEGIN
 END $b1_ledger$;
 DROP TRIGGER IF EXISTS b1_ledger_no_update ON rr_private.region_rings_publication_ledger;
 DROP TRIGGER IF EXISTS b1_ledger_no_delete ON rr_private.region_rings_publication_ledger;
+DROP TRIGGER IF EXISTS b1_ledger_no_truncate ON rr_private.region_rings_publication_ledger;
 CREATE TRIGGER b1_ledger_no_update
   BEFORE UPDATE ON rr_private.region_rings_publication_ledger
   FOR EACH ROW EXECUTE FUNCTION rr_private.b1_ledger_append_only();
 CREATE TRIGGER b1_ledger_no_delete
   BEFORE DELETE ON rr_private.region_rings_publication_ledger
   FOR EACH ROW EXECUTE FUNCTION rr_private.b1_ledger_append_only();
+CREATE TRIGGER b1_ledger_no_truncate
+BEFORE TRUNCATE ON rr_private.region_rings_publication_ledger
+FOR EACH STATEMENT EXECUTE FUNCTION rr_private.b1_ledger_append_only();
 
 -- Internal read gate: no public RPC or exposed schema. Locks both gate rows
 -- while checking to serialize withdrawal / publication-state invalidation.
@@ -88,7 +112,7 @@ BEGIN
  SELECT * INTO legacy FROM rr_private.region_rings_refresh_state
   WHERE singleton=true FOR SHARE;
  IF NOT FOUND OR s.singleton IS NULL OR NOT s.publication_enabled OR s.is_dirty
-   OR legacy.singleton IS NULL OR legacy.is_dirty OR NOT legacy.publication_enabled
+   OR legacy.singleton IS NULL OR legacy.is_dirty
    OR s.policy_version='unapproved' THEN
     RETURN;
  END IF;
@@ -134,6 +158,7 @@ REVOKE ALL ON FUNCTION rr_private.b1_read_approved_year(text,integer) FROM PUBLI
 REVOKE ALL ON FUNCTION rr_private.b1_private_stop(text,text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION rr_private.b1_prevent_approved_value_mutation() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION rr_private.b1_ledger_append_only() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION rr_private.b1_prevent_approved_snapshot_delete() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_publication_state FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_approved_year FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON rr_private.region_rings_publication_ledger FROM PUBLIC, anon, authenticated;
