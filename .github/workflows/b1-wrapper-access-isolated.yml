@@ -1,0 +1,55 @@
+name: B-1 wrapper access isolation (draft)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - audit/b1-wrapper-isolation-20261030
+    paths:
+      - 'docs/b1-wrapper-isolation-prototype-20261030.sql'
+      - 'docs/b1-wrapper-access-isolated.test.sql'
+      - '.github/workflows/b1-wrapper-access-isolated.yml'
+permissions:
+  contents: read
+jobs:
+  isolated-wrapper-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: b1isolated
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: b1_private_fixture
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U b1isolated -d b1_private_fixture"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: b1isolated
+      PGPASSWORD: synthetic-only
+      PGDATABASE: b1_private_fixture
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert synthetic database isolation
+        run: |
+          test "$PGHOST" = localhost
+          test "$PGUSER" = b1isolated
+          test "$PGDATABASE" = b1_private_fixture
+      - name: Run isolated lifecycle and wrapper privilege checks
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f docs/b1-wrapper-access-isolated.test.sql 2>&1 | tee b1-wrapper-access.log
+      - name: Store synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-wrapper-access-isolated
+          path: b1-wrapper-access.log
+          if-no-files-found: ignore
+          retention-days: 7
