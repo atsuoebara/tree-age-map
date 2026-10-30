@@ -1,3 +1,10 @@
+### B-1 一般公開版・第2弾追加：正式公開同意の隔離先（2026-10-30）
+- **状態：非公開DB土台のみ実装済み。公開同意の受付・集計・公開は未開始、監査前。**
+- `rr_private.region_rings_public_authorization` を migration `b1_public_authorization_quarantined_schema` で新設。user_idごとの`authorized`初期false、将来の規約版`policy_version`、承認／撤回日時を記録する構造。ON時は規約版と承認日時を必須とする制約。
+- **既存の`region_rings_consent`（参加希望）から自動移行なし。** UI・読み書きAPI・公開用RPCは一切未追加。公開への同意を現時点で取らず、本テーブルは空。
+- **安全性検証：** RLS有効、0行、anon/authenticatedともSELECT不可、authenticated INSERT不可。既存本人限定ページや同意設定に変更なし。
+- **公開前に必要な別工程：** 公開する地理単位、距離・期間・人数の表示、更新頻度、少人数・差分推測対策、削除／撤回の遡及反映、正式な規約・文言・同意の版管理、同意操作UI、集計計算、むせ監査、Atsuo最終承認。まだ一般公開しない。
+
 ### B-1 一般公開版・第2弾：匿名地域集計の非公開土台（2026-10-30）
 - **状態：非公開の格納先だけ実装済み。集計処理・公開処理は未実装、監査未実施。** 第1弾の公開参加希望保存機能は正式完了。
 - Supabase migration `b1_private_public_region_candidate_staging`：API非公開スキーマ `rr_private` に `region_rings_public_candidate` を作成。国・地域・年月単位、参加人数5人以上、距離非負の制約を備えた**空テーブル**。RLS有効、anon／authenticatedのスキーマ利用・テーブル読み取り権限なし。確認SQLで行数0、すべての禁止権限=falseを確認。
