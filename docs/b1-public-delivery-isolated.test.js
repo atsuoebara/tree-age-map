@@ -11,7 +11,7 @@ class Gate{
   if(!c||this.revoked.has(key)||!c.safe||c.generation!==this.generation||c.version!==this.version||this.now<c.closeAt)return null;
   return {country,year,distance_km:c.distance};
  }
- withdraw(country,year){this.generation++;this.dirty=true;this.revoked.add(this.key(country,year));this.cells.clear();return {withdrawn:true};}
+ withdraw(country,year){if(this.enabled||!this.dirty)this.generation++;this.enabled=false;this.dirty=true;this.revoked.add(this.key(country,year));this.cells.clear();return {withdrawn:true,generation:this.generation};}
 }
 let n=0;const check=(name,fn)=>{fn();console.log('PASS '+name);n++;};
 const setup=()=>{const g=new Gate();g.approve('JP',2026);return g;};
@@ -24,6 +24,7 @@ check('policy version mismatch blocks',()=>{const g=setup();g.enabled=true;g.ver
 check('before year closure blocks',()=>{const g=setup();g.enabled=true;g.now=Date.UTC(2027,2,31);assert.equal(g.read('JP',2026),null);});
 check('withdrawal invalidates old generation',()=>{const g=setup();g.enabled=true;const old=g.cells.get('JP:2026');assert.ok(g.read('JP',2026));g.withdraw('JP',2026);g.dirty=false;g.approve('JP',2026,{generation:old.generation});assert.equal(g.read('JP',2026),null);});
 check('repeat withdrawal stays closed',()=>{const g=setup();g.enabled=true;g.withdraw('JP',2026);g.withdraw('JP',2026);assert.equal(g.read('JP',2026),null);});
+check('repeated withdrawal advances generation only once',()=>{const g=setup();g.enabled=true;const a=g.withdraw('JP',2026).generation;const b=g.withdraw('JP',2026).generation;assert.equal(a,b);});
 check('fail closed despite enabled flag',()=>{const g=setup();g.enabled=true;g.withdraw('JP',2026);assert.equal(g.enabled,true);assert.equal(g.read('JP',2026),null);});
 check('late import cannot edit approved snapshot',()=>{const g=setup();g.enabled=true;const original=g.read('JP',2026);const laterRaw=1299;assert.notEqual(original.distance_km,laterRaw);assert.deepEqual(g.read('JP',2026),original);});
 check('enabling flag alone does not approve cell',()=>{const g=new Gate();g.enabled=true;assert.equal(g.read('JP',2026),null);});
