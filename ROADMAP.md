@@ -1,3 +1,9 @@
+### B-1 concurrent isolated benchmark #6 status (2026-10-30)
+- User supplied GitHub Actions screenshot of manual workflow run #6 after fix `ab42b0a`; GitHub UI shows overall Success, benchmark job succeeded and the two-client B-1 concurrency comparison step marked successful (workflow 31s, job 26s).
+- Script fixes: numeric event count query plus shell logging (`baf9a98`) and pipefail in workflow (`ab42b0a`) mean the previous swallowed SQL error is corrected in source.
+- The screenshot establishes pass status, **not yet exact per-trial pgbench latency/TPS numbers**. No defensible A/B performance metrics from #6 have been extracted. Do not claim measured production lock contention or real HTTP behavior.
+- Test uses disposable PostgreSQL and stubbed Today event queue; production runs untouched. Muse condition 2 still pending final independent assessment and production-equivalent HTTP/callback checking. Public aggregation remains OFF.
+
 ### B-1 isolated concurrent ingestion benchmark added (2026-10-30)
 - Added `docs/b1-concurrency-setup.sql` and `docs/b1-concurrency-benchmark.sh`, integrated into manually dispatched `.github/workflows/b1-isolated-benchmark.yml` at commit `6730b8d`.
 - Synthetic-only disposable PostgreSQL: 2 concurrent pgbench clients, 500 individual INSERT transactions per client, 6 alternating A/B trials with B-1 statement-level invalidation ON/OFF (12 runs total). Each trial asserts exactly 1,000 row-level Today-stub notifications.
