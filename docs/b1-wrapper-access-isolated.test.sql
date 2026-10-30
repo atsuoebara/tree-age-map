@@ -103,3 +103,43 @@ BEGIN
 END $b1_read_wrapper$;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_READ_EXECUTED_PASS'
+
+
+-- Negative execution tests: reject cross-role operations, invalid input and revoked actors.
+SET SESSION AUTHORIZATION isolated_alice;
+DO $b1_cross_role$
+DECLARE denied boolean:=false;
+BEGIN
+ BEGIN PERFORM rr_private.b1_wrapped_start();
+ EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+ IF NOT denied THEN RAISE EXCEPTION 'approver invoked publisher entry'; END IF;
+ denied:=false;
+ BEGIN PERFORM rr_private.b1_wrapped_approve('INVALID',2023);
+ EXCEPTION WHEN raise_exception THEN denied:=true; END;
+ IF NOT denied THEN RAISE EXCEPTION 'invalid country accepted'; END IF;
+END $b1_cross_role$;
+RESET SESSION AUTHORIZATION;
+\echo 'B1_WRAPPER_CROSS_ROLE_DENIED_PASS'
+SET SESSION AUTHORIZATION isolated_carol;
+DO $b1_cross_stop$
+DECLARE denied boolean:=false;
+BEGIN
+ BEGIN PERFORM rr_private.b1_wrapped_read('JP',2023);
+ EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+ IF NOT denied THEN RAISE EXCEPTION 'stopper invoked private reader entry'; END IF;
+ denied:=false;
+ BEGIN PERFORM rr_private.b1_wrapped_stop('short');
+ EXCEPTION WHEN raise_exception THEN denied:=true; END;
+ IF NOT denied THEN RAISE EXCEPTION 'short reason accepted'; END IF;
+END $b1_cross_stop$;
+RESET SESSION AUTHORIZATION;
+\echo 'B1_WRAPPER_STOP_INPUT_DENIED_PASS'
+REVOKE b1_emergency_stopper FROM isolated_carol;
+REVOKE b1_private_reader FROM isolated_dan;
+DO $b1_revoke_all$
+BEGIN
+ IF has_function_privilege('isolated_carol','rr_private.b1_wrapped_stop(text)','EXECUTE')
+ OR has_function_privilege('isolated_dan','rr_private.b1_wrapped_read(text,integer)','EXECUTE')
+ THEN RAISE EXCEPTION 'revocation failed for stopper or reader'; END IF;
+END $b1_revoke_all$;
+\echo 'B1_WRAPPER_ALL_REVOKED_PASS'
