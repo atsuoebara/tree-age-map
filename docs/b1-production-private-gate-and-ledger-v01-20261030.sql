@@ -101,7 +101,7 @@ BEGIN
    AND a.policy_version=s.policy_version
    AND a.generation=s.generation
    AND a.closed_after<=statement_timestamp()
-   AND (a.activity_year + 1) < EXTRACT(YEAR FROM (statement_timestamp() AT TIME ZONE 'UTC'))
+   AND a.activity_year < EXTRACT(YEAR FROM (statement_timestamp() AT TIME ZONE 'UTC'))
  LIMIT 1;
 END $b1_read$;
 
