@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Disposable GitHub Actions PostgreSQL only. No production credentials.
 set -euo pipefail
+# Never permit accidental execution against a production connection.
+[[ "${PGDATABASE:-}" == "b1_bench" && "${PGUSER:-}" == "bench" && "${PGHOST:-}" == "localhost" ]] || {
+  echo "ERROR: isolated runner connection required (localhost/bench/b1_bench)"
+  exit 1
+}
 psql -v ON_ERROR_STOP=1 -f docs/b1-public-gate-isolated.sql
 scalar() { psql -v ON_ERROR_STOP=1 -Atc "$1"; }
 assert_empty() {
@@ -29,8 +34,17 @@ done
 [[ "$ready" -eq 1 ]] || { echo "FAIL: writer not ready"; wait "$writer_pid" || true; exit 1; }
 psql -v ON_ERROR_STOP=1 -Atc "SELECT COALESCE(b1_gate_test.read_value('JP',2026)::text,'NULL')" >"$readerlog" &
 reader_pid=$!
+# Prove the reader actually encountered a PostgreSQL lock, not just a late request.
+reader_blocked=0
+for _ in $(seq 1 50); do
+  blocked="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%b1_gate_test.read_value%'")"
+  if [[ "$blocked" -ge 1 ]]; then reader_blocked=1; break; fi
+  sleep 0.02
+done
 wait "$writer_pid"
 wait "$reader_pid"
+[[ "$reader_blocked" -eq 1 ]] || { echo "FAIL: concurrent reader lock wait not observed"; exit 1; }
+echo "EVIDENCE: reader waited on PostgreSQL Lock during withdrawal"
 [[ "$(tail -1 "$readerlog")" == NULL ]] || { echo "FAIL: concurrent reader saw stale value"; cat "$readerlog"; exit 1; }
 assert_empty
 echo "PASS: concurrent read blocked until revocation commit and returned NULL"
@@ -56,8 +70,16 @@ done
 [[ "$ready" -eq 1 ]] || { echo "FAIL: reader not ready"; wait "$hold_pid" || true; exit 1; }
 psql -v ON_ERROR_STOP=1 -Atc "SELECT b1_gate_test.withdraw()" > "$withdrawlog" &
 withdraw_pid=$!
+writer_blocked=0
+for _ in $(seq 1 50); do
+  blocked="$(scalar "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%b1_gate_test.withdraw%'")"
+  if [[ "$blocked" -ge 1 ]]; then writer_blocked=1; break; fi
+  sleep 0.02
+done
 wait "$hold_pid"
 wait "$withdraw_pid"
+[[ "$writer_blocked" -eq 1 ]] || { echo "FAIL: concurrent writer lock wait not observed"; exit 1; }
+echo "EVIDENCE: writer waited on PostgreSQL Lock during ongoing read"
 grep -qx '1200' "$holdlog" || { echo "FAIL: prerevocation reader did not see approved value"; cat "$holdlog"; exit 1; }
 assert_empty
 echo "PASS: pre-revocation reader completed before withdrawal; no old value after withdrawal"
