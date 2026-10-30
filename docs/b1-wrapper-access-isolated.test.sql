@@ -35,7 +35,7 @@ BEGIN
  IF has_table_privilege(current_user,'rr_private.region_rings_approved_year','SELECT')
  THEN RAISE EXCEPTION 'approver can read table'; END IF;
 END $$;
-DO $ BEGIN IF rr_private.b1_wrapped_approve('JP',2023) THEN RAISE EXCEPTION 'unexpected approval'; END IF; END $;
+DO $$ BEGIN IF rr_private.b1_wrapped_approve('JP',2023) THEN RAISE EXCEPTION 'unexpected approval'; END IF; END $$;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_APPROVER_SCOPE_PASS'
 SET SESSION AUTHORIZATION isolated_bob;
@@ -46,7 +46,7 @@ BEGIN
  IF has_function_privilege(current_user,'rr_private.b1_wrapped_approve(text,integer)','EXECUTE')
  THEN RAISE EXCEPTION 'publisher can approve'; END IF;
 END $$;
-DO $ BEGIN IF rr_private.b1_wrapped_start() THEN RAISE EXCEPTION 'unexpected start'; END IF; END $;
+DO $$ BEGIN IF rr_private.b1_wrapped_start() THEN RAISE EXCEPTION 'unexpected start'; END IF; END $$;
 RESET SESSION AUTHORIZATION;
 \echo 'B1_WRAPPER_PUBLISHER_SCOPE_PASS'
 -- Role escalation test: a member of two roles must fail closed even when
