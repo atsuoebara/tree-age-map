@@ -26,7 +26,7 @@ button:focus-visible,select:focus-visible{outline:3px solid #eaff00;outline-offs
 <section class="card"><label for="region">地域</label><br><select id="region" style="width:100%;margin-top:8px"><option value="">読み込み中…</option></select>
 <div class="controls"><button id="yearMode" type="button" aria-pressed="true">年ごと</button><button id="monthMode" type="button" aria-pressed="false">月ごと</button><select id="year" aria-label="対象年" hidden></select></div>
 <h2 id="chartTitle">年別走行距離</h2><div id="bars" role="group" aria-label="期間を選ぶ棒グラフ" tabindex="0"></div>
-<p class="small muted"><span style="color:#ff76bc">■</span> ピンク＝最多距離　<span style="color:#eaff00">□</span> 黄緑の枠＝選択中。棒をタップして切り替え、左右にスワイプできます。</p></section>
+<p class="small muted"><span style="color:#ff76bc">■</span> ピンク＝最多距離　<span style="color:#eaff00">□</span> 黄緑の枠＝選択中。棒をタップして切り替え、最新の期間は右端です。過去を見るには左へスクロールしてください。</p></section>
 <section class="card" aria-live="polite"><h2 id="period">選択期間</h2><div class="hero"><img id="logo" src="./icon.PNG" alt="Runner's Ringsの年輪ロゴ"><div><div id="km">—</div><p class="muted" id="runs">—</p></div></div>
 <p class="muted small">距離は保存済みGPSの地域別推計値です。境界を横断する区間などで誤差が生じる場合があります。地域ごとに記録が反映されるまで時間差が生じることがあります。</p></section>
 <p id="status" role="status">ログイン状態を確認しています…</p>
@@ -36,15 +36,17 @@ const sb=window.supabase.createClient('https://fhwvntpzwyenendhcgbw.supabase.co'
 const $=id=>document.getElementById(id);let mode='year',rows=[],selection='',selectedYear=new Date().getFullYear(),generation=0;
 const num=x=>Number(x)||0;
 function chartEntries(){
- if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>b-a);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
+ if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
  return Array.from({length:12},(_,i)=>{const subset=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.period_month)===i+1);return {key:String(i+1),label:(i+1)+'月',km:subset.reduce((a,x)=>a+num(x.distance_km),0),runs:subset.reduce((a,x)=>a+num(x.run_count),0)}});
 }
-function render(){
+function latestMonthWithData(){const months=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.distance_km)>0).map(x=>num(x.period_month));return String(Math.max(1,...months));}
+function scrollToNewest(){const group=$('bars');requestAnimationFrame(()=>{group.scrollLeft=group.scrollWidth-group.clientWidth;});}
+function render(scrollNewest=false){
  $('yearMode').setAttribute('aria-pressed',String(mode==='year'));$('monthMode').setAttribute('aria-pressed',String(mode==='month'));
  $('year').hidden=mode!=='month';$('chartTitle').textContent=mode==='year'?'年別走行距離':selectedYear+'年の月別走行距離';
  const entries=chartEntries();const group=$('bars');group.replaceChildren();
  if(!entries.length){$('period').textContent='記録なし';$('km').textContent='0 km';$('runs').textContent='0 回';return;}
- if(!entries.some(x=>x.key===selection))selection=entries[0].key;
+ if(!entries.some(x=>x.key===selection))selection=entries[entries.length-1].key;
  const highest=Math.max(0,...entries.map(x=>x.km));const max=Math.max(1,highest);
  for(const row of entries){const item=document.createElement('div');item.className='item';
  const value=document.createElement('span');value.textContent=row.km.toFixed(1);
@@ -55,6 +57,7 @@ function render(){
  const selected=entries.find(x=>x.key===selection);
  $('period').textContent=mode==='year'?selection+'年の年輪':selectedYear+'年'+selection+'月の年輪';
  $('km').textContent=selected.km.toFixed(1)+' km';$('runs').textContent=selected.runs+' 地域内走行記録';
+ if(scrollNewest)scrollToNewest();
 }
 async function load(){const seq=++generation;const option=$('region').selectedOptions[0];if(!option||!option.dataset.country)return;
  $('status').textContent='集計中…';const {data,error}=await sb.rpc('get_my_region_rings',{p_country:option.dataset.country,p_region:option.value,p_year:null});
@@ -63,12 +66,12 @@ async function load(){const seq=++generation;const option=$('region').selectedOp
  rows=data||[];const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>b-a);
  const select=$('year');select.replaceChildren();for(const y of years){const o=document.createElement('option');o.value=y;o.textContent=y+'年';select.append(o);}
  if(years.length&&!years.includes(selectedYear))selectedYear=years[0];select.value=String(selectedYear);
- selection=mode==='year'?String(selectedYear):'1';render();
+ selection=mode==='year'?String(selectedYear):latestMonthWithData();render(true);
  $('status').textContent=rows.length?'本人の地域別データを表示しています。':'この地域の集計データはまだありません。';
 }
-$('yearMode').onclick=()=>{mode='year';selection=String(selectedYear);render()};
-$('monthMode').onclick=()=>{mode='month';selection='1';render()};
-$('year').onchange=e=>{selectedYear=Number(e.target.value);selection='1';render()};
+$('yearMode').onclick=()=>{mode='year';selection=String(selectedYear);render(true)};
+$('monthMode').onclick=()=>{mode='month';selection=latestMonthWithData();render(true)};
+$('year').onchange=e=>{selectedYear=Number(e.target.value);selection=latestMonthWithData();render(true)};
 $('region').onchange=load;
 (async()=>{try{const {data:{user},error:authError}=await sb.auth.getUser();if(authError||!user){$('status').textContent='Runner’s Ringsにログインしてから開いてください。';$('region').replaceChildren();return;}
  const {data,error}=await sb.rpc('get_my_ring_regions');if(error)throw error;
