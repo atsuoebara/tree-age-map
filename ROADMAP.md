@@ -1,3 +1,9 @@
+### B-1 一般公開版・第3弾：非公開の集計参加判定ゲート（2026-10-30）
+- **状態：サーバ側の参加条件判定のみ実装・SQL読取テスト合格。匿名集計値の生成・公開は未実装、独立監査前。**
+- Supabase migration `b1_private_region_bucket_eligibility_gate`：`rr_private.region_bucket_eligible(country,region,year,month)` を非公開スキーマに作成（security invoker、anon/authenticatedのEXECUTEなし）。地域×年月について、`region_rings_consent.consented=true`かつ`rr_private.region_rings_public_authorization.authorized=true`かつ規約版`region-rings-public-v1`かつ未撤回、さらに削除されていない`runs`に紐づく正の距離がある異なるユーザーが**5人以上**いるかだけをboolean判定する。GPS軌跡や氏名を返さない。
+- **確認：** 正式公開同意0件に対し判定false。anon/authenticatedの関数実行権限なし。既存サイトUIや本人限定RPCは変更なし。
+- **残件:** 正式同意UIと版説明・撤回反映、5人閾値のみでは防げない年月間・地域間差分推定への対策、削除/同期検証、集計値生成、公開用APIとページ、むせ監査とAtsuo最終承認。公開フラグは依然OFF。
+
 ### B-1 一般公開版・第2弾追加：正式公開同意の隔離先（2026-10-30）
 - **状態：非公開DB土台のみ実装済み。公開同意の受付・集計・公開は未開始、監査前。**
 - `rr_private.region_rings_public_authorization` を migration `b1_public_authorization_quarantined_schema` で新設。user_idごとの`authorized`初期false、将来の規約版`policy_version`、承認／撤回日時を記録する構造。ON時は規約版と承認日時を必須とする制約。
