@@ -1,3 +1,9 @@
+### B-1 一般公開版・第1弾 公開参加希望設定／RLS条件確認（2026-10-30）
+- **むせ独立監査：** 2026-10-30 12:34〜12:40 JST。対象 `region-rings.html`、`18a4e95`。13シナリオ、本番一致、匿名REST 401を確認し「条件付き合格（RLS本人限定の証拠提示1件）」と判定。
+- **条件対応：** チャッピーがSupabase本番の `pg_policies` とテーブル権限を読取照合。RLS有効、`rr_consent_read_own` SELECT USING `user_id=(select auth.uid())`、`rr_consent_insert_own` INSERT WITH CHECK 同条件、`rr_consent_update_own` UPDATE USINGおよびWITH CHECK同条件。各ポリシーは `authenticated` 限定。anon SELECT権限なし。**むせの要求した定義提示条件を満たす証拠が確認できた。**
+- **確認範囲：** AtsuoのiPhoneでOFF初期表示、ON保存、更新後のON保持を確認。OFF撤回と保持はむせの実行ハーネスで確認。認証済みの別ユーザーを用いた実アクセス試験は未実施。
+- **状態：条件解消の証拠確認済み、むせの最終判定更新・Atsuoの正式承認待ち。** 一般公開データの集計・公開機能は未実装であり、希望フラグONでも公開しない。
+
 ### B-1 一般公開版・第1工程：独立参加希望設定（2026-10-30）
 - **状態：実装済み・実機確認／むせ監査前。一般公開は未開始。** B-1本人限定版の正式完了は維持。
 - **DB:** Supabaseに `region_rings_consent` を新設（migration `b1_region_rings_explicit_consent_private`）。`user_id` ごとの `consented` は初期false、RLSで本人のみSELECT/INSERT/UPDATE。anonにテーブル権限なしを確認。ランキング許諾・Territory許諾とは独立。
