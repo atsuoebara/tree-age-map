@@ -1,3 +1,8 @@
+### B-1 local SQLite surrogate smoke test (2026-10-30)
+- No PostgreSQL binaries were available in the execution container; a local SQLite in-memory behavioral approximation was run with **synthetic data only** (not production-equivalent PostgreSQL or network-based Today sync). A simulated Today row-level queue event was inserted per run; an application-managed invalidation step was invoked once per SQL statement, because SQLite lacks PostgreSQL statement-level triggers.
+- Twelve runs per combination: 100 single statements median 0.199ms no B-1 vs 0.390ms B-1; 100 batch median 0.071ms vs 0.079ms; 500 single median 1.185ms vs 1.887ms; 500 batch median 0.348ms vs 0.325ms. Mock Today notifications matched run count for all variants (100 or 500).
+- The surrogate demonstrates test harness behavior and expected per-statement scaling **only**; it does not measure actual B-1 function, pg_net, Supabase, concurrency or production performance. It does **not satisfy Muse's condition 2**. No production data or settings changed; public release OFF.
+
 ### B-1 Today live sync observation baseline, first snapshot (2026-10-30)
 - Read-only Supabase unified logs query, default last-24-hour window, scoped to function_edge_logs and request.pathname=/functions/v1/rings-today-live-sync: total 4 invocations, HTTP 2xx 4, non-2xx 0, mean execution_time_ms 2989, p95 4627.1. Small sample; p95 is descriptive only and cannot show absence of regression.
 - Read-only DB snapshot: pg_stat_activity lock waiters 0, active sessions 1. This is a point-in-time sample, not continuous monitoring.
