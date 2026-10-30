@@ -1,3 +1,9 @@
+### B-1 一般公開版・正式同意の内容確認画面（2026-10-30）
+- **状態：公開条件の案内（案）を実装。正式な同意受付・匿名集計・一般公開は引き続き未開始。監査前。**
+- `region-rings.html` に「地域の年輪・正式公開同意（内容確認用）」を追加（`e847e91`）。公開候補＝複数ランナーの地域×年月の概算合計距離、非公開＝氏名・ID・個人距離・軌跡・出発地点・日時・写真等。少人数・差分推測への追加保護を公開前必須と明示。
+- **既存の参加希望ONと正式な公開同意を区別。** 詳細確定前に実同意を取得することは避け、今回のUIには正式同意ボタン・DB更新処理を追加しない。隔離DB`region_rings_public_authorization`は空で公開経路なし。撤回後の反映方法が定まるまで公開不能。
+- **次の要件：** 地域粒度、期間別差分保護、表示する距離の丸めと最小人数の定義、撤回から更新までの猶予・履歴公開抑止、規約版の確定、正式な同意UIと安全なサーバ側更新RPC、第三者監査・Atsuo最終承認。
+
 ### B-1 一般公開版・第3弾：非公開の集計参加判定ゲート（2026-10-30）
 - **状態：サーバ側の参加条件判定のみ実装・SQL読取テスト合格。匿名集計値の生成・公開は未実装、独立監査前。**
 - Supabase migration `b1_private_region_bucket_eligibility_gate`：`rr_private.region_bucket_eligible(country,region,year,month)` を非公開スキーマに作成（security invoker、anon/authenticatedのEXECUTEなし）。地域×年月について、`region_rings_consent.consented=true`かつ`rr_private.region_rings_public_authorization.authorized=true`かつ規約版`region-rings-public-v1`かつ未撤回、さらに削除されていない`runs`に紐づく正の距離がある異なるユーザーが**5人以上**いるかだけをboolean判定する。GPS軌跡や氏名を返さない。
