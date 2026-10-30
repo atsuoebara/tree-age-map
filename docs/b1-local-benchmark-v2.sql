@@ -1,18 +1,14 @@
 -- B-1 repeatability benchmark: synthetic data ONLY, disposable PostgreSQL service.
 -- Never use against production. Today is a LOCAL event-logging stub, not HTTP/pg_net.
 BEGIN;
+\ir b1-production-invalidation-isolated-fixture.sql
 CREATE TEMP TABLE b1_runs (id bigint GENERATED ALWAYS AS IDENTITY, distance_km numeric);
 CREATE TEMP TABLE b1_events (run_id bigint);
-CREATE TEMP TABLE b1_candidate (id integer);
-CREATE TEMP TABLE b1_state (dirty boolean);
-INSERT INTO b1_state VALUES (false);
 CREATE TEMP TABLE b1_results (mode text, b1_enabled boolean, trial int, elapsed_ms numeric, event_count int);
 CREATE FUNCTION pg_temp.b1_today_stub() RETURNS trigger LANGUAGE plpgsql AS $fn$
 BEGIN INSERT INTO b1_events VALUES (NEW.id); RETURN NEW; END $fn$;
-CREATE FUNCTION pg_temp.b1_invalidation_stub() RETURNS trigger LANGUAGE plpgsql AS $fn$
-BEGIN DELETE FROM b1_candidate; UPDATE b1_state SET dirty = true; RETURN NULL; END $fn$;
 CREATE TRIGGER b1_today AFTER INSERT ON b1_runs FOR EACH ROW EXECUTE FUNCTION pg_temp.b1_today_stub();
-CREATE TRIGGER b1_invalidate AFTER INSERT ON b1_runs FOR EACH STATEMENT EXECUTE FUNCTION pg_temp.b1_invalidation_stub();
+CREATE TRIGGER b1_invalidate AFTER INSERT ON b1_runs FOR EACH STATEMENT EXECUTE FUNCTION rr_private.invalidate_region_rings_cache();
 
 DO $benchmark$
 DECLARE
@@ -36,7 +32,7 @@ BEGIN
           ALTER TABLE b1_runs DISABLE TRIGGER b1_invalidate;
         END IF;
         TRUNCATE b1_runs, b1_events;
-        UPDATE b1_state SET dirty = false;
+        UPDATE rr_private.region_rings_refresh_state SET is_dirty = false WHERE singleton = true;
         started := clock_timestamp();
         IF how = 'batch100' THEN
           INSERT INTO b1_runs(distance_km) SELECT 5 FROM generate_series(1,100);
