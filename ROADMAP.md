@@ -1,3 +1,10 @@
+### B-1 非公開集計基盤・独立監査（2026-10-30 14:04–14:12 JST）
+- **むせ判定：条件付き合格。正式完了ではない。** 公開APIからprivate schema非到達、初期正式同意0件・候補0件、公開OFF、既存本人限定版への非干渉を確認。
+- **条件1（候補生成前必須）：** 同意・撤回、runs削除／更新、地域距離再同期のそれぞれで実際にトリガーが発火し候補集計が失効することを安全な隔離テストで検証。既存の本番走行記録は変更しない。
+- **条件2（公開前必須）：** runsトリガーによる大量取り込み時の遅延、ロック競合、Today同期への影響を実測レビュー。既存同期を壊さないこと。
+- **追加未解決：** 最低5人だけでは匿名性不十分。年月・地域間の差分推測、外部キャッシュ、撤回後公開済みデータの扱い、正式同意の内容・操作の確定が必要。
+- **方針：** 条件を解消してむせ再監査・Atsuo最終承認まで公開経路を作動させない。一般公開OFF維持。
+
 ### B-1 invalidation triggers (2026-10-30)
 - Migration `b1_region_source_and_runs_invalidation` added statement-level INSERT/UPDATE/DELETE triggers to `public.runs` and `public.rings_today_run_region_distance`, invoking existing private invalidation logic.
 - Verified both triggers exist; dirty flag is true and publication flag remains false.
