@@ -15,7 +15,10 @@ GRANT USAGE ON SCHEMA rr_private TO b1_wrapper_owner,b1_approver,b1_publisher,b1
 GRANT SELECT ON rr_private.region_rings_release_decision,
  rr_private.region_rings_refresh_state,rr_private.region_rings_publication_state,
  rr_private.region_rings_approved_year TO b1_wrapper_owner;
-GRANT UPDATE ON rr_private.region_rings_publication_state,
+-- SELECT FOR SHARE on legacy state requires UPDATE privilege in PostgreSQL.
+-- Grant only to the NOLOGIN wrapper owner; operational roles remain denied.
+GRANT UPDATE ON rr_private.region_rings_refresh_state,
+ rr_private.region_rings_publication_state,
  rr_private.region_rings_approved_year TO b1_wrapper_owner;
 GRANT INSERT ON rr_private.region_rings_approved_year,
  rr_private.region_rings_publication_ledger TO b1_wrapper_owner;
