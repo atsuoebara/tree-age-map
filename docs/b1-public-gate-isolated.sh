@@ -65,9 +65,15 @@ echo "PASS: pre-revocation reader completed before withdrawal; no old value afte
 echo "TEST3: old generation and repeated withdrawals remain unavailable"
 scalar "UPDATE b1_gate_test.state SET enabled=true,dirty=false" >/dev/null
 assert_empty
-scalar "SELECT b1_gate_test.withdraw()" >/dev/null
+first_generation="$(scalar "SELECT generation FROM b1_gate_test.state WHERE singleton")"
+second_generation="$(scalar "SELECT b1_gate_test.withdraw()")"
+third_generation="$(scalar "SELECT b1_gate_test.withdraw()")"
+[[ "$first_generation" == "$second_generation" && "$second_generation" == "$third_generation" ]] || {
+  echo "FAIL: repeated withdrawal changed generation ($first_generation/$second_generation/$third_generation)"
+  exit 1
+}
 assert_empty
-echo "PASS: stale generation and repeated withdrawal fail closed"
+echo "PASS: stale generation and repeated withdrawal are idempotent and fail closed"
 psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA b1_gate_test CASCADE" >/dev/null
 rm -f "$writerlog" "$readerlog" "$holdlog" "$withdrawlog"
 echo "B1_GATE_POSTGRES_CONCURRENCY_COMPLETE"
