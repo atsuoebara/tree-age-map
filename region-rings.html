@@ -37,7 +37,8 @@ const $=id=>document.getElementById(id);let mode='year',rows=[],selection='',sel
 const num=x=>Number(x)||0;
 function chartEntries(){
  if(mode==='year'){const years=[...new Set(rows.map(x=>Number(x.period_year)))].sort((a,b)=>a-b);return years.map(y=>({key:String(y),label:String(y),km:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.distance_km),0),runs:rows.filter(x=>num(x.period_year)===y).reduce((a,x)=>a+num(x.run_count),0)}));}
- return Array.from({length:12},(_,i)=>{const subset=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.period_month)===i+1);return {key:String(i+1),label:(i+1)+'月',km:subset.reduce((a,x)=>a+num(x.distance_km),0),runs:subset.reduce((a,x)=>a+num(x.run_count),0)}});
+ const today=new Date();const lastMonth=selectedYear===today.getFullYear()?today.getMonth()+1:12;
+ return Array.from({length:lastMonth},(_,i)=>{const subset=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.period_month)===i+1);return {key:String(i+1),label:(i+1)+'月',km:subset.reduce((a,x)=>a+num(x.distance_km),0),runs:subset.reduce((a,x)=>a+num(x.run_count),0)}});
 }
 function latestMonthWithData(){const months=rows.filter(x=>num(x.period_year)===selectedYear&&num(x.distance_km)>0).map(x=>num(x.period_month));return String(Math.max(1,...months));}
 function scrollToNewest(){const group=$('bars');requestAnimationFrame(()=>{group.scrollLeft=group.scrollWidth-group.clientWidth;});}
