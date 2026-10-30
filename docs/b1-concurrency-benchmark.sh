@@ -11,7 +11,34 @@ for trial in 1 2 3 4 5 6; do
     else psql -v ON_ERROR_STOP=1 -c 'ALTER TABLE b1_bench.runs DISABLE TRIGGER b1_invalidate' >/dev/null; fi
     psql -v ON_ERROR_STOP=1 -c 'TRUNCATE b1_bench.today_events, b1_bench.runs RESTART IDENTITY' >/dev/null
     echo "=== B1_CONCURRENCY trial=$trial mode=$mode clients=2 tx_per_client=500 ==="
-    pgbench -n -c 2 -j 2 -t 500 -f /tmp/b1-concurrent.pgbench "$PGDATABASE"
+    # Record per-trial TPS/average latency and sample concurrent lock waiters.
+    runlog="$(mktemp)"
+    locklog="$(mktemp)"
+    stopfile="$(mktemp)"
+    rm -f "$stopfile"
+    (
+      while [[ ! -e "$stopfile" ]]; do
+        psql -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'" >> "$locklog" || exit 1
+        sleep 0.02
+      done
+    ) &
+    monitor_pid=$!
+    if ! pgbench -n -c 2 -j 2 -t 500 -f /tmp/b1-concurrent.pgbench "$PGDATABASE" > "$runlog" 2>&1; then
+      touch "$stopfile"
+      wait "$monitor_pid" || true
+      cat "$runlog"
+      exit 1
+    fi
+    touch "$stopfile"
+    wait "$monitor_pid"
+    cat "$runlog"
+    latency="$(sed -n 's/^latency average = \\([0-9.]*\\) ms$/\\1/p' "$runlog" | tail -1)"
+    tps="$(sed -n 's/^tps = \\([0-9.]*\\).*/\\1/p' "$runlog" | tail -1)"
+    [[ -n "$latency" && -n "$tps" ]] || { echo "ERROR: pgbench metrics missing"; exit 1; }
+    maxlocks="$(sort -nr "$locklog" | head -1)"
+    maxlocks="${maxlocks:-0}"
+    echo "B1_METRICS trial=$trial mode=$mode avg_latency_ms=$latency tps=$tps max_sampled_lock_waiters=$maxlocks lock_samples=$(wc -l < "$locklog")"
+    rm -f "$runlog" "$locklog" "$stopfile"
     # Count Today events using numeric SQL only; shell prints the label.
     count="$(psql -v ON_ERROR_STOP=1 -Atc 'SELECT count(*) FROM b1_bench.today_events')"
     echo "today_events=$count"
@@ -19,5 +46,5 @@ for trial in 1 2 3 4 5 6; do
     [[ "$count" == "1000" ]] || { echo "ERROR: expected 1000 events, got $count"; exit 1; }
   done
 done
-psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA b1_bench CASCADE' >/dev/null
+psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA b1_bench CASCADE; DROP SCHEMA rr_private CASCADE' >/dev/null
 echo "B1_CONCURRENCY_COMPLETE: 12 trials; no HTTP/pg_net; local stubs only"
