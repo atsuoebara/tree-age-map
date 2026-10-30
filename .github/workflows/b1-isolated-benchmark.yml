@@ -34,9 +34,12 @@ jobs:
       - name: Run 12-trial batch/single-row B-1 comparison
         run: |
           psql -v ON_ERROR_STOP=1 -f docs/b1-local-benchmark-v2.sql | tee b1-benchmark.log
+      - name: Run two-client B-1 concurrency comparison
+        run: |
+          bash docs/b1-concurrency-benchmark.sh | tee b1-concurrency.log
       - name: Save test output
         uses: actions/upload-artifact@v4
         with:
           name: b1-isolated-benchmark
-          path: b1-benchmark.log
+          path: |\n            b1-benchmark.log\n            b1-concurrency.log
           retention-days: 7
