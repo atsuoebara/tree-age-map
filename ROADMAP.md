@@ -1,3 +1,8 @@
+### B-1 invalidation triggers (2026-10-30)
+- Migration `b1_region_source_and_runs_invalidation` added statement-level INSERT/UPDATE/DELETE triggers to `public.runs` and `public.rings_today_run_region_distance`, invoking existing private invalidation logic.
+- Verified both triggers exist; dirty flag is true and publication flag remains false.
+- Pending: mutation-based tests, performance review, independent audit. No public aggregates released.
+
 ### B-1 一般公開版・撤回時の非公開候補集計失効（2026-10-30）
 - **状態：非公開DBの失効トリガー導入済み。実データ更新テスト・むせ監査前。一般公開OFF。**
 - migration `b1_private_consent_revocation_invalidation`：`rr_private.region_rings_refresh_state`に変更検知（is_dirty）を追加し、publication_enabledをfalse固定CHECK制約にした。public.region_rings_consent と rr_private.region_rings_public_authorization のINSERT/UPDATE/DELETEに各トリガーを設定。変更時には内部候補集計`rr_private.region_rings_public_candidate`を同じトランザクションで削除し再計算が必要な状態を記録する。
