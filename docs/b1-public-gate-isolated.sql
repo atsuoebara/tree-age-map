@@ -34,7 +34,7 @@ RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE next_generation bigint;
 BEGIN
  UPDATE b1_gate_test.state
- SET enabled=false, dirty=true, generation=generation+1
+ SET enabled=false, dirty=true, generation=CASE WHEN enabled OR NOT dirty THEN generation+1 ELSE generation END
  WHERE singleton RETURNING generation INTO next_generation;
  RETURN next_generation;
 END $$;
