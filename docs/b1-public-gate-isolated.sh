@@ -68,7 +68,7 @@ assert_empty
 first_generation="$(scalar "SELECT generation FROM b1_gate_test.state WHERE singleton")"
 second_generation="$(scalar "SELECT b1_gate_test.withdraw()")"
 third_generation="$(scalar "SELECT b1_gate_test.withdraw()")"
-[[ "$first_generation" == "$second_generation" && "$second_generation" == "$third_generation" ]] || {
+[[ "$second_generation" -eq "$((first_generation + 1))" && "$second_generation" == "$third_generation" ]] || {
   echo "FAIL: repeated withdrawal changed generation ($first_generation/$second_generation/$third_generation)"
   exit 1
 }
