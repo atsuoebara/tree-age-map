@@ -1,3 +1,8 @@
+### B-1 consent revocation rollback tests (2026-10-30)
+- Temporary transactional SQL tests, always ROLLBACK. Synthetic candidate records disappeared after preference UPDATE, formal authorization INSERT, and formal authorization UPDATE from true to false (revocation). Each check returned zero remaining candidates and the corresponding invalidation reason.
+- Afterward candidate rows 0, formal authorizations 0, preference records 1, publication flag false. No permanent user or running data modifications.
+- Statement-level runs and region-source triggers previously fired with zero affected rows. Meaningful real-row changes, realistic bulk imports, concurrency, latency, and Today sync impact remain unverified. **Muse audit conditions not fully resolved; public release OFF.**
+
 ### B-1 非公開失効処理・ロールバック試験（2026-10-30）
 - 本番の既存ランを変更しない BEGIN/ROLLBACK 試験で、0行対象の runs UPDATE 文でも b1_runs_invalidate が1回発火（26.712ms、単回測定）。地域距離テーブルの同様のUPDATEで b1_region_source_invalidate が1回発火（2.430ms、単回）。
 - 非公開候補表へ合成データを一時追加し、runsの0行UPDATEで候補が消えることを確認。ROLLBACK後の候補は0件。永続的な走行データ変更なし。
