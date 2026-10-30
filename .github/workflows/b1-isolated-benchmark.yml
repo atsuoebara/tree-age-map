@@ -31,9 +31,9 @@ jobs:
       PGDATABASE: b1_bench
     steps:
       - uses: actions/checkout@v4
-      - name: Run synthetic-only B-1 Today-stub comparison
+      - name: Run 12-trial batch/single-row B-1 comparison
         run: |
-          psql -v ON_ERROR_STOP=1 -f docs/b1-local-benchmark.sql | tee b1-benchmark.log
+          psql -v ON_ERROR_STOP=1 -f docs/b1-local-benchmark-v2.sql | tee b1-benchmark.log
       - name: Save test output
         uses: actions/upload-artifact@v4
         with:
