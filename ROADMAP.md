@@ -1,3 +1,10 @@
+### B-1 isolated GitHub Actions performance run #1 (2026-10-30 16:10 JST)
+- GitHub Actions manually initiated by user: [workflow run #41018433555](https://github.com/atsuoebara/tree-age-map/actions/runs/41018433555), completed successfully. Synthetic-only PostgreSQL 16 environment; SQL harness uses temporary tables and ROLLBACK; production Supabase not contacted.
+- For 100 synthetic rows inserted in one statement, B-1 local simulated statement trigger + row-level Today stand-in: EXPLAIN ANALYZE execution 0.709 ms, B-1 trigger 0.177 ms / 1 call, Today stand-in 0.406 ms / 100 calls, event count 100.
+- Without B-1 local simulated trigger, same 100-row statement: total 0.305 ms, Today stand-in 0.197 ms / 100 calls, event count 100. One-run observed difference +0.404 ms; no statistical reliability or proof of production-level overhead.
+- **Important limitation**: local benchmark uses simplified stub functions, not the actual rr_private.invalidate_region_rings_cache() or HTTP/pg_net Edge Function. It does not measure simultaneous ingestion contention, real SQL batching, p95, or external queue. Muse condition 2 remains open (narrowed); publication remains OFF.
+- GitHub Actions reports one warning for Node.js deprecation in action dependencies, unrelated to SQL outcome.
+
 ### B-1 local SQLite surrogate smoke test (2026-10-30)
 - No PostgreSQL binaries were available in the execution container; a local SQLite in-memory behavioral approximation was run with **synthetic data only** (not production-equivalent PostgreSQL or network-based Today sync). A simulated Today row-level queue event was inserted per run; an application-managed invalidation step was invoked once per SQL statement, because SQLite lacks PostgreSQL statement-level triggers.
 - Twelve runs per combination: 100 single statements median 0.199ms no B-1 vs 0.390ms B-1; 100 batch median 0.071ms vs 0.079ms; 500 single median 1.185ms vs 1.887ms; 500 batch median 0.348ms vs 0.325ms. Mock Today notifications matched run count for all variants (100 or 500).
