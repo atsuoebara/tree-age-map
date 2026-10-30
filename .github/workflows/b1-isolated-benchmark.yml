@@ -41,5 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: b1-isolated-benchmark
-          path: |\n            b1-benchmark.log\n            b1-concurrency.log
+          path: |
+            b1-benchmark.log
+            b1-concurrency.log
           retention-days: 7
