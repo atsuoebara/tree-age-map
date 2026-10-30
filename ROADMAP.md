@@ -1,3 +1,8 @@
+### B-1 simultaneous isolated trigger probe (2026-10-30)
+- Two SQL jobs were launched together, each using a temporary 1000-row table with the existing private invalidation function as a statement-level trigger. Both completed without error under a local 1500ms lock timeout; both transactions rolled back. This does not establish overlapping database lock duration, and no genuine multi-user ingestion contention was measured.
+- Database inspection: no ungranted locks at observation time; runs still has both its original row-level Today live-sync trigger and the B-1 statement-level invalidation trigger enabled. Publication flag remains false.
+- Remaining before Muse clearance: prove invalidation for meaningful run deletion/update and region resync without persisting user changes, review real ingestion/Today latency and concurrent lock waits, and validate safe cache/differencing behavior before any publication. Conditional audit remains open.
+
 ### B-1 isolated trigger performance probe (2026-10-30)
 - Real runs zero-row UPDATE trigger 1.669ms and 1.739ms, one call per statement. Not a real import.
 - Temporary table transaction/rollback performance probes using identical invalidation function: 1,000 inserted rows, one trigger call at 1.631ms (total 2.635ms); 10,000 rows, one call at 2.168ms (total 12.269ms). No production run records modified.
