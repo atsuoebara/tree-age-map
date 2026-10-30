@@ -1,3 +1,9 @@
+### B-1 rollback-only real-row invalidation verification (2026-10-30)
+- On the production Supabase database, executed three separate BEGIN/ROLLBACK tests with lock_timeout 1500ms and statement_timeout 8s. Used temporary synthetic aggregate candidate rows while changing a single existing run or region-distance row inside the transaction only.
+- Runs UPDATE (no-op) triggered public.runs:UPDATE and cleared candidate; runs soft-delete simulation (setting deleted_at=now()) triggered public.runs:UPDATE and cleared candidate; region-distance UPDATE (no-op) triggered public.rings_today_run_region_distance:UPDATE and cleared candidate. Each query returned remaining=0. The UPDATE cases validate trigger operation; region sync's actual full batch performance remains untested.
+- All changes rolled back; after testing, candidate=0, formal authorizations=0, publication_enabled=false, live runs=25524 (same count as before). No lasting data change.
+- Remaining from Muse conditional audit: measure realistic live import / Today synchronization latency and concurrent locking; independent auditor recheck. Do not claim the bulk-load condition is cleared. Public release OFF.
+
 ### B-1 simultaneous isolated trigger probe (2026-10-30)
 - Two SQL jobs were launched together, each using a temporary 1000-row table with the existing private invalidation function as a statement-level trigger. Both completed without error under a local 1500ms lock timeout; both transactions rolled back. This does not establish overlapping database lock duration, and no genuine multi-user ingestion contention was measured.
 - Database inspection: no ungranted locks at observation time; runs still has both its original row-level Today live-sync trigger and the B-1 statement-level invalidation trigger enabled. Publication flag remains false.
