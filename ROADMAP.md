@@ -1,3 +1,10 @@
+### B-1 公開停止・同意撤回の隔離PostgreSQL並列試験（2026-10-30）
+- 合成データのみの隔離PostgreSQL 16テストを作成。 `docs/b1-public-gate-isolated.sql`（コミット `d21e658`）は公開OFF/dirty/規約版のDBチェックと、同じ状態行を `FOR SHARE` で読む試験用関数・撤回トランザクションを定義する。
+- `docs/b1-public-gate-isolated.sh`（コミット `327956a`、準備完了判定改善 `835e43f`）は2つの接続で「撤回が先のとき」「読み取りが先のとき」のロック順序を試し、撤回完了後の旧値返却を拒否。古い世代・繰返し撤回も非表示を要求。
+- `.github/workflows/b1-public-gate-isolated.yml`（コミット `3c2c5e3`）にNode.js 12項目と隔離PGテストを連結し、push/workflow_dispatchトリガーとログ保存を用意。
+- **GitHubへの実装まで完了、今回のPostgreSQL Actionsの実行成功は未確認**。動作が成功するまで「並列試験合格」と呼ばない。試験は本番Supabaseと無関係で、現行製品RPCの実装・監査や撤回のキャッシュ安全性の代替にはならない。
+- 本番DB・公開コード・同意受付・公開設定は変更なし。一般公開OFF。次はActionsログを実見し、失敗時は試験コードを修正して再実行、成功後にむせ独立監査へ。
+
 ### B-1 公開配信の隔離契約モデル・12項目検証（2026-10-30）
 - 公開配信の合成モデルをローカルNode.jsで12ケース試験し全件PASS。結果を基に `docs/b1-public-delivery-isolated.test.js` に再実行可能な12ケースをGitHubへ保存（コミット `a83b92f`）。再実行: `node docs/b1-public-delivery-isolated.test.js`。
 - 検証観点：全体公開OFF、承認済み最小応答、dirty、未承認/抑制、世代不一致、同意文面版不一致、年締め前、撤回後旧世代、撤回再実行時の非表示、停止中の旧公開フラグ、締め後の遅延同期、公開フラグONだけでは配信不可。
