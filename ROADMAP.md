@@ -1,3 +1,9 @@
+### B-1 import pathway source inspection (2026-10-30)
+- Inspected current main branch index.html. Function `saveActivityToCloud(activity)` performs a direct POST to `SUPABASE_RUNS_URL` (`/rest/v1/runs`) with one activity JSON payload; call sites include distinct file/import loops (around lines 5538, 5824, 14478, 15589). Therefore file-import path has **one SQL/HTTP write request per activity**, not a single bulk POST for all activities; some sync pathways may also call the same function.
+- Inspected `supabase/garmin-activity-reliability.sql`: `public.garmin_commit_activity` inserts at most one `public.runs` row per call, `ON CONFLICT DO NOTHING`. Garmin per-activity statement evidence established.
+- Do not claim all Strava/COROS ingestion is independently audited yet; code search has not conclusively traced each third-party provider through every entrypoint.
+- This supports prioritizing the single-row insertion benchmark: isolated stub A/B mean 100 inserts +1.722 ms (12 trials) but real production hooks and concurrency are not benchmarked. Muse condition 2 remains OPEN. Publication OFF.
+
 ### B-1 isolated GitHub Actions performance run #2 (2026-10-30 16:16 JST)
 - Manually triggered GitHub Actions workflow #2 succeeded (20s job). 100 synthetic runs and local stand-in Today row trigger; 12 alternating trials each across batch/single-row and B-1 on/off, 48 recorded measurements.
 - **Mean / median / p95 / max in ms (n=12 each):** batch B-1 OFF 0.428 / 0.421 / 0.465 / 0.471; batch ON 0.505 / 0.446 / 0.801 / 1.190; single-row OFF 0.631 / 0.628 / 0.665 / 0.675; single-row ON 2.353 / 2.366 / 3.106 / 3.149.
