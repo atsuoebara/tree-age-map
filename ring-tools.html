@@ -30,13 +30,13 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,t
 <main><div class="eyebrow">FREE RUNNING CALCULATORS</div><h1>Ring Tools</h1><p class="muted" data-ja="走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。" data-en="Plan the pace, splits and recovery for your next run. Free and no sign-in.">走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。</p>
 <nav class="tabs" aria-label="Ring Tools"><button type="button" data-tab="race" aria-pressed="true" data-ja="🏁 レースペース" data-en="🏁 Race pace">🏁 レースペース</button><button type="button" data-tab="track" aria-pressed="false" data-ja="🏟 400mラップ" data-en="🏟 Track splits">🏟 400mラップ</button><button type="button" data-tab="interval" aria-pressed="false" data-ja="🔁 インターバル" data-en="🔁 Intervals">🔁 インターバル</button><button type="button" data-tab="rep" aria-pressed="false" data-ja="⚡ 高速レペ" data-en="⚡ Repetitions">⚡ 高速レペ</button></nav>
 <section id="race" class="panel"><h2 data-ja="レースペース計算" data-en="Race pace calculator">レースペース計算</h2><div class="grid">
-<div class="field"><label for="raceDist" data-ja="距離" data-en="Distance">距離</label><select id="raceDist"><option value="42.195">Full 42.195km</option><option value="21.0975">Half 21.0975km</option><option value="30">30km</option><option value="10">10km</option><option value="5">5km</option><option value="3">3km</option><option value="1.5">1500m</option></select></div>
+<div class="field"><label for="raceDist" data-ja="距離" data-en="Distance">距離</label><select id="raceDist"><option value="42.195">Full 42.195km</option><option value="21.0975">Half 21.0975km</option><option value="30">30km</option><option value="10">10km</option><option value="5">5km</option><option value="3">3km</option><option value="1.5">1500m</option><option value="0.8">800m</option></select></div>
 <div class="field"><label data-ja="目標タイム（時:分:秒）" data-en="Goal (h:m:s)">目標タイム（時:分:秒）</label><div class="pair"><input id="raceH" aria-label="hours" type="number" min="0" max="50" value="3"><span>:</span><input id="raceM" aria-label="minutes" type="number" min="0" max="59" value="30"><span>:</span><input id="raceS" aria-label="seconds" type="number" min="0" max="59" value="0"></div></div></div>
 <div class="metrics" id="raceMetrics" aria-live="polite"></div><table><thead><tr><th data-ja="通過地点" data-en="Distance">通過地点</th><th data-ja="経過タイム" data-en="Elapsed">経過タイム</th></tr></thead><tbody id="raceSplits"></tbody></table></section>
 <section id="track" class="panel" hidden><h2 data-ja="400mトラックの通過ラップ" data-en="Track split calculator">400mトラックの通過ラップ</h2><div class="grid"><div class="field"><label data-ja="設定ペース（分:秒/km）" data-en="Pace (m:s/km)">設定ペース（分:秒/km）</label><div class="pair"><input id="trackM" type="number" aria-label="pace minutes" min="1" max="30" value="4"><span>:</span><input id="trackS" type="number" aria-label="pace seconds" min="0" max="59" value="30"></div></div><div class="field"><label data-ja="トラック" data-en="Track">トラック</label><input value="400m · lane 1" disabled></div></div>
 <div class="metrics" id="trackMetrics" aria-live="polite"></div><p class="muted" data-ja="100m・200m・400m・800m・1000m・1600mの一定ペース換算。400mは第1レーンの距離です。" data-en="Constant-pace conversions for 100, 200, 400, 800, 1000 and 1600m; lane 1 assumption.">100m・200m・400m・800m・1000m・1600mの一定ペース換算。400mは第1レーンの距離です。</p></section>
-<section id="interval" class="panel" hidden><h2 data-ja="インターバル計算" data-en="Interval calculator">インターバル計算</h2><p class="muted" data-ja="疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。" data-en="Repeated fast efforts and recovery. Recovery occurs between repetitions, not after the last one.">疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。</p><div id="intervalFields" class="grid"></div><div id="intervalMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="intervalFoot"></p></section>
-<section id="rep" class="panel" hidden><h2 data-ja="高速レペティション計算" data-en="Fast repetition calculator">高速レペティション計算</h2><p class="muted" data-ja="スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。" data-en="Prioritize controlled speed, form and more complete recovery—not all-out sprinting.">スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。</p><div id="repFields" class="grid"></div><div id="repMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="repFoot"></p></section>
+<section id="interval" class="panel" hidden><h2 data-ja="インターバル計算" data-en="Interval calculator">インターバル計算</h2><p class="muted" data-ja="疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。" data-en="Repeated fast efforts and recovery. Recovery occurs between repetitions, not after the last one.">疾走・レストを繰り返すトレーニング。レストは本数より1回少なく計算します。</p><div id="intervalGuide"></div><div id="intervalFields" class="grid"></div><div id="intervalMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="intervalFoot"></p></section>
+<section id="rep" class="panel" hidden><h2 data-ja="高速レペティション計算" data-en="Fast repetition calculator">高速レペティション計算</h2><p class="muted" data-ja="スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。" data-en="Prioritize controlled speed, form and more complete recovery—not all-out sprinting.">スピードやフォームの質を重視。全力疾走ではなく、十分な回復を取りながら設定を守る考え方。</p><div id="repGuide"></div><div id="repFields" class="grid"></div><div id="repMetrics" class="metrics" aria-live="polite"></div><p class="muted" id="repFoot"></p></section>
 <section class="panel"><h2 data-ja="レストの考え方" data-en="Understanding recovery">レストの考え方</h2><p data-ja="短いレストは回復途中で次の1本に進み、持久力への刺激を重視。長いレストは回復して、速さやフォームの質を保ちます。" data-en="Short rest maintains fatigue for endurance demands. Longer rest allows you to maintain speed and form.">短いレストは回復途中で次の1本に進み、持久力への刺激を重視。長いレストは回復して、速さやフォームの質を保ちます。</p><p class="tip" data-ja="時間指定（停止・歩き）と、距離＋ジョグペースの両方に対応。万能の正解時間はありません。練習目的・設定強度・暑さ・体調に応じて調整し、各本の質を保ちましょう。" data-en="Choose timed rest (standing/walking) or a distance at jogging pace. There is no universal ideal rest. Adjust for workout goals, intensity, heat and fatigue.">時間指定（停止・歩き）と、距離＋ジョグペースの両方に対応。万能の正解時間はありません。練習目的・設定強度・暑さ・体調に応じて調整し、各本の質を保ちましょう。</p></section>
 </main><footer><p>Runner's Rings — Ring Tools</p><p data-ja="表示結果は距離と時間から計算した目安です。個別のトレーニング・医療指導ではありません。" data-en="Arithmetic planning estimates; not personalized training or medical advice.">表示結果は距離と時間から計算した目安です。個別のトレーニング・医療指導ではありません。</p></footer>
 <script>
@@ -53,10 +53,38 @@ function error(id){$(id).replaceChildren();var p=document.createElement('p');p.c
 function race(){var d=n('raceDist'),h=n('raceH'),m=n('raceM'),s=n('raceS'),t=h*3600+m*60+s;
 if(!ok(d,0.1,100)||!ok(h,0,50)||!ok(m,0,59)||!ok(s,0,59)||t<=0){error('raceMetrics');$('raceSplits').replaceChildren();return}
 var pace=t/d;var rm=$('raceMetrics');rm.replaceChildren(metric(lang==='ja'?'平均ペース /km':'Average pace /km',clock(pace)),metric(lang==='ja'?'目標タイム':'Goal time',duration(t)));
-var tbody=$('raceSplits');tbody.replaceChildren();var stops=[];for(var k=5;k<d-0.00001;k+=5)stops.push(k);stops.push(d);
-stops.forEach(function(v){var tr=document.createElement('tr'),a=document.createElement('td'),b=document.createElement('td');a.textContent=Number(v.toFixed(4))+' km';b.textContent=duration(t*v/d);tr.append(a,b);tbody.append(tr)})}
+var tbody=$('raceSplits');tbody.replaceChildren();var stops=[];
+if(d<=3){for(var v=0.4;v<d-0.000001;v+=0.4)stops.push(Number(v.toFixed(3)))}
+else if(d===5||d===10){for(var v=1;v<d-0.000001;v++)stops.push(v)}
+else {for(var v=5;v<d-0.000001;v+=5)stops.push(v)}
+stops.push(d);
+stops.forEach(function(v){var tr=document.createElement('tr'),a=document.createElement('td'),b=document.createElement('td');a.textContent=d<=3?Math.round(v*1000)+' m':Number(v.toFixed(4))+' km';b.textContent=duration(t*v/d);tr.append(a,b);tbody.append(tr)})}
 function track(){var m=n('trackM'),s=n('trackS');if(!ok(m,1,30)||!ok(s,0,59)){error('trackMetrics');return}
 var result=$('trackMetrics'),pace=m*60+s;result.replaceChildren();[100,200,400,800,1000,1600].forEach(function(d){result.append(metric(d+' m',clock(d/1000*pace,true)))})}
+function guideMarkup(prefix){
+var name=prefix==='interval',label=lang==='ja'?'練習の目的を選ぶ':'Choose a workout goal';
+var options=name?[
+['base','5km・10km向け持久力','Aerobic endurance (5k–10k)'],
+['steady','一定ペースを維持','Pace consistency'],
+['short','短い距離から始める','Introductory intervals']]:[
+['form','フォーム・速い動きを磨く','Form and quick mechanics'],
+['speed','スピードの質を保つ','Speed quality'],
+['entry','無理なく始める','Introductory repetitions']];
+return '<div class="field" style="margin:13px 0"><label for="'+prefix+'Goal">'+label+'</label><select id="'+prefix+'Goal">'+options.map(function(o){return '<option value="'+o[0]+'">'+o[lang==='ja'?1:2]+'</option>'}).join('')+'</select></div>'+
+'<div class="tip" id="'+prefix+'Advice" aria-live="polite"></div><button type="button" id="'+prefix+'Apply" style="margin:10px 0 14px;border-color:var(--green)">'+(lang==='ja'?'この設定例を入力する':'Use this example')+'</button>';
+}
+var goalPlans={
+ interval:{
+  base:{distance:1000,reps:5,min:4,sec:30,rest:120,jogDist:200,ja:'例：1000m×5本、レスト2分。5km・10kmに向けて反復する練習例。設定ペースは自分の走力に合わせて変更してね。',en:'Example: 5 × 1000m, 2 min recovery. Adjust pace to your fitness; not a personalized prescription.'},
+  steady:{distance:2000,reps:3,min:5,sec:0,rest:180,jogDist:300,ja:'例：2000m×3本、レスト3分。各本を安定したペースで走る練習例。疲労に応じて調整。',en:'Example: 3 × 2000m, 3 min recovery. Focus on even pacing; adapt intensity.'},
+  short:{distance:400,reps:5,min:5,sec:0,rest:120,jogDist:200,ja:'例：400m×5本、レスト2分。初めは少ない本数から、余裕を持って走る例。',en:'Example: 5 × 400m, 2 min recovery. Start controlled with manageable effort.'}},
+ rep:{
+  form:{distance:100,reps:6,min:4,sec:0,rest:180,jogDist:200,ja:'例：100m×6本、レスト3分。きれいなフォームを優先し、全力疾走にしない。',en:'Example: 6 × 100m, 3 min recovery. Prioritize form; not all-out sprints.'},
+  speed:{distance:200,reps:6,min:3,sec:30,rest:240,jogDist:200,ja:'例：200m×6本、レスト4分。速さと動作の質を維持。疲れたら本数を減らそう。',en:'Example: 6 × 200m, 4 min recovery. Focus on quality; reduce reps if form drops.'},
+  entry:{distance:200,reps:4,min:4,sec:30,rest:180,jogDist:200,ja:'例：200m×4本、レスト3分。無理のない速さでフォームを確認する例。',en:'Example: 4 × 200m, 3 min recovery. Controlled effort and ample rest.'}}
+};
+function updateAdvice(prefix){var select=$(prefix+'Goal');if(!select)return;var plan=goalPlans[prefix][select.value];$(prefix+'Advice').textContent=(lang==='ja'?'設定例（目安・個別指導ではありません）：':'Illustrative only (not individualized coaching): ')+plan[lang];}
+function applyGuide(prefix){var plan=goalPlans[prefix][$(prefix+'Goal').value];[['Distance',plan.distance],['Reps',plan.reps],['Min',plan.min],['Sec',plan.sec],['RestMode','time'],['RestS',plan.rest],['JogDist',plan.jogDist]].forEach(function(item){$(prefix+item[0]).value=item[1]});render();}
 function fields(prefix,isInterval){
 var elements=[['Distance',lang==='ja'?'疾走距離 (m)':'Fast distance (m)','select',isInterval?1000:200],['Reps',lang==='ja'?'本数':'Repetitions','number',isInterval?5:6],['Min',lang==='ja'?'疾走ペース（分/km）':'Fast pace (min/km)','number',isInterval?4:3],['Sec',lang==='ja'?'疾走ペース（秒/km）':'Fast pace (sec/km)','number',30],['RestMode',lang==='ja'?'レスト方式':'Recovery method','select','time'],['RestS',lang==='ja'?'レスト（秒）':'Recovery (seconds)','number',isInterval?120:180],['JogDist',lang==='ja'?'ジョグ距離（m）':'Jog distance (m)','number',200],['JogMin',lang==='ja'?'ジョグペース（分/km）':'Jog pace (min/km)','number',7],['JogSec',lang==='ja'?'ジョグペース（秒/km）':'Jog pace (sec/km)','number',0]];
 var target=$(prefix+'Fields');var preserved={};target.querySelectorAll('input,select').forEach(function(old){preserved[old.id]=old.value});target.replaceChildren();
@@ -74,7 +102,10 @@ var one=distance/1000*(min*60+sec),rest=jog?jogD/1000*(jogM*60+jogS):restS,total
 $(prefix+'Metrics').replaceChildren(metric(lang==='ja'?'1本の疾走タイム':'Fast rep time',clock(one,true)),metric(lang==='ja'?'疾走の合計距離':'Total fast distance',(distance*reps/1000).toFixed(2)+' km'),metric(lang==='ja'?'レスト1回':'One recovery',duration(rest)),metric(lang==='ja'?'所要時間（アップ等除く）':'Time excl. warmup',duration(total)));
 $(prefix+'Foot').textContent=lang==='ja'?'レストは'+(reps-1)+'回。'+(jog?'ジョグ込み総距離 '+((distance*reps+jogD*(reps-1))/1000).toFixed(2)+' km。':'停止・歩きは走行距離に含めません。'):'Recovery breaks: '+(reps-1)+'. '+(jog?'Total distance incl. jog: '+((distance*reps+jogD*(reps-1))/1000).toFixed(2)+' km.':'Standing/walking distance not included.') }
 function render(){race();track();workout('interval');workout('rep')}
-function translate(){document.documentElement.lang=lang;document.querySelectorAll('[data-ja][data-en]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang)});$('ja').setAttribute('aria-pressed',String(lang==='ja'));$('en').setAttribute('aria-pressed',String(lang==='en'));fields('interval',true);fields('rep',false);render()}
+function translate(){var oldGoals={};['interval','rep'].forEach(function(p){oldGoals[p]=$(p+'Goal')?$(p+'Goal').value:null});
+document.documentElement.lang=lang;document.querySelectorAll('[data-ja][data-en]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang)});$('ja').setAttribute('aria-pressed',String(lang==='ja'));$('en').setAttribute('aria-pressed',String(lang==='en'));fields('interval',true);fields('rep',false);
+['interval','rep'].forEach(function(p){$(p+'Guide').innerHTML=guideMarkup(p);if(oldGoals[p])$(p+'Goal').value=oldGoals[p];$(p+'Goal').addEventListener('change',function(){updateAdvice(p)});$(p+'Apply').addEventListener('click',function(){applyGuide(p)});updateAdvice(p)});
+render()}
 ['raceDist','raceH','raceM','raceS','trackM','trackS'].forEach(function(id){$(id).addEventListener('input',render)});
 document.querySelectorAll('[data-tab]').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('[data-tab]').forEach(function(b){var active=b===btn;b.setAttribute('aria-pressed',String(active));$(b.dataset.tab).hidden=!active})})});
 $('ja').addEventListener('click',function(){lang='ja';try{localStorage.setItem('runners-rings-language',lang)}catch(e){}translate()});
