@@ -1,5 +1,7 @@
 -- Synthetic-only test against ephemeral PostgreSQL in GitHub Actions.
 \set ON_ERROR_STOP on
+CREATE ROLE anon NOLOGIN;
+CREATE ROLE authenticated NOLOGIN;
 CREATE SCHEMA rr_private;
 CREATE TABLE rr_private.region_rings_refresh_state (
  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
@@ -131,11 +133,11 @@ END $b1_t5$;
 \echo 'B1_LEGACY_DIRTY_FAIL_CLOSED_PASS'
 
 -- Global stop is atomic, does not re-increment generation on retry, and logs both attempts.
-SELECT rr_private.b1_private_stop('test global stop','isolated runner') AS first_generation \gset
-SELECT rr_private.b1_private_stop('test global stop repeat','isolated runner') AS second_generation \gset
+SELECT rr_private.b1_private_stop('test global stop','isolated runner');
+SELECT rr_private.b1_private_stop('test global stop repeat','isolated runner');
 DO $b1_t6$
 BEGIN
- IF :first_generation <> 2 OR :second_generation <> 2 THEN
+ IF (SELECT generation FROM rr_private.region_rings_publication_state WHERE singleton) <> 2 THEN
    RAISE EXCEPTION 'global stop not idempotent';
  END IF;
  IF EXISTS(SELECT 1 FROM rr_private.b1_read_approved_year('JP',2024)) THEN
@@ -148,9 +150,12 @@ END $b1_t6$;
 \echo 'B1_STOP_LEDGER_AND_IDEMPOTENCE_PASS'
 
 -- Prove permission is not accidentally granted to exposed roles.
-SELECT CASE WHEN has_function_privilege('anon','rr_private.b1_read_approved_year(text,integer)','EXECUTE')
+DO $b1_perm$
+BEGIN
+ IF has_function_privilege('anon','rr_private.b1_read_approved_year(text,integer)','EXECUTE')
  OR has_function_privilege('authenticated','rr_private.b1_read_approved_year(text,integer)','EXECUTE')
- THEN 'FAIL' ELSE 'PASS' END AS permissions \gset
-\if :{?permissions}
-\endif
+ OR has_table_privilege('anon','rr_private.region_rings_publication_ledger','SELECT')
+ THEN RAISE EXCEPTION 'public roles unexpectedly granted privileges'; END IF;
+END $b1_perm$;
+\echo 'B1_PRIVATE_ROLES_DENIED_PASS'
 \echo 'B1_PRIVATE_GATE_ISOLATED_COMPLETE'
