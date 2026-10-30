@@ -1,3 +1,13 @@
+### B-1 isolated workflow #6 repeated A/B measurements (2026-10-30)
+- User screenshot of workflow #6, successful; v2 local benchmark output: for 100 rows per trial, 12 trials each with stubbed Today events:
+  - batch100 B-1 OFF avg 0.391 ms, median 0.392 ms, p95 0.418 ms, max 0.431 ms.
+  - batch100 B-1 ON avg 0.463 ms, median 0.427 ms, p95 0.766 ms, max 1.162 ms.
+  - single100 B-1 OFF avg 0.587 ms, median 0.586 ms, p95 0.616 ms, max 0.616 ms.
+  - single100 B-1 ON avg 2.265 ms, median 2.226 ms, p95 3.105 ms, max 3.167 ms.
+- All four conditions showed 100 Today stub events; observed mean deltas +0.072 ms/100 batch and +1.678 ms/100 individual statements. These are disposable PostgreSQL simplified stub function timings, not production overhead.
+- Workflow #6 screenshot also shows two-client concurrent comparison step succeeded, but exact per-trial pgbench TPS/latency not extracted from this screenshot. Record no concurrency performance claim beyond script passed; obtain log reference or captured artifact for exact figures.
+- B-1 nonpublic backend only, public release OFF; Muse condition 2 pending review of representative HTTP enqueue and contention.
+
 ### B-1 concurrent isolated benchmark #6 status (2026-10-30)
 - User supplied GitHub Actions screenshot of manual workflow run #6 after fix `ab42b0a`; GitHub UI shows overall Success, benchmark job succeeded and the two-client B-1 concurrency comparison step marked successful (workflow 31s, job 26s).
 - Script fixes: numeric event count query plus shell logging (`baf9a98`) and pipefail in workflow (`ab42b0a`) mean the previous swallowed SQL error is corrected in source.
