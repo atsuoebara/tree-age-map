@@ -1,0 +1,25 @@
+name: B-1 synthetic anonymity T1-T9 (review only)
+on:
+  push:
+    paths:
+      - 'scripts/b1-anonymity-synthetic.test.mjs'
+      - '.github/workflows/b1-anonymity-synthetic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-attacks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run synthetic privacy attack regression
+        run: node scripts/b1-anonymity-synthetic.test.mjs
+      - name: State limitations
+        if: always()
+        run: |
+          echo 'This job only runs synthetic proof-of-concept tests.'
+          echo 'PASS is NOT proof of anonymity, consent, withdrawal races, production access, or public-release approval.'
