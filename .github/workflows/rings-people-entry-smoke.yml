@@ -1,0 +1,22 @@
+name: Rings People entry smoke
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'journal.html'
+      - 'journal-admin.html'
+      - 'journal-review.html'
+      - 'scripts/rings-people-entry-smoke.test.mjs'
+      - '.github/workflows/rings-people-entry-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  entry-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/rings-people-entry-smoke.test.mjs
