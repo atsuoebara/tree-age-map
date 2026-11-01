@@ -4,6 +4,8 @@ on:
     paths:
       - 'scripts/b1-anonymity-synthetic.test.mjs'
       - 'scripts/b1-anonymity-extended.test.mjs'
+      - 'scripts/b1-anonymity-adversarial.test.mjs'
+      - 'scripts/b1-anonymity-grid.test.mjs'
       - '.github/workflows/b1-anonymity-synthetic.yml'
   workflow_dispatch:
 permissions:
@@ -21,6 +23,8 @@ jobs:
         run: |
           node scripts/b1-anonymity-synthetic.test.mjs
           node scripts/b1-anonymity-extended.test.mjs
+          node scripts/b1-anonymity-adversarial.test.mjs
+          node scripts/b1-anonymity-grid.test.mjs
       - name: State limitations
         if: always()
         run: |
