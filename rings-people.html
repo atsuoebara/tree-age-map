@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rings People | Runner's Rings</title>
+<meta name="description" content="ランナー一人ひとりの人生、努力、挑戦を紹介するRings People。">
+<link rel="canonical" href="https://runnersrings.com/rings-people.html">
+<meta property="og:type" content="website"><meta property="og:title" content="Rings People | Runner's Rings">
+<meta property="og:description" content="ランナーの人生、努力、挑戦をたどるインタビュー。">
+<meta property="og:url" content="https://runnersrings.com/rings-people.html">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;background:#091524;color:#f7faff}
+*{box-sizing:border-box}body{margin:0;min-width:0}a{color:inherit}
+header,main,footer{width:min(1080px,100%);margin:auto;padding:20px clamp(16px,4vw,32px)}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.brand{font-weight:900;text-decoration:none;letter-spacing:.03em}.brand span{color:#eaff00}
+nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}nav a{text-decoration:none;color:#bcefff;font-size:14px}
+button{min-height:44px;padding:8px 13px;border-radius:12px;border:1px solid #78eaff;background:#142941;color:#fff;cursor:pointer;font-size:15px}
+button[aria-pressed=true]{border-color:#eaff00;color:#eaff00}
+.hero{padding:34px clamp(18px,5vw,46px);background:linear-gradient(125deg,#182a49,#29213d 70%,#162d37);border:1px solid #48607a;border-radius:22px}
+.eyebrow{color:#78eaff;font-weight:900;letter-spacing:.14em;font-size:12px}h1{font-size:clamp(32px,6vw,58px);line-height:1.12;margin:8px 0 18px}h2{font-size:clamp(19px,3.5vw,27px)}
+.lead{color:#d9e5f4;line-height:1.9;max-width:700px;margin:0}.sectionHead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin:25px 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px}
+.person{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid #405d77;border-radius:18px;background:#13253a;text-decoration:none;transition:border-color .15s}
+.person:hover,.person:focus-visible{border-color:#eaff00;outline:2px solid #78eaff;outline-offset:2px}
+.photo{width:100%;aspect-ratio:4/3;object-fit:cover;background:#1c3448}
+.placeholder{aspect-ratio:4/3;display:grid;place-items:center;background:linear-gradient(135deg,#1c4253,#38254b);font-size:45px}
+.details{padding:17px;display:flex;flex:1;flex-direction:column;gap:10px}.name{font-size:19px;font-weight:900;overflow-wrap:anywhere}
+.summary{color:#cbd8e8;font-size:14px;line-height:1.75;overflow-wrap:anywhere}.read{margin-top:auto;color:#eaff00;font-weight:850;font-size:13px}
+.message{padding:24px;border:1px solid #496177;border-radius:15px;line-height:1.8;color:#dbe6f2}
+footer{color:#b2c7d8;font-size:13px;border-top:1px solid #273c50;margin-top:30px}
+[hidden]{display:none!important}
+@media(max-width:600px){header{align-items:flex-start}.hero{padding:26px 20px}.grid{grid-template-columns:1fr}.person{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header><a class="brand" href="./index.html">Runner's <span>Rings</span></a><nav><a href="./index.html" data-ja="トップ" data-en="Home">トップ</a><a href="./journal.html" data-ja="Journalの記事一覧" data-en="Rings Journal">Journalの記事一覧</a><button type="button" id="ja" aria-pressed="true">日本語</button><button type="button" id="en" aria-pressed="false">English</button></nav></header>
+<main><section class="hero"><div class="eyebrow">RUNNER'S RINGS / INTERVIEWS</div><h1>Rings People</h1><p class="lead" data-ja="速さも、距離も、目標も違う。それでも、一人ひとりの走る物語には価値がある。ランナーの人生、努力、挑戦をインタビューで紹介します。" data-en="Different paces, distances, and goals. Every runner has a story worth telling. Explore the lives, efforts, and challenges behind their runs.">速さも、距離も、目標も違う。それでも、一人ひとりの走る物語には価値がある。ランナーの人生、努力、挑戦をインタビューで紹介します。</p></section>
+<div class="sectionHead"><h2 data-ja="ランナーの物語" data-en="Runner stories">ランナーの物語</h2></div>
+<div id="status" class="message" role="status" aria-live="polite"></div><div id="cards" class="grid" hidden></div>
+</main><footer>© Runner's Rings · <a href="./journal.html?category=rings-people" data-ja="JournalのRings People記事" data-en="Rings People in Journal">JournalのRings People記事</a></footer>
+<script>
+(()=>{
+'use strict';
+const URL_BASE='https://fhwvntpzwyenendhcgbw.supabase.co';
+const KEY='sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM';
+const root=document.getElementById('cards'),status=document.getElementById('status');
+let posts=[];let mode='ja';let state='loading';
+const dictionary={ja:{loading:'公開済みのインタビューを読み込んでいます…',empty:'公開済みのインタビューはまだありません。掲載が始まるまで、楽しみにお待ちください。',error:'記事を取得できませんでした。通信状況を確認して、ページを再読み込みしてください。',read:'インタビューを読む →'},en:{loading:'Loading published interviews…',empty:'No interviews have been published yet. Stories will appear here after approval.',error:'Could not load interviews. Check your connection and refresh the page.',read:'Read interview →'}};
+function photoURL(value){try{const u=new URL(value);if(u.protocol==='https:'&&u.hostname==='fhwvntpzwyenendhcgbw.supabase.co'&&u.pathname.includes('/storage/v1/object/public/journal-images/'))return u.href;}catch(_){}return null;}
+function setLanguage(lang){mode=lang;document.documentElement.lang=lang;try{localStorage.setItem('runners-rings-language',lang);}catch(_){}document.querySelectorAll('[data-ja][data-en]').forEach(el=>el.textContent=el.dataset[lang]);for(const v of ['ja','en'])document.getElementById(v).setAttribute('aria-pressed',String(v===lang));render();}
+function item(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=txt||'';return el;}
+function render(){root.replaceChildren();root.hidden=true;status.hidden=false;if(state!=='ready'){status.textContent=dictionary[mode][state];return;}if(!posts.length){status.textContent=dictionary[mode].empty;return;}for(const post of posts){if(!post.slug||!/^[a-zA-Z0-9_-]+$/.test(post.slug))continue;const a=document.createElement('a');a.className='person';a.href='./journal/articles/'+encodeURIComponent(post.slug)+'/';const src=photoURL(post.image_url);if(src){const img=document.createElement('img');img.className='photo';img.loading='lazy';img.decoding='async';img.src=src;img.alt='';a.append(img);}else{const placeholder=item('div','placeholder','🏃');placeholder.setAttribute('aria-hidden','true');a.append(placeholder);}const detail=item('div','details');detail.append(item('div','name',post['title_'+mode]||post.title_ja||post.title_en||'Rings People'));detail.append(item('div','summary',post['summary_'+mode]||post.summary_ja||post.summary_en||''));detail.append(item('div','read',dictionary[mode].read));a.append(detail);root.append(a);}if(!root.childElementCount){status.textContent=dictionary[mode].empty;return;}status.hidden=true;root.hidden=false;}
+document.getElementById('ja').addEventListener('click',()=>setLanguage('ja'));document.getElementById('en').addEventListener('click',()=>setLanguage('en'));
+try{if(localStorage.getItem('runners-rings-language')==='en')mode='en';}catch(_){}
+setLanguage(mode);
+if(!window.supabase){state='error';render();return;}
+try{const db=window.supabase.createClient(URL_BASE,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,image_url,category,published_at,status').eq('status','published').eq('category','rings-people').order('published_at',{ascending:false}).limit(200).then(({data,error})=>{if(error){state='error';console.error(error);}else{posts=(data||[]).filter(p=>p.status==='published'&&p.category==='rings-people');state='ready';}render();}).catch(e=>{console.error(e);state='error';render();});
+}catch(e){console.error(e);state='error';render();}
+})();
+</script>
+</body></html>
