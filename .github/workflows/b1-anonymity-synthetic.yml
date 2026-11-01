@@ -7,6 +7,7 @@ on:
       - 'scripts/b1-anonymity-adversarial.test.mjs'
       - 'scripts/b1-anonymity-grid.test.mjs'
       - 'scripts/b1-anonymity-inference.test.mjs'
+      - 'scripts/b1-anonymity-joint-inference.test.mjs'
       - '.github/workflows/b1-anonymity-synthetic.yml'
   workflow_dispatch:
 permissions:
@@ -27,6 +28,7 @@ jobs:
           node scripts/b1-anonymity-adversarial.test.mjs
           node scripts/b1-anonymity-grid.test.mjs
           node scripts/b1-anonymity-inference.test.mjs
+          node scripts/b1-anonymity-joint-inference.test.mjs
       - name: State limitations
         if: always()
         run: |
