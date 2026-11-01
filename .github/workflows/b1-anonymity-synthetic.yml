@@ -9,6 +9,7 @@ on:
       - 'scripts/b1-anonymity-inference.test.mjs'
       - 'scripts/b1-anonymity-joint-inference.test.mjs'
       - 'scripts/b1-public-cohort-overlap.test.mjs'
+      - 'scripts/b1-anonymity-timeseries.test.mjs'
       - '.github/workflows/b1-anonymity-synthetic.yml'
   workflow_dispatch:
 permissions:
@@ -31,6 +32,7 @@ jobs:
           node scripts/b1-anonymity-inference.test.mjs
           node scripts/b1-anonymity-joint-inference.test.mjs
           node scripts/b1-public-cohort-overlap.test.mjs
+          node scripts/b1-anonymity-timeseries.test.mjs
       - name: State limitations
         if: always()
         run: |
