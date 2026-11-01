@@ -1,0 +1,19 @@
+name: One-time Pages stuck deployment recovery
+on:
+  push:
+    paths:
+      - .github/workflows/pages-stuck-recovery.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+jobs:
+  cancel-stuck-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel only stuck 926f85da Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --method POST repos/atsuoebara/tree-age-map/pages/deployments/926f85da87a2cad1d13f6ea247a77cc13eacdf56/cancel
