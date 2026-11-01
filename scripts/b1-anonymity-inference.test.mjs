@@ -7,7 +7,7 @@ const profiles=[Array(20).fill(1000),Array(100).fill(1000),[9000,9000,...Array(1
 function rounded(n,s,m){return (m==='nearest'?Math.round(n/s):Math.floor(n/s))*s;}
 function bounds(n,s,m){return m==='nearest'?[n-s/2,n+s/2]:[n,n+s];}
 function eligible(v,n,a,b,c){const x=[...v].sort((i,j)=>j-i),t=sum(x);return x.length>=n&&t>0&&x[0]/t<=a&&sum(x.slice(0,2))/t<=b&&sum(x.slice(0,3))/t<=c;}
-function residual(v,s,m,k){const t=sum(v),p=rounded(t,s,m),[l,h]=bounds(p,s,m),known=sum(v.slice(0,k));return {lo:Math.max(0,l-known),hi:Math.max(0,h-known),actual:t-known};}
+function residual(v,s,m,k){const sorted=[...v].sort((a,b)=>b-a),t=sum(sorted),p=rounded(t,s,m),[l,h]=bounds(p,s,m),known=sum(sorted.slice(0,k));return {lo:Math.max(0,l-known),hi:Math.max(0,h-known),actual:t-known};}
 let tested=0,yes=0,no=0,narrow=0,minWidth=Infinity,maxWidth=0;
 for(const v of profiles)for(const n of mins)for(const a of one)for(const b of two)for(const c of three)for(const s of steps)for(const m of modes){
  tested++;if(!eligible(v,n,a,b,c)){no++;continue;}yes++;
