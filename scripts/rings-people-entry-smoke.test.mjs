@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const index=readFileSync('index.html','utf8');
+const journal=readFileSync('journal.html','utf8');
+const admin=readFileSync('journal-admin.html','utf8');
+const review=readFileSync('journal-review.html','utf8');
+const path='./journal.html?category=rings-people';
+const count=index.split('href="'+path+'"').length-1;
+assert.ok(count>=2,'Logged-out and dashboard Rings People entry points required');
+assert.match(journal,/new URLSearchParams\(location\.search\)\.get\("category"\)/);
+assert.match(journal,/\["all","rings-people"/);
+assert.match(journal,/\['rings-people','Rings People'/);
+assert.match(admin,/<option value="rings-people">/);
+assert.match(review,/<meta name="robots" content="noindex,nofollow,noarchive">/);
+console.log(JSON.stringify({feature:'rings_people_entry_smoke',entryLinks:count,categoryQuery:true,filterPresent:true,adminCategory:true,reviewNoindex:true}));
+console.log('STATIC SMOKE ONLY: does not prove iPhone/iPad navigation, translated copy, article review/approval or live article fetching.');
