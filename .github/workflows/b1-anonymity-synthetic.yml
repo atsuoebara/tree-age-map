@@ -12,6 +12,7 @@ on:
       - 'scripts/b1-anonymity-timeseries.test.mjs'
       - 'scripts/b1-joint-worstcase.test.mjs'
       - 'scripts/b1-participant-attack.test.mjs'
+      - 'scripts/b1-integrated-attack.test.mjs'
       - '.github/workflows/b1-anonymity-synthetic.yml'
   workflow_dispatch:
 permissions:
@@ -37,6 +38,7 @@ jobs:
           node scripts/b1-anonymity-timeseries.test.mjs
           node scripts/b1-joint-worstcase.test.mjs
           node scripts/b1-participant-attack.test.mjs
+          node scripts/b1-integrated-attack.test.mjs
       - name: State limitations
         if: always()
         run: |
