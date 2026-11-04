@@ -4833,6 +4833,10 @@ function openAccountPanel(){
   refreshJournalAdminShortcut();
   accountPanel.style.display = 'block';
   accountPanel.open = true;
+  // Opening a panel below the map must also navigate to it on mobile/PWA.
+  requestAnimationFrame(() => {
+    accountPanel.scrollIntoView({behavior:'smooth', block:'start'});
+  });
 }
 
 accountProfile.addEventListener('click', openAccountPanel);
