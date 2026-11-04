@@ -335,7 +335,12 @@
       background:#0b1422;
     }
 
-    #authCard{
+    #authQuickLogin{margin:12px 0 18px;border:1px solid rgba(142,234,255,.45);border-radius:16px;background:#102337;overflow:hidden}
+#authQuickLogin>summary{cursor:pointer;padding:13px 16px;color:#fff;font-size:15px;font-weight:800;min-height:48px;list-style-position:inside}
+#authQuickLogin[open]>summary{border-bottom:1px solid rgba(255,255,255,.15)}
+#authQuickLogin #authCard{border:0;border-radius:0;box-shadow:none}
+#authQuickLogin>summary:focus-visible{outline:3px solid #eaff00;outline-offset:-3px}
+#authCard{
       width:100%;
       max-width:420px;
       background:#132237;
@@ -3255,6 +3260,68 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       </p>
     </div>
 
+    <details id="authQuickLogin" class="authQuickLogin">
+      <summary><span data-art-lang="ja">🔐 ログイン・新規登録はこちら</span><span data-art-lang="en">🔐 Log in or sign up here</span></summary>
+    <div id="authCard">
+
+      <h2>Runner's Ringsをはじめる</h2>
+
+      <p>
+        ログインすると、
+あなたのランニングマップを表示します。<br>
+        初めて使う場合は「新規登録」から。
+      </p>
+
+      <input
+        id="emailInput"
+        class="authInput"
+        type="email"
+        autocomplete="email"
+        placeholder="メールアドレス"
+      >
+
+      <input
+        id="passwordInput"
+        class="authInput"
+        type="password"
+        autocomplete="current-password"
+        placeholder="パスワード"
+      >
+<div class="signupHelp">
+  <div>パスワードは6文字以上で設定してください。</div>
+  <div>新規登録後、Supabase Authから確認メールが届きます。</div>
+  <div>メール内の「Confirm email address」をタップすると登録が完了します。</div>
+</div>
+      <div id="authButtons">
+
+        <button
+          id="loginButton"
+          class="authButton"
+        >
+          ログイン
+        </button>
+
+        <button
+          id="signupButton"
+          class="authButton"
+        >
+          新規登録
+        </button>
+
+      </div>
+
+      <button
+        id="forgotPasswordButton"
+        type="button"
+      >
+        パスワードを忘れた方
+      </button>
+
+      <div id="authMessage"></div>
+
+    </div>
+
+    </details>
     <section id="publicEmptyMapSection" aria-labelledby="publicEmptyMapTitle" style="margin:22px 0 28px;padding:18px;border:1px solid rgba(120,234,255,.35);border-radius:18px;background:#102337">
       <h3 id="publicEmptyMapTitle" style="margin:0 0 8px;font-size:20px"><span data-art-lang="ja">🗺️ 走った道が、年輪になる。</span><span data-art-lang="en">🗺️ Your runs become growth rings.</span></h3>
       <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">架空の3年分の走行ルートを重ねました。年を切り替えて、年輪が育つ様子を体験しよう。</span><span data-art-lang="en">Explore three years of fictional running routes. Switch years to see the rings grow.</span></p>
@@ -3491,64 +3558,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       </section>
 
 
-    <div id="authCard">
-
-      <h2>Runner's Ringsをはじめる</h2>
-
-      <p>
-        ログインすると、
-あなたのランニングマップを表示します。<br>
-        初めて使う場合は「新規登録」から。
-      </p>
-
-      <input
-        id="emailInput"
-        class="authInput"
-        type="email"
-        autocomplete="email"
-        placeholder="メールアドレス"
-      >
-
-      <input
-        id="passwordInput"
-        class="authInput"
-        type="password"
-        autocomplete="current-password"
-        placeholder="パスワード"
-      >
-<div class="signupHelp">
-  <div>パスワードは6文字以上で設定してください。</div>
-  <div>新規登録後、Supabase Authから確認メールが届きます。</div>
-  <div>メール内の「Confirm email address」をタップすると登録が完了します。</div>
-</div>
-      <div id="authButtons">
-
-        <button
-          id="loginButton"
-          class="authButton"
-        >
-          ログイン
-        </button>
-
-        <button
-          id="signupButton"
-          class="authButton"
-        >
-          新規登録
-        </button>
-
-      </div>
-
-      <button
-        id="forgotPasswordButton"
-        type="button"
-      >
-        パスワードを忘れた方
-      </button>
-
-      <div id="authMessage"></div>
-
-    </div>
   </div>
 
 </section>
@@ -29958,6 +29967,27 @@ updateScrollToTopButton();
       });
     });
   })();
+</script>
+<script>
+(function initAuthQuickLogin(){
+  const panel=document.getElementById('authQuickLogin');
+  const form=document.getElementById('authCard');
+  if(!panel||!form)return;
+  function reveal(){
+    panel.open=true;
+    requestAnimationFrame(()=>form.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
+  document.addEventListener('click',event=>{
+    const link=event.target.closest('a[href]');
+    if(!link)return;
+    const target=new URL(link.href,location.href);
+    if(target.pathname===location.pathname && target.hash==='#authCard')reveal();
+  });
+  window.addEventListener('hashchange',()=>{
+    if(location.hash==='#authCard')reveal();
+  });
+  if(location.hash==='#authCard')reveal();
+})();
 </script>
 <script>
 (function initPublicEmptyMap(){
