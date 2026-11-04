@@ -3324,7 +3324,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </details>
     <section id="publicEmptyMapSection" aria-labelledby="publicEmptyMapTitle" style="margin:22px 0 28px;padding:18px;border:1px solid rgba(120,234,255,.35);border-radius:18px;background:#102337">
       <h3 id="publicEmptyMapTitle" style="margin:0 0 8px;font-size:20px"><span data-art-lang="ja">🗺️ 走った道が、年輪になる。</span><span data-art-lang="en">🗺️ Your runs become growth rings.</span></h3>
-      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">架空の3年分の走行ルートを重ねました。年を切り替えて、年輪が育つ様子を体験しよう。</span><span data-art-lang="en">Explore three years of fictional running routes. Switch years to see the rings grow.</span></p>
+      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">架空の37ランを3年間に重ねました。いつもの道、折り返し、遠出。年を切り替えて、走った場所の広がりを体験しよう。</span><span data-art-lang="en">Explore 37 fictional runs over three years: familiar streets, out-and-backs, and longer adventures. Switch years to see the map grow.</span></p>
       <div id="publicDemoYears" role="group" aria-label="サンプルの表示年" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">
         <button type="button" data-public-demo-year="all" aria-pressed="true">ALL</button>
         <button type="button" data-public-demo-year="2024" aria-pressed="false">2024</button>
@@ -29994,48 +29994,102 @@ updateScrollToTopButton();
   const element=document.getElementById('publicEmptyMap');
   const controls=document.getElementById('publicDemoYears');
   const info=document.getElementById('publicDemoYearInfo');
-  if(!element || !controls || !info || !window.L) return;
+  if(!element || !controls || !info || !window.L)return;
   let initialized=false,selectedYear='all',preview=null,layer=null;
-  // Demonstration-only geometry. No real athlete, route, or location data.
-  const years=[2024,2025,2026];
+  // Synthetic routes only: no athlete GPS, no Supabase queries and no live road routing.
   const colors={2024:'#ff49a8',2025:'#ffe665',2026:'#6ee8ff'};
-  const center=[35.68,139.75];
-  const rings=years.map((year,index)=>{
-    const points=[],radius=.009+index*.007;
-    for(let i=0;i<=90;i++){
-      const angle=i/90*2*Math.PI;
-      const wobble=1+.10*Math.sin(5*angle+index*1.7)+.035*Math.cos(9*angle-index);
-      points.push([center[0]+radius*wobble*Math.sin(angle),center[1]+radius*1.22*wobble*Math.cos(angle)]);
+  const annualCounts={2024:10,2025:12,2026:15};
+  // A public map anchor, not a user's home or location.
+  const center=[35.68,139.75],unitLat=.0025,unitLng=.0033;
+  // Shared imaginary street intersections; slight curves soften the grid.
+  function vertex(x,y){
+    return [center[0]+y*unitLat+.00012*Math.sin(x*.9+y*.43),
+            center[1]+x*unitLng+.00013*Math.sin(y*.83-x*.31)];
+  }
+  function street(a,b){
+    const dx=b[0]-a[0],dy=b[1]-a[1];
+    const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))*3));
+    const result=[];
+    for(let k=0;k<=steps;k++){
+      const t=k/steps,y=a[1]+dy*t;
+      // One recurring path bends like an illustrative riverside route.
+      let x=a[0]+dx*t;
+      if(a[0]===4 && b[0]===4)x+=.20*Math.sin(y*.55);
+      result.push(vertex(x,y));
     }
-    return {year,points};
+    return result;
+  }
+  function build(segments){
+    let at=[0,0],points=[vertex(0,0)];
+    for(const [dx,dy] of segments){
+      const next=[at[0]+dx,at[1]+dy];
+      points.push(...street(at,next).slice(1));
+      at=next;
+    }
+    return points;
+  }
+  // Loops, crossings, detours and out-and-backs share familiar imaginary streets.
+  const patterns=[
+    [[3,0],[0,2],[-3,0],[0,-2]],
+    [[0,3],[3,0],[0,-3],[-3,0]],
+    [[-3,0],[0,-3],[3,0],[0,3]],
+    [[1,0],[0,3],[3,0],[0,-3],[-4,0]],
+    [[2,0],[0,2],[2,0],[0,-4],[-4,0],[0,2]],
+    [[0,-2],[-3,0],[0,4],[3,0],[0,-2]],
+    [[4,0],[0,4],[-2,0],[0,-2],[-2,0],[0,-2]],
+    [[-2,0],[0,4],[4,0],[0,-1],[-2,0],[0,-3]],
+    [[0,4],[4,0],[0,-4],[-4,0]],
+    [[3,0],[0,-4],[-3,0],[0,4]]
+  ];
+  const routes=[];
+  [2024,2025,2026].forEach((year,yi)=>{
+    for(let i=0;i<annualCounts[year];i++){
+      let segments=patterns[(i*3+yi*2)%patterns.length];
+      if(yi>0 && i>=3){
+        const reach=yi===1?3+(i%3):5+(i%5);
+        const direction=i%2===0?1:-1;
+        segments=[[direction*reach,0],[0,2+yi],[-direction*reach,0],[0,-(2+yi)],...segments];
+      }
+      if(yi===2 && i>=11){
+        const far=8+(i-11)*2;
+        segments=[[0,far],[4,0],[0,-far],[-4,0],...segments];
+      }
+      if(i<3)segments=patterns[i]; // Deliberately repeated training loops in all years.
+      routes.push({year,points:build(segments)});
+    }
   });
   function render(){
     if(!layer)return;
     layer.clearLayers();
-    rings.filter(r=>selectedYear==='all'||String(r.year)===selectedYear).forEach(r=>{
-      L.polyline(r.points,{color:colors[r.year],weight:6,opacity:.9,interactive:false}).addTo(layer);
-    });
+    const visible=routes.filter(r=>selectedYear==='all'||String(r.year)===selectedYear);
+    visible.forEach(r=>L.polyline(r.points,{
+      color:colors[r.year],weight:3.5,opacity:.67,interactive:false,lineCap:'round',lineJoin:'round'
+    }).addTo(layer));
     controls.querySelectorAll('[data-public-demo-year]').forEach(button=>{
       button.setAttribute('aria-pressed',String(button.dataset.publicDemoYear===selectedYear));
     });
     const en=document.documentElement.lang==='en';
     info.textContent=selectedYear==='all'
-      ? (en?'ALL · Three fictional years':'ALL · 架空の3年分を重ねて表示')
-      : (en?selectedYear+' · Fictional sample':selectedYear+'年 · 架空のサンプル');
+      ?(en?'ALL · 37 fictional runs over 3 years':'ALL · 3年分・架空の37ランを表示')
+      :(en?selectedYear+' · '+visible.length+' fictional runs':selectedYear+'年 · 架空の'+visible.length+'ラン');
   }
   controls.addEventListener('click',event=>{
     const button=event.target.closest('[data-public-demo-year]');
-    if(!button || !controls.contains(button))return;
+    if(!button||!controls.contains(button))return;
     selectedYear=button.dataset.publicDemoYear;
     render();
   });
   new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   function start(){
-    if(initialized || !element.isConnected || element.getBoundingClientRect().width===0)return;
+    if(initialized||!element.isConnected||element.getBoundingClientRect().width===0)return;
     initialized=true;
     preview=L.map(element,{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView(center,12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(preview);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:18,attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(preview);
     layer=L.layerGroup().addTo(preview);
+    const bounds=L.latLngBounds(routes.flatMap(r=>r.points));
+    preview.fitBounds(bounds,{padding:[24,24],maxZoom:13,animate:false});
     render();
     requestAnimationFrame(()=>preview.invalidateSize({pan:false}));
   }
