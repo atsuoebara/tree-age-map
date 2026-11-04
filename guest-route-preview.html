@@ -84,7 +84,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 const layer=L.layerGroup().addTo(map);
 const colors={'2024':'#ff38b3','2025':'#e8bf00','2026':'#00b9eb'};
 const files=new Map();
-let reportLines=[];
 let year='ALL';
 for(let i=0;i<5;i++){
   const row=document.createElement('div');row.className='slot';
@@ -99,7 +98,7 @@ for(let i=0;i<5;i++){
   selector.addEventListener('change',()=>{const item=files.get(i);if(item)item.year=selector.value;render();});
   input.addEventListener('change',async()=>{
     const f=input.files&&input.files[0];
-    if(!f){files.delete(i);render();return;}
+    if(!f){render();return;}
     try{
       if(f.size>5000000)throw Error('GPXが5MBを超えています');
       const xml=new DOMParser().parseFromString(await f.text(),'application/xml');
@@ -120,7 +119,7 @@ for(let i=0;i<5;i++){
       if(segments.flat().length>20000)throw Error('点が20,000を超えています');
       files.set(i,{name:f.name,year:selector.value,segments});
       render();
-    }catch(err){files.delete(i);render(false);status.textContent='ルート'+(i+1)+'を読み込めません：'+err.message;}
+    }catch(err){render(false);status.textContent='ルート'+(i+1)+'を読み込めません：'+err.message+'（前の表示は維持）';input.value='';}
   });
 }
 document.getElementById('years').addEventListener('click',e=>{
@@ -131,7 +130,7 @@ document.getElementById('clear').addEventListener('click',()=>{files.clear();gen
 function render(zoom=true){
   layer.clearLayers();
   const bounds=L.latLngBounds([]);let count=0,points=0;
-  Array.from(files.values()).filter(f=>year==='ALL'||year===f.year).forEach(f=>{
+  [...files.values(),...generated].filter(f=>year==='ALL'||year===f.year).forEach(f=>{
     f.segments.forEach(seg=>{
       // Dark halo and clear, year-specific stroke; geometry is never offset.
       L.polyline(seg,{color:'#0e1b2e',weight:7,opacity:.72,interactive:false}).addTo(layer);
@@ -141,7 +140,7 @@ function render(zoom=true){
     count++;
   });
   document.querySelectorAll('[data-year]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.year===year)));
-  const visible=Array.from(files.values()).filter(f=>year==='ALL'||year===f.year);
+  const visible=[...files.values(),...generated].filter(f=>year==='ALL'||year===f.year);
   const lengths=visible.map(f=>f.year+' '+(f.name||'GPX')+'：'+formatKm(f.segments.reduce((total,seg)=>total+routeLength(seg),0)));
   status.textContent=count
     ?year+'：'+count+'件・'+points+'地点\n'+lengths.join('\n')+'\n※距離はGPX線分の概算。歩行可能性や安全性は未検証です。'
@@ -196,12 +195,24 @@ osmButton.addEventListener('click',async()=>{
   osmStatus.textContent='OSM歩行者道路を取得しています…';
   try{
     const query='[out:json][timeout:35];(way["highway"~"^(footway|path|pedestrian|residential|living_street|unclassified|tertiary|service)$"]["access"!="private"](35.700,139.789,35.727,139.819););(._;>;);out body qt;';
-    const controller=new AbortController();const abort=setTimeout(()=>controller.abort(),45000);
-    let response;
-    try{response=await fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:controller.signal});}
-    finally{clearTimeout(abort);}
-    if(!response.ok)throw Error('Overpass HTTP '+response.status);
-    const data=await response.json();
+    const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+    let data=null,lastProblem='接続に失敗しました';
+    for(let attempt=0;attempt<endpoints.length;attempt++){
+      const controller=new AbortController();
+      const abort=setTimeout(()=>controller.abort(),22000);
+      try{
+        osmStatus.textContent='道路データを取得中（接続先 '+(attempt+1)+'/'+endpoints.length+'）…';
+        const response=await fetch(endpoints[attempt],{method:'POST',body:'data='+encodeURIComponent(query),
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:controller.signal});
+        if(!response.ok)throw Error('HTTP '+response.status);
+        const result=await response.json();
+        if(!Array.isArray(result.elements))throw Error('道路データ形式が不正');
+        data=result;break;
+      }catch(err){
+        lastProblem=err.name==='AbortError'?'接続が時間切れになりました':('取得エラー（'+String(err.message).slice(0,90)+'）');
+      }finally{clearTimeout(abort);}
+    }
+    if(!data)throw Error('両方の接続先で取得できませんでした。'+lastProblem);
     if(!Array.isArray(data.elements))throw Error('不正なOSM形式');
     const nodes=new Map(),graph=new Map();
     for(const el of data.elements)if(el.type==='node'&&Number.isFinite(el.lat)&&Number.isFinite(el.lon))nodes.set(el.id,{lat:el.lat,lon:el.lon});
@@ -247,7 +258,7 @@ osmButton.addEventListener('click',async()=>{
     }
     // Replace only after all three routes have passed basic structural checks.
     generated.splice(0,generated.length,...nextGenerated);
-    for(let i=0;i<generated.length;i++)files.set(i,generated[i]);
+    // Generated routes are displayed separately so manual GPX slots and selectors remain untouched.
     year='ALL';render();
     exportButton.disabled=false;
     osmStatus.textContent='道路ノード '+nodes.size.toLocaleString()+'点、最大連結成分 '+component.length.toLocaleString()+'点から3本試作。'+generated.map(g=>g.year+' '+formatKm(routeLength(g.segments[0]))).join('／')+'。道路沿いか、橋が通れるか、一方通行・立入制限がないかは未検証です。';
