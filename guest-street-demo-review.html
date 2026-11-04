@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0d1828">
+<title>Runner's Rings｜実街路サンプル年輪・公開前レビュー</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(150deg,#111a31,#281b36);color:#f6faff}
+main{max-width:820px;margin:auto;padding:16px}
+h1{font-size:clamp(19px,4.8vw,27px);margin:6px 0 10px}
+p{line-height:1.65;margin:9px 0;color:#d7e5f2}
+.panel{padding:clamp(13px,3.5vw,23px);border:1px solid #438ba4;border-radius:18px;background:#10263b}
+.eyebrow{font-size:11px;letter-spacing:.12em;font-weight:900;color:#88e8ff}
+.note{font-size:12px;color:#b7d1e0}
+#routeMap{height:clamp(330px,65vh,580px);width:100%;border-radius:13px;overflow:hidden;background:#d6e2e6;z-index:0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0 13px}
+button{font:inherit;font-weight:850;color:#fff;min-height:46px;min-width:60px;padding:9px 15px;border:1px solid #71859c;border-radius:24px;background:#22374f;cursor:pointer}
+button[aria-pressed="true"]{background:#ef22ad;border-color:#ff9be6;color:white}
+button:focus-visible{outline:3px solid yellow;outline-offset:3px}
+#legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12px;font-weight:800}
+#legend span{display:flex;align-items:center;gap:5px}
+.dot{height:10px;width:10px;display:inline-block;border-radius:50%}
+#status{color:#f2e35d;font-size:13px;margin:13px 0 0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}
+.stat{border-radius:11px;background:#1c354b;border:1px solid #44677a;padding:10px;text-align:center}
+.stat strong{display:block;margin-bottom:4px;font-size:14px}
+.stat span{font-size:12px}
+@media(max-width:370px){main{padding:9px}.stats{gap:5px}.stat{padding:8px 4px}.stat strong{font-size:13px}}
+</style>
+</head>
+<body>
+<main>
+<section class="panel" aria-label="固定座標によるサンプル地図">
+<div class="eyebrow">RUNNER'S RINGS · REVIEW PREVIEW</div>
+<h1>🗺️ 走った道が、年輪になる。</h1>
+<p>実在する街の道路データを参考にした、<strong>架空の3年間のランニングコース</strong>。繰り返し通る道と少しずつ広がる行動範囲を見比べよう。</p>
+<div class="controls" id="yearButtons" role="group" aria-label="表示する年">
+<button data-year="all" aria-pressed="true">ALL</button>
+<button data-year="2024" aria-pressed="false">2024</button>
+<button data-year="2025" aria-pressed="false">2025</button>
+<button data-year="2026" aria-pressed="false">2026</button>
+</div>
+<div id="routeMap" role="region" aria-label="隅田川周辺の架空ランニングコース地図"></div>
+<div id="legend">
+<span><i class="dot" style="background:#ff38b3"></i>2024 ピンク</span>
+<span><i class="dot" style="background:#e8bf00"></i>2025 黄</span>
+<span><i class="dot" style="background:#00b9eb"></i>2026 水色</span>
+</div>
+<p id="status" aria-live="polite">表示を準備しています…</p>
+<div class="stats" aria-label="年ごとのサンプル距離">
+<div class="stat"><strong>2024</strong><span>3.81 km</span></div>
+<div class="stat"><strong>2025</strong><span>5.28 km</span></div>
+<div class="stat"><strong>2026</strong><span>5.67 km</span></div>
+</div>
+<p class="note">※ この地図は公開前の検証用です。走路はOpenStreetMapの街路ネットワークから作成した架空のサンプルで、実在ランナーのGPS記録ではありません。道路の現在の通行可否・安全性を保証するものではありません。閲覧時に走路探索APIは呼び出しません。</p>
+<p class="note">出典：© OpenStreetMap contributors（ODbL）。地図・経路の内容は検証中です。</p>
+</section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./data/guest-street-demo-20261104.js"></script>
+<script>
+(()=>{
+'use strict';
+const status=document.getElementById('status');
+const sources=window.RR_STREET_DEMO_DATA;
+if(!window.L||!Array.isArray(sources)||sources.length!==3){status.textContent='地図データを読み込めませんでした。';return;}
+// Polyline with 1e-7 precision. Arithmetic is essential because 1e7 longitude
+// uses >32-bit intermediate ZigZag values; bitwise JS decoding would overflow.
+function decodePolyline(s){
+  const pts=[];let idx=0,lat=0,lon=0;
+  while(idx<s.length){
+    const delta=[];
+    for(let n=0;n<2;n++){
+      let v=0,shift=0,b;
+      do{
+        if(idx>=s.length)throw Error('座標データが途中で切れています');
+        b=s.charCodeAt(idx++)-63;
+        if(b<0)throw Error('座標データ形式が不正です');
+        v+=(b%32)*2**shift;shift+=5;
+      }while(b>=32);
+      delta.push(v%2?-Math.floor(v/2)-1:Math.floor(v/2));
+    }
+    lat+=delta[0];lon+=delta[1];
+    pts.push([lat/1e7,lon/1e7]);
+  }
+  return pts;
+}
+try{
+  const paths=sources.map(d=>{
+    const coords=decodePolyline(d.polyline);
+    if(coords.length!==d.points||coords.some(p=>p[0]<35||p[0]>36||p[1]<139||p[1]>141))
+      throw Error(d.year+'年の座標検証に失敗しました');
+    return {year:String(d.year),km:d.distance_km,points:coords};
+  });
+  const map=L.map('routeMap',{scrollWheelZoom:false}).setView([35.711,139.801],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  const routesLayer=L.layerGroup().addTo(map);
+  const colors={'2024':'#ff38b3','2025':'#e8bf00','2026':'#00b9eb'};
+  const allBounds=L.latLngBounds(paths.flatMap(p=>p.points));
+  let current='all';
+  function render(){
+    routesLayer.clearLayers();
+    const visible=paths.filter(p=>current==='all'||p.year===current);
+    // Dark halo first, then colors; no lateral offsets that leave the road.
+    visible.forEach(p=>L.polyline(p.points,{color:'#102038',weight:6.5,opacity:.72,interactive:false}).addTo(routesLayer));
+    visible.forEach(p=>L.polyline(p.points,{color:colors[p.year],weight:3.5,opacity:.96,interactive:false,lineCap:'round',lineJoin:'round'}).addTo(routesLayer));
+    document.querySelectorAll('#yearButtons button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.year===current)));
+    status.textContent=current==='all'
+      ?'ALL：3年分の架空ルートを表示（計3本、781地点）'
+      :current+'年：'+visible[0].km.toFixed(2)+'km、'+visible[0].points.length+'地点';
+    map.fitBounds(current==='all'?allBounds:L.latLngBounds(visible[0].points),
+      {padding:[26,26],maxZoom:15,animate:false});
+  }
+  document.getElementById('yearButtons').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-year]');
+    if(!btn)return;
+    current=btn.dataset.year;render();
+  });
+  render();
+  setTimeout(()=>map.invalidateSize(),150);
+}catch(err){status.textContent='表示エラー：'+err.message;}
+})();
+</script>
+</body>
+</html>
