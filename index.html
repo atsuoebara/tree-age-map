@@ -3720,62 +3720,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <option value="12">12月</option>
     </select>
   </div>
-  <div id="timelapseLaunchArea">
-    <button id="timelapseOpenButton" type="button">▶ Growth Rings Timelapse</button>
-      <p class="timelapseLaunchHint">期間動画は選んだ期間の記録を積み上げ、月の振り返りはランニング1回ごとに振り返ります。</p>
-      <a class="timelapseFaqLink" href="./faq.html#faq-video">タイムラプスのQ&amp;A ↗</a>
-  </div>
-  <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
-    <h3 class="timelapsePanelTitle">Growth Rings Timelapse</h3>
-    <p class="timelapsePanelLead">期間動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。</p>
-    <div class="timelapseGrid">
-      <div class="timelapseField">
-        <label for="timelapseStartMonth">開始年月</label>
-        <input id="timelapseStartMonth" type="month">
-      </div>
-      <div class="timelapseField">
-        <label for="timelapseEndMonth">終了年月</label>
-        <input id="timelapseEndMonth" type="month">
-      </div>
-      <div class="timelapseField">
-        <label for="timelapseStep">動画の単位</label>
-        <select id="timelapseStep">
-          <option value="month">月ごと</option>
-          <option value="year">年ごと</option>
-        </select>
-      </div>
-      <div class="timelapseField">
-        <label for="timelapseMode">表示</label>
-        <select id="timelapseMode">
-          <option value="area">面</option>
-          <option value="route" selected>コース</option>
-        </select>
-      </div>
-    </div>
-    <div class="timelapseActions">
-      <button id="timelapseGenerateButton" class="timelapseActionButton" type="button">🎬 期間動画を作る</button>
-      <button id="timelapseCloseButton" class="timelapseActionButton" type="button">閉じる</button>
-    </div>
-    <div class="timelapseMonthlyReview">
-      <p class="timelapseMonthlyReviewLead">月の振り返り動画は、ランニング1回ごとにコースを積み上げ、その回のコースを強調します。同じ日に複数回走った場合も、走った回数分だけ場面が続きます。地図は各コースの範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。</p>
-      <div class="timelapseField">
-        <label for="timelapseReviewMonth">振り返る月</label>
-        <div class="rrReviewMonthPicker"><input id="timelapseReviewMonth" type="month" aria-label="振り返る月"><span id="rrReviewMonthText" aria-hidden="true"></span></div>
-      </div>
-      <button id="timelapseMonthlyReviewButton" type="button">📅 月の振り返り動画を作る</button>
-    </div>
-    <div id="timelapseProgress" role="status" aria-live="polite"></div>
-    <div id="timelapseShareResult" aria-live="polite">
-      <p id="timelapseGenerationStatus"></p>
-      <video id="timelapsePreview" controls playsinline preload="metadata"></video>
-      <div class="timelapseShareActions">
-        <button id="timelapseShareButton" class="timelapseShareButton" type="button">共有</button>
-        <button id="timelapseSaveButton" class="timelapseShareButton" type="button">保存</button>
-        <button id="timelapseImageButton" class="timelapseShareButton" type="button" hidden>🖼️ 月間距離の画像を保存・共有</button>
-      </div>
-    </div>
-  </section>
-
   <div class="mapBoundaryNotice" role="note">
     <span data-boundary-lang="ja">国・地域名や境界線は地図データに基づきます。領土・領有権について特定の立場を示すものではありません。 <a href="./faq.html#map-boundaries">地図・地域集計について（Q&amp;A）</a></span>
     <span data-boundary-lang="en">Names and boundaries follow the map data and do not express a position on territorial claims or sovereignty. <a href="./faq.html#map-boundaries">Map and regional statistics FAQ</a></span>
@@ -3887,6 +3831,63 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <span class="mapPrivacyStrong">ご自身で共有しない限り、他のユーザーに見られることはありません。</span>
     </p>
   </details>
+
+  <div id="timelapseLaunchArea">
+    <button id="timelapseOpenButton" type="button">▶ Growth Rings Timelapse</button>
+      <p class="timelapseLaunchHint">期間動画は選んだ期間の記録を積み上げ、月の振り返りはランニング1回ごとに振り返ります。</p>
+      <a class="timelapseFaqLink" href="./faq.html#faq-video">タイムラプスのQ&amp;A ↗</a>
+  </div>
+  <section id="timelapsePanel" aria-label="Growth Rings Timelapse settings">
+    <h3 class="timelapsePanelTitle">Growth Rings Timelapse</h3>
+    <p class="timelapsePanelLead">期間動画を作る前に、上の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。</p>
+    <div class="timelapseGrid">
+      <div class="timelapseField">
+        <label for="timelapseStartMonth">開始年月</label>
+        <input id="timelapseStartMonth" type="month">
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseEndMonth">終了年月</label>
+        <input id="timelapseEndMonth" type="month">
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseStep">動画の単位</label>
+        <select id="timelapseStep">
+          <option value="month">月ごと</option>
+          <option value="year">年ごと</option>
+        </select>
+      </div>
+      <div class="timelapseField">
+        <label for="timelapseMode">表示</label>
+        <select id="timelapseMode">
+          <option value="area">面</option>
+          <option value="route" selected>コース</option>
+        </select>
+      </div>
+    </div>
+    <div class="timelapseActions">
+      <button id="timelapseGenerateButton" class="timelapseActionButton" type="button">🎬 期間動画を作る</button>
+      <button id="timelapseCloseButton" class="timelapseActionButton" type="button">閉じる</button>
+    </div>
+    <div class="timelapseMonthlyReview">
+      <p class="timelapseMonthlyReviewLead">月の振り返り動画は、ランニング1回ごとにコースを積み上げ、その回のコースを強調します。同じ日に複数回走った場合も、走った回数分だけ場面が続きます。地図は各コースの範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。</p>
+      <div class="timelapseField">
+        <label for="timelapseReviewMonth">振り返る月</label>
+        <div class="rrReviewMonthPicker"><input id="timelapseReviewMonth" type="month" aria-label="振り返る月"><span id="rrReviewMonthText" aria-hidden="true"></span></div>
+      </div>
+      <button id="timelapseMonthlyReviewButton" type="button">📅 月の振り返り動画を作る</button>
+    </div>
+    <div id="timelapseProgress" role="status" aria-live="polite"></div>
+    <div id="timelapseShareResult" aria-live="polite">
+      <p id="timelapseGenerationStatus"></p>
+      <video id="timelapsePreview" controls playsinline preload="metadata"></video>
+      <div class="timelapseShareActions">
+        <button id="timelapseShareButton" class="timelapseShareButton" type="button">共有</button>
+        <button id="timelapseSaveButton" class="timelapseShareButton" type="button">保存</button>
+        <button id="timelapseImageButton" class="timelapseShareButton" type="button" hidden>🖼️ 月間距離の画像を保存・共有</button>
+      </div>
+    </div>
+  </section>
+
 
   <section id="dashboard">
 
@@ -28689,7 +28690,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['タイムラプスのQ&A ↗','Timelapse FAQ ↗'],
   ['ランキングのQ&A ↗','Ranking FAQ ↗'],
   ['テリトリーのQ&A ↗','Territory FAQ ↗'],
-  ['期間動画を作る前に、下の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。','Before creating a period video, set the map below to the center and zoom you want to show. Routes from the selected period will build up from zero in that view.'],
+  ['期間動画を作る前に、上の地図で見せたい中心と縮尺に合わせてください。その表示を基準に、選択期間の走った道がゼロから積み上がる動画を作ります。','Before creating a period video, set the map above to the center and zoom you want to show. Routes from the selected period will build up from zero in that view.'],
   ['動画の単位','Video step'],
   ['🎬 期間動画を作る','🎬 Create period video'],
   ['月の振り返り動画は、走った日ごとにコースを積み上げ、その日のコースを強調します。地図は走行範囲に合わせて動き、最後に月内で最も多くのランが通った場所を表示します。','The monthly review video builds up routes one run at a time and highlights each run. Multiple runs on the same day appear as separate scenes. The map moves to fit each route and ends at the place most frequently crossed that month.'],
