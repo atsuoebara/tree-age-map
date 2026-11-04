@@ -84,6 +84,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 const layer=L.layerGroup().addTo(map);
 const colors={'2024':'#ff38b3','2025':'#e8bf00','2026':'#00b9eb'};
 const files=new Map();
+let reportLines=[];
 let year='ALL';
 for(let i=0;i<5;i++){
   const row=document.createElement('div');row.className='slot';
@@ -126,7 +127,7 @@ document.getElementById('years').addEventListener('click',e=>{
   const btn=e.target.closest('[data-year]');if(!btn)return;
   year=btn.dataset.year;render();
 });
-document.getElementById('clear').addEventListener('click',()=>{files.clear();slots.querySelectorAll('input').forEach(i=>i.value='');year='ALL';render();map.setView([35.704,139.801],13);});
+document.getElementById('clear').addEventListener('click',()=>{files.clear();generated.length=0;exportButton.disabled=true;osmStatus.textContent='試作を消去しました。';slots.querySelectorAll('input').forEach(i=>i.value='');year='ALL';render();map.setView([35.704,139.801],13);});
 function render(zoom=true){
   layer.clearLayers();
   const bounds=L.latLngBounds([]);let count=0,points=0;
@@ -140,8 +141,10 @@ function render(zoom=true){
     count++;
   });
   document.querySelectorAll('[data-year]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.year===year)));
+  const visible=Array.from(files.values()).filter(f=>year==='ALL'||year===f.year);
+  const lengths=visible.map(f=>f.year+' '+(f.name||'GPX')+'：'+formatKm(f.segments.reduce((total,seg)=>total+routeLength(seg),0)));
   status.textContent=count
-    ?year+'：'+count+'件のGPX、'+points+'地点表示。線が実際の道路・歩道に沿っているか目視確認してください。'
+    ?year+'：'+count+'件・'+points+'地点\n'+lengths.join('\n')+'\n※距離はGPX線分の概算。歩行可能性や安全性は未検証です。'
     :'GPX未表示。最大5件のルートを読み込めます。';
   if(zoom&&bounds.isValid())map.fitBounds(bounds,{padding:[25,25],maxZoom:15,animate:false});
   requestAnimationFrame(()=>map.invalidateSize());
@@ -150,7 +153,9 @@ const osmButton=document.getElementById('buildOsmRoutes');
 const exportButton=document.getElementById('exportOsmRoutes');
 const osmStatus=document.getElementById('osmStatus');
 const generated=[];
-const dist=(a,b)=>Math.hypot((a.lat-b.lat)*111320,(a.lon-b.lon)*90800);
+const dist=(a,b)=>{const mean=(a.lat+b.lat)*Math.PI/360;return Math.hypot((a.lat-b.lat)*111195,(a.lon-b.lon)*111195*Math.cos(mean));};
+const routeLength=seg=>seg.reduce((sum,pt,i)=>i?sum+dist({lat:pt[0],lon:pt[1]},{lat:seg[i-1][0],lon:seg[i-1][1]}):0,0);
+const formatKm=meters=>(meters/1000).toFixed(2)+'km';
 const xmlSafe=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function shortest(graph,nodes,start,end){
   const cost=new Map([[start,0]]),prev=new Map(),heap=[];
@@ -186,7 +191,8 @@ function connectedComponents(graph){
   return components.sort((a,b)=>b.length-a.length);
 }
 osmButton.addEventListener('click',async()=>{
-  osmButton.disabled=true;exportButton.disabled=true;generated.length=0;
+  osmButton.disabled=true;exportButton.disabled=true;
+  // Do not clear the previous successful preview until a complete replacement exists.
   osmStatus.textContent='OSM歩行者道路を取得しています…';
   try{
     const query='[out:json][timeout:35];(way["highway"~"^(footway|path|pedestrian|residential|living_street|unclassified|tertiary|service)$"]["access"!="private"](35.700,139.789,35.727,139.819););(._;>;);out body qt;';
@@ -201,7 +207,8 @@ osmButton.addEventListener('click',async()=>{
     for(const el of data.elements)if(el.type==='node'&&Number.isFinite(el.lat)&&Number.isFinite(el.lon))nodes.set(el.id,{lat:el.lat,lon:el.lon});
     function add(a,b){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
     for(const el of data.elements)if(el.type==='way'&&el.tags&&el.tags.highway&&Array.isArray(el.nodes)){
-      if(el.tags.foot==='no'||el.tags.access==='no'||el.tags.access==='private'||el.tags.motorroad==='yes')continue;
+      // Conservative filters: this is still NOT a pedestrian routing guarantee.
+      if(el.tags.area==='yes'||el.tags.foot==='no'||el.tags.access==='no'||el.tags.access==='private'||el.tags.access==='destination'||el.tags.motorroad==='yes'||el.tags.highway==='construction'||el.tags.service==='driveway'||el.tags.service==='parking_aisle')continue;
       const ids=el.nodes;for(let j=1;j<ids.length;j++){const a=ids[j-1],b=ids[j];if(nodes.has(a)&&nodes.has(b)){add(a,b);add(b,a);}}
     }
     const component=connectedComponents(graph)[0];
@@ -223,6 +230,7 @@ osmButton.addEventListener('click',async()=>{
       }return best;
     });
     const designs=[[hub,candidates[0],hub],[hub,candidates[1],candidates[2],hub],[hub,candidates[3],candidates[0],hub]];
+    const nextGenerated=[];
     const years=['2024','2025','2026'];
     for(let i=0;i<designs.length;i++){
       const visits=designs[i],ids=[];
@@ -232,14 +240,18 @@ osmButton.addEventListener('click',async()=>{
         ids.push(...(j===1?segment:segment.slice(1)));
       }
       if(ids.length<3)throw Error('ルートが短すぎます');
-      generated.push({name:'osm-street-demo-'+(i+1),year:years[i],segments:[ids.map(id=>[nodes.get(id).lat,nodes.get(id).lon])]});
+      const points=ids.map(id=>[nodes.get(id).lat,nodes.get(id).lon]);
+      const length=routeLength(points);
+      if(length<500||length>35000)throw Error('試作'+(i+1)+'の距離が想定範囲外：'+formatKm(length));
+      nextGenerated.push({name:'osm-street-demo-'+(i+1),year:years[i],segments:[points]});
     }
-    // Keep imported routes separate; generated GPX belongs to preview only.
+    // Replace only after all three routes have passed basic structural checks.
+    generated.splice(0,generated.length,...nextGenerated);
     for(let i=0;i<generated.length;i++)files.set(i,generated[i]);
     year='ALL';render();
     exportButton.disabled=false;
-    osmStatus.textContent='道路ノード '+nodes.size.toLocaleString()+'点、最大連結成分 '+component.length.toLocaleString()+'点から3本試作しました。橋・川沿いの接続と通行可否を必ず確認してください。';
-  }catch(err){osmStatus.textContent='取得・生成できませんでした：'+err.message+'。手元のGPX読み込み機能は引き続き使えます。';}
+    osmStatus.textContent='道路ノード '+nodes.size.toLocaleString()+'点、最大連結成分 '+component.length.toLocaleString()+'点から3本試作。'+generated.map(g=>g.year+' '+formatKm(routeLength(g.segments[0]))).join('／')+'。道路沿いか、橋が通れるか、一方通行・立入制限がないかは未検証です。';
+  }catch(err){exportButton.disabled=!generated.length;osmStatus.textContent='取得・生成できませんでした：'+err.message+'。既存のGPX表示・試作は維持しています。';}
   finally{osmButton.disabled=false;}
 });
 exportButton.addEventListener('click',()=>{
