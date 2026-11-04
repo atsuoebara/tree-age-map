@@ -1141,6 +1141,12 @@
     /* Keep the native month picker interactive, but show a stable label on iOS Safari. */
     .rrStableMonthPicker{position:relative;width:100%;min-width:0;}
     .rrStableMonthPicker input[type="month"]{position:relative;z-index:2;width:100%;min-width:0;min-height:44px;box-sizing:border-box;opacity:0;cursor:pointer;}
+    /* Keep the native iOS month picker tappable while explicitly hiding its painted text. */
+    .rrStableMonthPicker input[type="month"],
+    .rrReviewMonthPicker input[type="month"]{color:transparent !important;-webkit-text-fill-color:transparent !important;}
+    .rrStableMonthPicker input[type="month"]::-webkit-datetime-edit,
+    .rrReviewMonthPicker input[type="month"]::-webkit-datetime-edit{opacity:0;color:transparent !important;-webkit-text-fill-color:transparent !important;}
+
     .rrStableMonthPicker > span{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0f1d2f;color:#fff;font-size:16px;font-weight:700;pointer-events:none;}
     .rrStableMonthPicker:focus-within > span{outline:2px solid #78eaff;outline-offset:1px;}
     .rrReviewMonthPicker{position:relative;width:100%;min-width:0;}
