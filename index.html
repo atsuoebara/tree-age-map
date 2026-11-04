@@ -1138,6 +1138,11 @@
     }
 
     /* iOS Safari: avoid overlapping native month/date glyph layers while keeping the native picker tappable. */
+    /* Keep the native month picker interactive, but show a stable label on iOS Safari. */
+    .rrStableMonthPicker{position:relative;width:100%;min-width:0;}
+    .rrStableMonthPicker input[type="month"]{position:relative;z-index:2;width:100%;min-width:0;min-height:44px;box-sizing:border-box;opacity:0;cursor:pointer;}
+    .rrStableMonthPicker > span{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0f1d2f;color:#fff;font-size:16px;font-weight:700;pointer-events:none;}
+    .rrStableMonthPicker:focus-within > span{outline:2px solid #78eaff;outline-offset:1px;}
     .rrReviewMonthPicker{position:relative;width:100%;min-width:0;}
     .rrReviewMonthPicker #timelapseReviewMonth{position:relative;z-index:2;width:100%;min-width:0;min-height:44px;box-sizing:border-box;opacity:0;cursor:pointer;}
     .rrReviewMonthPicker #rrReviewMonthText{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0f1d2f;color:white;font-size:16px;font-weight:700;pointer-events:none;}
@@ -3843,11 +3848,11 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <div class="timelapseGrid">
       <div class="timelapseField">
         <label for="timelapseStartMonth">開始年月</label>
-        <input id="timelapseStartMonth" type="month">
+        <div class="rrStableMonthPicker"><input id="timelapseStartMonth" type="month"><span id="rrTimelapseStartMonthText" aria-hidden="true"></span></div>
       </div>
       <div class="timelapseField">
         <label for="timelapseEndMonth">終了年月</label>
-        <input id="timelapseEndMonth" type="month">
+        <div class="rrStableMonthPicker"><input id="timelapseEndMonth" type="month"><span id="rrTimelapseEndMonthText" aria-hidden="true"></span></div>
       </div>
       <div class="timelapseField">
         <label for="timelapseStep">動画の単位</label>
@@ -25065,6 +25070,9 @@ function syncTimelapseDefaults() {
       defaultEndValue;
   }
 
+  // Month values may be assigned programmatically; refresh the visible Safari labels.
+  window.rrUpdateTimelapseMonthLabels?.();
+
   // Every new opening starts with course, regardless of a previous area choice.
   timelapseMode.value = 'route';
 
@@ -29806,6 +29814,30 @@ updateScrollToTopButton();
 })();
 </script>
 <script>
+/* Safari-safe visible labels for the start/end period picker. */
+(function(){
+ const entries=[
+  [document.getElementById('timelapseStartMonth'), document.getElementById('rrTimelapseStartMonthText')],
+  [document.getElementById('timelapseEndMonth'), document.getElementById('rrTimelapseEndMonthText')]
+ ];
+ if(entries.some(([input,label])=>!input||!label))return;
+ function update(){
+  const en=document.documentElement.lang==='en';
+  entries.forEach(([input,label])=>{
+   const match=/^(\d{4})-(\d{2})$/.exec(input.value||'');
+   label.textContent=match?(en?match[1]+'-'+match[2]:match[1]+'年'+Number(match[2])+'月'):(en?'Choose a month':'月を選択');
+  });
+ }
+ window.rrUpdateTimelapseMonthLabels=update;
+ entries.forEach(([input])=>{
+  input.addEventListener('change',update);
+  input.addEventListener('input',update);
+ });
+ new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ window.addEventListener('rr-language-changed',update);
+ requestAnimationFrame(update);
+ window.addEventListener('load',update,{once:true});
+})();
 /* Stable visible month label for Safari; actual type=month input stays interactive. */
 (function(){
  const input=document.getElementById('timelapseReviewMonth');
