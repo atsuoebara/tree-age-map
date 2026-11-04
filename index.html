@@ -445,6 +445,17 @@
       display:flex;
       align-items:center;
     }
+    #rrConnectionSummary {
+      font-size:10px;
+      font-weight:700;
+      color:#b8f5cb;
+      overflow-wrap:anywhere;
+      max-width:100%;
+    }
+    #rrDataConnectionMenu > summary {
+      flex-wrap:wrap;
+      gap:4px 8px;
+    }
     #rrDataConnectionMenu > summary:focus-visible {
       outline:3px solid #eaff00;
       outline-offset:2px;
@@ -3493,7 +3504,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 
 <details id="rrDataConnectionMenu">
-  <summary><span data-art-lang="ja">🔗 データ連携</span><span data-art-lang="en">🔗 Data connections</span></summary>
+  <summary><span data-art-lang="ja">🔗 データ連携</span><span data-art-lang="en">🔗 Data connections</span><span id="rrConnectionSummary" aria-live="polite"></span></summary>
   <div class="rrDataConnectionActions">
     <button id="corosConnectButton" type="button">
       COROSと連携
@@ -4388,6 +4399,29 @@ const supabaseClient =
     }
   );
 
+
+// Compact summary reads the existing provider status results; no extra requests.
+const rrConnectionStates = {strava:null,coros:null,garmin:null,intervals:null};
+function rrRenderConnectionSummary(){
+  const target=document.getElementById('rrConnectionSummary');
+  if(!target)return;
+  const connected=Object.keys(rrConnectionStates).filter(key=>rrConnectionStates[key]===true);
+  const en=document.documentElement.lang==='en';
+  const names={strava:'Strava',coros:'COROS',garmin:'Garmin',intervals:'Intervals'};
+  target.textContent=connected.length
+    ? '✓ '+connected.map(key=>names[key]).join(' · ')
+    : Object.values(rrConnectionStates).some(value=>value===null)
+      ? (en?'Checking status…':'状態を確認中…')
+      : (en?'No connections':'接続済みなし');
+}
+window.rrSetConnectionState=function(provider,connected){
+  if(!Object.prototype.hasOwnProperty.call(rrConnectionStates,provider))return;
+  rrConnectionStates[provider]=connected===true?true:connected===false?false:null;
+  rrRenderConnectionSummary();
+};
+window.addEventListener('rr-language-changed',rrRenderConnectionSummary);
+new MutationObserver(rrRenderConnectionSummary).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+rrRenderConnectionSummary();
 
 if (typeof window.initGarminConnection === 'function') {
   window.initGarminConnection({ client: supabaseClient, url: SUPABASE_URL });
@@ -6424,6 +6458,7 @@ garminCopyButton.onclick =
   copyGarminLinkCode;
 
 async function updateStravaConnectionStatus() {
+  window.rrSetConnectionState('strava', null);
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
@@ -6451,6 +6486,7 @@ async function updateStravaConnectionStatus() {
     return;
   }
 
+  window.rrSetConnectionState('strava', Boolean(data?.connected));
   if (data?.connected) {
     stravaConnectButton.textContent =
       '✓ Strava連携済み';
@@ -6505,6 +6541,7 @@ if (stravaPauseNotice) {
 }
 
 async function updateCorosConnectionStatus() {
+  window.rrSetConnectionState('coros', null);
   const {
     data: { session }
   } =
@@ -6567,6 +6604,7 @@ async function updateCorosConnectionStatus() {
 
   corosConnectButton.disabled =
     false;
+  window.rrSetConnectionState('coros', Boolean(data?.connected));
 
   if (data?.connected) {
     corosConnectButton.textContent =
@@ -6590,6 +6628,7 @@ async function updateCorosConnectionStatus() {
   }
 }
 async function updateIntervalsConnectionStatus() {
+  window.rrSetConnectionState('intervals', null);
   const {
     data: { session }
   } =
@@ -6631,6 +6670,7 @@ async function updateIntervalsConnectionStatus() {
       throw error;
     }
 
+    window.rrSetConnectionState('intervals', Boolean(data?.connected));
     if (data?.connected) {
       intervalsImportButton.textContent =
         'Intervalsから取り込む';
