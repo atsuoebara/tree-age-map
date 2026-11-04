@@ -989,6 +989,48 @@
       opacity:.7;
     }
 
+    /* Mobile map-first period controls: years scroll horizontally beside the month selector. */
+    @media (max-width:520px){
+      #mapPeriodControls{
+        display:flex;
+        align-items:stretch;
+        min-width:0;
+        background:#0f1d2f;
+      }
+      body:not(.mapFullscreenActive) #mapPeriodControls #filters{
+        flex:1 1 auto;
+        min-width:0;
+        padding:4px 5px 4px 8px;
+        gap:5px;
+        scrollbar-width:thin;
+      }
+      body:not(.mapFullscreenActive) #mapPeriodControls #monthFilterArea{
+        flex:0 0 auto;
+        padding:4px 8px 4px 3px;
+        gap:0;
+      }
+      body:not(.mapFullscreenActive) #monthFilterArea label{display:none;}
+      body:not(.mapFullscreenActive) #monthFilter{
+        min-width:78px;
+        width:78px;
+        min-height:40px;
+        padding:6px 4px;
+        font-size:12px;
+      }
+      body:not(.mapFullscreenActive) .yearButton{
+        min-height:40px;
+        padding:6px 11px;
+      }
+      body:not(.mapFullscreenActive) #mapViewModeBar{
+        gap:5px;
+        padding:5px 8px;
+      }
+      body:not(.mapFullscreenActive) #mapViewModeBar .mapViewModeLabel{display:none;}
+      body:not(.mapFullscreenActive) #mapViewModeBar .mapViewModeButton,
+      body:not(.mapFullscreenActive) #mapViewModeBar .mapFullscreenButton{
+        min-height:40px;
+      }
+    }
     #filters{
       background:#0f1d2f;
       padding:9px 10px;
@@ -3524,6 +3566,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 </div>
 
+  <div id="mapPeriodControls">
   <div id="filters">
     <button class="yearButton active">
       ALL
@@ -3536,6 +3579,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
     <select
       id="monthFilter"
+      aria-label="月別表示 / Select month"
       disabled
     >
       <option value="ALL">
@@ -3555,6 +3599,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <option value="11">11月</option>
       <option value="12">12月</option>
     </select>
+  </div>
   </div>
   <div id="mapViewModeBar" aria-label="地図の表示モード">
     <span class="mapViewModeLabel">表示</span>
