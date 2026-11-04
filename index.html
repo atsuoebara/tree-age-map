@@ -3322,21 +3322,32 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </div>
 
     </details>
+<style>
+  #publicEmptyMapSection .rr-sample-pin{width:37px;height:37px;background:#ff2bd6;color:#fff;display:grid;place-items:center;font-size:20px;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 12px #14243a88}
+  .rr-sample-landmark-popup .leaflet-popup-content-wrapper{background:#132c43;color:#fff;border:1px solid #46b8d5;border-radius:15px}
+  .rr-sample-landmark-popup .leaflet-popup-tip{background:#132c43}
+  .rr-sample-landmark-popup .leaflet-popup-content{margin:12px;width:216px!important}
+  .rr-sample-landmark-popup .sample-title{font-weight:900;font-size:15px;margin:6px 0}
+  .rr-sample-landmark-popup .sample-caption{font-size:11px;line-height:1.55;color:#d0e6f6}
+  .rr-sample-landmark-popup .sample-art{border-radius:11px;overflow:hidden;background:#11182b}
+</style>
     <section id="publicEmptyMapSection" aria-labelledby="publicEmptyMapTitle" style="margin:22px 0 28px;padding:18px;border:1px solid rgba(120,234,255,.35);border-radius:18px;background:#102337">
       <h3 id="publicEmptyMapTitle" style="margin:0 0 8px;font-size:20px"><span data-art-lang="ja">🗺️ 走った道が、年輪になる。</span><span data-art-lang="en">🗺️ Your runs become growth rings.</span></h3>
-      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">架空の37ランを3年間に重ねました。いつもの道、折り返し、遠出。年を切り替えて、走った場所の広がりを体験しよう。</span><span data-art-lang="en">Explore 37 fictional runs over three years: familiar streets, out-and-backs, and longer adventures. Switch years to see the map grow.</span></p>
+      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">実際の街の道路を参考に作った、3年間・3本の架空のランニングコースです。年を切り替え、走った街の広がりを体験してください。</span><span data-art-lang="en">Explore three fictional annual runs drawn along actual streets. Switch years to see how the running map grows.</span></p>
       <div id="publicDemoYears" role="group" aria-label="サンプルの表示年" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">
         <button type="button" data-public-demo-year="all" aria-pressed="true">ALL</button>
         <button type="button" data-public-demo-year="2024" aria-pressed="false">2024</button>
         <button type="button" data-public-demo-year="2025" aria-pressed="false">2025</button>
         <button type="button" data-public-demo-year="2026" aria-pressed="false">2026</button>
       </div>
-      <div id="publicEmptyMap" role="region" aria-label="架空の3年分の年輪サンプル地図" style="height:300px;width:100%;border-radius:14px;background:#dce5e7;overflow:hidden;z-index:0"></div>
+      <button type="button" id="publicDemoSkytree" style="display:inline-flex;align-items:center;min-height:44px;margin:0 0 10px;padding:8px 15px;background:#6b2164;color:white;border:1px solid #ff82d5;border-radius:12px;font-weight:800"><span data-art-lang="ja">🗼 スカイツリーを見る</span><span data-art-lang="en">🗼 View Tokyo Skytree</span></button>
+      <div id="publicEmptyMap" role="region" aria-label="実街路に沿って描かれた3年間の架空ルートとスカイツリーのサンプル地図" style="height:300px;width:100%;border-radius:14px;background:#dce5e7;overflow:hidden;z-index:0"></div>
       <div id="publicDemoLegend" aria-label="年ごとのルート色" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;font-size:12px;font-weight:800">
-        <span style="color:#ff53b4">● 2024</span><span style="color:#ffe665">● 2025</span><span style="color:#4be3ff">● 2026</span>
+        <span style="color:#ff38b3">● 2024 · 3.81km</span><span style="color:#e8bf00">● 2025 · 5.28km</span><span style="color:#00b9eb">● 2026 · 5.67km</span>
       </div>
+      <p style="font-size:11px;color:#b9cadd;margin:6px 0 0"><span data-art-lang="ja">🎨 ピンはサンプルイラストです。実際の走行写真ではありません。</span><span data-art-lang="en">🎨 Demo illustration, not a real run photo.</span></p>
       <p id="publicDemoYearInfo" aria-live="polite" style="font-size:13px;color:#eaff00;margin:10px 0 0"></p>
-      <p style="font-size:12px;color:#b9cadd;margin:8px 0 0"><span data-art-lang="ja">※架空の説明用ルートです。実在ランナーのGPS記録や実際の道路ではありません。あなたの位置情報は取得しません。</span><span data-art-lang="en">Fictional illustrative routes only, not real GPS tracks or actual roads. Your location is not collected.</span></p>
+      <p style="font-size:12px;color:#b9cadd;margin:8px 0 0"><span data-art-lang="ja">※実在する街の道路を参考に作成した架空のサンプルです。実在ランナーのGPS記録・写真投稿ではありません。スカイツリーの絵は走路と独立したデモ用イラストです。位置情報を取得せず、走路探索APIも呼び出しません。</span><span data-art-lang="en">Fictional samples based on real streets, not actual runner GPS tracks or photo submissions. The Skytree illustration is a separate demo landmark, not a run photo. No location collection or routing API calls.</span></p>
       <a href="./#authCard" style="display:inline-block;margin-top:12px;color:#8eeaff;font-weight:800"><span data-art-lang="ja">無料で始めて、自分の地図を育てる →</span><span data-art-lang="en">Start your own map for free →</span></a>
     </section>
     <section id="publicRunningGuide" aria-label="Runner's Ringsの使い方と価値" style="margin:22px 0;padding:20px;border:1px solid rgba(142,234,255,.28);border-radius:18px;background:#102033;color:#e4eff8">
@@ -30005,94 +30016,63 @@ updateScrollToTopButton();
   if(location.hash==='#authCard')reveal();
 })();
 </script>
+<script src="./data/guest-street-demo-20261104.js?v=5343b004"></script>
 <script>
 (function initPublicEmptyMap(){
   const element=document.getElementById('publicEmptyMap');
   const controls=document.getElementById('publicDemoYears');
   const info=document.getElementById('publicDemoYearInfo');
+  const showSkytree=document.getElementById('publicDemoSkytree');
+  const dataset=window.RR_STREET_DEMO_DATA;
   if(!element||!controls||!info||!window.L)return;
-  let initialized=false,selectedYear='all',preview=null,layer=null;
-  // Entirely invented illustrative runs, generated locally. Never real athlete GPS.
-  // Use a suburban backdrop instead of central Tokyo/Imperial Palace landmarks.
-  const center=[35.744,139.622];
-  const colors={2024:'#ff32a8',2025:'#f3cf00',2026:'#00c7ef'};
-  const annualCounts={2024:10,2025:12,2026:15};
-  const routes=[];
-  const templates=[
-    [[0,0],[2,0],[2,1],[1,1],[1,3],[-1,3],[-1,1],[0,1],[0,0]],
-    [[1,0],[1,2],[3,2],[4,3],[3,4],[1,4],[0,3],[0,1],[1,0]],
-    [[0,0],[-2,0],[-3,2],[-2,3],[0,3],[1,2],[1,0]],
-    [[-1,-1],[2,-1],[3,0],[3,2],[1,2],[0,1],[-1,1],[-1,-1]],
-    [[0,1],[2,1],[3,3],[2,4],[1,3],[-1,3],[-2,2],[0,1]],
-    [[-2,0],[-2,-2],[0,-2],[2,-1],[2,1],[0,1],[-2,0]],
-    [[0,-1],[1,-2],[3,-2],[4,-1],[4,1],[2,2],[1,0],[0,-1]],
-    [[-1,0],[0,2],[1,3],[2,4],[3,3],[4,2],[3,1],[1,1],[-1,0]],
-    [[0,0],[0,3],[1,4],[3,4],[4,2],[3,0],[1,-1],[0,0]],
-    [[0,-2],[-1,-1],[-1,2],[1,3],[2,2],[2,-1],[0,-2]]
-  ];
-  function noise(seed,n){return Math.sin(seed*12.9898+n*78.233)*43758.5453%1;}
-  // Coordinates sit on imaginary bent blocks; each repeat gets a small GPS-like
-  // offset, while each year has its own visible lane on shared corridors.
-  function point(x,y,seed,index,year){
-    const yearShift=(year-2025)*.16;
-    const variance=.09*Math.sin(seed*1.9+index*2.7);
-    const xx=x+.19*y+.22*Math.sin(y*.9)+yearShift+variance;
-    const yy=y-.13*x+.18*Math.sin(x*.8)+yearShift*.55
-      +.09*Math.cos(seed*1.3+index*1.7);
-    return [center[0]+yy*.0032,center[1]+xx*.004];
-  }
-  function makeRoute(year,i,yi){
-    const seed=yi*23+i;
-    const base=templates[(i*3+yi*2)%templates.length];
-    const scale=yi===0?1:yi===1?1.4:1.65;
-    const driftX=yi===0?(i%3-1)*.25:((i%5)-2)*.38;
-    const driftY=yi===0?(i%4-2)*.20:((i%4)-1.5)*.36;
-    const path=base.map(([x,y])=>[x*scale+driftX,y*scale+driftY]);
-    if(i<3){
-      // Familiar paths recur across years but are never pixel-identical.
-      path.splice(0,path.length,...templates[i].map(([x,y])=>[x+driftX,y+driftY]));
-    }
-    if(yi===1&&i>=8){
-      // A second neighborhood, reached via a diagonal connector.
-      path.push([4.8,4.6],[6.8,5.4],[7.4,4.5],[6.3,3.6],[4.8,4.6]);
-    }
-    if(yi===2&&i>=10){
-      // Distinct long runs to a destination, a short loop, then a return.
-      const side=i%2===0?1:-1;
-      const far=8+(i-10)*.7;
-      path.push([side*3,4],[side*5,6],[side*7,far],
-        [side*8,far+1],[side*9,far+.4],[side*8,far-.7],
-        [side*7,far],[side*5,6],[side*3,4]);
-    }
-    const pts=[];
-    for(let j=1;j<path.length;j++){
-      const [ax,ay]=path[j-1],[bx,by]=path[j];
-      const steps=Math.max(2,Math.ceil(Math.hypot(bx-ax,by-ay)*3));
-      for(let k=j===1?0:1;k<=steps;k++){
-        const t=k/steps;
-        // A gentle meander, instead of ruler-straight rectangles.
-        const curve=.13*Math.sin(Math.PI*t)*Math.sin(seed*.7+j);
-        const x=ax+(bx-ax)*t+curve*(by-ay);
-        const y=ay+(by-ay)*t-curve*(bx-ax);
-        pts.push(point(x,y,seed,pts.length,year));
+  let initialized=false,selectedYear='all',preview=null,layer=null,skytreeMarker=null;
+  const colors={2024:'#ff38b3',2025:'#e8bf00',2026:'#00b9eb'};
+  // Fixed, fictional routes built from public road-network data. No personal GPS
+  // and no route-exploration API requests by public visitors.
+  function decodePolyline(encoded){
+    const points=[];let i=0,lat=0,lon=0;
+    while(i<encoded.length){
+      const step=[];
+      for(let c=0;c<2;c++){
+        let v=0,shift=0,b;
+        do{
+          if(i>=encoded.length)throw Error('incomplete coordinates');
+          b=encoded.charCodeAt(i++)-63;
+          if(b<0||b>63||shift>52)throw Error('invalid coordinates');
+          v+=(b%32)*2**shift;shift+=5;
+        }while(b>=32);
+        step.push(v%2?-Math.floor(v/2)-1:Math.floor(v/2));
       }
+      lat+=step[0];lon+=step[1];
+      points.push([lat/1e7,lon/1e7]);
     }
-    return {year,points:pts};
+    return points;
   }
-  [2024,2025,2026].forEach((year,yi)=>{
-    for(let i=0;i<annualCounts[year];i++)routes.push(makeRoute(year,i,yi));
-  });
+  let routes=[];
+  try{
+    if(!Array.isArray(dataset)||dataset.length!==3)throw Error('missing dataset');
+    routes=dataset.map(d=>{
+      const points=decodePolyline(d.polyline);
+      if(points.length!==d.points || points.some(p=>p[0]<35||p[0]>36||p[1]<139||p[1]>141)){
+        throw Error('invalid route '+d.year);
+      }
+      return {year:String(d.year),points,km:d.distance_km};
+    });
+    if(routes.map(x=>x.points.length).join(',')!=='199,279,303')throw Error('route counts');
+  }catch(error){
+    info.textContent='サンプル地図を読み込めませんでした。 / Sample map unavailable.';
+    return;
+  }
+  const skytreeLatLng=[35.71006,139.81070];
   function render(){
     if(!layer)return;
     layer.clearLayers();
-    const visible=routes.filter(r=>selectedYear==='all'||String(r.year)===selectedYear);
-    // Dark underlays make each color legible above a busy base map. Keep line
-    // widths slim so older years remain visible in ALL mode.
+    const visible=routes.filter(r=>selectedYear==='all'||r.year===selectedYear);
     visible.forEach(r=>L.polyline(r.points,{
-      color:'#0c1b30',weight:5,opacity:.43,interactive:false
+      color:'#102038',weight:6.5,opacity:.72,interactive:false
     }).addTo(layer));
     visible.forEach(r=>L.polyline(r.points,{
-      color:colors[r.year],weight:2.8,opacity:.86,interactive:false,
+      color:colors[r.year],weight:3.5,opacity:.96,interactive:false,
       lineCap:'round',lineJoin:'round'
     }).addTo(layer));
     controls.querySelectorAll('[data-public-demo-year]').forEach(button=>{
@@ -30100,10 +30080,11 @@ updateScrollToTopButton();
     });
     const en=document.documentElement.lang==='en';
     info.textContent=selectedYear==='all'
-      ?(en?'ALL · 37 fictional runs · Pink 2024 / Yellow 2025 / Blue 2026':
-        'ALL · 架空の37ラン｜ピンク 2024・黄 2025・水色 2026')
-      :(en?selectedYear+' · '+visible.length+' fictional runs':
-        selectedYear+'年 · 架空の'+visible.length+'ラン');
+      ?(en?'ALL · 3 fictional runs, 781 map points':'ALL · 架空の3ラン、合計781地点')
+      :(en?selectedYear+' · '+visible[0].km.toFixed(2)+' km, '+visible[0].points.length+' points':
+        selectedYear+'年 · '+visible[0].km.toFixed(2)+'km、'+visible[0].points.length+'地点');
+    const bounds=L.latLngBounds([...visible.flatMap(r=>r.points),skytreeLatLng]);
+    preview.fitBounds(bounds,{padding:[23,23],maxZoom:15,animate:false});
   }
   controls.addEventListener('click',event=>{
     const button=event.target.closest('[data-public-demo-year]');
@@ -30111,18 +30092,28 @@ updateScrollToTopButton();
     selectedYear=button.dataset.publicDemoYear;
     render();
   });
+  if(showSkytree)showSkytree.addEventListener('click',()=>{
+    if(!preview||!skytreeMarker)return;
+    preview.invalidateSize();
+    preview.setView(skytreeLatLng,16,{animate:false});
+    skytreeMarker.openPopup();
+  });
   new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   function start(){
     if(initialized||!element.isConnected||element.getBoundingClientRect().width===0)return;
     initialized=true;
-    preview=L.map(element,{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView(center,12);
+    preview=L.map(element,{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView([35.711,139.801],13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      maxZoom:18,attribution:'&copy; OpenStreetMap contributors'
+      maxZoom:19,attribution:'&copy; OpenStreetMap contributors'
     }).addTo(preview);
     layer=L.layerGroup().addTo(preview);
-    preview.fitBounds(L.latLngBounds(routes.flatMap(r=>r.points)),{
-      padding:[20,20],maxZoom:13,animate:false
+    const skytreeIcon=L.divIcon({
+      className:'',html:'<div class="rr-sample-pin" aria-hidden="true">🎨</div>',
+      iconSize:[37,37],iconAnchor:[18,37],popupAnchor:[0,-34]
     });
+    
+  skytreeMarker=L.marker(skytreeLatLng,{icon:skytreeIcon,keyboard:true,zIndexOffset:800,title:'サンプル・東京スカイツリー（走行記録ではありません）'})
+    .addTo(preview).bindPopup("<div class=\"sample-art\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 220 148\" role=\"img\" aria-label=\"夜空と東京スカイツリーのサンプルイラスト\" style=\"display:block;width:100%;height:auto\"><defs><linearGradient id=\"skys\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop stop-color=\"#161638\"/><stop offset=\"1\" stop-color=\"#413470\"/></linearGradient></defs><rect width=\"220\" height=\"148\" fill=\"url(#skys)\"/><circle cx=\"178\" cy=\"23\" r=\"13\" fill=\"#ffe19d\"/><g fill=\"#ffddf0\"><circle cx=\"30\" cy=\"25\" r=\"2\"/><circle cx=\"72\" cy=\"39\" r=\"1.5\"/><circle cx=\"190\" cy=\"70\" r=\"1.5\"/></g><g fill=\"#2a3158\"><rect x=\"0\" y=\"117\" width=\"42\" height=\"31\"/><rect x=\"25\" y=\"105\" width=\"30\" height=\"43\"/><rect x=\"165\" y=\"108\" width=\"35\" height=\"40\"/><rect x=\"192\" y=\"122\" width=\"28\" height=\"26\"/></g><g stroke=\"#77e8ff\" stroke-width=\"3\" fill=\"none\"><path d=\"M96 140 L105 48 L110 8 L115 48 L124 140\"/><path d=\"M105 48 L115 48 M102 72 L118 72 M100 94 L120 94 M98 115 L122 115 M96 137 L124 137\"/><path d=\"M105 48 L117 72 L102 94 L122 115 L96 138 M115 48 L103 72 L118 94 L98 115 L124 138\" stroke-width=\"1.5\"/></g><ellipse cx=\"110\" cy=\"59\" rx=\"23\" ry=\"5.5\" fill=\"#ff5fc8\" stroke=\"#ffe4f4\" stroke-width=\"2\"/><rect x=\"101\" y=\"46\" width=\"18\" height=\"9\" rx=\"3\" fill=\"#ff75ce\"/><path d=\"M110 8 L110 1\" stroke=\"#fff\" stroke-width=\"2\"/><text x=\"10\" y=\"140\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#fff\">RUNNER'S RINGS · SAMPLE ART</text></svg></div><div class=\"sample-title\">🗼 東京スカイツリー</div><div class=\"sample-caption\">オリジナルのサンプルイラストです。<br>実際のランナーの写真投稿ではありません。3本の走路の撮影記録でもありません。</div>",{className:'rr-sample-landmark-popup',maxWidth:245});
     render();
     requestAnimationFrame(()=>preview.invalidateSize({pan:false}));
   }
