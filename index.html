@@ -3954,29 +3954,33 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <div id="admin2List"></div>
     </div>
 
-    <div id="prefectureSection">
-      <h2 id="prefectureHeading">
+    <details id="prefectureSection">
+      <summary style="cursor:pointer;min-height:44px;padding:8px 0">
+        <h2 style="display:inline" id="prefectureHeading">
         都道府県別
       </h2>
+      </summary>
 
       <div id="prefectureList">
         <div class="emptyMessage">
           読み込み中…
         </div>
       </div>
-    </div>
+    </details>
 
-    <div id="citySection">
-      <h2 id="cityHeading">
+    <details id="citySection">
+      <summary style="cursor:pointer;min-height:44px;padding:8px 0">
+        <h2 style="display:inline" id="cityHeading">
         市町村別
       </h2>
+      </summary>
 
       <div id="cityList">
         <div class="emptyMessage">
           読み込み中…
         </div>
       </div>
-    </div>
+    </details>
 
   </section>
 
