@@ -110,7 +110,7 @@ for(let i=0;i<5;i++){
       if(segments.flat().length>20000)throw Error('点が20,000を超えています');
       files.set(i,{name:f.name,year:selector.value,segments});
       render();
-    }catch(err){files.delete(i);status.textContent='ルート'+(i+1)+'を読み込めません：'+err.message;render(false);}
+    }catch(err){files.delete(i);render(false);status.textContent='ルート'+(i+1)+'を読み込めません：'+err.message;}
   });
 }
 document.getElementById('years').addEventListener('click',e=>{
