@@ -236,6 +236,9 @@ if (!DRY_RUN && !FIXTURE_PREVIEW) {
   const coreUrls = [...previous.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map(match => match[1])
     .filter(url => !url.startsWith(SITE + '/journal/articles/'));
+  // Rings People is a public editorial hub: retain its URL even if
+  // the checked-in sitemap was accidentally generated from an older version.
+  coreUrls.push(SITE + '/rings-people.html');
   // Published date is the reliable date currently available from Journal rows.
   // Do not claim that a page changed today merely because the job ran.
   const articleEntries = posts.map(post => {
