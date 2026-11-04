@@ -13,6 +13,9 @@
 *{box-sizing:border-box}body{margin:0;min-width:0}a{color:inherit}
 header,main,footer{width:min(1080px,100%);margin:auto;padding:20px clamp(16px,4vw,32px)}
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+/* Shared navigation supersedes the compact page header. */
+body:has(#rrGlobalNavigation)>header{display:none}
+#rrGlobalNavigation{display:block;width:100%;max-width:none;margin:0}
 .brand{font-weight:900;text-decoration:none;letter-spacing:.03em}.brand span{color:#eaff00}
 nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}nav a{text-decoration:none;color:#bcefff;font-size:14px}
 button{min-height:44px;padding:8px 13px;border-radius:12px;border:1px solid #78eaff;background:#142941;color:#fff;cursor:pointer;font-size:15px}
@@ -53,6 +56,8 @@ function setLanguage(lang){mode=lang;document.documentElement.lang=lang;try{loca
 function item(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=txt||'';return el;}
 function render(){root.replaceChildren();root.hidden=true;status.hidden=false;if(state!=='ready'){status.textContent=dictionary[mode][state];return;}if(!posts.length){status.textContent=dictionary[mode].empty;return;}for(const post of posts){if(!post.slug||!/^[a-zA-Z0-9_-]+$/.test(post.slug))continue;const a=document.createElement('a');a.className='person';a.href='./journal/articles/'+encodeURIComponent(post.slug)+'/';const src=photoURL(post.image_url);if(src){const img=document.createElement('img');img.className='photo';img.loading='lazy';img.decoding='async';img.src=src;img.alt='';a.append(img);}else{const placeholder=item('div','placeholder','🏃');placeholder.setAttribute('aria-hidden','true');a.append(placeholder);}const detail=item('div','details');detail.append(item('div','name',post['title_'+mode]||post.title_ja||post.title_en||'Rings People'));detail.append(item('div','summary',post['summary_'+mode]||post.summary_ja||post.summary_en||''));detail.append(item('div','read',dictionary[mode].read));a.append(detail);root.append(a);}if(!root.childElementCount){status.textContent=dictionary[mode].empty;return;}status.hidden=true;root.hidden=false;}
 document.getElementById('ja').addEventListener('click',()=>setLanguage('ja'));document.getElementById('en').addEventListener('click',()=>setLanguage('en'));
+// Synchronize the independently rendered interview cards with the shared navbar language.
+new MutationObserver(()=>{const next=document.documentElement.lang==='en'?'en':'ja';if(next!==mode)setLanguage(next);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 try{if(localStorage.getItem('runners-rings-language')==='en')mode='en';}catch(_){}
 setLanguage(mode);
 if(!window.supabase){state='error';render();return;}
@@ -61,4 +66,5 @@ db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,im
 }catch(e){console.error(e);state='error';render();}
 })();
 </script>
+<script defer src="/rr-site-nav.js?v=2026102807"></script>
 </body></html>
