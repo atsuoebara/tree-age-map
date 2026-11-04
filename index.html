@@ -3014,6 +3014,9 @@
 html:not([lang="en"]) .mapBoundaryNotice [data-boundary-lang="en"]{display:none}
 html[lang="en"] .mapBoundaryNotice [data-boundary-lang="ja"]{display:none}
 
+#publicDemoYears button{border:1px solid rgba(255,255,255,.3);border-radius:999px;background:#1b324b;color:#fff;font:inherit;font-size:13px;font-weight:800;min-height:40px;min-width:54px;padding:7px 12px;cursor:pointer}
+#publicDemoYears button[aria-pressed="true"]{background:#ff2bd6;border-color:#ff2bd6}
+#publicDemoYears button:focus-visible{outline:3px solid #eaff00;outline-offset:2px}
 #mapPhotosPanel{margin:10px 0 14px;padding:14px;background:#111d30;border:1px solid rgba(255,255,255,.16);border-radius:14px;color:#f7f8fc}
 #mapPhotosPanel h2{margin:0 0 6px;font-size:18px}
 #mapPhotosPanel details>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;min-height:30px}
@@ -3253,11 +3256,18 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </div>
 
     <section id="publicEmptyMapSection" aria-labelledby="publicEmptyMapTitle" style="margin:22px 0 28px;padding:18px;border:1px solid rgba(120,234,255,.35);border-radius:18px;background:#102337">
-      <h3 id="publicEmptyMapTitle" style="margin:0 0 8px;font-size:20px">🗺️ あなたの走った地図は、ここから</h3>
-      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6">ランニングデータを取り込むと、走った道が線で描かれ、走った地域に色がついていきます。年月を重ねるほど、あなただけの地図が育ちます。</p>
-      <div id="publicEmptyMap" role="region" aria-label="記録を取り込む前の空の地図。ドラッグして移動、ボタンで拡大縮小できます" style="height:300px;width:100%;border-radius:14px;background:#dce5e7;overflow:hidden;z-index:0"></div>
-      <p style="font-size:12px;color:#b9cadd;margin:10px 0 0">これは記録の入っていない地図です。あなたの位置情報やランニングルートは公開されません。</p>
-      <a href="./#authCard" style="display:inline-block;margin-top:12px;color:#8eeaff;font-weight:800">無料で始めて、自分の地図を育てる →</a>
+      <h3 id="publicEmptyMapTitle" style="margin:0 0 8px;font-size:20px"><span data-art-lang="ja">🗺️ 走った道が、年輪になる。</span><span data-art-lang="en">🗺️ Your runs become growth rings.</span></h3>
+      <p style="margin:0 0 12px;line-height:1.7;color:#e0eaf6"><span data-art-lang="ja">架空の3年分の走行ルートを重ねました。年を切り替えて、年輪が育つ様子を体験しよう。</span><span data-art-lang="en">Explore three years of fictional running routes. Switch years to see the rings grow.</span></p>
+      <div id="publicDemoYears" role="group" aria-label="サンプルの表示年" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">
+        <button type="button" data-public-demo-year="all" aria-pressed="true">ALL</button>
+        <button type="button" data-public-demo-year="2024" aria-pressed="false">2024</button>
+        <button type="button" data-public-demo-year="2025" aria-pressed="false">2025</button>
+        <button type="button" data-public-demo-year="2026" aria-pressed="false">2026</button>
+      </div>
+      <div id="publicEmptyMap" role="region" aria-label="架空の3年分の年輪サンプル地図" style="height:300px;width:100%;border-radius:14px;background:#dce5e7;overflow:hidden;z-index:0"></div>
+      <p id="publicDemoYearInfo" aria-live="polite" style="font-size:13px;color:#eaff00;margin:10px 0 0"></p>
+      <p style="font-size:12px;color:#b9cadd;margin:8px 0 0"><span data-art-lang="ja">※架空の説明用ルートです。実在ランナーのGPS記録や実際の道路ではありません。あなたの位置情報は取得しません。</span><span data-art-lang="en">Fictional illustrative routes only, not real GPS tracks or actual roads. Your location is not collected.</span></p>
+      <a href="./#authCard" style="display:inline-block;margin-top:12px;color:#8eeaff;font-weight:800"><span data-art-lang="ja">無料で始めて、自分の地図を育てる →</span><span data-art-lang="en">Start your own map for free →</span></a>
     </section>
     <section id="publicRunningGuide" aria-label="Runner's Ringsの使い方と価値" style="margin:22px 0;padding:20px;border:1px solid rgba(142,234,255,.28);border-radius:18px;background:#102033;color:#e4eff8">
       <h3 style="margin:0 0 12px;font-size:21px">走った道を、年輪として残す理由</h3>
@@ -29952,14 +29962,52 @@ updateScrollToTopButton();
 <script>
 (function initPublicEmptyMap(){
   const element=document.getElementById('publicEmptyMap');
-  if(!element || !window.L) return;
-  let initialized=false;
+  const controls=document.getElementById('publicDemoYears');
+  const info=document.getElementById('publicDemoYearInfo');
+  if(!element || !controls || !info || !window.L) return;
+  let initialized=false,selectedYear='all',preview=null,layer=null;
+  // Demonstration-only geometry. No real athlete, route, or location data.
+  const years=[2024,2025,2026];
+  const colors={2024:'#ff49a8',2025:'#ffe665',2026:'#6ee8ff'};
+  const center=[35.68,139.75];
+  const rings=years.map((year,index)=>{
+    const points=[],radius=.009+index*.007;
+    for(let i=0;i<=90;i++){
+      const angle=i/90*2*Math.PI;
+      const wobble=1+.10*Math.sin(5*angle+index*1.7)+.035*Math.cos(9*angle-index);
+      points.push([center[0]+radius*wobble*Math.sin(angle),center[1]+radius*1.22*wobble*Math.cos(angle)]);
+    }
+    return {year,points};
+  });
+  function render(){
+    if(!layer)return;
+    layer.clearLayers();
+    rings.filter(r=>selectedYear==='all'||String(r.year)===selectedYear).forEach(r=>{
+      L.polyline(r.points,{color:colors[r.year],weight:6,opacity:.9,interactive:false}).addTo(layer);
+    });
+    controls.querySelectorAll('[data-public-demo-year]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.publicDemoYear===selectedYear));
+    });
+    const en=document.documentElement.lang==='en';
+    info.textContent=selectedYear==='all'
+      ? (en?'ALL · Three fictional years':'ALL · 架空の3年分を重ねて表示')
+      : (en?selectedYear+' · Fictional sample':selectedYear+'年 · 架空のサンプル');
+  }
+  controls.addEventListener('click',event=>{
+    const button=event.target.closest('[data-public-demo-year]');
+    if(!button || !controls.contains(button))return;
+    selectedYear=button.dataset.publicDemoYear;
+    render();
+  });
+  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   function start(){
-    if(initialized || !element.isConnected || element.getBoundingClientRect().width===0) return;
+    if(initialized || !element.isConnected || element.getBoundingClientRect().width===0)return;
     initialized=true;
-    const preview=L.map(element,{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView([36.39,139.06],9);
+    preview=L.map(element,{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView(center,12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(preview);
-    requestAnimationFrame(()=>preview.invalidateSize());
+    layer=L.layerGroup().addTo(preview);
+    render();
+    requestAnimationFrame(()=>preview.invalidateSize({pan:false}));
   }
   if('IntersectionObserver' in window){
     const observer=new IntersectionObserver(entries=>{
