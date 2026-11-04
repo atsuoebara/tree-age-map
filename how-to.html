@@ -849,7 +849,7 @@
       originalAlts.forEach((original, element) => {
         element.alt = en ? altTranslations[original] : original;
       });
-      document.title = en ? "How to Use | Runner's Rings" : "Runner's Rings 使い方";
+      document.title = en ? "How to Use | Runner's Rings" : "使い方 | Runner's Rings";
       document.documentElement.lang = en ? 'en' : 'ja';
       document.querySelectorAll('.languageButton').forEach(button => {
         button.classList.toggle('isActive', button.dataset.language === nextLanguage);
