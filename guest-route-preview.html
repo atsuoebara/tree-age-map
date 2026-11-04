@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Runner's Rings｜実街路サンプル走路・検証用</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#071725;color:#ecf5ff}
+main{max-width:1000px;margin:auto;padding:16px}
+h1{font-size:21px;margin:0 0 10px}
+p{line-height:1.6;font-size:14px;color:#c6d8eb}
+.warning{background:#183047;border:1px solid #66849a;padding:12px;border-radius:12px}
+#map{height:clamp(330px,60vh,650px);border:1px solid #47677c;border-radius:14px;background:#e2e8eb;z-index:0}
+fieldset{border:1px solid #47677c;border-radius:12px;margin:12px 0;padding:10px}
+legend{font-weight:700}
+.slot{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px;align-items:center;margin:8px 0}
+select,input,button{min-height:44px;font:inherit}
+select{border-radius:8px;background:#183047;color:white;border:1px solid #7b9bb0;padding:6px}
+input{max-width:100%;width:100%;font-size:12px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{padding:8px 15px;border:1px solid #8eafc7;border-radius:12px;background:#1c3448;color:#fff;cursor:pointer}
+button[aria-pressed=true]{background:#d8268f;border-color:#ff82ca}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f6db32;outline-offset:2px}
+.swatches{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0;font-weight:800}
+.swatches span{display:inline-flex;align-items:center;gap:5px}
+.swatch{display:inline-block;width:22px;height:7px;border-radius:10px}
+#status{white-space:pre-wrap;font-size:13px;line-height:1.6;overflow-wrap:anywhere;background:#10293f;padding:12px;border-radius:10px}
+small{color:#bfd1e1}
+a{color:#87eaff}
+@media(max-width:520px){.slot{grid-template-columns:1fr}h1{font-size:19px}main{padding:10px}}
+</style>
+</head>
+<body>
+<main>
+<h1>🗺️ Runner's Rings｜実街路サンプル走路の検証</h1>
+<p class="warning"><strong>開発用・未承認のプレビューです。</strong> ここに読み込むGPXはブラウザ内で描画するだけで、サーバーへアップロード・保存されません。写真・実際の投稿・ログイン後の年輪地図には一切反映しません。一般公開するデモには、他人のGPS履歴を使用しないでください。</p>
+<p>歩行者ルートとして取得・利用許諾を確認したGPXを最大5本読み込み、道路・橋・遊歩道に沿っているかを検証します。年を切り替えると線が絞り込まれます。<strong>GPXを読み込むまでは何も描画されません。</strong></p>
+<fieldset>
+<legend>確認済みのルートGPXを読み込む（最大5件）</legend>
+<div id="slots"></div>
+<div class="controls">
+<button type="button" id="clear">すべて消去</button>
+<small>GPXの軌跡（trkpt）またはルート（rtept）に対応</small>
+</div>
+</fieldset>
+<div class="controls" id="years" role="group" aria-label="表示する年">
+<button type="button" data-year="ALL" aria-pressed="true">ALL</button>
+<button type="button" data-year="2024" aria-pressed="false">2024</button>
+<button type="button" data-year="2025" aria-pressed="false">2025</button>
+<button type="button" data-year="2026" aria-pressed="false">2026</button>
+</div>
+<div class="swatches" aria-label="年別の線色">
+<span><i class="swatch" style="background:#ff38b3"></i>2024 ピンク</span>
+<span><i class="swatch" style="background:#e8bf00"></i>2025 黄</span>
+<span><i class="swatch" style="background:#00b9eb"></i>2026 水色</span>
+</div>
+<div id="map" role="region" aria-label="GPXによるランニングルートの照合地図"></div>
+<p id="status" aria-live="polite">GPX未読み込み。背景地図上で経路を確認してください。</p>
+<p>チェック：道路・河川敷と線が一致するか／川・建物・線路を横切らないか／橋に歩行接続があるか／往復・周回が自然か／道路の通行規制がないか。外部GPXの利用規約とOSMの帰属表示を確認してからサンプルへ採用してください。</p>
+<p>参考：<a href="https://www.tokyo-park.or.jp/water/waterbus/runwalk/course1.html">東京都公園協会・隅田川テラスのショートコース</a>。これは経路候補の説明であり、ここで直接GPXを取得・転用するものではありません。</p>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(()=>{
+'use strict';
+const slots=document.getElementById('slots');
+const status=document.getElementById('status');
+const map=L.map('map',{scrollWheelZoom:false}).setView([35.704,139.801],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19,attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+const layer=L.layerGroup().addTo(map);
+const colors={'2024':'#ff38b3','2025':'#e8bf00','2026':'#00b9eb'};
+const files=new Map();
+let year='ALL';
+for(let i=0;i<5;i++){
+  const row=document.createElement('div');row.className='slot';
+  const selector=document.createElement('select');selector.setAttribute('aria-label','ルート'+(i+1)+'の表示年');
+  ['2024','2025','2026'].forEach((value)=>{
+    const opt=document.createElement('option');opt.value=value;opt.textContent=value;selector.append(opt);
+  });
+  selector.value=['2024','2024','2025','2025','2026'][i];
+  const input=document.createElement('input');input.type='file';input.accept='.gpx,application/gpx+xml,application/xml,text/xml';
+  input.setAttribute('aria-label','ルート'+(i+1)+'のGPX');
+  row.append(selector,input);slots.append(row);
+  selector.addEventListener('change',()=>{const item=files.get(i);if(item)item.year=selector.value;render();});
+  input.addEventListener('change',async()=>{
+    const f=input.files&&input.files[0];
+    if(!f){files.delete(i);render();return;}
+    try{
+      if(f.size>5000000)throw Error('GPXが5MBを超えています');
+      const xml=new DOMParser().parseFromString(await f.text(),'application/xml');
+      if(xml.querySelector('parsererror'))throw Error('XMLの構文エラー');
+      function parts(tag){
+        return Array.from(xml.getElementsByTagName('*')).filter(el=>el.localName===tag);
+      }
+      function coordinates(nodes){
+        return nodes.map(el=>[Number(el.getAttribute('lat')),Number(el.getAttribute('lon'))])
+          .filter(([lat,lon])=>Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180);
+      }
+      const segments=parts('trkseg').map(seg=>{
+        const pts=Array.from(seg.getElementsByTagName('*')).filter(x=>x.localName==='trkpt');
+        return coordinates(pts);
+      }).filter(x=>x.length>=2);
+      if(!segments.length){const rte=coordinates(parts('rtept'));if(rte.length>=2)segments.push(rte);}
+      if(!segments.length)throw Error('有効なtrkptまたはrteptが2点以上ありません');
+      if(segments.flat().length>20000)throw Error('点が20,000を超えています');
+      files.set(i,{name:f.name,year:selector.value,segments});
+      render();
+    }catch(err){files.delete(i);status.textContent='ルート'+(i+1)+'を読み込めません：'+err.message;render(false);}
+  });
+}
+document.getElementById('years').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-year]');if(!btn)return;
+  year=btn.dataset.year;render();
+});
+document.getElementById('clear').addEventListener('click',()=>{files.clear();slots.querySelectorAll('input').forEach(i=>i.value='');year='ALL';render();map.setView([35.704,139.801],13);});
+function render(zoom=true){
+  layer.clearLayers();
+  const bounds=L.latLngBounds([]);let count=0,points=0;
+  Array.from(files.values()).filter(f=>year==='ALL'||year===f.year).forEach(f=>{
+    f.segments.forEach(seg=>{
+      // Dark halo and clear, year-specific stroke; geometry is never offset.
+      L.polyline(seg,{color:'#0e1b2e',weight:7,opacity:.72,interactive:false}).addTo(layer);
+      L.polyline(seg,{color:colors[f.year],weight:4,opacity:.94,interactive:false}).addTo(layer);
+      seg.forEach(pt=>bounds.extend(pt));points+=seg.length;
+    });
+    count++;
+  });
+  document.querySelectorAll('[data-year]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.year===year)));
+  status.textContent=count
+    ?year+'：'+count+'件のGPX、'+points+'地点表示。線が実際の道路・歩道に沿っているか目視確認してください。'
+    :'GPX未表示。最大5件のルートを読み込めます。';
+  if(zoom&&bounds.isValid())map.fitBounds(bounds,{padding:[25,25],maxZoom:15,animate:false});
+  requestAnimationFrame(()=>map.invalidateSize());
+}
+})();
+</script>
+</body>
+</html>
