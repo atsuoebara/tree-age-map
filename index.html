@@ -427,6 +427,42 @@
       display:none;
     }
 
+    #accountBar #rrDataConnectionMenu {
+      min-width:0;
+      flex:0 1 auto;
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:12px;
+      background:#17283d;
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+    }
+    #rrDataConnectionMenu > summary {
+      cursor:pointer;
+      padding:10px 12px;
+      min-height:44px;
+      box-sizing:border-box;
+      display:flex;
+      align-items:center;
+    }
+    #rrDataConnectionMenu > summary:focus-visible {
+      outline:3px solid #eaff00;
+      outline-offset:2px;
+    }
+    #rrDataConnectionMenu .rrDataConnectionActions {
+      display:flex;
+      gap:8px;
+      padding:4px 10px 12px;
+      flex-wrap:wrap;
+    }
+    #accountBar #rrDataConnectionMenu[open] {
+      flex:1 1 100%;
+      order:10;
+    }
+    #accountBar #rrDataConnectionMenu[open] .rrDataConnectionActions button {
+      min-height:44px;
+      max-width:100%;
+    }
     #accountBar{
       background:#0f1d2f;
       padding:7px 12px 10px;
@@ -3456,17 +3492,20 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 </button>
 
 
-<button id="corosConnectButton" type="button">
-  COROSと連携
-</button>
-
-<button id="garminShortcutButton" type="button" aria-controls="garminApiSection">
-  Garminと連携（自動取込）
-</button>
-
-<button id="intervalsImportButton" type="button" style="display:none;">
-  Intervalsと連携
-</button>
+<details id="rrDataConnectionMenu">
+  <summary><span data-art-lang="ja">🔗 データ連携</span><span data-art-lang="en">🔗 Data connections</span></summary>
+  <div class="rrDataConnectionActions">
+    <button id="corosConnectButton" type="button">
+      COROSと連携
+    </button>
+    <button id="garminShortcutButton" type="button" aria-controls="garminApiSection">
+      Garminと連携（自動取込）
+    </button>
+    <button id="intervalsImportButton" type="button" style="display:none;">
+      Intervalsと連携
+    </button>
+  </div>
+</details>
 
 <label id="addRunButton" for="gpxInput">
   ＋ ランを追加
