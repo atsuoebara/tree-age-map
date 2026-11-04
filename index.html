@@ -3953,6 +3953,16 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       gap:8px;
       padding:4px 12px 10px;
     }
+    /* Restore each feature's familiar accent border while keeping the compact dark tiles. */
+    #dashboard .rrFeatureTiles > a[href="./journal.html"] { border-color:#ff2bd6 !important; }
+    #dashboard .rrFeatureTiles > a[href="./rings-people.html"] { border-color:#78eaff !important; }
+    #dashboard .rrFeatureTiles > .dashboardFeatureGroup:has(> a[href="./ranking.html"]) { border-color:#eaff00; }
+    #dashboard .rrFeatureTiles > .dashboardFeatureGroup:has(> a[href="./territory.html"]) { border-color:#5cff9d; }
+    #dashboard .rrFeatureTiles > a[href="./ring-tools.html"] { border-color:#65f5bb !important; }
+    #dashboard .rrFeatureTiles > a[href="./gps-art.html"] { border-color:#ff9b45 !important; }
+    #dashboard .rrFeatureTiles > a[href="./today.html"],
+    #dashboard .rrFeatureTiles > a[href="./rings-today.html"] { border-color:#78eaff !important; }
+
     @media (max-width:350px) {
       #dashboard .rrFeatureTiles { grid-template-columns:1fr; }
     }
