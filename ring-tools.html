@@ -25,6 +25,9 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,t
 .warn{color:#ffca92}.lang{display:flex;gap:5px}.lang button{padding:7px 9px;font-size:13px;min-height:36px}
 [hidden]{display:none!important}footer{font-size:12px;color:var(--muted);padding-bottom:30px}
 @media(max-width:380px){.panel{padding:13px}.tabs button{font-size:12px}}
+/* Shared header replaces this legacy compact header, but keeps its language buttons in DOM. */
+body:has(#rrGlobalNavigation)>header{display:none}
+#rrGlobalNavigation{display:block;width:100%;max-width:none;margin:0}
 </style></head><body>
 <header><a href="./index.html">◉ Runner's Rings</a><div class="lang"><button type="button" id="ja" aria-pressed="true">日本語</button><button type="button" id="en" aria-pressed="false">EN</button></div><a href="./index.html" data-ja="ホームへ" data-en="Home">ホームへ</a></header>
 <main><div class="eyebrow">FREE RUNNING CALCULATORS</div><h1>Ring Tools</h1><p class="muted" data-ja="走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。" data-en="Plan the pace, splits and recovery for your next run. Free and no sign-in.">走る前の計算を、もっと簡単に。無料・ログイン不要・スマホ対応。</p>
@@ -157,6 +160,11 @@ $('goalDist').addEventListener('change',function(){var d=n('goalDist');var prese
 document.querySelectorAll('[data-tab]').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('[data-tab]').forEach(function(b){var active=b===btn;b.setAttribute('aria-pressed',String(active));$(b.dataset.tab).hidden=!active})})});
 $('ja').addEventListener('click',function(){lang='ja';try{localStorage.setItem('runners-rings-language',lang)}catch(e){}translate()});
 $('en').addEventListener('click',function(){lang='en';try{localStorage.setItem('runners-rings-language',lang)}catch(e){}translate()});
+// The shared nav controls document language; synchronize calculator labels and results.
+new MutationObserver(function(){
+  var next=document.documentElement.lang==='en'?'en':'ja';
+  if(next!==lang){lang=next;translate();}
+}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 translate();
 })();
-</script></body></html>
+</script><script defer src="/rr-site-nav.js?v=2026102807"></script></body></html>
