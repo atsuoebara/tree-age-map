@@ -14979,6 +14979,8 @@ file.name,
     }
 
 
+    // Keep the original result counts; only add an optional next step.
+    message += '\n\n☁️ クラウド保存したランを確認するには「🏃 ランニング記録（件数）」を開いてください。';
     alert(
       message
     );
@@ -15963,7 +15965,8 @@ async function inspectSelectedZIPFiles(
     '件\n\n' +
     'クラウド表示件数 ' +
     cloudRunCount +
-    '件'
+    '件\n\n' +
+    '☁️ クラウド保存したランは「🏃 ランニング記録（件数）」から確認できます。'
   );
 
 
