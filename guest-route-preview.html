@@ -39,6 +39,15 @@ a{color:#87eaff}
 <p class="warning"><strong>開発用・未承認のプレビューです。</strong> ここに読み込むGPXはブラウザ内で描画するだけで、サーバーへアップロード・保存されません。写真・実際の投稿・ログイン後の年輪地図には一切反映しません。一般公開するデモには、他人のGPS履歴を使用しないでください。</p>
 <p>歩行者ルートとして取得・利用許諾を確認したGPXを最大5本読み込み、道路・橋・遊歩道に沿っているかを検証します。年を切り替えると線が絞り込まれます。<strong>GPXを読み込むまでは何も描画されません。</strong></p>
 <fieldset>
+<legend>OSM歩行者道路から試作コースを生成（開発時のみ）</legend>
+<p>「道路データを取得」を押したときだけ公開Overpass APIへアクセスします。取得後は接続された道路ノード上で往復・周回の3本を自動作成します。<strong>地図上の道路との一致・実際の通行可否を目視で確認するまで未承認です。</strong></p>
+<div class="controls">
+<button type="button" id="buildOsmRoutes">隅田川周辺の歩行経路を取得して3本試作</button>
+<button type="button" id="exportOsmRoutes" disabled>試作GPXをダウンロード</button>
+</div>
+<small id="osmStatus" role="status">まだ取得していません。公開Overpass APIの混雑時は失敗する場合があります。</small>
+</fieldset>
+<fieldset>
 <legend>確認済みのルートGPXを読み込む（最大5件）</legend>
 <div id="slots"></div>
 <div class="controls">
@@ -137,6 +146,110 @@ function render(zoom=true){
   if(zoom&&bounds.isValid())map.fitBounds(bounds,{padding:[25,25],maxZoom:15,animate:false});
   requestAnimationFrame(()=>map.invalidateSize());
 }
+const osmButton=document.getElementById('buildOsmRoutes');
+const exportButton=document.getElementById('exportOsmRoutes');
+const osmStatus=document.getElementById('osmStatus');
+const generated=[];
+const dist=(a,b)=>Math.hypot((a.lat-b.lat)*111320,(a.lon-b.lon)*90800);
+const xmlSafe=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function shortest(graph,nodes,start,end){
+  const cost=new Map([[start,0]]),prev=new Map(),heap=[];
+  function push(id,score){heap.push({id,score});let i=heap.length-1;while(i){let p=(i-1)>>1;if(heap[p].score<=score)break;heap[i]=heap[p];i=p;}heap[i]={id,score};}
+  function pop(){const top=heap[0],last=heap.pop();if(heap.length){let i=0;while(true){let child=i*2+1;if(child>=heap.length)break;if(child+1<heap.length&&heap[child+1].score<heap[child].score)child++;if(last.score<=heap[child].score)break;heap[i]=heap[child];i=child;}heap[i]=last;}return top;}
+  push(start,dist(nodes.get(start),nodes.get(end)));
+  let steps=0;
+  while(heap.length&&steps++<100000){
+    const cur=pop().id;
+    if(cur===end){const route=[end];let at=end;while(prev.has(at)){at=prev.get(at);route.push(at);}return route.reverse();}
+    const base=cost.get(cur);
+    for(const next of graph.get(cur)||[]){
+      const candidate=base+dist(nodes.get(cur),nodes.get(next));
+      if(candidate<(cost.get(next)??Infinity)){
+        cost.set(next,candidate);prev.set(next,cur);
+        push(next,candidate+dist(nodes.get(next),nodes.get(end)));
+      }
+    }
+  }
+  return null;
+}
+function connectedComponents(graph){
+  const seen=new Set(),components=[];
+  for(const id of graph.keys()){
+    if(seen.has(id))continue;
+    const queue=[id],component=[];seen.add(id);
+    for(let k=0;k<queue.length;k++){
+      const node=queue[k];component.push(node);
+      for(const next of graph.get(node)||[])if(!seen.has(next)){seen.add(next);queue.push(next);}
+    }
+    components.push(component);
+  }
+  return components.sort((a,b)=>b.length-a.length);
+}
+osmButton.addEventListener('click',async()=>{
+  osmButton.disabled=true;exportButton.disabled=true;generated.length=0;
+  osmStatus.textContent='OSM歩行者道路を取得しています…';
+  try{
+    const query='[out:json][timeout:35];(way["highway"~"^(footway|path|pedestrian|residential|living_street|unclassified|tertiary|service)$"]["access"!="private"](35.700,139.789,35.727,139.819););(._;>;);out body qt;';
+    const controller=new AbortController();const abort=setTimeout(()=>controller.abort(),45000);
+    let response;
+    try{response=await fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:controller.signal});}
+    finally{clearTimeout(abort);}
+    if(!response.ok)throw Error('Overpass HTTP '+response.status);
+    const data=await response.json();
+    if(!Array.isArray(data.elements))throw Error('不正なOSM形式');
+    const nodes=new Map(),graph=new Map();
+    for(const el of data.elements)if(el.type==='node'&&Number.isFinite(el.lat)&&Number.isFinite(el.lon))nodes.set(el.id,{lat:el.lat,lon:el.lon});
+    function add(a,b){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
+    for(const el of data.elements)if(el.type==='way'&&el.tags&&el.tags.highway&&Array.isArray(el.nodes)){
+      if(el.tags.foot==='no'||el.tags.access==='no'||el.tags.access==='private'||el.tags.motorroad==='yes')continue;
+      const ids=el.nodes;for(let j=1;j<ids.length;j++){const a=ids[j-1],b=ids[j];if(nodes.has(a)&&nodes.has(b)){add(a,b);add(b,a);}}
+    }
+    const component=connectedComponents(graph)[0];
+    if(!component||component.length<100)throw Error('連結した歩行経路が十分に見つかりません');
+    const eligible=new Set(component);
+    const anchor={lat:35.711,lon:139.801};
+    const hub=component.reduce((best,id)=>dist(nodes.get(id),anchor)<dist(nodes.get(best),anchor)?id:best,component[0]);
+    const origin=nodes.get(hub);
+    const candidates=[
+      {lat:origin.lat+.013,lon:origin.lon+.004},
+      {lat:origin.lat-.008,lon:origin.lon+.006},
+      {lat:origin.lat+.003,lon:origin.lon-.012},
+      {lat:origin.lat-.004,lon:origin.lon-.009}
+    ].map(target=>{
+      let best=hub,score=Infinity;
+      for(const id of eligible){const x=dist(nodes.get(id),target);
+        const fromStart=dist(nodes.get(id),origin);
+        if(fromStart>450&&x<score){score=x;best=id;}
+      }return best;
+    });
+    const designs=[[hub,candidates[0],hub],[hub,candidates[1],candidates[2],hub],[hub,candidates[3],candidates[0],hub]];
+    const years=['2024','2025','2026'];
+    for(let i=0;i<designs.length;i++){
+      const visits=designs[i],ids=[];
+      for(let j=1;j<visits.length;j++){
+        const segment=shortest(graph,nodes,visits[j-1],visits[j]);
+        if(!segment)throw Error('接続可能なルートが見つかりません');
+        ids.push(...(j===1?segment:segment.slice(1)));
+      }
+      if(ids.length<3)throw Error('ルートが短すぎます');
+      generated.push({name:'osm-street-demo-'+(i+1),year:years[i],segments:[ids.map(id=>[nodes.get(id).lat,nodes.get(id).lon])]});
+    }
+    // Keep imported routes separate; generated GPX belongs to preview only.
+    for(let i=0;i<generated.length;i++)files.set(i,generated[i]);
+    year='ALL';render();
+    exportButton.disabled=false;
+    osmStatus.textContent='道路ノード '+nodes.size.toLocaleString()+'点、最大連結成分 '+component.length.toLocaleString()+'点から3本試作しました。橋・川沿いの接続と通行可否を必ず確認してください。';
+  }catch(err){osmStatus.textContent='取得・生成できませんでした：'+err.message+'。手元のGPX読み込み機能は引き続き使えます。';}
+  finally{osmButton.disabled=false;}
+});
+exportButton.addEventListener('click',()=>{
+  if(!generated.length)return;
+  const tracks=generated.map(route=>'<trk><name>'+xmlSafe(route.name)+'</name><type>'+route.year+'</type>'+route.segments.map(seg=>'<trkseg>'+seg.map(([lat,lon])=>'<trkpt lat="'+lat.toFixed(7)+'" lon="'+lon.toFixed(7)+'"/>').join('')+'</trkseg>').join('')+'</trk>').join('');
+  const contents='<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="Runner&#39;s Rings route preview" xmlns="http://www.topografix.com/GPX/1/1">'+tracks+'</gpx>';
+  const url=URL.createObjectURL(new Blob([contents],{type:'application/gpx+xml'}));
+  const a=document.createElement('a');a.href=url;a.download='runnersrings-fictional-street-preview.gpx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+
 })();
 </script>
 </body>
