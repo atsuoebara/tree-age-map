@@ -41,7 +41,7 @@ function renderAnniversary(){
  button.textContent=en?'▶ Create a running recap for '+year+'-'+month:'▶ '+year+'年'+Number(month)+'月の走りを動画で振り返る';
  button.hidden=anniversaryState.error || !anniversaryState.items.length;
 }
-anniversary.querySelector('#rrYearAgoReview').addEventListener('click',()=>{
+function openAnniversaryReview(){
  const panel=document.getElementById('timelapsePanel');
  const monthInput=document.getElementById('timelapseReviewMonth');
  const review=document.querySelector('.timelapseMonthlyReview');
@@ -53,6 +53,24 @@ anniversary.querySelector('#rrYearAgoReview').addEventListener('click',()=>{
  monthInput.value=anniversaryState.date.slice(0,7);
  monthInput.dispatchEvent(new Event('change',{bubbles:true}));
  requestAnimationFrame(()=>review.scrollIntoView({behavior:'smooth',block:'start'}));
+}
+anniversary.style.cursor='pointer';
+anniversary.setAttribute('role','button');
+anniversary.setAttribute('tabindex','0');
+anniversary.setAttribute('aria-label','1年前の今日の月間振り返りを開く');
+anniversary.querySelector('#rrYearAgoReview').addEventListener('click',e=>{
+ e.stopPropagation();
+ openAnniversaryReview();
+});
+anniversary.addEventListener('click',e=>{
+ if(e.target.closest('a,button'))return;
+ openAnniversaryReview();
+});
+anniversary.addEventListener('keydown',e=>{
+ if((e.key==='Enter'||e.key===' ')&&e.target===anniversary){
+  e.preventDefault();
+  openAnniversaryReview();
+ }
 });
 async function refreshAnniversary(user,today){
  if(!user){anniversary.hidden=true;anniversaryState={loaded:false,items:[],date:'',error:false,loggedIn:false};return;}
