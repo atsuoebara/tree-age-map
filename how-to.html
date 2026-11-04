@@ -672,15 +672,8 @@
       ? stored
       : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
 
-    document.querySelectorAll('.languageButton').forEach((button) => {
-      button.classList.toggle('isActive', button.dataset.language === language);
-      button.addEventListener('click', () => {
-        localStorage.setItem(STORAGE_KEY, button.dataset.language);
-        location.reload();
-      });
-    });
-
-    if (language !== 'en') return;
+    // Keep the page's original Japanese text so both languages can be restored
+    // without reloading the page or losing the current reading position.
 
     const translations = {
       "Runner's Rings 使い方": "How to Use Runner's Rings",
@@ -820,15 +813,13 @@
     };
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      const normalized = node.nodeValue.replace(/\s+/g, ' ').trim();
-      if (!translations[normalized]) return;
-      const leading = node.nodeValue.match(/^\s*/)[0];
-      const trailing = node.nodeValue.match(/\s*$/)[0];
-      node.nodeValue = leading + translations[normalized] + trailing;
-    });
+    const originalText = new Map();
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest('script,style')) continue;
+      const original = node.nodeValue;
+      if (translations[original.replace(/\s+/g, ' ').trim()]) originalText.set(node, original);
+    }
 
     const altTranslations = {
       "Runner's Rings 新規登録方法": "How to create a Runner's Rings account",
@@ -841,12 +832,41 @@
       "Runner's Rings iPhoneホーム画面追加方法": "How to add Runner's Rings to the iPhone Home Screen",
       "Runner's Rings Androidホーム画面追加方法": "How to add Runner's Rings to the Android Home Screen"
     };
+    const originalAlts = new Map();
     document.querySelectorAll('[alt]').forEach((element) => {
-      if (altTranslations[element.alt]) element.alt = altTranslations[element.alt];
+      if (altTranslations[element.alt]) originalAlts.set(element, element.alt);
     });
 
-    document.documentElement.lang = 'en';
-    document.title = "How to Use | Runner's Rings";
+    function applyLanguage(nextLanguage) {
+      const en = nextLanguage === 'en';
+      originalText.forEach((original, node) => {
+        const normalized = original.replace(/\s+/g, ' ').trim();
+        const leading = original.match(/^\s*/)[0];
+        const trailing = original.match(/\s*$/)[0];
+        const translated = translations[normalized];
+        node.nodeValue = en && translated ? leading + translated + trailing : original;
+      });
+      originalAlts.forEach((original, element) => {
+        element.alt = en ? altTranslations[original] : original;
+      });
+      document.title = en ? "How to Use | Runner's Rings" : "Runner's Rings 使い方";
+      document.documentElement.lang = en ? 'en' : 'ja';
+      document.querySelectorAll('.languageButton').forEach(button => {
+        button.classList.toggle('isActive', button.dataset.language === nextLanguage);
+      });
+      return true;
+    }
+
+    // Shared navigation calls these hooks when switching languages.
+    window.rrApplyEnglishWithoutReload = () => applyLanguage('en');
+    window.rrRestoreJapaneseWithoutReload = () => applyLanguage('ja');
+    document.querySelectorAll('.languageButton').forEach(button => {
+      button.addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, button.dataset.language);
+        applyLanguage(button.dataset.language);
+      });
+    });
+    applyLanguage(language);
   })();
   </script>
 <script defer src="/rr-ondevice-translate.js"></script>
