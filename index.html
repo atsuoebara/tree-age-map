@@ -521,17 +521,43 @@
 }
 
 @media (max-width:520px){
+  /* Phase 1 final polish: keep every action visible while reclaiming vertical space. */
   #accountBar{
     flex-wrap:wrap;
+    padding:5px 8px 7px;
+    gap:6px;
   }
 
   #accountProfileArea{
     flex:1 1 auto;
   }
 
+  #accountAvatar{
+    width:34px;
+    height:34px;
+  }
+
+  #accountProfile{
+    gap:7px;
+  }
+
   #accountSettingsButton{
     padding:6px 8px;
+    min-height:40px;
     font-size:10px;
+  }
+
+  #accountBar #rrDataConnectionMenu > summary{
+    padding:7px 10px;
+    min-height:40px;
+  }
+
+  #accountBar #addRunButton{
+    padding:8px 12px;
+    min-height:40px;
+    box-sizing:border-box;
+    display:inline-flex;
+    align-items:center;
   }
 }
 
