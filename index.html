@@ -1291,6 +1291,27 @@
       font-weight:700;
       cursor:pointer;
     }
+    /* Independent iPhone/PWA escape control, outside the map stacking context. */
+    #mapFullscreenExit {
+      display:none;
+      position:fixed;
+      z-index:2147483647;
+      right:16px;
+      bottom:max(24px, calc(env(safe-area-inset-bottom) + 20px));
+      min-height:52px;
+      padding:12px 18px;
+      border:2px solid #fff;
+      border-radius:999px;
+      background:#13283e;
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      box-shadow:0 5px 24px rgba(0,0,0,.55);
+      cursor:pointer;
+      pointer-events:auto;
+      touch-action:manipulation;
+    }
+    body.mapFullscreenActive #mapFullscreenExit { display:block; }
     body.mapFullscreenActive{overflow:hidden;}
     body.mapFullscreenActive #map{
       touch-action:none;
@@ -4066,6 +4087,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 </main>
 
+  <button id="mapFullscreenExit" type="button" aria-label="地図の全画面表示を終了">✕ 地図を戻す</button>
+
   <button
     id="scrollToTopButton"
     type="button"
@@ -6743,6 +6766,7 @@ async function getCloudHeaders(
    地図 全画面表示
 ===================================== */
 const mapFullscreenButton = document.getElementById('mapFullscreenButton');
+const mapFullscreenExit = document.getElementById('mapFullscreenExit');
 const mapElementForFullscreen = document.getElementById('map');
 let mapFullscreenActive = false;
 let mapFullscreenScrollY = 0;
@@ -6841,6 +6865,9 @@ function setMapFullscreen(active){
 
 if(mapFullscreenButton){
   mapFullscreenButton.addEventListener('click', () => setMapFullscreen(!mapFullscreenActive));
+}
+if(mapFullscreenExit){
+  mapFullscreenExit.addEventListener('click', () => setMapFullscreen(false));
 }
 
 document.addEventListener('keydown', (event) => {
