@@ -29,6 +29,7 @@ window.initGarminConnection = function ({ client, url }) {
   async function refresh() {
     const current = ++revision;
     connectionStatus = null;
+    window.rrSetConnectionState?.('garmin', null);
     if (shortcut) shortcut.disabled = true;
     connect.disabled = true;
     disconnect.hidden = true;
@@ -43,6 +44,7 @@ window.initGarminConnection = function ({ client, url }) {
       const result = await response.json();
       if (current !== revision) return;
       connectionStatus = result.connected;
+      window.rrSetConnectionState?.('garmin', result.connected === true);
       if (shortcut) shortcut.disabled = false;
       connect.hidden = result.connected;
       disconnect.hidden = !result.connected;
@@ -71,6 +73,7 @@ window.initGarminConnection = function ({ client, url }) {
       connect.hidden = false;
       connect.disabled = false;
       connectionStatus = null;
+      window.rrSetConnectionState?.('garmin', null);
       if (shortcut) shortcut.disabled = false;
       if (shortcut) shortcut.textContent = text('Garmin設定（接続状態を確認）', 'Garmin settings (check status)');
       message.textContent = text('接続状態を確認できません。ログイン状態や通信を確認してください。', 'Could not check the connection. Check your sign-in and network.');
