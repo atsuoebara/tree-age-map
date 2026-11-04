@@ -68,7 +68,7 @@
     <div class="stat"><small class="ja">地域内の合計距離</small><small class="en">Distance in regions</small><strong id="distanceTotal">—</strong></div>
   </div>
 
-<section class="shareBox" aria-label="Rings Today sharing">
+<section class="shareBox" id="todayShareSection" aria-label="Rings Today sharing" hidden>
 <h2><span class="ja">📷 Instagram用に1枚で共有</span><span class="en">📷 Share as one Instagram Story</span></h2>
 <p class="ja">全体・国・都道府県・市町村から選んで、ストーリーズ用の縦長画像を作成します。個人名や走行ルートは入りません。</p>
 <p class="en">Choose all regions, a country, prefecture or city. Generate a Story-size image without personal names or routes.</p>
@@ -147,7 +147,7 @@ function regionLabel(r){const parent=r.parent_region_name?`${r.parent_region_nam
 function countryLabel(code){return lang==='ja'?(COUNTRY_NAMES[code]||code):code;}
 function escapeHtml(s){return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
 let todayShareRows=[],todayShareLoaded=false;
-const shareScope=document.getElementById('shareScope'),shareArea=document.getElementById('shareArea'),shareStatus=document.getElementById('shareStatus');
+const shareScope=document.getElementById('shareScope'),shareArea=document.getElementById('shareArea'),shareStatus=document.getElementById('shareStatus'),shareSection=document.getElementById('todayShareSection');
 function shareGroupKey(r,scope){
   if(scope==='country')return r.country_code||'';
   if(scope==='prefecture')return [r.country_code||'',r.parent_region_name||''].join('|');
@@ -169,6 +169,9 @@ function fillShareAreas(){
   if(groups.has(old))shareArea.value=old;
   shareArea.hidden=scope==='all';
   const disabled=!todayShareLoaded||!todayShareRows.length||scope!=='all'&&!groups.size;
+  // Do not show inactive share actions while a date has no verified aggregate data.
+  // Keep the working share/download feature intact for dates that have data.
+  shareSection.hidden=disabled;
   document.getElementById('shareImageBtn').disabled=disabled;
   document.getElementById('saveImageBtn').disabled=disabled;
 }
