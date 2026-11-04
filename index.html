@@ -3425,6 +3425,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <nav class="authPublicLinks" aria-label="Runner's Ringsについて詳しく見る">
           <a class="authPublicLink" href="./ranking.html" style="border:2px solid #eaff00;background:linear-gradient(135deg,#26324e,#362345);color:#fff;font-weight:800">🌍 Rings Ranking｜世界のランナーの記録を見る →</a>
           <a class="authPublicLink" href="./territory.html" style="border:2px solid #5cff9d;background:linear-gradient(135deg,#174b3f,#203a55);color:#fff;font-weight:800">🗾 Rings Territory｜市町村ごとの順位を見る →</a>
+          <a class="authPublicLink" href="./today.html" style="border:2px solid #78eaff;background:#172c41;color:#fff;font-weight:800">🩵 Rings Today｜<span data-art-lang="ja">今日のランニングを見る →</span><span data-art-lang="en">Explore today's runs →</span></a>
           <a class="authPublicLink" href="./ring-tools.html" style="border:2px solid #65f5bb;background:linear-gradient(135deg,#153e46,#203655);color:#fff;font-weight:800">🧮 Ring Tools｜マラソン・トラック・インターバル計算（無料・ログイン不要） →</a>
           <a class="authPublicLink" href="./gps-art.html" style="border:2px solid #ff9b45;background:linear-gradient(135deg,#55341e,#203a55);color:#fff;font-weight:800">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）｜下絵だけでも遊べる →</span><span data-art-lang="en">Charming cartoon GPS art (beta)｜Play with outlines →</span><small style="display:block;font-weight:600"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
           <a class="authPublicLink" href="./about-runners-rings.html">Runner's Ringsとは？</a>
@@ -4129,23 +4130,35 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     #dashboard .rrFeatureTiles > a[href="./today.html"],
     #dashboard .rrFeatureTiles > a[href="./rings-today.html"] { border-color:#78eaff !important; }
 
+
+    /* Phase 1-⑦: compact guest feature navigation; retain all existing destinations. */
+    #authSection .authPublicLinks { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-items:stretch; }
+    #authSection .authPublicLinks > .authPublicLink { display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:70px;margin:0!important;padding:10px!important;border-radius:12px!important;border-width:1px!important;background:#182d42!important;color:#fff!important;font-size:13px!important;font-weight:750!important;line-height:1.45;overflow-wrap:anywhere;text-decoration:none; }
+    #authSection .authPublicLinks > .authPublicLink small { font-size:11px;line-height:1.4;margin-top:4px; }
+    #authSection .authPublicLinks > .authPublicLink[href="./ranking.html"] { border-color:#eaff00!important; }
+    #authSection .authPublicLinks > .authPublicLink[href="./territory.html"] { border-color:#5cff9d!important; }
+    #authSection .authPublicLinks > .authPublicLink[href="./today.html"] { border-color:#78eaff!important; }
+    #authSection .authPublicLinks > .authPublicLink[href="./gps-art.html"] { border-color:#ff9b45!important; }
+    #authSection .authPublicLinks > .authPublicLink[href="./ring-tools.html"] { border-color:#65f5bb!important; }
+    @media(max-width:350px){#authSection .authPublicLinks{grid-template-columns:1fr}}
     @media (max-width:350px) {
       #dashboard .rrFeatureTiles { grid-template-columns:1fr; }
     }
   </style>
     <div class="rrFeatureTiles" aria-label="Runner's Rings features">
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">開発・ランニングの物語 →</span><span data-art-lang="en">Running stories and development →</span></span></a>
-    <a href="./rings-people.html" class="ringsPeopleEntry" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:linear-gradient(135deg,rgba(120,234,255,.34),#173e54 54%,#342849);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎤 Rings People <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">ランナーの物語 →</span><span data-art-lang="en">Stories of runners →</span></span></a>
-    <div class="dashboardFeatureGroup">
+<div class="dashboardFeatureGroup">
       <a href="./ranking.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #eaff00;border-radius:16px;background:linear-gradient(135deg,rgba(234,255,0,.40),#253b54 52%,#402644);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🌍 Rings Ranking <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">世界のランキング →</span><span data-art-lang="en">Global runner rankings →</span></span></a>
       <div class="dashboardFeatureLinks"><a href="./faq.html#faq-ranking" style="color:#eaff00;text-decoration:none">ランキングのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     </div>
-    <div class="dashboardFeatureGroup">
+<div class="dashboardFeatureGroup">
       <a href="./territory.html" style="display:block;margin:0;padding:18px 20px;border:3px solid #5cff9d;border-radius:16px;background:linear-gradient(135deg,rgba(92,255,157,.34),#174b3f 52%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🗾 Rings Territory <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">地域の走破ランキング →</span><span data-art-lang="en">Explore local rankings →</span></span></a>
       <div class="dashboardFeatureLinks"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">テリトリーのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     </div>
+    <a href="./today.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:#172c41;color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🩵 Rings Today <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">今日のランニングを地図で見る →</span><span data-art-lang="en">Explore today's runs on a map →</span></span></a>
+    <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>    <a href="./rings-people.html" class="ringsPeopleEntry" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:linear-gradient(135deg,rgba(120,234,255,.34),#173e54 54%,#342849);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎤 Rings People <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">ランナーの物語 →</span><span data-art-lang="en">Stories of runners →</span></span></a>
     <a href="./ring-tools.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #65f5bb;border-radius:16px;background:linear-gradient(135deg,#165653,#203a55);color:#fff;text-decoration:none;font-weight:850">🧮 Ring Tools <span style="font-size:12px;display:block;font-weight:600;margin-top:5px"><span data-art-lang="ja">ペース・ラップ・練習計算 →</span><span data-art-lang="en">Pace, splits &amp; workout tools →</span></span></a>
-    <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>
+
     </div>
 
     <h2>あなたの記録</h2>
