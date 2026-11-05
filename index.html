@@ -6156,11 +6156,17 @@ async function importFromIntervals() {
       Number(data.unavailable || 0);
 
     alert(
-      'Intervals取込み結果\n' +
-      '保存: ' + saved + '件\n' +
-      '重複: ' + duplicates + '件\n' +
-      '取得不可: ' + unavailable + '件\n' +
-      '失敗: ' + failed + '件'
+      document.documentElement.lang === 'en'
+        ? 'Intervals import results\n' +
+          'Saved: ' + saved + '\n' +
+          'Duplicates: ' + duplicates + '\n' +
+          'Unavailable: ' + unavailable + '\n' +
+          'Failed: ' + failed
+        : 'Intervals取込み結果\n' +
+          '保存: ' + saved + '件\n' +
+          '重複: ' + duplicates + '件\n' +
+          '取得不可: ' + unavailable + '件\n' +
+          '失敗: ' + failed + '件'
     );
 
     if (saved > 0) {
@@ -6177,7 +6183,9 @@ async function importFromIntervals() {
     );
 
     alert(
-      'Intervalsからの取込みに失敗しました。'
+      document.documentElement.lang === 'en'
+        ? 'Could not import from Intervals.'
+        : 'Intervalsからの取込みに失敗しました。'
     );
 
   } finally {
