@@ -1,4 +1,4 @@
-/* A-4 first 30 km: private, read-only FIT-only preview. No DB writes. */
+/* A-4 first 30 km: private, read-only eligible-runs preview. No DB writes. */
 (function(root){
   'use strict';
   function init(){
@@ -41,8 +41,8 @@
       button.textContent=english?'🌳 Growth milestone (eligible records)':'🌳 年輪の節（対象記録内）';
       title.textContent=english?'First 30 km run (eligible records)':'初めての30km走（対象記録内）';
       note.textContent=english
-        ? 'Currently based only on saved runs imported through the verified FIT path. Other import sources are excluded. The result may change when older eligible activities are imported or records are deleted.'
-        : '現在は種目を確認できたFIT経由の保存済みランだけを対象にしています。他の取り込み経路の記録は含みません。Runner\'s Ringsに取り込まれた対象記録の範囲で判定するため、過去のデータ追加や削除で結果が変わる場合があります。';
+        ? 'Based on eligible saved FIT and Strava running records only; GPX, TCX, Garmin and other unverified sources are excluded. Strava-linked records may retain distance and GPS route from the original import. Results may change when older eligible runs are imported or records are deleted.'
+        : '現在はFIT経由とStravaでラン種目を確認できた保存済み記録だけを対象にしています。GPX・TCX・Garminなど未検証の経路は対象外です。Stravaと紐付いた既存記録は元の距離・GPSルートを使う場合があります。過去の対象記録の追加・削除で結果が変わる場合があります。';
       openList.textContent=english?'🏃 Open running history':'🏃 ランニング記録を開く';
     }
     function clear(){
@@ -74,8 +74,7 @@
         // fetchCloudRuns returns only after every page completes or throws.
         const rows=await fetchCloudRuns();
         if(token!==epoch||owner!==id||currentUser?.id!==id||panel.hidden)return;
-        const verified=row=>row?.source==='fit';
-        const first=root.RunnerMilestones.first30km(rows,verified);
+        const first=root.RunnerMilestones.first30km(rows,root.RunnerMilestones.verifiedImportedRun);
         show(first?'found':'none',first);
       }catch(error){
         if(token===epoch&&owner===id&&currentUser?.id===id&&!panel.hidden)show('error');
