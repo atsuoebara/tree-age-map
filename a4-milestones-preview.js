@@ -251,17 +251,17 @@
       try{
         const hundred=root.RunnerMilestones.hundredthRun(rows,root.RunnerMilestones.verifiedImportedRun);
         showHundred('result',hundred);
-        // Compute other achievements independently: no extra network request.
-        try{
-          const other=root.RunnerMilestones.numberedRunMilestones(rows,root.RunnerMilestones.verifiedImportedRun);
-          showFuture('result',other);
-        }catch(otherError){
-          console.warn('A-4 extra numbered milestones failed:',otherError);
-          showFuture('error');
-        }
       }catch(error){
         console.warn('A-4 hundredth-run calculation failed:',error);
         showHundred('error');
+      }
+      // New milestones are independent of both approved milestone outputs.
+      try{
+        const other=root.RunnerMilestones.numberedRunMilestones(rows,root.RunnerMilestones.verifiedImportedRun);
+        showFuture('result',other);
+      }catch(error){
+        console.warn('A-4 extra numbered milestones failed:',error);
+        showFuture('error');
       }
     });
     new MutationObserver(function(){
