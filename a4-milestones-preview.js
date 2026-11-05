@@ -85,13 +85,24 @@
     const hundredNote=document.createElement('p');
     hundredNote.style.cssText='margin:0;font-size:12px;line-height:1.5;opacity:.9';
     hundredWrap.append(hundredTitle,hundredResult,hundredNote);
-    panel.append(title,result,note,openList,hundredWrap);
+    const futureWrap=document.createElement('div');
+    futureWrap.style.cssText='margin-top:12px;padding-top:12px;border-top:1px solid rgba(131,228,172,.42);min-width:0';
+    const futureTitle=document.createElement('h4');
+    futureTitle.style.cssText='margin:0 0 7px;font-size:17px;color:#bbf8cd';
+    const futureResult=document.createElement('div');
+    futureResult.setAttribute('role','status');
+    futureResult.style.cssText='font-size:14px;line-height:1.6;overflow-wrap:anywhere';
+    const futureNote=document.createElement('p');
+    futureNote.style.cssText='font-size:12px;line-height:1.5;opacity:.9;margin:7px 0 0';
+    futureWrap.append(futureTitle,futureResult,futureNote);
+    panel.append(title,result,note,openList,hundredWrap,futureWrap);
     anchor.insertAdjacentElement('afterend',button);
     document.getElementById('importArea')?.insertAdjacentElement('afterend',panel);
     let epoch=0;
     let owner=null;
     let lastState=null;
     let lastHundred=null;
+    let lastFuture=null;
     function en(){return document.documentElement.lang==='en';}
     function labels(){
       const english=en();
@@ -102,12 +113,16 @@
         : '現在はFIT経由とStravaでラン種目を確認できた保存済み記録だけを対象にしています。GPX・TCX・Garminなど未検証の経路は対象外です。Stravaと紐付いた既存記録は元の距離・GPSルートを使う場合があります。過去の対象記録の追加・削除で結果が変わる場合があります。';
       openList.textContent=english?'🗺 View this run on the map':'🗺 このランを地図で表示';
       hundredTitle.textContent=english?'100th run (eligible records)':'100回目のラン（対象記録内）';
+      futureTitle.textContent=english?'More running milestones':'これまでと次の節目';
+      futureNote.textContent=english
+        ? 'Based only on eligible saved FIT and Strava running records, not the total number of saved runs. Duplicate saved activities count separately. Past imports/deletions can change these dates and remaining counts.'
+        : 'FIT・Stravaの対象記録だけで計算します（保存済みラン総数とは異なります）。同じ活動の二重保存はそれぞれ数えます。過去データの追加・削除で日付や残り本数が変わる場合があります。';
       hundredNote.textContent=english
         ? 'Counted oldest first from saved FIT and Strava running records with valid start times (including runs without GPS). Other sources are excluded. If the same activity is saved more than once, each saved record counts separately. Later imports or deletions may change the 100th run. Only the first 30 km milestone currently links to a map.'
         : '開始日時のあるFIT・Stravaの対象ランを古い順に数えます（GPSなしも含む）。他の取り込み経路は対象外です。同じ活動が複数回保存されている場合は、それぞれ1本として数えます。過去のデータ追加・削除で100回目が変わる場合があります。地図への移動は現在「初30km」のみ対応しています。';
     }
     function clear(){
-      epoch++;owner=null;lastState=null;lastHundred=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';
+      epoch++;owner=null;lastState=null;lastHundred=null;lastFuture=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';futureResult.textContent='';
       mapContext.hidden=true;mapContext.textContent='';
     }
     function updateMapContext(row){
@@ -138,6 +153,49 @@
         }
       }
     }
+    function showFuture(kind,data){
+      lastFuture={kind,data:data||null};
+      futureResult.replaceChildren();
+      const english=en();
+      if(kind==='loading'||kind==='error'){
+        futureResult.textContent=kind==='loading'
+          ? (english?'Checking milestones…':'節目を確認中…')
+          : (english?'Unable to check more milestones.':'他の節目を確認できませんでした。');
+        return;
+      }
+      if(kind!=='result'||!data)return;
+      const count=data.eligibleCount;
+      const thresholds=Object.keys(data.records).map(Number).sort((a,b)=>a-b).filter(n=>n>=500);
+      const reached=thresholds.filter(n=>Boolean(data.records[n]));
+      // Keep the display compact even if an athlete has thousands of runs.
+      const recent=reached.slice(-3);
+      for(const n of recent){
+        const row=data.records[n];
+        const date=new Intl.DateTimeFormat(english?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric'}).format(new Date(row.started_at));
+        const line=document.createElement('div');
+        line.textContent=english
+          ? '✓ '+n.toLocaleString('en-US')+'th saved run: '+date
+          : '✓ '+n.toLocaleString('ja-JP')+'本目：'+date;
+        futureResult.appendChild(line);
+      }
+      const next=thresholds.find(n=>!data.records[n]);
+      if(next){
+        const remaining=next-count;
+        const line=document.createElement('div');
+        line.style.cssText='margin-top:7px;padding:8px 10px;background:#153c33;border-radius:9px;font-weight:800;color:#bbf8cd';
+        line.textContent=english
+          ? 'Next: '+next.toLocaleString('en-US')+' runs · '+remaining.toLocaleString('en-US')+' to go'
+          : '次は'+next.toLocaleString('ja-JP')+'本目 · あと'+remaining.toLocaleString('ja-JP')+'本';
+        futureResult.appendChild(line);
+        const meter=document.createElement('progress');
+        meter.max=next;
+        meter.value=count;
+        meter.setAttribute('aria-label',english?'Progress toward next running milestone':'次の走行回数の節目まで');
+        meter.style.cssText='display:block;width:100%;height:10px;margin-top:8px;accent-color:#83e4ac';
+        futureResult.appendChild(meter);
+      }
+      if(!recent.length&&!next)futureResult.textContent=english?'No further milestones found.':'まだ次の節目はありません。';
+    }
     function show(kind,row){
       labels();
       lastState={kind,row:row||null};
@@ -165,6 +223,7 @@
       owner=id;
       show('loading');
       showHundred('loading');
+      showFuture('loading');
       let rows;
       try{
         // Only this preview opts into stable secondary-ID ordering across pages.
@@ -175,6 +234,7 @@
         if(token===epoch&&owner===id&&currentUser?.id===id&&!panel.hidden){
           show('error');
           showHundred('error');
+          showFuture('error');
         }
         return;
       }
@@ -191,6 +251,14 @@
       try{
         const hundred=root.RunnerMilestones.hundredthRun(rows,root.RunnerMilestones.verifiedImportedRun);
         showHundred('result',hundred);
+        // Compute other achievements independently: no extra network request.
+        try{
+          const other=root.RunnerMilestones.numberedRunMilestones(rows,root.RunnerMilestones.verifiedImportedRun);
+          showFuture('result',other);
+        }catch(otherError){
+          console.warn('A-4 extra numbered milestones failed:',otherError);
+          showFuture('error');
+        }
       }catch(error){
         console.warn('A-4 hundredth-run calculation failed:',error);
         showHundred('error');
@@ -200,6 +268,7 @@
       labels();
       if(!panel.hidden&&lastState)show(lastState.kind,lastState.row);
       if(!panel.hidden&&lastHundred)showHundred(lastHundred.kind,lastHundred.data);
+      if(!panel.hidden&&lastFuture)showFuture(lastFuture.kind,lastFuture.data);
       if(!mapContext.hidden&&lastState?.kind==='found')updateMapContext(lastState.row);
     }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     if(typeof supabaseClient!=='undefined'&&supabaseClient.auth?.onAuthStateChange){
