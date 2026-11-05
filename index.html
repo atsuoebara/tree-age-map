@@ -13347,7 +13347,6 @@ document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrC
 document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
 document.getElementById('runCalendarQuickButton').onclick=()=>{
  if(!currentUser?.id){setStatus('ログイン後にランニング記録を確認できます');return}
- rrCalOwner=currentUser.id;
  if(!cloudRunsPanel.classList.contains('open'))cloudRunsButton.click();
  rrCalSetMode('calendar');
  cloudRunsPanel.scrollIntoView({behavior:'smooth',block:'start'});
@@ -13716,6 +13715,8 @@ async function renderCloudRuns() {
 
     cloudRows =
       rows;
+    // Activate calendar data only after a successful owner-scoped fetch.
+    rrCalOwner = currentUser?.id || null;
 
 
     cloudRunCount =
