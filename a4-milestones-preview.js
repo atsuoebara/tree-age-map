@@ -74,12 +74,24 @@
         mapContext.hidden=true;
       }
     });
-    panel.append(title,result,note,openList);
+    // A-4 stage 3: read-only hundredth run, sharing the same complete fetch.
+    const hundredWrap=document.createElement('div');
+    hundredWrap.style.cssText='margin-top:14px;padding-top:12px;border-top:1px solid rgba(131,228,172,.42);min-width:0';
+    const hundredTitle=document.createElement('h4');
+    hundredTitle.style.cssText='margin:0 0 7px;font-size:17px;color:#bbf8cd';
+    const hundredResult=document.createElement('p');
+    hundredResult.setAttribute('role','status');
+    hundredResult.style.cssText='margin:0 0 7px;line-height:1.55;font-size:15px';
+    const hundredNote=document.createElement('p');
+    hundredNote.style.cssText='margin:0;font-size:12px;line-height:1.5;opacity:.9';
+    hundredWrap.append(hundredTitle,hundredResult,hundredNote);
+    panel.append(title,result,note,openList,hundredWrap);
     anchor.insertAdjacentElement('afterend',button);
     document.getElementById('importArea')?.insertAdjacentElement('afterend',panel);
     let epoch=0;
     let owner=null;
     let lastState=null;
+    let lastHundred=null;
     function en(){return document.documentElement.lang==='en';}
     function labels(){
       const english=en();
@@ -89,9 +101,13 @@
         ? 'Based on eligible saved FIT and Strava running records only; GPX, TCX, Garmin and other unverified sources are excluded. Strava-linked records may retain distance and GPS route from the original import. Results may change when older eligible runs are imported or records are deleted.'
         : '現在はFIT経由とStravaでラン種目を確認できた保存済み記録だけを対象にしています。GPX・TCX・Garminなど未検証の経路は対象外です。Stravaと紐付いた既存記録は元の距離・GPSルートを使う場合があります。過去の対象記録の追加・削除で結果が変わる場合があります。';
       openList.textContent=english?'🗺 View this run on the map':'🗺 このランを地図で表示';
+      hundredTitle.textContent=english?'100th run (eligible records)':'100回目のラン（対象記録内）';
+      hundredNote.textContent=english
+        ? 'Counted oldest first from saved FIT and Strava running records with valid start times (including runs without GPS). Other sources are excluded. Later imports or deletions may change the 100th run. Only the first 30 km milestone currently links to a map.'
+        : '開始日時のあるFIT・Stravaの対象ランを古い順に数えます（GPSなしも含む）。他の取り込み経路は対象外です。過去のデータ追加・削除で100回目が変わる場合があります。地図への移動は現在「初30km」のみ対応しています。';
     }
     function clear(){
-      epoch++;owner=null;lastState=null;panel.hidden=true;openList.hidden=true;result.textContent='';
+      epoch++;owner=null;lastState=null;lastHundred=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';
       mapContext.hidden=true;mapContext.textContent='';
     }
     function updateMapContext(row){
@@ -99,6 +115,28 @@
       const date=new Intl.DateTimeFormat(en()?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric'}).format(new Date(row.started_at));
       const distance=Number(row.distance_km).toFixed(2);
       mapContext.textContent=(en()?'🌳 First 30 km run — ':'🌳 初めての30km走 — ')+date+' / '+distance+' km';
+    }
+    function showHundred(kind,data){
+      lastHundred={kind,data:data||null};
+      if(kind==='loading'){
+        hundredResult.textContent=en()?'Checking eligible saved runs…':'対象ランの回数を確認中…';
+      }else if(kind==='error'){
+        hundredResult.textContent=en()?'Unable to verify the 100th run. Please try again.':'100回目のランを確認できませんでした。再度お試しください。';
+      }else if(kind==='result'){
+        const count=data?.eligibleCount||0;
+        if(!data?.record){
+          hundredResult.textContent=en()
+            ? count+' eligible runs recorded / 100 needed'
+            : '対象記録 '+count+'本 / 100本';
+        }else{
+          const row=data.record;
+          const date=new Intl.DateTimeFormat(en()?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric'}).format(new Date(row.started_at));
+          const km=Number(row.distance_km);
+          hundredResult.textContent=(en()?'100th run: ':'100回目: ')+date
+            +(Number.isFinite(km)?' / '+km.toFixed(2)+' km':'')
+            +(en()?' (eligible count: '+count+')':'（対象 '+count+'本）');
+        }
+      }
     }
     function show(kind,row){
       labels();
@@ -126,19 +164,27 @@
       const token=++epoch;
       owner=id;
       show('loading');
+      showHundred('loading');
       try{
         // fetchCloudRuns returns only after every page completes or throws.
         const rows=await fetchCloudRuns();
         if(token!==epoch||owner!==id||currentUser?.id!==id||panel.hidden)return;
         const first=root.RunnerMilestones.first30km(rows,root.RunnerMilestones.verifiedImportedRun);
+        // Complete pagination succeeded; calculate both milestones from one snapshot.
+        const hundred=root.RunnerMilestones.hundredthRun(rows,root.RunnerMilestones.verifiedImportedRun);
         show(first?'found':'none',first);
+        showHundred('result',hundred);
       }catch(error){
-        if(token===epoch&&owner===id&&currentUser?.id===id&&!panel.hidden)show('error');
+        if(token===epoch&&owner===id&&currentUser?.id===id&&!panel.hidden){
+          show('error');
+          showHundred('error');
+        }
       }
     });
     new MutationObserver(function(){
       labels();
       if(!panel.hidden&&lastState)show(lastState.kind,lastState.row);
+      if(!panel.hidden&&lastHundred)showHundred(lastHundred.kind,lastHundred.data);
       if(!mapContext.hidden&&lastState?.kind==='found')updateMapContext(lastState.row);
     }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     if(typeof supabaseClient!=='undefined'&&supabaseClient.auth?.onAuthStateChange){
