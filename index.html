@@ -12309,7 +12309,7 @@ function formatDateForCloud(
 }
 
 
-async function fetchCloudRuns() {
+async function fetchCloudRuns(options = {}) {
 
   if (
     !cloudEnabled()
@@ -12336,7 +12336,7 @@ async function fetchCloudRuns() {
         currentUser.id
       ) +
       '&deleted_at=is.null' +
-      '&order=activity_date.asc' +
+      (options.stableOrder === true ? '&order=activity_date.asc,id.asc' : '&order=activity_date.asc') +
       '&limit=' +
       pageSize +
       '&offset=' +
@@ -30305,7 +30305,7 @@ updateScrollToTopButton();
 })();
 </script>
 <script defer src="./a4-milestones-core.js?v=20261105-hundred-01"></script>
-<script defer src="./a4-milestones-preview.js?v=20261105-hundred-01"></script>
+<script defer src="./a4-milestones-preview.js?v=20261105-stable-fix-01"></script>
 <script defer src="/monthly-rings-core.js?v=20261028-01"></script>
 <script defer src="/monthly-rings-ui.js?v=20261029-a3-collapse-02"></script>
 <script defer src="/rr-engagement.js?v=20261105-side-by-side-01"></script>
