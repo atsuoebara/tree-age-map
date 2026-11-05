@@ -14979,8 +14979,21 @@ file.name,
     }
 
 
-    // Keep the original result counts; only add an optional next step.
-    message += '\n\n☁️ クラウド保存したランを確認するには「🏃 ランニング記録（件数）」を開いてください。';
+    // C-2: Translate the result dialog only; keep all existing counters and saving logic.
+    if (document.documentElement.lang === 'en') {
+      let englishMessage =
+        files.length + ' files processed.\n\n' +
+        '✅ New runs ' + added + '\n' +
+        '⏭️ Duplicates skipped ' + duplicates + '\n';
+      if (invalidFormat > 0) englishMessage += '⚠️ Unsupported format ' + invalidFormat + '\n';
+      if (failed > 0) englishMessage += '❌ Read errors ' + failed + '\n';
+      englishMessage += '☁️ Saved to cloud ' + cloudSaved;
+      if (cloudFailed > 0) englishMessage += '\n⚠️ Not synced to cloud ' + cloudFailed;
+      englishMessage += '\n\nTo review saved runs, open “🏃 Running history” (with the run count).';
+      message = englishMessage;
+    } else {
+      message += '\n\n☁️ クラウド保存したランを確認するには「🏃 ランニング記録（件数）」を開いてください。';
+    }
     alert(
       message
     );
@@ -15949,24 +15962,24 @@ async function inspectSelectedZIPFiles(
 
   }
 
+  // C-2: Result labels only. Counters and cloud persistence remain unchanged.
+  const zipResultEnglish = document.documentElement.lang === 'en';
   alert(
-    'ZIP保存結果\n\n' +
-    '保存成功 ' +
-    zipCloudSavedCount +
-    '件\n' +
-    '再確認でスキップ ' +
-    zipCloudSkippedCount +
-    '件\n' +
-    '保存失敗 ' +
-    zipCloudFailedCount +
-    '件\n' +
-    '500m未満保留 ' +
-    heldShortImportCount +
-    '件\n\n' +
-    'クラウド表示件数 ' +
-    cloudRunCount +
-    '件\n\n' +
-    '☁️ クラウド保存したランは「🏃 ランニング記録（件数）」から確認できます。'
+    zipResultEnglish
+      ? 'ZIP save results\n\n' +
+        'Saved successfully ' + zipCloudSavedCount + '\n' +
+        'Skipped after duplicate check ' + zipCloudSkippedCount + '\n' +
+        'Save failed ' + zipCloudFailedCount + '\n' +
+        'Held under 500 m ' + heldShortImportCount + '\n\n' +
+        'Cloud run count ' + cloudRunCount + '\n\n' +
+        '☁️ To review saved runs, open “🏃 Running history” (with the run count).'
+      : 'ZIP保存結果\n\n' +
+        '保存成功 ' + zipCloudSavedCount + '件\n' +
+        '再確認でスキップ ' + zipCloudSkippedCount + '件\n' +
+        '保存失敗 ' + zipCloudFailedCount + '件\n' +
+        '500m未満保留 ' + heldShortImportCount + '件\n\n' +
+        'クラウド表示件数 ' + cloudRunCount + '件\n\n' +
+        '☁️ クラウド保存したランは「🏃 ランニング記録（件数）」から確認できます。'
   );
 
 
