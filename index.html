@@ -4235,7 +4235,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       #dashboard .rrFeatureTiles {
         gap:8px;
         margin-bottom:16px;
-        align-items:start;
+        /* Paired cards must fill their shared grid row, even when text differs. */
+        align-items:stretch;
       }
       #dashboard .rrFeatureTiles > a,
       #dashboard .rrFeatureTiles > .dashboardFeatureGroup > a {
@@ -4262,7 +4263,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         min-height:54px !important;
       }
       #dashboard .rrFeatureTiles > .dashboardFeatureGroup {
-        align-self:start;
+        align-self:stretch;
       }
     }
   </style>
