@@ -39,5 +39,17 @@
     }
     return winner?.record??null;
   }
-  return Object.freeze({validRoute,first30km});
+  // The production Strava sync v46 admits only Run, TrailRun, VirtualRun.
+  // It may also link a filtered Strava activity to an existing row, keeping
+  // that row's distance/route but setting source=strava and strava_id.
+  // A linked row must therefore be disclosed as using saved distance/route.
+  function verifiedImportedRun(row){
+    if(!row)return false;
+    if(row.source==='fit')return true;
+    if(row.source!=='strava')return false;
+    const id=row.strava_id;
+    return (typeof id==='number'&&Number.isSafeInteger(id)&&id>0)
+      ||(typeof id==='string'&&/^[1-9]\\d*$/.test(id));
+  }
+  return Object.freeze({validRoute,first30km,verifiedImportedRun});
 });
