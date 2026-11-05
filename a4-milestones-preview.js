@@ -95,7 +95,16 @@
     const futureNote=document.createElement('p');
     futureNote.style.cssText='font-size:12px;line-height:1.5;opacity:.9;margin:7px 0 0';
     futureWrap.append(futureTitle,futureResult,futureNote);
-    panel.append(title,result,note,openList,hundredWrap,futureWrap);
+    // P0: breakdown is private, read-only, collapsed by default.
+    const breakdown=document.createElement('details');
+    breakdown.style.cssText='margin-top:12px;padding-top:12px;border-top:1px solid rgba(131,228,172,.42)';
+    const breakdownToggle=document.createElement('summary');
+    breakdownToggle.style.cssText='cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;color:#bbf8cd';
+    const breakdownContent=document.createElement('div');
+    breakdownContent.setAttribute('role','status');
+    breakdownContent.style.cssText='padding:10px 0 0;font-size:13px;line-height:1.65;overflow-wrap:anywhere';
+    breakdown.append(breakdownToggle,breakdownContent);
+    panel.append(title,result,note,openList,hundredWrap,futureWrap,breakdown);
     anchor.insertAdjacentElement('afterend',button);
     document.getElementById('importArea')?.insertAdjacentElement('afterend',panel);
     let epoch=0;
@@ -103,6 +112,7 @@
     let lastState=null;
     let lastHundred=null;
     let lastFuture=null;
+    let lastBreakdown=null;
     function en(){return document.documentElement.lang==='en';}
     function labels(){
       const english=en();
@@ -114,6 +124,7 @@
       openList.textContent=english?'🗺 View this run on the map':'🗺 このランを地図で表示';
       hundredTitle.textContent=english?'100th run (eligible records)':'100回目のラン（対象記録内）';
       futureTitle.textContent=english?'More running milestones':'これまでと次の節目';
+      breakdownToggle.textContent=english?'Why are some saved runs excluded?':'対象外の記録の内訳を見る';
       futureNote.textContent=english
         ? 'Based only on eligible saved FIT and Strava running records, not the total number of saved runs. Duplicate saved activities count separately. Past imports/deletions can change these dates and remaining counts.'
         : 'FIT・Stravaの対象記録だけで計算します（保存済みラン総数とは異なります）。同じ活動の二重保存はそれぞれ数えます。過去データの追加・削除で日付や残り本数が変わる場合があります。';
@@ -122,7 +133,7 @@
         : '開始日時のあるFIT・Stravaの対象ランを古い順に数えます（GPSなしも含む）。他の取り込み経路は対象外です。同じ活動が複数回保存されている場合は、それぞれ1本として数えます。過去のデータ追加・削除で100回目が変わる場合があります。地図への移動は現在「初30km」のみ対応しています。';
     }
     function clear(){
-      epoch++;owner=null;lastState=null;lastHundred=null;lastFuture=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';futureResult.textContent='';
+      epoch++;owner=null;lastState=null;lastHundred=null;lastFuture=null;lastBreakdown=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';futureResult.textContent='';breakdownContent.textContent='';breakdown.open=false;
       mapContext.hidden=true;mapContext.textContent='';
     }
     function updateMapContext(row){
@@ -152,6 +163,50 @@
             +(en()?' (eligible count: '+count+')':'（対象 '+count+'本）');
         }
       }
+    }
+    function showBreakdown(kind,data){
+      lastBreakdown={kind,data:data||null};
+      breakdownContent.replaceChildren();
+      const english=en();
+      if(kind==='loading'||kind==='error'){
+        breakdownContent.textContent=kind==='loading'
+          ? (english?'Checking saved records…':'保存済み記録を確認中…')
+          : (english?'Breakdown unavailable. Please try again.':'内訳を確認できませんでした。再度お試しください。');
+        return;
+      }
+      if(kind!=='result'||!data)return;
+      const n=v=>Number(v||0).toLocaleString(english?'en-US':'ja-JP');
+      const top=document.createElement('p');
+      top.style.cssText='margin:0 0 8px;font-weight:700';
+      top.textContent=english
+        ? 'Saved: '+n(data.total)+' · Eligible: '+n(data.eligible)+' · Excluded: '+n(data.excluded)
+        : '保存済み '+n(data.total)+'本 ／ 対象 '+n(data.eligible)+'本 ／ 対象外 '+n(data.excluded)+'本';
+      breakdownContent.append(top);
+      const names={
+        tcx:english?'TCX (sport not verified)':'TCX（種目未確認）',
+        unknown:english?'Unknown import source':'取り込み元不明',
+        garmin:'Garmin',
+        intervals:'Intervals.icu',
+        strava_unverified:english?'Strava (ID unverified)':'Strava（ID未確認）',
+        invalid_start:english?'Unverifiable start time':'開始日時を確認できない記録',
+        other:english?'Other sources':'その他の取り込み元'
+      };
+      const list=document.createElement('ul');
+      list.style.cssText='margin:0;padding-left:22px';
+      for(const key of ['tcx','unknown','garmin','intervals','strava_unverified','invalid_start','other']){
+        const count=data.reasons[key]||0;
+        if(!count)continue;
+        const li=document.createElement('li');
+        li.textContent=names[key]+'：'+n(count)+(english?' records':'本');
+        list.appendChild(li);
+      }
+      breakdownContent.append(list);
+      const note=document.createElement('p');
+      note.style.cssText='margin:10px 0 0;opacity:.9;font-size:12px';
+      note.textContent=english
+        ? 'This is a read-only source breakdown, not proof of sport. Excluded records remain saved and are NOT added to your milestones. No individual routes or run details are shown.'
+        : '取り込み元の内訳であり、ラン種目の証明ではありません。対象外の記録も保存されたままで、年輪の節には加算しません。個別の走行ルートや詳細は表示しません。';
+      breakdownContent.append(note);
     }
     function showFuture(kind,data){
       lastFuture={kind,data:data||null};
@@ -224,6 +279,7 @@
       show('loading');
       showHundred('loading');
       showFuture('loading');
+      showBreakdown('loading');
       let rows;
       try{
         // Only this preview opts into stable secondary-ID ordering across pages.
@@ -235,10 +291,19 @@
           show('error');
           showHundred('error');
           showFuture('error');
+          showBreakdown('error');
         }
         return;
       }
       if(token!==epoch||owner!==id||currentUser?.id!==id||panel.hidden)return;
+      // P0 excludes no records from existing milestone calculations.
+      try{
+        const data=root.RunnerMilestones.eligibilityBreakdown(rows,root.RunnerMilestones.verifiedImportedRun);
+        showBreakdown('result',data);
+      }catch(error){
+        console.warn('A-4 source breakdown unavailable:',error);
+        showBreakdown('error');
+      }
       // Count milestones cannot invalidate the previously approved first-30km
       // milestone if a count-specific validation rejects the saved-run input.
       try{
@@ -269,6 +334,7 @@
       if(!panel.hidden&&lastState)show(lastState.kind,lastState.row);
       if(!panel.hidden&&lastHundred)showHundred(lastHundred.kind,lastHundred.data);
       if(!panel.hidden&&lastFuture)showFuture(lastFuture.kind,lastFuture.data);
+      if(!panel.hidden&&lastBreakdown)showBreakdown(lastBreakdown.kind,lastBreakdown.data);
       if(!mapContext.hidden&&lastState?.kind==='found')updateMapContext(lastState.row);
     }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     if(typeof supabaseClient!=='undefined'&&supabaseClient.auth?.onAuthStateChange){

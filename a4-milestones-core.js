@@ -88,5 +88,36 @@
     const data=numberedRunMilestones(rows,isVerifiedRunning,[100]);
     return Object.freeze({eligibleCount:data.eligibleCount,record:data.records[100]});
   }
-  return Object.freeze({validRoute,first30km,verifiedImportedRun,hundredthRun,numberedRunMilestones});
+  // P0: compare saved-row totals with milestone eligibility without changing
+  // eligibility, persisting evidence or exposing individual run data.
+  function eligibilityBreakdown(rows,isVerifiedRunning){
+    if(!Array.isArray(rows))throw new TypeError('Expected array');
+    if(typeof isVerifiedRunning!=='function')throw new TypeError('Running eligibility verifier required');
+    const reasons=Object.create(null);
+    let total=0,eligible=0;
+    const ids=new Set();
+    for(const row of rows){
+      if(!row||row.deleted_at!=null)continue;
+      // Match the existing A-4 count rules; never count or classify a row twice.
+      const id=Number(row.id);
+      if(!Number.isSafeInteger(id)||id<=0)throw new Error('Invalid saved run ID in breakdown');
+      if(ids.has(id))throw new Error('Duplicate saved run ID in breakdown');
+      ids.add(id);
+      total++;
+      const source=typeof row.source==='string'?row.source.trim().toLowerCase():'';
+      let reason;
+      if(!isVerifiedRunning(row)){
+        if(source==='strava')reason='strava_unverified';
+        else if(source==='tcx')reason='tcx';
+        else if(source==='garmin')reason='garmin';
+        else if(source==='intervals')reason='intervals';
+        else if(!source)reason='unknown';
+        else reason='other';
+      }else if(validTime(row.started_at)===null)reason='invalid_start';
+      else eligible++;
+      if(reason)reasons[reason]=(reasons[reason]||0)+1;
+    }
+    return Object.freeze({total,eligible,excluded:total-eligible,reasons:Object.freeze(reasons)});
+  }
+  return Object.freeze({validRoute,first30km,verifiedImportedRun,hundredthRun,numberedRunMilestones,eligibilityBreakdown});
 });
