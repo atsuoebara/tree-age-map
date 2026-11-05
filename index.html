@@ -15065,7 +15065,9 @@ file.name,
 
 
         alert(
-          'ランを追加しました！\n\n☁️ クラウド保存完了'
+          document.documentElement.lang === 'en'
+            ? 'Run added!\n\n☁️ Saved to cloud'
+            : 'ランを追加しました！\n\n☁️ クラウド保存完了'
         );
 
       }
@@ -15082,23 +15084,14 @@ file.name,
 
 
         alert(
-  (
-    lastAddedActivity.source === 'fit' ||
-    lastAddedActivity.source === 'tcx'
-  )
-    ? (
-        'ランデータを読み込みましたが、\n' +
-        'クラウド保存は完了していません。\n\n' +
-        'FIT・TCXは端末には保存されません。\n' +
-        'ページを再読み込みしてから、もう一度選択してください。'
-      )
-    : (
-        'ランを追加しました。\n\n' +
-        '端末には保存できましたが、' +
-        'クラウド保存は完了していません。\n' +
-        '次回起動時に再同期します。'
-      )
-);
+          document.documentElement.lang === 'en'
+            ? ((lastAddedActivity.source === 'fit' || lastAddedActivity.source === 'tcx')
+                ? 'The run was imported, but cloud saving did not finish.\n\nFIT and TCX runs are not saved on this device.\nReload the page and select the file again.'
+                : 'Run added.\n\nSaved on this device, but cloud saving did not finish.\nIt will sync again the next time you open the app.')
+            : ((lastAddedActivity.source === 'fit' || lastAddedActivity.source === 'tcx')
+                ? 'ランデータを読み込みましたが、\nクラウド保存は完了していません。\n\nFIT・TCXは端末には保存されません。\nページを再読み込みしてから、もう一度選択してください。'
+                : 'ランを追加しました。\n\n端末には保存できましたが、クラウド保存は完了していません。\n次回起動時に再同期します。')
+        );
 
       }
 
@@ -15114,8 +15107,9 @@ file.name,
 
 
       alert(
-        '⚠️ このランはすでに登録されています。\n\n' +
-        '同じランのため追加しませんでした。'
+        document.documentElement.lang === 'en'
+          ? '⚠️ This run is already registered.\n\nIt was not added again.'
+          : '⚠️ このランはすでに登録されています。\n\n同じランのため追加しませんでした。'
       );
 
     }
@@ -15129,8 +15123,9 @@ file.name,
 );
 
 alert(
-  'このファイル形式には対応していません。\n\n' +
-  '「.gpx」「.fit」「.tcx」のいずれかを選択してください。'
+  document.documentElement.lang === 'en'
+    ? 'This file format is not supported.\n\nPlease choose a .gpx, .fit, or .tcx file.'
+    : 'このファイル形式には対応していません。\n\n「.gpx」「.fit」「.tcx」のいずれかを選択してください。'
 );
     }
     else if (
@@ -15143,7 +15138,9 @@ alert(
 );
 
 alert(
-  'ランデータの読み込みに失敗しました。'
+  document.documentElement.lang === 'en'
+    ? 'Could not read the run data.'
+    : 'ランデータの読み込みに失敗しました。'
 );
     }
 
