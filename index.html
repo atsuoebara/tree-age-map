@@ -15759,11 +15759,39 @@ async function inspectSelectedZIPFiles(
   }
 
   setStatus(
-    '✅ ZIP内のランデータ候補を確認しました'
+    document.documentElement.lang === 'en'
+      ? '✅ Checked run candidates in ZIP'
+      : '✅ ZIP内のランデータ候補を確認しました'
   );
 
+  const zipPreviewEnglish = document.documentElement.lang === 'en';
+  const zipPreviewEnglishMessage =
+    files.length + ' ZIP file(s) checked.\n\n' +
+    'Nested ZIP files ' + innerZipCount + '\n\n' +
+    '【FIT】\n' +
+    'Files ' + fitCount + '\n' +
+    'At least 10 KB ' + fitOver10KBCount + '\n' +
+    'At least 50 KB ' + fitOver50KBCount + '\n' +
+    'Successfully inspected ' + inspectedFITCount + '\n' +
+    'Run + GPS candidates ' + runningGPSCount + '\n' +
+    'Duplicates of existing runs ' + duplicateFITCount + '\n' +
+    'New candidates ' + newFITCandidateCount + '\n' +
+    'Inspection failed ' + fitInspectFailedCount + '\n\n' +
+    '【TCX】\n' +
+    'Files ' + tcxCount + '\n' +
+    'Successfully inspected ' + inspectedTCXCount + '\n' +
+    'Run + GPS candidates ' + runningTCXGPSCount + '\n' +
+    'Duplicates of existing runs ' + duplicateTCXCount + '\n' +
+    'New candidates ' + newTCXCandidateCount + '\n' +
+    'Inspection failed or excluded ' + tcxInspectFailedCount + '\n\n' +
+    'Ready to save (at least 500 m) ' + saveableImportCandidates.length + '\n' +
+    'Held (under 500 m) ' + heldShortImportCount + '\n' +
+    'FIT duplicates could not be checked ' + uncheckableFITCount + '\n' +
+    'GPX ' + gpxCount + '\n\n' +
+    (allNewCandidateDetails ? 'The list of new candidates was saved as a text file.\n\n' : '') +
+    'Nothing has been saved at this stage.';
   alert(
-    files.length +
+    zipPreviewEnglish ? zipPreviewEnglishMessage : files.length +
     '個のZIPを確認しました。\n\n' +
     '内側のZIP ' +
     innerZipCount +
@@ -15851,7 +15879,9 @@ async function inspectSelectedZIPFiles(
     );
 
     alert(
-      'クラウド保存にはログインが必要です。'
+      document.documentElement.lang === 'en'
+        ? 'Sign in to save runs to the cloud.'
+        : 'クラウド保存にはログインが必要です。'
     );
 
     return;
@@ -15860,7 +15890,15 @@ async function inspectSelectedZIPFiles(
 
   const wantsToSave =
     window.confirm(
-      '保存内容を確認してください。\n\n' +
+      document.documentElement.lang === 'en'
+        ? 'Review what will be saved.\n\n' +
+          'New saves ' + saveableImportCandidates.length + '\n' +
+          'Duplicates skipped ' + totalDuplicateImportCount + '\n' +
+          'Held (under 500 m) ' + heldShortImportCount + '\n\n' +
+          'FIT candidates will be named “Garminラン”.\n' +
+          'TCX candidates will use their original filenames.\n\n' +
+          'Save these runs to the cloud?'
+        : '保存内容を確認してください。\n\n' +
       '新規保存 ' +
       saveableImportCandidates.length +
       '件\n' +
@@ -15880,7 +15918,9 @@ async function inspectSelectedZIPFiles(
   ) {
 
     setStatus(
-      'ZIP候補の保存をキャンセルしました'
+      document.documentElement.lang === 'en'
+        ? 'ZIP candidate save cancelled'
+        : 'ZIP候補の保存をキャンセルしました'
     );
 
     return;
@@ -15938,10 +15978,10 @@ async function inspectSelectedZIPFiles(
     try {
 
       setStatus(
-        'ZIP内ランをクラウド保存中… ' +
-        (i + 1) +
-        '/' +
-        saveableImportCandidates.length
+        (document.documentElement.lang === 'en'
+          ? 'Saving ZIP runs to cloud… '
+          : 'ZIP内ランをクラウド保存中… ') +
+        (i + 1) + '/' + saveableImportCandidates.length
       );
 
       await saveActivityToCloud(
@@ -15976,14 +16016,18 @@ async function inspectSelectedZIPFiles(
   ) {
 
     setStatus(
-      '⚠️ ZIP内ランの一部を保存できませんでした'
+      document.documentElement.lang === 'en'
+        ? '⚠️ Some ZIP runs could not be saved'
+        : '⚠️ ZIP内ランの一部を保存できませんでした'
     );
 
   }
   else {
 
     setStatus(
-      '✅ ZIP内ランのクラウド保存が完了しました'
+      document.documentElement.lang === 'en'
+        ? '✅ ZIP runs saved to cloud'
+        : '✅ ZIP内ランのクラウド保存が完了しました'
     );
 
   }
@@ -16056,7 +16100,9 @@ if (
     );
 
     alert(
-      '第1段階ではZIPだけを選択してください。'
+      document.documentElement.lang === 'en'
+        ? 'Please select ZIP files only for this step.'
+        : '第1段階ではZIPだけを選択してください。'
     );
 
     return;
