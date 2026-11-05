@@ -35,3 +35,21 @@
 - 実装後の合成テスト、むせ独立差分監査、Atsuo最終承認
 
 **本メモだけでは実装準備完了や公開合格を宣言しない。**
+
+
+## 追加調査：index.html 保存済みランの実経路（2026-11-05）
+- `fetchCloudRuns()`（index.html 12280行付近）は、ログイン中の `currentUser.id` を指定し、`deleted_at=is.null` で絞って、`limit=50&offset=...` を使い全ページを取得する。50件未満のページで終了し、途中のHTTPエラーを無視しない。
+- 現在の取得列は **id, created_at, activity_date, name, distance_km, route, user_id, strava_id, source, started_at**。**活動種目列は含まれない**。第1弾でRun／Trail Run／Virtual Runを確定するには、既存の保存仕様・実スキーマで種目を保持するか調査が必要。種目を推測して30km達成を表示しない。
+- `loadCloudActivities()` は生の取得行を `cloudRows` に保持して `cloudRunCount=rows.length` としたうえで、`buildActivityFromCloudRow()` が地図描画候補を選別する。したがって保存一覧の件数と描画できる件数が違うことは設計上ありうる。
+- `buildActivityFromCloudRow()` は原則route配列2点以上（例外的にGarminインドア空配列を許容）を基準にし、座標を数値化・有限値判定する。ただしここでは緯度±90・経度±180の範囲チェックが見当たらないため、A-4は追加の境界検証を必要とする。
+- `renderCloudRowsList()` は `started_at || activity_date` の文字列ソートを使う。A-4の「初めて」の判定はこれをそのまま流用せず、**started_atが正常な時刻として解釈できること**を確認して昇順にする。日時欠損時にactivity_dateで代用しない。
+- `renderCloudRuns()` は同じ `fetchCloudRuns()` から一覧を作る。A-4がこの集合を参照すれば保存一覧との件数の差を避けられるが、過去ラン追加・同時操作でのスナップショット整合性は別途検証する。
+- 既存コードの `fetchCloudRuns()` を変更することなく既存の `cloudRows` を参照する案を第1候補とする。ただしロード済み状態やログイン切替・キャッシュ・更新タイミングの回帰確認が必須。
+
+### 実装開始前の未解決ゲート（更新）
+1. Run／Trail Run／Virtual Runの種目が `runs` でどう区別され、どの取り込み経路で保証されるか（現行取得列には無い）。
+2. 各ソースのGPS有効判定と緯度経度範囲、開始日時の欠損率の仕様を確定。
+3. UI導線から呼び出す際、本人の最新 `cloudRows` の全件取得完了が確認できること。
+4. 最小判定ロジックの合成試験が通ってからページへ統合し、むせの監査・運営者承認を受けること。
+
+**結論：既存の全件ページングと表示データ経路は確認済み。活動種目の保証が未確定なので製品の達成判定実装はまだ保留。**
