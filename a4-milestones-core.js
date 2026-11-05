@@ -54,12 +54,12 @@
   // Number milestones use the same verified saved-run population as A-4.
   // GPS is NOT required: indoor/route-less eligible running activities count.
   // A missing start time or invalid database ID cannot establish chronology.
-  function numberedRunMilestones(rows,isVerifiedRunning,targets=[100,500,1000,1500,2000,2500]){
+  function numberedRunMilestones(rows,isVerifiedRunning,targets=null){
     if(!Array.isArray(rows))throw new TypeError('Expected array');
     if(typeof isVerifiedRunning!=='function')throw new TypeError('Running eligibility verifier required');
-    if(!Array.isArray(targets)||!targets.length||
+    if(targets!==null && (!Array.isArray(targets)||!targets.length||
        targets.some(n=>!Number.isSafeInteger(n)||n<1)||
-       new Set(targets).size!==targets.length)throw new RangeError('Invalid milestone targets');
+       new Set(targets).size!==targets.length))throw new RangeError('Invalid milestone targets');
     const eligible=[];
     const ids=new Set();
     for(const row of rows){
@@ -72,6 +72,13 @@
       eligible.push({id,time,record:row});
     }
     eligible.sort((a,b)=>a.time-b.time||a.id-b.id);
+    // Support veteran runners without a hard-coded last milestone.
+    // Show 100, 500, 1000, then every 500 through the next future milestone.
+    if(targets===null){
+      targets=[100,500,1000];
+      const next=Math.max(1500,Math.ceil((eligible.length+1)/500)*500);
+      for(let n=1500;n<=next;n+=500)targets.push(n);
+    }
     const records=Object.create(null);
     for(const target of targets)records[target]=eligible[target-1]?.record??null;
     return Object.freeze({eligibleCount:eligible.length,records:Object.freeze(records)});
