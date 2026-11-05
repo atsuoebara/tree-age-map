@@ -34,11 +34,14 @@ function get(labels){for(const label of labels){const re=new RegExp(label+"[:：
 const gross=get(["タイム(?:\\(|（)グロス(?:\\)|）)","公式記録(?:\\(グロスタイム\\))?","グロスタイム","グロス"]);
 const net=get(["タイム(?:\\(|（)ネット(?:\\)|）)","ネットタイム","ネット"]);
 const splits={};
-for(const km of [5,10,15,20,25,30,35,40]){
-  // The digit boundary is essential: '5km' must never match within '25km'.
-  const re=new RegExp("(?:^|[^0-9])0?"+km+"(?:km|キロ)(?:[:：]|スプリット|累積|通過|タイム)*"+timePattern,"i");
-  const m=t.match(re);
-  if(m)splits[km]=clock(m[1]);
+// Preserve row separators and whitespace for km recognition: canonical(raw)
+// removes them and can join the preceding split time directly to the next km.
+const splitText=(raw||"").normalize("NFKC");
+// Match the complete distance token first (25km cannot become 5km).
+const splitRe=new RegExp("(\\d{1,3})\\s*(?:km|キロ)\\s*(?:(?:スプリット|累積|通過|タイム|[:：])\\s*)*"+timePattern,"gi");
+for(const m of splitText.matchAll(splitRe)){
+  const km=Number(m[1]),value=clock(m[2]);
+  if([5,10,15,20,25,30,35,40].includes(km) && value && !splits[km])splits[km]=value;
 }
 const distance=/フルマラソン|42\.195km/i.test(t)?"フル":/ハーフマラソン|21\.0975km/i.test(t)?"ハーフ":/(?:種目|部門|距離)[:：]?(?:30km|30キロ)/i.test(t)?"30km":"";
 return {filename,raw,year:dateMatch?.[1]||yearMatch?.[0]?.slice(0,4)||"",date:dateMatch?dateMatch[1]+"-"+dateMatch[2].padStart(2,"0")+"-"+dateMatch[3].padStart(2,"0"):"",race:race?.[1]||"",distance,gross,net,splits,confirmed:false}
