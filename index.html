@@ -6445,7 +6445,7 @@ async function syncStrava(
 
   if (!session) {
     if (!silent) {
-      alert('先にRunner’s Ringsへログインしてください。');
+      alert(document.documentElement.lang === 'en' ? 'Please sign in to Runner’s Rings first.' : '先にRunner’s Ringsへログインしてください。');
     }
     return null;
   }
@@ -6468,7 +6468,7 @@ async function syncStrava(
       console.error(error);
 
       if (!silent) {
-        alert('Stravaのラン取得に失敗しました。');
+        alert(document.documentElement.lang === 'en' ? 'Could not retrieve runs from Strava.' : 'Stravaのラン取得に失敗しました。');
       }
 
       return null;
@@ -6478,9 +6478,9 @@ async function syncStrava(
 
     if (!silent) {
       alert(
-        'Stravaから ' +
-        (data?.count ?? 0) +
-        ' 件取得しました。'
+        document.documentElement.lang === 'en'
+          ? 'Retrieved ' + (data?.count ?? 0) + ' runs from Strava.'
+          : 'Stravaから ' + (data?.count ?? 0) + ' 件取得しました。'
       );
     }
 
@@ -6516,8 +6516,9 @@ async function syncStrava(
 
       if (!silent) {
         alert(
-          'Stravaの全履歴取得中にエラーが発生しました。\n' +
-          '保存済みのデータはそのまま残ります。'
+          document.documentElement.lang === 'en'
+            ? 'An error occurred while retrieving your full Strava history.\nYour previously saved data will remain unchanged.'
+            : 'Stravaの全履歴取得中にエラーが発生しました。\n保存済みのデータはそのまま残ります。'
         );
       }
 
@@ -6546,9 +6547,9 @@ async function syncStrava(
 
       if (!silent) {
         alert(
-          'Stravaの全履歴同期が完了しました。\n' +
-          totalCount +
-          ' 件取得しました。'
+          document.documentElement.lang === 'en'
+            ? 'Full Strava history sync completed.\nRetrieved ' + totalCount + ' runs.'
+            : 'Stravaの全履歴同期が完了しました。\n' + totalCount + ' 件取得しました。'
         );
       }
 
@@ -6568,8 +6569,9 @@ async function syncStrava(
 
       if (!silent) {
         alert(
-          'Stravaの全履歴同期を続行できませんでした。\n' +
-          '保存済みのデータはそのまま残ります。'
+          document.documentElement.lang === 'en'
+            ? 'Could not continue syncing your full Strava history.\nYour previously saved data will remain unchanged.'
+            : 'Stravaの全履歴同期を続行できませんでした。\n保存済みのデータはそのまま残ります。'
         );
       }
 
