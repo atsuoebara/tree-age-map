@@ -3747,6 +3747,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         </div>
         <button type="button" id="rrRunCalendarNext" aria-label="Next month">›</button>
       </div>
+      <div id="rrRunCalendarMonthSummary" aria-live="polite" style="font-size:13px;color:#c9f9da;margin:4px 0 10px"></div>
       <div class="rrRunCalendarWeek" id="rrRunCalendarWeek"></div>
       <div class="rrRunCalendarDays" id="rrRunCalendarDays"></div>
       <div class="rrRunCalendarDayRecords" id="rrRunCalendarDayRecords" aria-live="polite"></div>
@@ -13323,6 +13324,12 @@ function rrCalRender(){
   if(!perDay.has(day))perDay.set(day,[]);
   perDay.get(day).push(row);
  }
+ const allMonthRuns=Array.from(perDay.values()).flat();
+ const validMonthKm=allMonthRuns.map(r=>r.distance_km).filter(v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))&&Number(v)>=0);
+ const totalMonthKm=validMonthKm.reduce((sum,v)=>sum+Number(v),0);
+ document.getElementById('rrRunCalendarMonthSummary').textContent=english
+  ? 'Saved runs this month: '+allMonthRuns.length+' · '+(validMonthKm.length?totalMonthKm.toFixed(1)+' km':'distance unknown')+(validMonthKm.length<allMonthRuns.length?' (some distances missing)':'')
+  : 'この月の保存済みラン：'+allMonthRuns.length+'本・'+(validMonthKm.length?totalMonthKm.toFixed(1)+' km':'距離不明')+(validMonthKm.length<allMonthRuns.length?'（距離不明の記録あり）':'');
  for(let i=0;i<new Date(rrCalYear,rrCalMonth,1).getDay();i++){
   const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');rrCalGrid.appendChild(blank);
  }
@@ -13373,7 +13380,7 @@ document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rr
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
  if(!session?.user?.id || (rrCalOwner && session.user.id!==rrCalOwner)){
   rrCalOwner=null;rrCalDay=null;
-  rrCalEl.hidden=true;rrCalMode='list';
+  rrCalSetMode('list');
   rrCalGrid.replaceChildren();rrCalRecords.replaceChildren();
  }
 });
@@ -13746,7 +13753,7 @@ async function renderCloudRuns() {
     await saveCloudRowsCache(
       rows
     );
-
+    if (!requestOwner || currentUser?.id !== requestOwner) return;
 
     cloudRows =
       rows;
