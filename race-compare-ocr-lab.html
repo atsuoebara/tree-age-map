@@ -41,7 +41,7 @@ function positionedSplits(tsv){
   if(!lines.has(key))lines.set(key,[]);
   lines.get(key).push({v,x,y,w,h});
  }
- const labels=[],times=[];
+ const labels=[],times=[],allWords=[];
  function addTime(a,raw,right){
   const txt=canonical(raw);
   if(!/^(?:\d{1,2}:)?[0-5]?\d:[0-5]\d$/.test(txt)&&!/^(?:\d{1,2}時間)?\d{1,2}分\d{1,2}秒$/.test(txt))return;
@@ -49,6 +49,7 @@ function positionedSplits(tsv){
  }
  for(const cells of lines.values()){
   cells.sort((a,b)=>a.x-b.x);
+  allWords.push(...cells);
   for(let i=0;i<cells.length;i++){
    const a=cells[i],txt=canonical(a.v);
    let m=txt.match(/^(5|10|15|20|25|30|35|40)(?:km|キロ)$/i);
@@ -58,8 +59,12 @@ function positionedSplits(tsv){
    addTime(a,a.v,a.x+a.w);
    // Tesseract commonly splits "24 分 10 秒" into separate words.
    // Only adjacent tokens in the same OCR line, without crossing a km label.
-   if(/^\d{1,2}$/.test(txt)||/^\d{1,2}時間$/.test(txt)){
-    for(let end=i+1;end<Math.min(cells.length,i+5);end++){
+   const previous=cells[i-1];
+   const prevText=previous?canonical(previous.v):"";
+   const adjacentPrevious=previous&&a.x-(previous.x+previous.w)<=Math.max(25,a.h*2)&&Math.abs(previous.y-a.y)<=a.h;
+   const startsMidTime=adjacentPrevious&&/^(?:\d{1,2}(?:時|時間)?|時|間|時間|分|秒)$/.test(prevText);
+   if(!startsMidTime&&(/^\d{1,2}$/.test(txt)||/^\d{1,2}時間$/.test(txt))){
+    for(let end=i+1;end<Math.min(cells.length,i+9);end++){
      const part=cells.slice(i,end+1);
      if(part.some((p,j)=>j>0&&(p.x-(part[j-1].x+part[j-1].w)>Math.max(25,p.h*2)||Math.abs(p.y-a.y)>a.h)))break;
      const joined=part.map(p=>p.v).join("");
@@ -68,10 +73,21 @@ function positionedSplits(tsv){
    }
   }
  }
+ // A broken cumulative time can leave only the valid lap time recognizable.
+ // Count time-like fragments (including malformed tokens) in the whole row,
+ // not just parsed time candidates. Never infer which time column is cumulative.
+ function timeLikeCount(label){
+  const row=allWords.filter(w=>w.x>=label.right-6&&Math.abs(w.y+w.h/2-label.cy)<=Math.max(12,label.h*.7,w.h*.7));
+  const colon=row.filter(w=>/[：:]/.test(w.v)).length;
+  const minutes=row.filter(w=>/分/.test(w.v)).length;
+  const seconds=row.filter(w=>/秒/.test(w.v)).length;
+  const hours=row.filter(w=>/時間|時/.test(w.v)).length;
+  return colon+Math.max(minutes,seconds,hours);
+ }
  const groups={};
  for(const label of labels){
   const c=times.filter(t=>t.x>=label.right-6&&Math.abs(t.cy-label.cy)<=Math.max(12,label.h*.7,t.h*.7));
-  if(c.length!==1)continue; // Two columns (lap vs cumulative): never guess.
+  if(c.length!==1||timeLikeCount(label)>1)continue; // One clean time but another damaged time: ambiguous.
   (groups[label.km]??=[]).push(c[0].val);
  }
  for(const [km,arr] of Object.entries(groups))if(arr.length&&new Set(arr).size===1)found[km]=arr[0];
@@ -100,7 +116,7 @@ function filterPositionedSplits(candidate,known){
 function parse(raw,filename,tsv=""){
 const t=canonical(raw), yearMatch=t.match(/20(2[0-9])[年\/.-]/), dateMatch=t.match(/(20\d\d)[年\/.-](\d{1,2})[月\/.-](\d{1,2})/),race=t.match(/(?:第\d+回)?([\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+マラソン)/u);
 const allDates=[...t.matchAll(/(20\d\d)[年\/.-](\d{1,2})[月\/.-](\d{1,2})/g)].map(m=>m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")).filter(d=>{const x=new Date(d+"T12:00:00");return !Number.isNaN(x.getTime())&&x.toISOString().slice(0,10)===d});const uniqueDates=[...new Set(allDates)];const dateConflict=uniqueDates.length>1;
-const timePattern="((?:\\d+:)?\\d{1,2}:\\d{2}|(?:\\d{1,2}\\s*時間\\s*)?\\d{1,2}\\s*分\\s*\\d{1,2}\\s*秒)";
+const timePattern="((?:\\d+:)?\\d{1,2}:\\d{2}|(?:\\d{1,2}\\s*時\\s*間\\s*)?\\d{1,2}\\s*分\\s*\\d{1,2}\\s*秒)";
 function get(labels){for(const label of labels){const re=new RegExp(label+"[:：]?(?:\\(|（)?"+timePattern,"i");const m=t.match(re);if(m)return clock(m[1])}return ""}
 const gross=get(["タイム(?:\\(|（)グロス(?:\\)|）)","公式記録(?:\\(グロスタイム\\))?","グロスタイム","グロス"]);
 const net=get(["タイム(?:\\(|（)ネット(?:\\)|）)","ネットタイム","ネット"]);
