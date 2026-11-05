@@ -69,6 +69,12 @@
         },1200);
       }
     });
+    // Clear milestone context when the user chooses a different saved run.
+    document.getElementById('cloudRunsList')?.addEventListener('click',function(event){
+      if(event.target?.closest?.('.cloudRunRow')){
+        mapContext.hidden=true;
+      }
+    });
     panel.append(title,result,note,openList);
     anchor.insertAdjacentElement('afterend',button);
     document.getElementById('importArea')?.insertAdjacentElement('afterend',panel);
