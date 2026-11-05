@@ -51,5 +51,29 @@
     return (typeof id==='number'&&Number.isSafeInteger(id)&&id>0)
       ||(typeof id==='string'&&/^[1-9]\d*$/.test(id));
   }
-  return Object.freeze({validRoute,first30km,verifiedImportedRun});
+  // Number milestones use the same verified saved-run population as A-4.
+  // GPS is NOT required: indoor/route-less eligible running activities count.
+  // A missing start time or invalid database ID cannot establish chronology.
+  function hundredthRun(rows,isVerifiedRunning){
+    if(!Array.isArray(rows))throw new TypeError('Expected array');
+    if(typeof isVerifiedRunning!=='function')throw new TypeError('Running eligibility verifier required');
+    const eligible=[];
+    const ids=new Set();
+    for(const row of rows){
+      if(!row||row.deleted_at!=null||!isVerifiedRunning(row))continue;
+      const id=Number(row.id),time=validTime(row.started_at);
+      if(!Number.isSafeInteger(id)||id<=0||time===null)continue;
+      // A repeated ID may indicate incomplete/overlapping pagination.
+      // Never silently certify a count-based milestone in that state.
+      if(ids.has(id))throw new Error('Duplicate saved run ID in milestone input');
+      ids.add(id);
+      eligible.push({id,time,record:row});
+    }
+    eligible.sort((a,b)=>a.time-b.time||a.id-b.id);
+    return Object.freeze({
+      eligibleCount:eligible.length,
+      record:eligible.length>=100?eligible[99].record:null
+    });
+  }
+  return Object.freeze({validRoute,first30km,verifiedImportedRun,hundredthRun});
 });
