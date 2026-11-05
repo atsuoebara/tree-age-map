@@ -25,8 +25,27 @@
     openList.type='button';openList.hidden=true;
     openList.style.cssText='min-height:44px;padding:10px 12px;border-radius:10px;cursor:pointer';
     openList.addEventListener('click',function(){
-      if(!panel.hidden && !document.getElementById('cloudRunsPanel')?.classList.contains('open')){
-        document.getElementById('cloudRunsButton')?.click();
+      // Open the milestone activity itself, not the newest-first history list.
+      // The existing map focus handler already selects its route and scrolls to it.
+      if(panel.hidden || lastState?.kind!=='found' || !lastState.row)return;
+      if(!owner || (typeof currentUser!=='undefined' && currentUser?.id!==owner))return;
+      if(typeof focusCloudRun!=='function'){
+        result.textContent=en()?'Unable to open this run.':'このランを開けませんでした。';
+        return;
+      }
+      openList.disabled=true;
+      openList.textContent=en()?'Opening the run on the map…':'地図に移動しています…';
+      try{
+        focusCloudRun(lastState.row);
+      }catch(error){
+        console.warn('A-4 milestone map focus failed:',error);
+        result.textContent=en()?'Unable to open this run. Please try again.':'このランを開けませんでした。もう一度お試しください。';
+      }finally{
+        // Keep a visible tap acknowledgment but allow another attempt.
+        setTimeout(function(){
+          openList.disabled=false;
+          labels();
+        },1200);
       }
     });
     panel.append(title,result,note,openList);
@@ -43,7 +62,7 @@
       note.textContent=english
         ? 'Based on eligible saved FIT and Strava running records only; GPX, TCX, Garmin and other unverified sources are excluded. Strava-linked records may retain distance and GPS route from the original import. Results may change when older eligible runs are imported or records are deleted.'
         : '現在はFIT経由とStravaでラン種目を確認できた保存済み記録だけを対象にしています。GPX・TCX・Garminなど未検証の経路は対象外です。Stravaと紐付いた既存記録は元の距離・GPSルートを使う場合があります。過去の対象記録の追加・削除で結果が変わる場合があります。';
-      openList.textContent=english?'🏃 Open running history':'🏃 ランニング記録を開く';
+      openList.textContent=english?'🗺 View this run on the map':'🗺 このランを地図で表示';
     }
     function clear(){
       epoch++;owner=null;lastState=null;panel.hidden=true;openList.hidden=true;result.textContent='';
