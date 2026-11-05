@@ -20,7 +20,7 @@
     return false;
   }
   function validTime(value){
-    if(typeof value!=='string'||!/^\\d{4}-\\d{2}-\\d{2}T/.test(value))return null;
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T/.test(value))return null;
     const ms=Date.parse(value);
     return Number.isFinite(ms)?ms:null;
   }
