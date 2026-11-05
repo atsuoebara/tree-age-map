@@ -3736,6 +3736,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <button type="button" data-rr-run-mode="list" aria-pressed="true"><span data-art-lang="ja">☰ 従来の一覧</span><span data-art-lang="en">☰ Original list</span></button>
     </div>
     <section class="rrRunCalendarMode" id="rrRunCalendarMode" hidden aria-label="Running calendar">
+      <p class="rrRunCalendarNote" style="font-size:12px;color:#b6d9ca;margin:4px 0 10px"><span data-art-lang="ja">保存済み記録の「活動日」で表示します。月間年輪とは集計対象が異なる場合があります。</span><span data-art-lang="en">Uses each saved run's activity date. Totals may differ from Monthly Rings because the data included can differ.</span></p>
       <div class="rrRunCalendarHeader">
         <button type="button" id="rrRunCalendarPrev" aria-label="Previous month">‹</button>
         <div class="rrRunCalendarSelectors">
@@ -13372,6 +13373,7 @@ document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rr
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
  if(!session?.user?.id || (rrCalOwner && session.user.id!==rrCalOwner)){
   rrCalOwner=null;rrCalDay=null;
+  rrCalEl.hidden=true;rrCalMode='list';
   rrCalGrid.replaceChildren();rrCalRecords.replaceChildren();
  }
 });
@@ -13717,6 +13719,8 @@ name.textContent =
 
 async function renderCloudRuns() {
 
+  // Discard stale results if a user signs out or switches accounts mid-fetch.
+  const requestOwner = currentUser?.id || null;
   const list =
     document.getElementById(
       'cloudRunsList'
@@ -13737,6 +13741,7 @@ async function renderCloudRuns() {
 
     const rows =
       await fetchCloudRuns();
+    if (!requestOwner || currentUser?.id !== requestOwner) return;
 
     await saveCloudRowsCache(
       rows
@@ -13745,7 +13750,7 @@ async function renderCloudRuns() {
 
     cloudRows =
       rows;
-    rrCalOwner = currentUser?.id || null;
+    rrCalOwner = requestOwner;
 
     cloudRunCount =
       rows.length;
