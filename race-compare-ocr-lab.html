@@ -42,6 +42,11 @@ function positionedSplits(tsv){
   lines.get(key).push({v,x,y,w,h});
  }
  const labels=[],times=[];
+ function addTime(a,raw,right){
+  const txt=canonical(raw);
+  if(!/^(?:\d{1,2}:)?[0-5]?\d:[0-5]\d$/.test(txt)&&!/^(?:\d{1,2}時間)?\d{1,2}分\d{1,2}秒$/.test(txt))return;
+  const val=clock(txt);if(val)times.push({val,x:a.x,right,cy:a.y+a.h/2,h:a.h});
+ }
  for(const cells of lines.values()){
   cells.sort((a,b)=>a.x-b.x);
   for(let i=0;i<cells.length;i++){
@@ -50,8 +55,16 @@ function positionedSplits(tsv){
    let right=a.x+a.w;
    if(!m&&/^(5|10|15|20|25|30|35|40)$/.test(txt)&&cells[i+1]&&/^(?:km|キロ)$/i.test(canonical(cells[i+1].v))){m=[null,txt];right=cells[i+1].x+cells[i+1].w}
    if(m)labels.push({km:+m[1],right,cy:a.y+a.h/2,h:a.h});
-   if(/^(?:\d{1,2}:)?[0-5]?\d:[0-5]\d$/.test(txt)||/^(?:\d{1,2}時間)?\d{1,2}分\d{1,2}秒$/.test(txt)){
-    const val=clock(txt);if(val)times.push({val,x:a.x,cy:a.y+a.h/2,h:a.h});
+   addTime(a,a.v,a.x+a.w);
+   // Tesseract commonly splits "24 分 10 秒" into separate words.
+   // Only adjacent tokens in the same OCR line, without crossing a km label.
+   if(/^\d{1,2}$/.test(txt)||/^\d{1,2}時間$/.test(txt)){
+    for(let end=i+1;end<Math.min(cells.length,i+5);end++){
+     const part=cells.slice(i,end+1);
+     if(part.some((p,j)=>j>0&&(p.x-(part[j-1].x+part[j-1].w)>Math.max(25,p.h*2)||Math.abs(p.y-a.y)>a.h)))break;
+     const joined=part.map(p=>p.v).join("");
+     if(/^(?:\d{1,2}時間)?\d{1,2}分\d{1,2}秒$/.test(canonical(joined))){addTime(a,joined,part.at(-1).x+part.at(-1).w);break}
+    }
    }
   }
  }
@@ -64,11 +77,30 @@ function positionedSplits(tsv){
  for(const [km,arr] of Object.entries(groups))if(arr.length&&new Set(arr).size===1)found[km]=arr[0];
  return found;
 }
+function filterPositionedSplits(candidate,known){
+ // Eliminate lap-as-cumulative errors: a 20km total cannot be a 5km lap.
+ // Require plausible lower bound and monotonic progress against all
+ // already-recognized cumulative times, not only adjacent records.
+ const combined={...known};
+ const accepted={};
+ for(const km of [5,10,15,20,25,30,35,40]){
+  if(!candidate[km]||combined[km])continue;
+  const sec=seconds(candidate[km]);
+  if(sec===null||sec<km*120)continue; // conservative 2:00/km floor
+  const conflicts=Object.entries(combined).some(([k,v])=>{
+   const other=seconds(v);if(other===null)return false;
+   return Number(k)<km?sec<=other: Number(k)>km?sec>=other:false;
+  });
+  if(conflicts)continue;
+  combined[km]=candidate[km];accepted[km]=candidate[km];
+ }
+ return accepted;
+}
 
 function parse(raw,filename,tsv=""){
 const t=canonical(raw), yearMatch=t.match(/20(2[0-9])[年\/.-]/), dateMatch=t.match(/(20\d\d)[年\/.-](\d{1,2})[月\/.-](\d{1,2})/),race=t.match(/(?:第\d+回)?([\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+マラソン)/u);
 const allDates=[...t.matchAll(/(20\d\d)[年\/.-](\d{1,2})[月\/.-](\d{1,2})/g)].map(m=>m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")).filter(d=>{const x=new Date(d+"T12:00:00");return !Number.isNaN(x.getTime())&&x.toISOString().slice(0,10)===d});const uniqueDates=[...new Set(allDates)];const dateConflict=uniqueDates.length>1;
-const timePattern="((?:\\d+:)?\\d{1,2}:\\d{2}|(?:\\d{1,2}時間)?\\d{1,2}分\\d{1,2}秒)";
+const timePattern="((?:\\d+:)?\\d{1,2}:\\d{2}|(?:\\d{1,2}\\s*時間\\s*)?\\d{1,2}\\s*分\\s*\\d{1,2}\\s*秒)";
 function get(labels){for(const label of labels){const re=new RegExp(label+"[:：]?(?:\\(|（)?"+timePattern,"i");const m=t.match(re);if(m)return clock(m[1])}return ""}
 const gross=get(["タイム(?:\\(|（)グロス(?:\\)|）)","公式記録(?:\\(グロスタイム\\))?","グロスタイム","グロス"]);
 const net=get(["タイム(?:\\(|（)ネット(?:\\)|）)","ネットタイム","ネット"]);
@@ -82,7 +114,7 @@ for(const m of splitText.matchAll(splitRe)){
   const km=Number(m[1]),value=clock(m[2]);
   if([5,10,15,20,25,30,35,40].includes(km) && value && !splits[km])splits[km]=value;
 }
-const aligned=positionedSplits(tsv);for(const km of [5,10,15,20,25,30,35,40])if(!splits[km]&&aligned[km])splits[km]=aligned[km];
+const aligned=filterPositionedSplits(positionedSplits(tsv),splits);for(const km of [5,10,15,20,25,30,35,40])if(!splits[km]&&aligned[km])splits[km]=aligned[km];
 const distance=/フルマラソン|42\.195km/i.test(t)?"フル":/ハーフマラソン|21\.0975km/i.test(t)?"ハーフ":/(?:種目|部門|距離)[:：]?(?:30km|30キロ)/i.test(t)?"30km":"";
 return {filename,raw,year:dateMatch?.[1]||yearMatch?.[0]?.slice(0,4)||"",date:uniqueDates.length===1?uniqueDates[0]:"",dateConflict,race:race?.[1]||"",distance,gross,net,splits,confirmed:false}
 }
