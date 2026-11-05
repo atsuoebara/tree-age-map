@@ -67,3 +67,17 @@ Supabaseで `information_schema.columns` を直接照合し、`public.runs` に�
 - 製品UI、データ取得、同期処理、本番DB、main、一般公開への変更は一切ない。PRはドラフトのまま。
 
 **未解決の重要事項**：ランニング以外の種目を現行runsへ保存しないことが、各ソースの取り込み処理と実際の本番構成で保証されているか。保証できなければ、種目の履歴メタデータや既存の取り込み仕様を再検討し、むせに設計判断を依頼する。活動種別の保証が得られるまでUIへの接続・マージ・本番公開を行わない。
+
+
+## 取り込み元別の種目制限の追加確認（2026-11-05）
+- **Strava**：`cycle/README.md` に本番 `strava-sync v46` が `Run/TrailRun/VirtualRun` に限定されるとの過去の実コード確認記録がある。ただし現行デプロイ済み関数の再取得は未実施。
+- **Garmin Connect Activity Push**：`supabase/functions/garmin-activity-push/index.ts` の `allowedKinds` は `RUNNING`, `INDOOR_RUNNING`, `OBSTACLE_RUN`, `STREET_RUNNING`, `TRACK_RUNNING`, `TRAIL_RUNNING`, `TREADMILL_RUNNING`, `ULTRA_RUN`, `VIRTUAL_RUN` に限定。ラン系だが初期仕様の3種より広い。GPSなしのインドアはA-4第1弾の対象外。
+- **FIT / COROS FIT**：`fit_importer.js` は `session.sport !== 'running'` を拒否し、ZIP検査でも `isRunning && hasGPS` を確認する。
+- **TCX**：`index.html` のTCXパーサーはSportが明示されていてrunning以外なら拒否するが、**Sport属性が空欄／欠落の場合は拒否しない**。そのため保存済みのTCX記録すべてを種目確認済みとみなせない。
+- **GPX**：`index.html` は汎用GPSルートを読み込むため、ファイルの内容がランニングであったことを厳格に証明する種目欄が無い。
+- **Intervals.icu、Garmin Connect IQ、その他取り込み**：全取り込み元について本番の種目選別を実証できたわけではない。DBに活動種目列が無いので、後から単一行の `source` だけを見ても種目の証明にはならない。
+
+**判定**：取得経路は確認できたが、現行 `runs` 全件が確実にランニングであるという証明はできない。A-4第1弾のUIを `verifiedRun: true` の一律設定で接続してはいけない。記録の出所と選別を安全に証明できる集合に絞るか、種目保証に関する設計をむせに再監査依頼する。既存取り込みやDBスキーマを変更しない。
+
+## 合成テスト（ローカルNode実行）
+`a4-milestones-core.js` と `scripts/test-a4-milestones.cjs` のGitHub掲載内容に対応するソースをローカルへ再現し、`node --check` とテスト実行で **A-4 prototype tests passed** を確認。ファイルの直接ダウンロードは実行環境のDNS制限で失敗したため、GitHubにあるファイルのバイト一致を保証した試験ではない。条件の境界・日付・GPS・削除・検証関数必須は通過したが、本番取り込みの種目保証やUI連携は未検証。
