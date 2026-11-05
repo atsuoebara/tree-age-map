@@ -5714,7 +5714,19 @@ async function importFromCoros() {
       try {
         if (error.context && typeof error.context.clone === 'function') {
           const failureData = await error.context.clone().json();
-          const phaseLabels = {
+          const corosEnglish = document.documentElement.lang === 'en';
+          const phaseLabels = corosEnglish ? {
+            authenticate_user: 'Checking sign-in',
+            load_connection: 'Checking COROS connection',
+            refresh_access_token: 'Refreshing COROS authorization',
+            initialize_coros_session: 'Checking COROS session',
+            query_history_records: 'Fetching history',
+            query_recent_records: 'Fetching recent runs',
+            check_processed_activities: 'Checking imported runs',
+            get_fit_download_urls: 'Preparing FIT downloads',
+            advance_history_cursor: 'Updating history',
+            acknowledge_import: 'Saving import results'
+          } : {
             authenticate_user: 'ログイン確認',
             load_connection: 'COROS連携情報の確認',
             refresh_access_token: 'COROS認証の更新',
@@ -5731,9 +5743,9 @@ async function importFromCoros() {
               ? phaseLabels[failureData.phase]
               : null;
           corosFailureMessage =
-            'COROSからの取込みに失敗しました。' +
-            (phaseLabel ? '\n失敗箇所: ' + phaseLabel : '') +
-            '\n確認番号: ' +
+            (corosEnglish ? 'Could not import from COROS.' : 'COROSからの取込みに失敗しました。') +
+            (phaseLabel ? (corosEnglish ? '\nFailed step: ' : '\n失敗箇所: ') + phaseLabel : '') +
+            (corosEnglish ? '\nReference ID: ' : '\n確認番号: ') +
             (failureData?.diagnosticId || diagnosticId);
         }
       } catch (diagnosticReadError) {
@@ -5765,9 +5777,13 @@ async function importFromCoros() {
 
     if (files.length === 0) {
       alert(
-        data?.dailyLimitReached
-          ? 'COROSの取得上限に達しました。\n上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。'
-          : 'COROSに取り込めるランはありませんでした。'
+        document.documentElement.lang === 'en'
+          ? (data?.dailyLimitReached
+              ? 'COROS download limit reached.\nPlease try “Import from COROS” again about 24 hours after reaching the limit.'
+              : 'No runs are available to import from COROS.')
+          : (data?.dailyLimitReached
+              ? 'COROSの取得上限に達しました。\n上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。'
+              : 'COROSに取り込めるランはありませんでした。')
       );
       return;
     }
@@ -5926,28 +5942,31 @@ async function importFromCoros() {
     }
 
     const corosResultMessage =
-      'COROS取込み結果\n' +
-      '保存: ' +
-      saved +
-      '件\n' +
-      '重複: ' +
-      duplicates +
-      '件\n' +
-      '失敗: ' +
-      failed +
-      '件\n\n' +
-      'COROSから取得できる件数には上限があります。\n' +
-      '過去の履歴がまだある場合は、上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。' +
-      (
-        acknowledgementFailed
-          ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
-          : ''
-      ) +
-      (
-        failed > 0 || acknowledgementFailed
-          ? '\n\n確認番号: ' + diagnosticId
-          : ''
-      );
+      document.documentElement.lang === 'en'
+        ? 'COROS import results\n' +
+          'Saved: ' + saved + '\n' +
+          'Duplicates: ' + duplicates + '\n' +
+          'Failed: ' + failed + '\n\n' +
+          'COROS limits how many runs can be downloaded.\n' +
+          'If older runs remain, try “Import from COROS” again about 24 hours after reaching the limit.' +
+          (acknowledgementFailed
+            ? '\n\nCould not update the processed-run records.\nThese runs will be safely checked for duplicates next time.'
+            : '') +
+          (failed > 0 || acknowledgementFailed
+            ? '\n\nReference ID: ' + diagnosticId
+            : '')
+        : 'COROS取込み結果\n' +
+          '保存: ' + saved + '件\n' +
+          '重複: ' + duplicates + '件\n' +
+          '失敗: ' + failed + '件\n\n' +
+          'COROSから取得できる件数には上限があります。\n' +
+          '過去の履歴がまだある場合は、上限に達してから24時間程度あけたあと、もう一度「COROSから取り込む」を押してください。' +
+          (acknowledgementFailed
+            ? '\n\n処理済み記録の更新に失敗しました。\n次回は重複として安全に確認されます。'
+            : '') +
+          (failed > 0 || acknowledgementFailed
+            ? '\n\n確認番号: ' + diagnosticId
+            : '');
 
     alert(
       corosResultMessage
@@ -5983,7 +6002,9 @@ async function importFromCoros() {
 
     alert(
       corosFailureMessage ||
-      ('COROSからの取込みに失敗しました。\n確認番号: ' + diagnosticId)
+      (document.documentElement.lang === 'en'
+        ? 'Could not import from COROS.\nReference ID: ' + diagnosticId
+        : 'COROSからの取込みに失敗しました。\n確認番号: ' + diagnosticId)
     );
 
   } finally {
