@@ -884,6 +884,26 @@
       color:white;
     }
 
+    /* Personal running calendar: the original list and its sorting remain available. */
+    .rrRunCalendarSwitcher{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .rrRunCalendarSwitcher button{min-height:44px;padding:9px 13px;border:1px solid #70a38d;border-radius:10px;background:#142a2b;color:#fff;font-weight:700;cursor:pointer}
+    .rrRunCalendarSwitcher button[aria-pressed="true"]{background:#296b48;border-color:#86eda5}
+    .rrRunCalendarMode{margin:10px 0 16px;border:1px solid #4b826f;border-radius:14px;padding:12px;min-width:0;background:#102c27}
+    .rrRunCalendarHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;text-align:center}
+    .rrRunCalendarHeader button{min-width:44px;min-height:44px;border-radius:10px;background:#244d42;color:#fff;border:1px solid #75b395;font-size:26px;cursor:pointer}
+    .rrRunCalendarWeek,.rrRunCalendarDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+    .rrRunCalendarWeek span{font-size:12px;text-align:center;padding:4px 0;opacity:.8}
+    .rrRunCalendarDay{min-width:0;min-height:55px;padding:5px 1px;border:1px solid rgba(160,195,177,.2);border-radius:7px;background:#17372e;color:#e3f9e9;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px}
+    .rrRunCalendarDay:disabled{opacity:.33;cursor:default}
+    .rrRunCalendarDay.has-runs{background:#245443;border-color:#74ca9b}
+    .rrRunCalendarDay[aria-pressed="true"]{outline:2px solid #ceff8d;outline-offset:-2px}
+    .rrRunCalendarDay .rrCalendarDistance{font-size:clamp(9px,2.7vw,12px);font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+    .rrRunCalendarDay .rrCalendarCount{font-size:10px;opacity:.85}
+    .rrRunCalendarDayRecords{display:flex;flex-direction:column;gap:8px;margin:12px 0 0}
+    .rrRunCalendarEntry{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:44px;border:1px solid #4c9272;background:#173a32;color:#fff;border-radius:9px;padding:9px;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+    .rrRunCalendarEntry span{min-width:0;flex:1}
+    .rrRunCalendarEntry small{white-space:nowrap;color:#9ef0c8}
+    @media(max-width:360px){.rrRunCalendarMode{padding:6px}.rrRunCalendarDay{min-height:52px}}
     #savedRunsList,
     #cloudRunsList{
       display:flex;
@@ -3706,6 +3726,20 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       </button>
     </div>
 
+    <div id="rrRunCalendarSwitcher" class="rrRunCalendarSwitcher" role="group" aria-label="Run record display">
+      <button type="button" data-rr-run-mode="calendar" aria-pressed="false"><span data-art-lang="ja">📅 カレンダー</span><span data-art-lang="en">📅 Calendar</span></button>
+      <button type="button" data-rr-run-mode="list" aria-pressed="true"><span data-art-lang="ja">☰ 従来の一覧</span><span data-art-lang="en">☰ Original list</span></button>
+    </div>
+    <section class="rrRunCalendarMode" id="rrRunCalendarMode" hidden aria-label="Running calendar">
+      <div class="rrRunCalendarHeader">
+        <button type="button" id="rrRunCalendarPrev" aria-label="Previous month">‹</button>
+        <strong id="rrRunCalendarMonth"></strong>
+        <button type="button" id="rrRunCalendarNext" aria-label="Next month">›</button>
+      </div>
+      <div class="rrRunCalendarWeek" id="rrRunCalendarWeek"></div>
+      <div class="rrRunCalendarDays" id="rrRunCalendarDays"></div>
+      <div class="rrRunCalendarDayRecords" id="rrRunCalendarDayRecords" aria-live="polite"></div>
+    </section>
     <div id="cloudRunsList">
       <div class="savedEmpty">
         読み込み中…
@@ -3989,6 +4023,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <button id="cloudRunsButton">
       🏃 ランニング記録 0
     </button>
+    <button id="runCalendarQuickButton" type="button" style="min-height:44px;padding:10px 14px;background:#194638;color:#e5ffed;border:2px solid #77e5a8;border-radius:12px;font-weight:800;cursor:pointer"><span data-art-lang="ja">📅 カレンダーで探す</span><span data-art-lang="en">📅 Find by calendar</span></button>
     <a href="./my-today.html" id="myTodayShareLink" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;border:2px solid #78eaff;border-radius:12px;background:#122e42;color:#aaf2ff;text-decoration:none;font-size:14px;font-weight:900">
       📷 今日のランニングを共有
     </a>
