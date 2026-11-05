@@ -676,10 +676,19 @@
   <script>
   (() => {
     const STORAGE_KEY = 'runners-rings-language';
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const language = stored === 'ja' || stored === 'en'
-      ? stored
-      : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+    // Explicit English entry from /en/start.html takes precedence over a
+    // previously saved Japanese preference. Persist it so the shared site
+    // navigation and page translation agree after this guide loads.
+    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
+    if (requestedLanguage === 'en') {
+      try { localStorage.setItem(STORAGE_KEY, 'en'); } catch (_) {}
+    }
+    let stored = null;
+    try { stored = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+    const language = requestedLanguage === 'en' ? 'en'
+      : stored === 'ja' || stored === 'en'
+        ? stored
+        : (navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
 
     // Keep the page's original Japanese text so both languages can be restored
     // without reloading the page or losing the current reading position.
