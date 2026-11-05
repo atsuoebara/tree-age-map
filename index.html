@@ -890,6 +890,11 @@
     .rrRunCalendarSwitcher button[aria-pressed="true"]{background:#296b48;border-color:#86eda5}
     .rrRunCalendarMode{margin:10px 0 16px;border:1px solid #4b826f;border-radius:14px;padding:12px;min-width:0;background:#102c27}
     .rrRunCalendarHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;text-align:center}
+    .rrRunCalendarSelectors{display:flex;justify-content:center;gap:4px;flex:1;min-width:0}
+    .rrRunCalendarSelectors label{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+    .rrRunCalendarSelectors select{min-width:0;min-height:44px;border:1px solid #75b395;border-radius:9px;background:#193f34;color:#fff;font-size:14px;padding:7px 2px}
+    .rrRunCalendarSelectors select:first-of-type{flex:1.2}
+    .rrRunCalendarSelectors select:last-of-type{flex:1}
     .rrRunCalendarHeader button{min-width:44px;min-height:44px;border-radius:10px;background:#244d42;color:#fff;border:1px solid #75b395;font-size:26px;cursor:pointer}
     .rrRunCalendarWeek,.rrRunCalendarDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
     .rrRunCalendarWeek span{font-size:12px;text-align:center;padding:4px 0;opacity:.8}
@@ -3733,7 +3738,12 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <section class="rrRunCalendarMode" id="rrRunCalendarMode" hidden aria-label="Running calendar">
       <div class="rrRunCalendarHeader">
         <button type="button" id="rrRunCalendarPrev" aria-label="Previous month">‹</button>
-        <strong id="rrRunCalendarMonth"></strong>
+        <div class="rrRunCalendarSelectors">
+          <label for="rrRunCalendarYear" class="sr-only">Year</label>
+          <select id="rrRunCalendarYear" aria-label="Year"></select>
+          <label for="rrRunCalendarMonthSelect" class="sr-only">Month</label>
+          <select id="rrRunCalendarMonthSelect" aria-label="Month"></select>
+        </div>
         <button type="button" id="rrRunCalendarNext" aria-label="Next month">›</button>
       </div>
       <div class="rrRunCalendarWeek" id="rrRunCalendarWeek"></div>
@@ -13289,8 +13299,16 @@ function rrCalRender(){
  if(rrCalMode!=='calendar')return;
  const english=rrCalEnglish(),logged=!!currentUser?.id&&rrCalOwner===currentUser.id;
  const monthStart=String(rrCalYear).padStart(4,'0')+'-'+String(rrCalMonth+1).padStart(2,'0')+'-';
- const monthText=new Intl.DateTimeFormat(english?'en-US':'ja-JP',{year:'numeric',month:'long'}).format(new Date(rrCalYear,rrCalMonth,1));
- document.getElementById('rrRunCalendarMonth').textContent=monthText;
+ // Year selector lets runners jump directly to old Nike+/race records.
+ const yearSelect=document.getElementById('rrRunCalendarYear'),monthSelect=document.getElementById('rrRunCalendarMonthSelect');
+ yearSelect.replaceChildren();monthSelect.replaceChildren();
+ const years=cloudRows.map(r=>Number(rrCalDate(r).slice(0,4))).filter(n=>Number.isSafeInteger(n)&&n>=1900);
+ const earliest=Math.min(rrCalYear,new Date().getFullYear(),...(years.length?[Math.min(...years)]:[]));
+ const latest=Math.max(rrCalYear,new Date().getFullYear(),...(years.length?[Math.max(...years)]:[]));
+ for(let y=earliest;y<=latest;y++){const o=document.createElement('option');o.value=String(y);o.textContent=String(y);yearSelect.append(o)}
+ yearSelect.value=String(rrCalYear);
+ for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=String(m);o.textContent=english?new Intl.DateTimeFormat('en-US',{month:'short'}).format(new Date(2026,m-1,1)):m+'月';monthSelect.append(o)}
+ monthSelect.value=String(rrCalMonth+1);
  rrCalGrid.replaceChildren();rrCalRecords.replaceChildren();
  const weekdays=document.getElementById('rrRunCalendarWeek');weekdays.replaceChildren();
  for(const name of (english?['Sun','Mon','Tue','Wed','Thu','Fri','Sat']:['日','月','火','水','木','金','土'])){
@@ -13313,8 +13331,11 @@ function rrCalRender(){
   b.disabled=!logged;b.setAttribute('aria-label',rrCalYear+'/'+(rrCalMonth+1)+'/'+day+(runs.length?' '+runs.length+(english?' runs':'本'):''));
   const d=document.createElement('span');d.textContent=day;b.append(d);
   if(runs.length){
-   const km=runs.reduce((sum,r)=>{const x=Number(r.distance_km);return sum+(Number.isFinite(x)&&x>=0?x:0)},0);
-   const dist=document.createElement('span');dist.className='rrCalendarDistance';dist.textContent=km.toFixed(1)+'km';b.append(dist);
+   const distances=runs.filter(r=>r.distance_km!==null&&r.distance_km!==undefined&&r.distance_km!==''&&Number.isFinite(Number(r.distance_km))&&Number(r.distance_km)>=0).map(r=>Number(r.distance_km));
+   const km=distances.reduce((sum,x)=>sum+x,0);
+   const dist=document.createElement('span');dist.className='rrCalendarDistance';
+   dist.textContent=distances.length?(km.toFixed(1)+'km'+(distances.length<runs.length?' +?':'')):'—';
+   b.append(dist);
    if(runs.length>1){const count=document.createElement('span');count.className='rrCalendarCount';count.textContent=runs.length+(english?' runs':'本');b.append(count)}
   }
   b.onclick=()=>{rrCalDay=day;rrCalRender()};
@@ -13343,6 +13364,8 @@ function rrCalSetMode(mode){
  if(calendar)rrCalRender();
 }
 document.querySelectorAll('[data-rr-run-mode]').forEach(b=>b.onclick=()=>rrCalSetMode(b.dataset.rrRunMode));
+document.getElementById('rrRunCalendarYear').onchange=e=>{rrCalYear=Number(e.target.value);rrCalDay=null;rrCalRender()};
+document.getElementById('rrRunCalendarMonthSelect').onchange=e=>{rrCalMonth=Number(e.target.value)-1;rrCalDay=null;rrCalRender()};
 document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrCalYear--;rrCalMonth=11}else rrCalMonth--;rrCalDay=null;rrCalRender()};
 document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
 document.getElementById('runCalendarQuickButton').onclick=()=>{
