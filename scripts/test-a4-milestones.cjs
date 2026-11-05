@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {first30km,validRoute,verifiedImportedRun,hundredthRun,numberedRunMilestones}=require('../a4-milestones-core.js');
+const {first30km,validRoute,verifiedImportedRun,hundredthRun,numberedRunMilestones,eligibilityBreakdown}=require('../a4-milestones-core.js');
 const route=[[35.1,139.1],[35.2,139.2]];
 const base={id:1,started_at:'2026-10-01T02:00:00Z',distance_km:30,route,deleted_at:null,verifiedRun:true};
 const run=r=>first30km(r,x=>x.verifiedRun===true);
@@ -98,4 +98,37 @@ assert.throws(()=>numberedRunMilestones(mkMany(100),verifiedImportedRun,[100,100
 assert.throws(()=>numberedRunMilestones(mkMany(100),verifiedImportedRun,[0]),/Invalid milestone targets/);
 assert.equal(numberedRunMilestones(mkMany(500),verifiedImportedRun,[500]).records[500].id,500);
 assert.equal(hundred(mkMany(500)).record.id,100);
+// P0: source-only disclosure, read-only; never changes 100/500+ eligibility.
+const sourceRows=[
+  mkRun(1,{source:'strava',strava_id:11}),
+  mkRun(2,{source:'fit',strava_id:null,route:[]}),
+  mkRun(3,{source:'tcx',strava_id:null}),
+  mkRun(4,{source:null,strava_id:null}),
+  mkRun(5,{source:'garmin',strava_id:null}),
+  mkRun(6,{source:'intervals',strava_id:null}),
+  mkRun(7,{source:'strava',strava_id:null}),
+  mkRun(8,{source:'gpx',strava_id:null}),
+  mkRun(9,{source:'strava',strava_id:1009,started_at:null}),
+  mkRun(10,{source:'tcx',strava_id:null,deleted_at:'2026-11-01T00:00:00Z'})
+];
+const breakdown=rows=>eligibilityBreakdown(rows,verifiedImportedRun);
+const bd=breakdown(sourceRows);
+assert.equal(bd.total,9);
+assert.equal(bd.eligible,2);
+assert.equal(bd.excluded,7);
+assert.equal(bd.reasons.tcx,1);
+assert.equal(bd.reasons.unknown,1);
+assert.equal(bd.reasons.garmin,1);
+assert.equal(bd.reasons.intervals,1);
+assert.equal(bd.reasons.strava_unverified,1);
+assert.equal(bd.reasons.other,1);
+assert.equal(bd.reasons.invalid_start,1);
+assert.equal(hundred(sourceRows).eligibleCount,2);
+assert.equal(milestones(sourceRows).eligibleCount,2);
+assert.throws(()=>breakdown([...sourceRows,sourceRows[0]]),/Duplicate saved run ID/);
+assert.throws(()=>breakdown([...sourceRows,mkRun(-3)]),/Invalid saved run ID/);
+assert.throws(()=>eligibilityBreakdown(sourceRows),/verifier/);
+assert.throws(()=>breakdown(null),/Expected array/);
+assert.equal(breakdown([]).total,0);
+assert.equal(breakdown([mkRun(1,{source:'tcx',started_at:null})]).reasons.tcx,1);
 console.log('A-4 prototype tests passed');
