@@ -49,7 +49,7 @@
     if(row.source!=='strava')return false;
     const id=row.strava_id;
     return (typeof id==='number'&&Number.isSafeInteger(id)&&id>0)
-      ||(typeof id==='string'&&/^[1-9]\\d*$/.test(id));
+      ||(typeof id==='string'&&/^[1-9]\d*$/.test(id));
   }
   return Object.freeze({validRoute,first30km,verifiedImportedRun});
 });
