@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {first30km,validRoute,verifiedImportedRun}=require('../a4-milestones-core.js');
+const {first30km,validRoute,verifiedImportedRun,hundredthRun}=require('../a4-milestones-core.js');
 const route=[[35.1,139.1],[35.2,139.2]];
 const base={id:1,started_at:'2026-10-01T02:00:00Z',distance_km:30,route,deleted_at:null,verifiedRun:true};
 const run=r=>first30km(r,x=>x.verifiedRun===true);
@@ -42,4 +42,35 @@ assert.equal(eligible([{...candidate,id:3,started_at:'2026-10-02T00:00:00Z'},{..
 // A linked Strava row retains the previous saved route/distance: threshold
 // remains based on saved distance, never an invented Strava distance.
 assert.equal(eligible([{...candidate,source:'strava',distance_km:30,route:[[35.1,139.1],[35.2,139.2]]}])?.id,1);
+// A-4 number milestones: 99/100/101 boundaries, GPS-less runs and chronology.
+const mkRun=(id,overrides={})=>({
+  id,source:'strava',strava_id:100000+id,
+  started_at:new Date(Date.UTC(2024,0,1,0,id)).toISOString(),
+  distance_km:5,route:[],deleted_at:null,...overrides
+});
+const hundred=rows=>hundredthRun(rows,verifiedImportedRun);
+const ninetyNine=Array.from({length:99},(_,i)=>mkRun(i+1));
+assert.equal(hundred(ninetyNine).record,null);
+assert.equal(hundred(ninetyNine).eligibleCount,99);
+const oneHundred=[...ninetyNine,mkRun(100)];
+assert.equal(hundred(oneHundred).record.id,100);
+assert.equal(hundred(oneHundred).eligibleCount,100);
+assert.equal(hundred([...oneHundred,mkRun(101)]).record.id,100);
+assert.equal(hundred([...oneHundred].reverse()).record.id,100);
+// The earliest by started_at wins regardless of import order and route presence.
+const past=mkRun(200,{started_at:'2023-01-01T00:00:00Z'});
+assert.equal(hundred([...oneHundred,past]).record.id,99);
+// Same timestamp is ordered by runs primary key, not Strava ID.
+const tied=oneHundred.map(r=>({...r,started_at:'2024-01-01T00:00:00Z'})).reverse();
+assert.equal(hundred(tied).record.id,100);
+assert.equal(hundred([...oneHundred,mkRun(101,{deleted_at:'2026-10-01T00:00:00Z'})]).eligibleCount,100);
+assert.equal(hundred([...ninetyNine,mkRun(100,{started_at:null})]).record,null);
+assert.equal(hundred([...ninetyNine,mkRun(100,{source:'gpx'})]).record,null);
+assert.equal(hundred([...ninetyNine,mkRun(100,{source:'garmin'})]).record,null);
+assert.equal(hundred([...ninetyNine,mkRun(100,{source:'strava',strava_id:null})]).record,null);
+assert.equal(hundred([...ninetyNine,mkRun(100,{source:'fit',strava_id:null})]).record.id,100);
+assert.equal(hundred([...ninetyNine,mkRun(100,{route:[]})]).record.id,100);
+assert.throws(()=>hundred([...oneHundred,oneHundred[0]]),/Duplicate saved run ID/);
+assert.throws(()=>hundredthRun(oneHundred),/verifier/);
+assert.throws(()=>hundred(null),/Expected array/);
 console.log('A-4 prototype tests passed');
