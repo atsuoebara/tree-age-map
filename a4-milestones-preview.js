@@ -13,7 +13,7 @@
     const panel=document.createElement('section');
     panel.id='a4MilestonePreviewPanel';
     panel.hidden=true;
-    panel.style.cssText='box-sizing:border-box;width:100%;max-width:550px;margin:12px auto;padding:16px;border:1px solid #83e4ac;border-radius:14px;background:#102e2b;color:#f1fff6;overflow-wrap:anywhere';
+    panel.style.cssText='box-sizing:border-box;width:100%;max-width:550px;margin:12px auto;padding:16px;border:1px solid #83e4ac;border-radius:14px;background:#102e2b;color:#f1fff6;overflow-wrap:anywhere;scroll-margin-top:112px';
     const title=document.createElement('h3');
     title.style.cssText='margin:0 0 10px;font-size:19px';
     const result=document.createElement('p');
@@ -21,6 +21,14 @@
     result.style.cssText='margin:0 0 10px;line-height:1.6';
     const note=document.createElement('p');
     note.style.cssText='font-size:12px;line-height:1.5;opacity:.9;margin:8px 0';
+    // Keep the milestone identity visible immediately above the selected map.
+    const mapElement=document.getElementById('map');
+    const mapContext=document.createElement('div');
+    mapContext.id='a4MilestoneMapContext';
+    mapContext.hidden=true;
+    mapContext.setAttribute('role','status');
+    mapContext.style.cssText='box-sizing:border-box;max-width:100%;padding:12px 14px;margin:8px 0;background:#153c33;border:2px solid #83e4ac;border-radius:12px;color:#eaffef;font-weight:700;line-height:1.5;scroll-margin-top:112px;overflow-wrap:anywhere';
+    mapElement?.insertAdjacentElement('beforebegin',mapContext);
     const openList=document.createElement('button');
     openList.type='button';openList.hidden=true;
     openList.style.cssText='min-height:44px;padding:10px 12px;border-radius:10px;cursor:pointer';
@@ -36,7 +44,19 @@
       openList.disabled=true;
       openList.textContent=en()?'Opening the run on the map…':'地図に移動しています…';
       try{
-        focusCloudRun(lastState.row);
+        const target=lastState.row;
+        focusCloudRun(target);
+        if(mapContext.isConnected){
+          mapContext.hidden=false;
+          updateMapContext(target);
+          // focusCloudRun itself scrolls to #map; move a little higher so the
+          // date/distance banner directly above the map remains visible.
+          setTimeout(function(){
+            if(owner && currentUser?.id===owner && !mapContext.hidden){
+              mapContext.scrollIntoView({behavior:'smooth',block:'start'});
+            }
+          },80);
+        }
       }catch(error){
         console.warn('A-4 milestone map focus failed:',error);
         result.textContent=en()?'Unable to open this run. Please try again.':'このランを開けませんでした。もう一度お試しください。';
@@ -46,6 +66,12 @@
           openList.disabled=false;
           labels();
         },1200);
+      }
+    });
+    // Clear milestone context when the user chooses a different saved run.
+    document.getElementById('cloudRunsList')?.addEventListener('click',function(event){
+      if(event.target?.closest?.('.cloudRunRow')){
+        mapContext.hidden=true;
       }
     });
     panel.append(title,result,note,openList);
@@ -66,6 +92,13 @@
     }
     function clear(){
       epoch++;owner=null;lastState=null;panel.hidden=true;openList.hidden=true;result.textContent='';
+      mapContext.hidden=true;mapContext.textContent='';
+    }
+    function updateMapContext(row){
+      if(!row)return;
+      const date=new Intl.DateTimeFormat(en()?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric'}).format(new Date(row.started_at));
+      const distance=Number(row.distance_km).toFixed(2);
+      mapContext.textContent=(en()?'🌳 First 30 km run — ':'🌳 初めての30km走 — ')+date+' / '+distance+' km';
     }
     function show(kind,row){
       labels();
@@ -83,6 +116,10 @@
     button.addEventListener('click',async function(){
       labels();panel.hidden=!panel.hidden;
       if(panel.hidden){epoch++;return;}
+      // The milestone panel is below the map: reveal it in the viewport.
+      requestAnimationFrame(function(){
+        if(!panel.hidden)panel.scrollIntoView({behavior:'smooth',block:'start'});
+      });
       const user=typeof currentUser!=='undefined'?currentUser:null;
       const id=user?.id;
       if(!id || typeof fetchCloudRuns!=='function'){show('error');return;}
@@ -102,6 +139,7 @@
     new MutationObserver(function(){
       labels();
       if(!panel.hidden&&lastState)show(lastState.kind,lastState.row);
+      if(!mapContext.hidden&&lastState?.kind==='found')updateMapContext(lastState.row);
     }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     if(typeof supabaseClient!=='undefined'&&supabaseClient.auth?.onAuthStateChange){
       supabaseClient.auth.onAuthStateChange(function(event,session){
