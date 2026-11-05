@@ -342,12 +342,16 @@
 
       <div class="methodList">
         <div class="methodCard">
+          <strong>Garmin Connectから自動取り込み</strong>
+          <span class="methodLabel">Garminアカウント連携（GPS付きラン）</span>
+        </div>
+        <div class="methodCard">
           <strong>Garmin Connect IQから直接</strong>
           <span class="methodLabel">自動連携（初回設定のみ）</span>
         </div>
         <div class="methodCard">
           <strong>Strava経由</strong>
-          <span class="methodLabel">自動連携（利用枠拡大審査中）</span>
+          <span class="methodLabel">自動連携（新規受付中）</span>
         </div>
         <div class="methodCard">
           <strong>Intervals.icu経由</strong>
@@ -364,8 +368,13 @@
       </div>
 
       <p class="notice">
-        Garmin Connect IQ・Strava・Intervals.icuなど、複数の自動連携を同時に使うと同じランを重複して取り込む可能性があります。基本的に自動連携は一つを選んでください。
+        Garmin Connect・Garmin Connect IQ・Strava・Intervals.icuなど、複数の連携方法で同じランを取り込む場合があります。重複を避けるため、普段使う連携方法は基本的に一つを選んでください。
       </p>
+
+      <h3>Garmin Connectから自動取り込み</h3>
+      <p>Garmin Connectに同期したGPS付きのランニング記録をRunner's Ringsへ自動で取り込む方法です。ログイン後、アカウント設定からGarmin Connectを接続してください。</p>
+      <p>接続後の新しいランが対象です。反映まで時間がかかる場合があります。過去のランはIntervals.icuまたはファイル取り込みをご利用ください。</p>
+      <p class="notice">Garmin Connectの自動取り込みとGarmin Connect IQは別の方法です。Connect IQは対応ウォッチへのデータ項目の設定が必要ですが、Garmin Connectの接続にはその設定は必要ありません。</p>
 
       <h3>Garmin Connect IQから直接：自動連携</h3>
       <p>
@@ -442,7 +451,7 @@
         一度Stravaと連携すると、過去のランニングデータを取り込めるほか、その後のランも自動でRunner's Ringsに反映されます。
       </p>
       <p>
-        現在、Stravaの利用枠拡大を申請・審査中です。利用できる人数に上限があるため、状況によっては新しく連携できない場合があります。
+        Stravaの利用枠拡大は承認済みで、新規連携を受け付けています。
       </p>
       <p>
         ログイン後、「Connect with Strava」ボタンからStravaと連携します。
@@ -690,18 +699,23 @@
 
       "3. ランニングデータを取り込む": "3. Import running data",
       "Runner's Ringsでは、使っているウォッチのメーカーではなく、データの取り込み方法から選べます。": "In Runner's Rings, you choose how to import your data rather than choosing by watch manufacturer.",
+      "Garmin Connectから自動取り込み": "Automatic import from Garmin Connect",
+      "Garminアカウント連携（GPS付きラン）": "Connect Garmin account (GPS runs)",
       "Garmin Connect IQから直接": "Direct from Garmin Connect IQ",
       "自動連携（初回設定のみ）": "Automatic sync (one-time setup)",
       "Strava経由": "Via Strava",
-      "自動連携（利用枠拡大審査中）": "Automatic sync (capacity expansion under review)",
+      "自動連携（新規受付中）": "Automatic sync (new connections open)",
       "Intervals.icu経由": "Via Intervals.icu",
       "自動連携": "Automatic sync",
       "COROSから直接": "Direct from COROS",
       "手動取り込み": "Manual import",
       "FIT・GPX・TCX・ZIP": "FIT, GPX, TCX, and ZIP",
       "ファイル取り込み": "File import",
-      "Garmin Connect IQ・Strava・Intervals.icuなど、複数の自動連携を同時に使うと同じランを重複して取り込む可能性があります。基本的に自動連携は一つを選んでください。": "Using more than one automatic connection, such as Garmin Connect IQ, Strava, or Intervals.icu, may import the same run more than once. In general, choose one automatic connection.",
+      "Garmin Connect・Garmin Connect IQ・Strava・Intervals.icuなど、複数の連携方法で同じランを取り込む場合があります。重複を避けるため、普段使う連携方法は基本的に一つを選んでください。": "Using multiple methods such as Garmin Connect, Garmin Connect IQ, Strava, or Intervals.icu may import the same run. To help avoid duplicates, generally choose one regular connection method.",
 
+      "Garmin Connectに同期したGPS付きのランニング記録をRunner's Ringsへ自動で取り込む方法です。ログイン後、アカウント設定からGarmin Connectを接続してください。": "Automatically import GPS running activities synced to Garmin Connect. After signing in, connect Garmin Connect in Account Settings.",
+      "接続後の新しいランが対象です。反映まで時間がかかる場合があります。過去のランはIntervals.icuまたはファイル取り込みをご利用ください。": "New runs synced after connecting are eligible. Imports may take time. For older activities, use Intervals.icu or file import.",
+      "Garmin Connectの自動取り込みとGarmin Connect IQは別の方法です。Connect IQは対応ウォッチへのデータ項目の設定が必要ですが、Garmin Connectの接続にはその設定は必要ありません。": "Garmin Connect automatic import and Garmin Connect IQ are separate methods. Connect IQ requires setting up a data field on a compatible watch; connecting Garmin Connect does not.",
       "Garmin Connect IQから直接：自動連携": "Direct from Garmin Connect IQ: Automatic sync",
       "対応するGarminウォッチへ「Runner's Rings」を追加すると、ラン終了後のデータをRunner's Ringsへ直接送信できます。": "Add Runner's Rings to a compatible Garmin watch to send completed runs directly to Runner's Rings.",
       "初回だけ、Connect IQアプリのインストール、連携コードの保存、ウォッチのトレーニングページへの追加を行います。": "One-time setup includes installing the Connect IQ app, saving your link code, and adding the data field to a training page on your watch.",
@@ -733,7 +747,7 @@
       "Strava経由：自動連携": "Via Strava: Automatic sync",
       "Runner's Ringsは、Stravaに保存されているランニングデータを読み込み、これまで走った道を地図に残します。": "Runner's Rings imports your running activities from Strava and adds the routes you have run to your map.",
       "一度Stravaと連携すると、過去のランニングデータを取り込めるほか、その後のランも自動でRunner's Ringsに反映されます。": "Once connected, past activities are imported and future runs are automatically added to Runner's Rings.",
-      "現在、Stravaの利用枠拡大を申請・審査中です。利用できる人数に上限があるため、状況によっては新しく連携できない場合があります。": "Runner's Rings is currently applying for an expanded Strava connection capacity. Because there is a limit on the number of connected users, new Strava connections may not always be available.",
+      "Stravaの利用枠拡大は承認済みで、新規連携を受け付けています。": "Expanded Strava connection capacity is approved, and new connections are open.",
       "ログイン後、「Connect with Strava」ボタンからStravaと連携します。": "After logging in, select “Connect with Strava.”",
       "連携が完了すると、Runner's RingsがStravaのランニングデータを読み込みます。": "When authorization is complete, Runner's Rings imports your running data from Strava.",
       "対象は Run / Trail Run / Virtual Run です。": "Supported activity types are Run, Trail Run, and Virtual Run.",
