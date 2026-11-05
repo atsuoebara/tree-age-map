@@ -165,20 +165,35 @@
       owner=id;
       show('loading');
       showHundred('loading');
+      let rows;
       try{
-        // fetchCloudRuns returns only after every page completes or throws.
-        const rows=await fetchCloudRuns();
-        if(token!==epoch||owner!==id||currentUser?.id!==id||panel.hidden)return;
-        const first=root.RunnerMilestones.first30km(rows,root.RunnerMilestones.verifiedImportedRun);
-        // Complete pagination succeeded; calculate both milestones from one snapshot.
-        const hundred=root.RunnerMilestones.hundredthRun(rows,root.RunnerMilestones.verifiedImportedRun);
-        show(first?'found':'none',first);
-        showHundred('result',hundred);
+        // Only this preview opts into stable secondary-ID ordering across pages.
+        // Other callers keep their existing fetchCloudRuns behavior.
+        rows=await fetchCloudRuns({stableOrder:true});
       }catch(error){
+        console.warn('A-4 complete saved-runs fetch failed:',error);
         if(token===epoch&&owner===id&&currentUser?.id===id&&!panel.hidden){
           show('error');
           showHundred('error');
         }
+        return;
+      }
+      if(token!==epoch||owner!==id||currentUser?.id!==id||panel.hidden)return;
+      // Count milestones cannot invalidate the previously approved first-30km
+      // milestone if a count-specific validation rejects the saved-run input.
+      try{
+        const first=root.RunnerMilestones.first30km(rows,root.RunnerMilestones.verifiedImportedRun);
+        show(first?'found':'none',first);
+      }catch(error){
+        console.warn('A-4 first 30km calculation failed:',error);
+        show('error');
+      }
+      try{
+        const hundred=root.RunnerMilestones.hundredthRun(rows,root.RunnerMilestones.verifiedImportedRun);
+        showHundred('result',hundred);
+      }catch(error){
+        console.warn('A-4 hundredth-run calculation failed:',error);
+        showHundred('error');
       }
     });
     new MutationObserver(function(){
