@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>TCX原本の種目確認（調査専用） | Runner's Rings</title>
+<style>
+:root{color-scheme:dark;font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box} body{background:#091e1a;color:#f0fff4;margin:0}
+main{max-width:780px;margin:auto;padding:24px 16px 64px}
+h1{font-size:clamp(1.35rem,5vw,1.9rem);margin:0 0 12px}
+p{margin:8px 0 14px} .muted{color:#b8d2c4} .panel{border:1px solid #487462;border-radius:15px;padding:15px;margin:16px 0;background:#12332a}
+label{display:block;font-weight:700;margin-bottom:10px}
+input[type=file]{width:100%;background:#fff;color:#102a1e;border-radius:10px;padding:12px;min-height:48px}
+button{background:#bbf8cd;color:#08261d;border:0;border-radius:10px;min-height:44px;padding:10px 17px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.secondary{background:#264c3e;color:#f0fff4;border:1px solid #719f89}
+button:focus-visible, input:focus-visible{outline:3px solid #eac06e;outline-offset:3px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{border-bottom:1px solid #3a6254;padding:9px 5px;vertical-align:top;text-align:left;overflow-wrap:anywhere}td:last-child,th:last-child{text-align:right}
+[hidden]{display:none!important} .status{font-weight:700;min-height:24px} .warn{color:#ffd8a0}
+caption{text-align:left;font-weight:700;padding-bottom:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>🌳 Nike+時代のTCX原本を調べる</h1>
+<p class="muted">A-4 第5弾 P1・調査専用。元ファイルのTCXに、ランニング種目が明記されているかを確認します。</p>
+<section class="panel" aria-label="プライバシーと判定上の注意">
+<p><strong>ファイルはこの端末のブラウザ内だけで処理します。</strong> サーバー送信・保存・分析送信は行いません。</p>
+<p class="warn">Sport="Running" があっても、保存済みランとの同一性はまだ確認されません。年輪の節の認定本数は増えません。種目欄のないTCXは「不明」です。</p>
+<p>元ファイルはGitHub、SNS、公開ページに貼らないでください。このページはDBを読み書きしません。</p>
+</section>
+<section class="panel">
+<label for="files">TCXファイルを選択（最大30ファイル、1ファイル8MB以下、合計50MB以下）</label>
+<input id="files" type="file" multiple accept=".tcx,.xml,application/xml,text/xml">
+<p class="muted">ファイル名やGPSルートは結果に表示しません。ZIP形式は今回未対応です。</p>
+<div class="actions"><button id="inspect" type="button">端末内で種目を確認</button><button id="clear" type="button" class="secondary">結果を消去</button></div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" id="output" hidden>
+<h2 style="font-size:1.2rem;margin:0 0 10px">種目の確認結果（保存なし）</h2>
+<div id="summary"></div>
+<div style="overflow-x:auto">
+<table><caption>ファイル単位の集計（個別の走行内容は表示しません）</caption>
+<thead><tr><th>ファイル</th><th>Running 明記</th><th>他種目</th><th>種目不明</th><th>状態</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+<p class="warn">この結果だけで年輪の節へ追加することはできません。元ファイルと保存済み記録の一意な照合・本人の確認・むせの監査が必要です。</p>
+</section>
+</main>
+<script>
+(function(){
+'use strict';
+const input=document.getElementById('files'),button=document.getElementById('inspect'),
+ clear=document.getElementById('clear'),status=document.getElementById('status'),
+ out=document.getElementById('output'),tbody=document.getElementById('rows'),
+ summary=document.getElementById('summary');
+const MAX_FILES=30,MAX_FILE_SIZE=8*1024*1024,MAX_TOTAL_SIZE=50*1024*1024;
+function reset(){
+ input.value='';status.textContent='';tbody.replaceChildren();summary.replaceChildren();
+ out.hidden=true;button.disabled=false;
+}
+clear.addEventListener('click',reset);
+function activitiesFromXml(source){
+ const xml=new DOMParser().parseFromString(source,'application/xml');
+ if(xml.getElementsByTagName('parsererror').length || xml.documentElement.localName==='parsererror'){
+   throw new Error('TCXとして解析できません');
+ }
+ if(xml.documentElement.localName!=='TrainingCenterDatabase'){
+   throw new Error('TCX形式ではありません');
+ }
+ const elements=Array.from(xml.getElementsByTagName('*')).filter(el=>el.localName==='Activity');
+ if(!elements.length)throw new Error('Activity が見つかりません');
+ const result={running:0,other:0,unknown:0};
+ for(const activity of elements){
+   // Only the Activity Sport attribute is treated as sport evidence.
+   const raw=(activity.getAttribute('Sport')||'').trim().toLowerCase();
+   if(raw==='running')result.running++;
+   else if(!raw)result.unknown++;
+   else result.other++;
+ }
+ return result;
+}
+async function inspect(){
+ button.disabled=true;out.hidden=true;tbody.replaceChildren();summary.replaceChildren();
+ const files=Array.from(input.files||[]);
+ try{
+   if(!files.length)throw new Error('TCXファイルを選んでください');
+   if(files.length>MAX_FILES)throw new Error('ファイル数が上限を超えています');
+   if(files.some(f=>f.size>MAX_FILE_SIZE))throw new Error('8MBを超えるファイルがあります');
+   if(files.reduce((n,f)=>n+f.size,0)>MAX_TOTAL_SIZE)throw new Error('合計50MBを超えています');
+   let totals={running:0,other:0,unknown:0,invalid:0};
+   for(let i=0;i<files.length;i++){
+     const file=files[i],tr=document.createElement('tr');
+     let data=null,error='';
+     try{
+       if(!/\.(tcx|xml)$/i.test(file.name))throw new Error('拡張子がTCX/XMLではありません');
+       data=activitiesFromXml(await file.text());
+       totals.running+=data.running;totals.other+=data.other;totals.unknown+=data.unknown;
+     }catch(err){totals.invalid++;error='解析不可';}
+     const values=['#'+(i+1),data?.running??'—',data?.other??'—',data?.unknown??'—',error||(data.unknown||data.other?'要確認':'種目明記')];
+     for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}
+     tbody.append(tr);
+   }
+   const p=document.createElement('p');
+   p.textContent='Running 明記 '+totals.running+'活動 / 他種目 '+totals.other+'活動 / 種目不明 '+totals.unknown+'活動 / 解析不可 '+totals.invalid+'ファイル';
+   summary.append(p);out.hidden=false;status.textContent='端末内の調査が完了しました。年輪の節は変更していません。';
+ }catch(err){status.textContent=err.message||'確認に失敗しました';}
+ finally{button.disabled=false;}
+}
+button.addEventListener('click',inspect);
+})();
+</script>
+</body>
+</html>
