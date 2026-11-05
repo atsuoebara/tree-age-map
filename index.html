@@ -3748,6 +3748,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       </div>
       <div class="rrRunCalendarWeek" id="rrRunCalendarWeek"></div>
       <div class="rrRunCalendarDays" id="rrRunCalendarDays"></div>
+      <p id="rrRunCalendarSummary" style="margin:10px 0;font-size:12px;color:#bbdfcd"></p>
       <div class="rrRunCalendarDayRecords" id="rrRunCalendarDayRecords" aria-live="polite"></div>
     </section>
     <div id="cloudRunsList">
@@ -13322,6 +13323,13 @@ function rrCalRender(){
   if(!perDay.has(day))perDay.set(day,[]);
   perDay.get(day).push(row);
  }
+ // This calendar totals saved cloud rows by activity_date; monthly rings may use a different data source.
+ const allMonthRows=[...perDay.values()].flat();
+ const distanceValues=allMonthRows.filter(r=>r.distance_km!==null&&r.distance_km!==undefined&&r.distance_km!==''&&Number.isFinite(Number(r.distance_km))&&Number(r.distance_km)>=0).map(r=>Number(r.distance_km));
+ const monthKm=distanceValues.reduce((sum,n)=>sum+n,0);
+ document.getElementById('rrRunCalendarSummary').textContent=logged
+  ? (english?'Saved runs in this month: '+allMonthRows.length+' · '+monthKm.toFixed(1)+' km':'この月の保存済みラン：'+allMonthRows.length+'本・'+monthKm.toFixed(1)+' km')+(distanceValues.length<allMonthRows.length?(english?' (some distances unknown)':'（距離不明あり）'):'')
+  : (english?'Log in to view your saved runs.':'ログインすると保存済みランを表示できます。');
  for(let i=0;i<new Date(rrCalYear,rrCalMonth,1).getDay();i++){
   const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');rrCalGrid.appendChild(blank);
  }
