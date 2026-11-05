@@ -54,7 +54,7 @@
   // Number milestones use the same verified saved-run population as A-4.
   // GPS is NOT required: indoor/route-less eligible running activities count.
   // A missing start time or invalid database ID cannot establish chronology.
-  function numberedRunMilestones(rows,isVerifiedRunning,targets=[100,500,1000]){
+  function numberedRunMilestones(rows,isVerifiedRunning,targets=[100,500,1000,1500,2000,2500]){
     if(!Array.isArray(rows))throw new TypeError('Expected array');
     if(typeof isVerifiedRunning!=='function')throw new TypeError('Running eligibility verifier required');
     if(!Array.isArray(targets)||!targets.length||
