@@ -13273,6 +13273,86 @@ async function editCloudRunName(
   }
 }
 
+/* Run calendar is a private display mode over the existing cloudRows. */
+let rrCalMode='list',rrCalYear=new Date().getFullYear(),rrCalMonth=new Date().getMonth(),rrCalDay=null,rrCalOwner=null;
+const rrCalEl=document.getElementById('rrRunCalendarMode');
+const rrCalGrid=document.getElementById('rrRunCalendarDays');
+const rrCalRecords=document.getElementById('rrRunCalendarDayRecords');
+function rrCalEnglish(){return typeof isRunnerRingsEnglish==='function'&&isRunnerRingsEnglish()}
+function rrCalDate(row){
+ const v=String(row?.activity_date||'');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return '';
+ const y=+v.slice(0,4),m=+v.slice(5,7),d=+v.slice(8,10);
+ return y>=1900&&y<=9999&&m>0&&m<13&&d>0&&d<=new Date(y,m,0).getDate()?v:'';
+}
+function rrCalRender(){
+ if(rrCalMode!=='calendar')return;
+ const english=rrCalEnglish(),logged=!!currentUser?.id&&rrCalOwner===currentUser.id;
+ const monthStart=String(rrCalYear).padStart(4,'0')+'-'+String(rrCalMonth+1).padStart(2,'0')+'-';
+ const monthText=new Intl.DateTimeFormat(english?'en-US':'ja-JP',{year:'numeric',month:'long'}).format(new Date(rrCalYear,rrCalMonth,1));
+ document.getElementById('rrRunCalendarMonth').textContent=monthText;
+ rrCalGrid.replaceChildren();rrCalRecords.replaceChildren();
+ const weekdays=document.getElementById('rrRunCalendarWeek');weekdays.replaceChildren();
+ for(const name of (english?['Sun','Mon','Tue','Wed','Thu','Fri','Sat']:['日','月','火','水','木','金','土'])){
+  const el=document.createElement('span');el.textContent=name;weekdays.appendChild(el);
+ }
+ const perDay=new Map();
+ if(logged)for(const row of cloudRows){
+  const date=rrCalDate(row);if(!date.startsWith(monthStart))continue;
+  const day=+date.slice(-2);
+  if(!perDay.has(day))perDay.set(day,[]);
+  perDay.get(day).push(row);
+ }
+ for(let i=0;i<new Date(rrCalYear,rrCalMonth,1).getDay();i++){
+  const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');rrCalGrid.appendChild(blank);
+ }
+ for(let day=1;day<=new Date(rrCalYear,rrCalMonth+1,0).getDate();day++){
+  const runs=perDay.get(day)||[],b=document.createElement('button');
+  b.type='button';b.className='rrRunCalendarDay'+(runs.length?' has-runs':'');
+  b.setAttribute('aria-pressed',String(day===rrCalDay));
+  b.disabled=!logged;b.setAttribute('aria-label',rrCalYear+'/'+(rrCalMonth+1)+'/'+day+(runs.length?' '+runs.length+(english?' runs':'本'):''));
+  const d=document.createElement('span');d.textContent=day;b.append(d);
+  if(runs.length){
+   const km=runs.reduce((sum,r)=>{const x=Number(r.distance_km);return sum+(Number.isFinite(x)&&x>=0?x:0)},0);
+   const dist=document.createElement('span');dist.className='rrCalendarDistance';dist.textContent=km.toFixed(1)+'km';b.append(dist);
+   if(runs.length>1){const count=document.createElement('span');count.className='rrCalendarCount';count.textContent=runs.length+(english?' runs':'本');b.append(count)}
+  }
+  b.onclick=()=>{rrCalDay=day;rrCalRender()};
+  rrCalGrid.append(b);
+ }
+ if(rrCalDay===null||!logged)return;
+ const selected=perDay.get(rrCalDay)||[];
+ const title=document.createElement('strong');title.textContent=rrCalYear+'/'+String(rrCalMonth+1).padStart(2,'0')+'/'+String(rrCalDay).padStart(2,'0')+' · '+selected.length+(english?' runs':'本');rrCalRecords.append(title);
+ if(!selected.length){const p=document.createElement('p');p.textContent=english?'No saved runs on this day.':'この日の保存済みランはありません。';rrCalRecords.append(p);return}
+ selected.sort((a,b)=>String(a.started_at||a.activity_date||'').localeCompare(String(b.started_at||b.activity_date||''))||String(a.id).localeCompare(String(b.id)));
+ for(const row of selected){
+  const b=document.createElement('button');b.type='button';b.className='rrRunCalendarEntry';
+  const name=document.createElement('span');name.textContent=String(row.name||(english?'Run':'ランニング'));
+  const distance=document.createElement('small'),km=Number(row.distance_km);
+  distance.textContent=Number.isFinite(km)&&km>=0?km.toFixed(2)+' km':(english?'Unknown':'距離不明');
+  b.append(name,distance);b.onclick=()=>focusCloudRun(row);rrCalRecords.append(b);
+ }
+}
+function rrCalSetMode(mode){
+ rrCalMode=mode==='calendar'?'calendar':'list';
+ const calendar=rrCalMode==='calendar';
+ document.getElementById('cloudRunsList').style.display=calendar?'none':'';
+ document.getElementById('historySortArea').style.display=calendar?'none':'';
+ rrCalEl.hidden=!calendar;
+ document.querySelectorAll('[data-rr-run-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.rrRunMode===rrCalMode)));
+ if(calendar)rrCalRender();
+}
+document.querySelectorAll('[data-rr-run-mode]').forEach(b=>b.onclick=()=>rrCalSetMode(b.dataset.rrRunMode));
+document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrCalYear--;rrCalMonth=11}else rrCalMonth--;rrCalDay=null;rrCalRender()};
+document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
+document.getElementById('runCalendarQuickButton').onclick=()=>{
+ if(!currentUser?.id){setStatus('ログイン後にランニング記録を確認できます');return}
+ rrCalOwner=currentUser.id;
+ if(!cloudRunsPanel.classList.contains('open'))cloudRunsButton.click();
+ rrCalSetMode('calendar');
+ cloudRunsPanel.scrollIntoView({behavior:'smooth',block:'start'});
+};
+
 /* =====================================
    クラウド一覧描画
 ===================================== */
@@ -13646,6 +13726,7 @@ async function renderCloudRuns() {
 
 
     renderCloudRowsList();
+    rrCalRender();
 
   }
   catch(error) {
