@@ -13,8 +13,7 @@
     const panel=document.createElement('section');
     panel.id='a4MilestonePreviewPanel';
     panel.hidden=true;
-    panel.style.scrollMarginTop='112px';
-    panel.style.cssText='box-sizing:border-box;width:100%;max-width:550px;margin:12px auto;padding:16px;border:1px solid #83e4ac;border-radius:14px;background:#102e2b;color:#f1fff6;overflow-wrap:anywhere';
+    panel.style.cssText='box-sizing:border-box;width:100%;max-width:550px;margin:12px auto;padding:16px;border:1px solid #83e4ac;border-radius:14px;background:#102e2b;color:#f1fff6;overflow-wrap:anywhere;scroll-margin-top:112px';
     const title=document.createElement('h3');
     title.style.cssText='margin:0 0 10px;font-size:19px';
     const result=document.createElement('p');
