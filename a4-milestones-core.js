@@ -10,12 +10,14 @@
   'use strict';
   function validRoute(route){
     if(!Array.isArray(route))return false;
-    let count=0;
+    let first=null;
     for(const p of route){
       if(!Array.isArray(p)||p.length<2)continue;
       const lat=Number(p[0]),lng=Number(p[1]);
-      if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180)count++;
-      if(count>=2)return true;
+      if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)continue;
+      if(first===null){first=[lat,lng];continue;}
+      // Two valid but identical positions are not evidence of a GPS route.
+      if(lat!==first[0]||lng!==first[1])return true;
     }
     return false;
   }
