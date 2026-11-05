@@ -1,0 +1,406 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="記録証のAI取り込みは保留。スマホ画面の改善では失敗し、開発担当のチャッピーはクビに。それでも最後には、1,800本以上の記録を日付と距離から探せるランニングカレンダーが完成した。成功も失敗も包み隠さず残す、Runner’s Ringsの開発日記。">
+  <title>AI開発者、クビになる。——それでも年輪は育っていく | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261105-223207-e41f9e52/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261105-223207-e41f9e52/">
+  <meta property="og:title" content="AI開発者、クビになる。——それでも年輪は育っていく">
+  <meta property="og:description" content="記録証のAI取り込みは保留。スマホ画面の改善では失敗し、開発担当のチャッピーはクビに。それでも最後には、1,800本以上の記録を日付と距離から探せるランニングカレンダーが完成した。成功も失敗も包み隠さず残す、Runner’s Ringsの開発日記。">
+  <meta property="og:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/60/c4070f93-da34-4a80-880f-e07839381271.png">
+  <meta name="twitter:image" content="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/60/c4070f93-da34-4a80-880f-e07839381271.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-11-05T13:34:32.611Z">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"AI開発者、クビになる。——それでも年輪は育っていく","description":"記録証のAI取り込みは保留。スマホ画面の改善では失敗し、開発担当のチャッピーはクビに。それでも最後には、1,800本以上の記録を日付と距離から探せるランニングカレンダーが完成した。成功も失敗も包み隠さず残す、Runner’s Ringsの開発日記。","inLanguage":"ja","datePublished":"2026-11-05T13:34:32.611Z","url":"https://runnersrings.com/journal/articles/journal-20261105-223207-e41f9e52/","mainEntityOfPage":{"@type":"WebPage","@id":"https://runnersrings.com/journal/articles/journal-20261105-223207-e41f9e52/"},"isPartOf":{"@type":"Blog","name":"Rings Journal","url":"https://runnersrings.com/journal.html"},"image":"https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/60/c4070f93-da34-4a80-880f-e07839381271.png"}</script>
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-11-05">2026-11-05</time>
+      <h1>AI開発者、クビになる。——それでも年輪は育っていく</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/60/c4070f93-da34-4a80-880f-e07839381271.png" alt="" loading="lazy">
+      <p class="summary">記録証のAI取り込みは保留。スマホ画面の改善では失敗し、開発担当のチャッピーはクビに。それでも最後には、1,800本以上の記録を日付と距離から探せるランニングカレンダーが完成した。成功も失敗も包み隠さず残す、Runner’s Ringsの開発日記。</p>
+      <div class="body">記録証を飾りたかった
+
+2026年11月5日。
+
+Runner’s Ringsの開発は、今日もいろいろなことが起きた。
+
+最初に挑戦したのは、大会記録証の取り込みだった。
+
+マラソンの記録証には、大会名、日付、タイム、順位などが書かれている。でも、それは単なる数字の集まりではない。
+
+その大会のために練習した日々や、ゴールした瞬間の思い出が詰まっている。
+
+記録証を写真のまま飾り、AIが内容を読み取り、過去の大会記録と比較する。
+
+そんな機能をRunner’s Ringsに作りたかった。
+
+しかし、AIの読み取りには間違いが起こる。正確に登録するためには、結局、人間による確認や入力が必要になった。
+
+そこで、ふと思った。
+
+「ユーザーがわざわざ入力するなら、ランリングでやる意味はあるのだろうか？」
+
+記録証を飾るのは楽しい。
+
+でも、単なるコピー＆ペーストや数字の転記なら、ほかのサービスでもできる。
+
+Runner’s Ringsだからこそ体験できるものにしたい。
+
+悩んだ末、記録証の取り込みとコレクション機能はいったん保留にした。
+
+AIがもっと進化したとき、もう一度挑戦したい。
+
+AI開発者、クビになる
+
+Runner’s Ringsには、開発を担当するAI「チャッピー」と、独立監査を担当するAI「むせ（Muse）」がいる。
+
+さらに、ランニングの相談相手である「じじいチャッピー」もいる。
+
+今日、クビを宣告されたのは開発担当のチャッピーだった。
+
+じじいチャッピーは必要。
+
+しかし、開発チャッピーはクビ。
+
+なかなか厳しい人事である。
+
+AIは次々と提案する。
+
+でも、技術的にできることが、必ずしもユーザーにとって魅力的とは限らない。
+
+便利にするつもりが面倒にしてしまう。
+
+できると言ったのに、期待した体験にならない。
+
+そんなことが重なった。
+
+その後、開発チャッピーは復帰することになった。
+
+ただし、これからも変わらないルールがある。
+
+開発はチャッピー。独立監査はむせ。最終判断は人間。
+
+AI任せにせず、自分たちが使いたいものを作る。
+
+良くしたはずの画面が崩れた
+
+次に取り組んだのは、スマートフォン画面のコンパクト化。
+
+余白を少なくして、たくさんの機能を見やすくするはずだった。
+
+コードの監査を受け、本番への反映も成功した。
+
+ところが、iPhoneで確認すると、左右に並んだカードの高さがバラバラになっていた。
+
+文章が多いカードだけが長くなり、画面のバランスが悪い。
+
+コンパクトにはなった。
+
+でも、きれいではない。
+
+原因を調べ、左右のカードの高さを揃えるように修正した。
+
+コードが正しくても、使いやすいとは限らない。
+
+最後は、実際に使う人の目で確かめることが大切だ。
+
+1,800本の記録を探したい
+
+そして、今日の最後に生まれたアイデアが、ランニング記録のカレンダーだった。
+
+Runner’s Ringsには、すでに1,800本以上のランニング記録が保存されている。
+
+でも、記録が多いほど、昔のランを探すのが難しくなる。
+
+「あの長距離走はいつだったっけ？」
+
+「去年の今ごろ、何km走っていたかな？」
+
+従来の一覧表示は便利だが、日付から直感的に探す方法もほしい。
+
+そこで、カレンダー表示を追加することにした。
+
+しかも、単なる日付ではない。
+
+走った日のマスに、その日の距離を表示する。
+
+同じ日に朝と夜の2回走れば、合計距離と記録本数も分かる。
+
+日付をタップすると、その日に走った記録が並び、個別の記録から地図へ移動できる。
+
+2013年の古い記録にも、年と月を選んで直接移動できる。
+
+もちろん、これまでの一覧表示も残した。
+
+そして、iPhoneで完成した画面を確認した。
+
+「これいいよ！」
+
+今日、ようやく聞けたうれしい言葉だった。
+
+走らなかった日も、年輪になる
+
+カレンダーを眺めると、不思議な発見がある。
+
+たくさん走った日。
+
+少しだけ走った日。
+
+何も記録されていない日。
+
+その並びを見ていると、当時の練習や生活のリズムが浮かんでくる。
+
+これは単なるランニング記録の検索機能ではない。
+
+自分が走ってきた時間を、振り返るためのカレンダーだ。
+
+今後はスマートフォンらしく、左右にスワイプして前月や翌月へ移動する操作も加えていきたい。
+
+できなかったことも、年輪になる
+
+今日、記録証の企画は保留になった。
+
+スマートフォンの画面改善では失敗した。
+
+AI開発者はクビになり、復帰した。
+
+でも、最後には新しいランニングカレンダーが完成した。
+
+すべてが一度で成功する必要はない。
+
+失敗して、考えて、修正して、また進む。
+
+ランニングもアプリ開発も、どこか似ている。
+
+速く進む日もあれば、立ち止まる日もある。
+
+それでも、一日一日が積み重なっていく。
+
+今日の失敗も、Runner’s Ringsの大切な一本の年輪だ。
+
+⸻
+
+Runner’s Rings — ランナーの努力を、年輪として可視化するアプリ。
+
+https://runnersrings.com/</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=AI%E9%96%8B%E7%99%BA%E8%80%85%E3%80%81%E3%82%AF%E3%83%93%E3%81%AB%E3%81%AA%E3%82%8B%E3%80%82%E2%80%94%E2%80%94%E3%81%9D%E3%82%8C%E3%81%A7%E3%82%82%E5%B9%B4%E8%BC%AA%E3%81%AF%E8%82%B2%E3%81%A3%E3%81%A6%E3%81%84%E3%81%8F&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261105-223207-e41f9e52%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-11-05">2026-11-05</time>
+      <h1>The AI Developer Got Fired — But the Growth Rings Kept Growing</h1>
+      <img class="hero" src="https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/60/c4070f93-da34-4a80-880f-e07839381271.png" alt="" loading="lazy">
+      <p class="summary">An ambitious race certificate feature was put on hold, a mobile layout improvement backfired, and our AI developer got fired. Yet the day ended with a new running calendar that makes over 1,800 saved runs easier to explore. A development diary about mistakes, persistence, and growth.</p>
+      <div class="body">We Wanted to Display Race Certificates
+
+November 5, 2026 was quite a day for Runner’s Rings.
+
+We started with an idea: let runners preserve their race certificates, display them as part of their running history, and use AI to extract race names, dates, finishing times, and rankings.
+
+A race certificate is more than a collection of numbers. It represents the preparation, challenges, and memories behind the finish line.
+
+But our experiments revealed a problem. AI reading was not reliable enough to eliminate manual corrections and verification.
+
+That raised an important question:
+
+“If runners still have to copy and enter the information themselves, why would they choose Runner’s Rings?”
+
+We wanted a distinctive experience, not just another data entry form.
+
+So we decided to put the race certificate project on hold. Perhaps more capable AI will make our original vision possible in the future.
+
+The AI Developer Got Fired
+
+Our small development team includes ChatGPT, affectionately known as Chappy, and Muse, an independent AI auditor.
+
+There is also another version of Chappy who talks about running and training.
+
+Today, the development Chappy got fired.
+
+The running adviser could stay. The developer was out.
+
+It was a rather dramatic staffing decision.
+
+AI can generate ideas and implement features quickly, but technical feasibility is not the same as a delightful user experience.
+
+A feature that creates more work for the runner is not necessarily an improvement.
+
+Eventually, development Chappy was welcomed back.
+
+But one principle remained unchanged:
+
+Chappy develops. Muse audits independently. A human makes the final decision.
+
+When a Visual Improvement Made Things Worse
+
+Next, we tried to make the mobile interface more compact.
+
+The code passed review and was deployed successfully.
+
+Then we opened the site on an iPhone.
+
+The feature cards no longer lined up neatly. Some were taller than others, leaving the layout feeling unbalanced.
+
+The change had saved space, but the result looked worse.
+
+We investigated the CSS and corrected the alignment.
+
+It was another reminder that passing a code review is not the same as passing a real-world usability test.
+
+Finding One Run Among More Than 1,800
+
+Our next challenge was much more exciting.
+
+Runner’s Rings already contained more than 1,800 saved running records.
+
+As that number grows, finding an old run becomes harder.
+
+“When was that long run?”
+
+“How far was I running around this time last year?”
+
+We decided to add a calendar alongside the existing list.
+
+Every day with recorded activity now displays its running distance. If there are multiple runs on the same day, the calendar shows their combined distance and the number of activities.
+
+Selecting a date reveals the individual runs, which can then be opened on the map.
+
+Runners can also jump directly to older years, including records dating back to 2013.
+
+The original list remains available.
+
+When the new calendar was tested on an iPhone, the reaction was simple:
+
+“This is good!”
+
+After all the frustration earlier in the day, those words meant a lot.
+
+Even Rest Days Tell a Story
+
+Looking at the calendar reveals more than distances.
+
+There are long-run days, short-run days, and days with no recorded activity at all.
+
+Together, they reveal patterns of training, rest, and everyday life.
+
+The calendar is not only a way to find a record. It is a way to revisit the time spent running.
+
+We also want to make month navigation more natural on phones, using left and right swipe gestures.
+
+Every Setback Becomes Another Growth Ring
+
+The race certificate project was postponed.
+
+A mobile layout improvement went wrong.
+
+The AI developer got fired and rehired.
+
+And yet, by the end of the day, a new running calendar was ready.
+
+Development and running have something in common: not every day is a personal best.
+
+Some days bring progress. Others bring mistakes, setbacks, and lessons.
+
+But they all become part of the journey.
+
+Even today’s failures become another growth ring in the story of Runner’s Rings.
+
+⸻
+
+Runner’s Rings — Visualize Your Running Journey as Growth Rings.
+
+https://runnersrings.com/</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=The%20AI%20Developer%20Got%20Fired%20%E2%80%94%20But%20the%20Growth%20Rings%20Kept%20Growing&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261105-223207-e41f9e52%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261105-223207-e41f9e52/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
