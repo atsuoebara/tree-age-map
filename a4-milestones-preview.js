@@ -103,8 +103,8 @@
       openList.textContent=english?'🗺 View this run on the map':'🗺 このランを地図で表示';
       hundredTitle.textContent=english?'100th run (eligible records)':'100回目のラン（対象記録内）';
       hundredNote.textContent=english
-        ? 'Counted oldest first from saved FIT and Strava running records with valid start times (including runs without GPS). Other sources are excluded. Later imports or deletions may change the 100th run. Only the first 30 km milestone currently links to a map.'
-        : '開始日時のあるFIT・Stravaの対象ランを古い順に数えます（GPSなしも含む）。他の取り込み経路は対象外です。過去のデータ追加・削除で100回目が変わる場合があります。地図への移動は現在「初30km」のみ対応しています。';
+        ? 'Counted oldest first from saved FIT and Strava running records with valid start times (including runs without GPS). Other sources are excluded. If the same activity is saved more than once, each saved record counts separately. Later imports or deletions may change the 100th run. Only the first 30 km milestone currently links to a map.'
+        : '開始日時のあるFIT・Stravaの対象ランを古い順に数えます（GPSなしも含む）。他の取り込み経路は対象外です。同じ活動が複数回保存されている場合は、それぞれ1本として数えます。過去のデータ追加・削除で100回目が変わる場合があります。地図への移動は現在「初30km」のみ対応しています。';
     }
     function clear(){
       epoch++;owner=null;lastState=null;lastHundred=null;panel.hidden=true;openList.hidden=true;result.textContent='';hundredResult.textContent='';
