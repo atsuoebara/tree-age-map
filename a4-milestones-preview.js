@@ -57,7 +57,7 @@
       else if(kind==='none')result.textContent=en()?'No run of 30 km or more was found among the eligible records.':'対象記録の中には、30km以上のランがまだ見つかっていません。';
       else if(kind==='found'){
         const d=new Date(row.started_at);
-        const date=new Intl.DateTimeFormat(en()?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(d);
+        const date=new Intl.DateTimeFormat(en()?'en-US':'ja-JP',{year:'numeric',month:'short',day:'numeric'}).format(d);
         result.textContent=(en()?'Recorded: ':'記録: ')+date+' / '+Number(row.distance_km).toFixed(2)+' km';
       }
     }
