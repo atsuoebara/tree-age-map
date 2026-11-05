@@ -9,7 +9,7 @@
       style.textContent = '#ringsTodayDashboardLink [data-lang="en"],#ringsTodayPublicLink [data-lang="en"]{display:none}html[lang="en"] #ringsTodayDashboardLink [data-lang="ja"],html[lang="en"] #ringsTodayPublicLink [data-lang="ja"]{display:none}html[lang="en"] #ringsTodayDashboardLink [data-lang="en"],html[lang="en"] #ringsTodayPublicLink [data-lang="en"]{display:inline}';
       document.head.appendChild(style);
     }
-    if (!document.getElementById('ringsTodayDashboardLink')) {
+    if (!document.getElementById('ringsTodayDashboardLink') && !document.querySelector('#dashboard .rrFeatureTiles a[href="./today.html"]')) {
       const territoryAnchor = document.querySelector('#appRoot .dashboardFeatureGroup a[href="./territory.html"]');
       const territoryGroup = territoryAnchor?.closest('.dashboardFeatureGroup');
       if (territoryGroup) {
@@ -22,7 +22,7 @@
       }
     }
 
-    if (!document.getElementById('ringsTodayPublicLink')) {
+    if (!document.getElementById('ringsTodayPublicLink') && !document.querySelector('#authArea .authPublicLinks a[href="./today.html"]')) {
       const publicTerritory = document.querySelector('#authArea .authPublicLink[href="./territory.html"]');
       if (publicTerritory) {
         const link = document.createElement('a');
@@ -125,7 +125,7 @@
   });
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById('ringsTodayDashboardLink') || !document.getElementById('rrImportRecommendationAuth')) {
+    if ((!document.getElementById('ringsTodayDashboardLink') && !document.querySelector('#dashboard .rrFeatureTiles a[href="./today.html"]')) || !document.getElementById('rrImportRecommendationAuth')) {
       boot();
     }
   });
