@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {first30km,validRoute}=require('../a4-milestones-core.js');
+const {first30km,validRoute,verifiedImportedRun}=require('../a4-milestones-core.js');
 const route=[[35.1,139.1],[35.2,139.2]];
 const base={id:1,started_at:'2026-10-01T02:00:00Z',distance_km:30,route,deleted_at:null,verifiedRun:true};
 const run=r=>first30km(r,x=>x.verifiedRun===true);
@@ -21,4 +21,25 @@ assert.equal(validRoute([[35.1,139.1],[35.2,139.2]]),true);
 assert.equal(run([{...base,route:[[0,0],[0,0]]}]),null);
 assert.equal(run([{...base,route:Array(100).fill([0,0])}]),null);
 assert.throws(()=>first30km([base]),/verifier/);
+// A-4 Strava expansion: source alone is not enough; require a linked Strava ID.
+const candidate={...base,verifiedRun:undefined,source:'strava',strava_id:123456789};
+const eligible=rows=>first30km(rows,verifiedImportedRun);
+assert.equal(eligible([{...candidate,source:'fit',strava_id:null}])?.id,1);
+assert.equal(eligible([candidate])?.id,1);
+assert.equal(eligible([{...candidate,strava_id:'123456789'}])?.id,1);
+assert.equal(eligible([{...candidate,strava_id:null}]),null);
+assert.equal(eligible([{...candidate,strava_id:0}]),null);
+assert.equal(eligible([{...candidate,source:'gpx'}]),null);
+assert.equal(eligible([{...candidate,source:'tcx'}]),null);
+assert.equal(eligible([{...candidate,source:'garmin'}]),null);
+assert.equal(eligible([{...candidate,source:'intervals'}]),null);
+assert.equal(eligible([{...candidate,source:'unknown'}]),null);
+assert.equal(eligible([{...candidate,source:'strava',distance_km:29.9995}]),null);
+assert.equal(eligible([{...candidate,source:'strava',route:[[0,0],[0,0]]}]),null);
+assert.equal(eligible([{...candidate,source:'strava',deleted_at:'2026-11-02T00:00:00Z'}]),null);
+assert.equal(eligible([{...candidate,source:'strava',started_at:null}]),null);
+assert.equal(eligible([{...candidate,id:3,started_at:'2026-10-02T00:00:00Z'},{...candidate,id:2,started_at:'2026-09-02T00:00:00Z'}])?.id,2);
+// A linked Strava row retains the previous saved route/distance: threshold
+// remains based on saved distance, never an invented Strava distance.
+assert.equal(eligible([{...candidate,source:'strava',distance_km:30,route:[[35.1,139.1],[35.2,139.2]]}])?.id,1);
 console.log('A-4 prototype tests passed');
