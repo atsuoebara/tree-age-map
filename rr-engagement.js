@@ -8,7 +8,29 @@ card.setAttribute('aria-live','polite');
 card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','今月の走りを月間振り返り動画で見る');
 card.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;width:100%;max-width:600px;box-sizing:border-box';
 card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあなたの年輪</strong><div id="rrProgressBody" style="font-size:14px;margin-top:5px">集計中…</div><div id="rrMonthlyVideoEntry" role="button" tabindex="0" style="font-size:12px;color:#aef1ff;margin-top:7px;font-weight:800">▶ 今月の走りを動画で振り返る</div><div id="rrShareNudge" hidden style="margin-top:9px"><a href="./my-today.html" style="color:#78eaff;font-weight:800">📷 今日のランニングを共有する</a> <button id="rrShareDismiss" type="button" style="margin-left:10px;padding:6px 10px;border:1px solid #6b90a1;border-radius:8px;background:transparent;color:#fff">閉じる</button></div>';
-host.insertAdjacentElement('afterend',card);
+// Keep month and anniversary summaries together without altering their actions.
+const progressPair=document.createElement('div');
+progressPair.id='rrProgressPair';
+progressPair.style.cssText='display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;min-width:0;box-sizing:border-box;align-items:stretch';
+const progressPairStyle=document.createElement('style');
+progressPairStyle.textContent=`
+  #rrProgressPair > #rrPersonalProgress,
+  #rrProgressPair > #rrYearAgoToday {
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    height:100%;
+    margin:0 !important;
+  }
+  @media (min-width:760px) {
+    #rrProgressPair:has(> #rrYearAgoToday:not([hidden])) {
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+  }
+`;
+document.head.appendChild(progressPairStyle);
+progressPair.appendChild(card);
+host.insertAdjacentElement('afterend',progressPair);
 
 /* A-3: private anniversary memory; does not publish activity or auto-create video. */
 const anniversary=document.createElement('section');
@@ -16,7 +38,7 @@ anniversary.id='rrYearAgoToday';
 anniversary.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid #78eaff;border-radius:15px;background:#122e42;color:#e9faff;line-height:1.6;width:100%;max-width:600px;box-sizing:border-box';
 anniversary.hidden=true;
 anniversary.innerHTML='<strong id="rrYearAgoTitle" style="color:#78eaff;font-size:16px"></strong><div id="rrYearAgoBody" role="status" aria-live="polite" style="font-size:14px;margin-top:6px"></div><button id="rrYearAgoReview" type="button" style="display:block;max-width:100%;margin-top:7px;padding:0;border:0;background:transparent;color:#aef1ff;font-size:12px;font-weight:800;text-align:left;line-height:1.6;cursor:pointer"></button>';
-card.insertAdjacentElement('afterend',anniversary);
+progressPair.appendChild(anniversary);
 let anniversaryState={loaded:false,items:[],date:'',error:false,loggedIn:false};
 function anniversaryDate(today){
  const [y,m,d]=today.split('-').map(Number);
