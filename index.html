@@ -4155,6 +4155,71 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     @media (max-width:350px) {
       #dashboard .rrFeatureTiles { grid-template-columns:1fr; }
     }
+    /* 2026-11-05: compact mobile signed-in controls and feature cards.
+       Only spacing and typography; keep destinations, labels and tap targets. */
+    @media (max-width:600px) {
+      #importArea {
+        gap:6px 8px;
+        padding:8px 10px 3px;
+      }
+      #importArea #savedRunsButton,
+      #importArea #cloudRunsButton,
+      #importArea #myTodayShareLink,
+      #importArea #myRingsTreeLink,
+      #importArea #a4MilestonePreviewButton {
+        min-height:44px !important;
+        padding:9px 12px !important;
+        margin:2px 0 !important;
+        max-width:100%;
+        box-sizing:border-box;
+      }
+      #importArea #myRingsTreeLink {font-size:14px !important;line-height:1.4}
+      #rrPersonalProgress,
+      #rrYearAgoToday {
+        margin:5px 0 !important;
+        padding:10px 12px !important;
+        line-height:1.45 !important;
+      }
+      #rrPersonalProgress > strong,
+      #rrYearAgoToday > strong {font-size:15px !important}
+      #rrProgressBody,
+      #rrYearAgoBody {margin-top:3px !important;line-height:1.4}
+      #rrMonthlyVideoEntry,
+      #rrYearAgoReview {margin-top:4px !important;min-height:44px}
+      #dashboard {padding:12px 10px 24px}
+      #dashboard .rrFeatureTiles {
+        gap:8px;
+        margin-bottom:16px;
+        align-items:start;
+      }
+      #dashboard .rrFeatureTiles > a,
+      #dashboard .rrFeatureTiles > .dashboardFeatureGroup > a {
+        min-height:44px !important;
+        padding:10px !important;
+        font-size:14px !important;
+        line-height:1.3 !important;
+      }
+      #dashboard .rrFeatureTiles > .dashboardFeatureGroup > a {
+        padding-bottom:4px !important;
+      }
+      #dashboard .rrFeatureTiles > a span[style*="display:block"],
+      #dashboard .rrFeatureTiles > .dashboardFeatureGroup > a span[style*="display:block"] {
+        font-size:12px !important;
+        line-height:1.3 !important;
+      }
+      #dashboard .rrFeatureTiles .dashboardFeatureLinks {
+        padding:3px 9px 8px;
+        gap:4px 8px;
+        font-size:11px;
+        line-height:1.35;
+      }
+      #dashboard .rrFeatureTiles > a {
+        min-height:54px !important;
+      }
+      #dashboard .rrFeatureTiles > .dashboardFeatureGroup {
+        align-self:start;
+      }
+    }
   </style>
     <div class="rrFeatureTiles" aria-label="Runner's Rings features">
     <a href="./journal.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff2bd6;border-radius:16px;background:linear-gradient(135deg,rgba(255,43,214,.58),#452344 54%,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">📖 Rings Journal <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">開発・ランニングの物語 →</span><span data-art-lang="en">Running stories and development →</span></span></a>
