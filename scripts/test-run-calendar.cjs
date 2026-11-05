@@ -29,6 +29,7 @@ assert.ok(html.includes('id="runCalendarQuickButton"'));
 assert.ok(html.includes('id="cloudRunsList"'),'original list must remain');
 assert.ok(html.includes('id="historySortArea"'),'original sort controls must remain');
 assert.ok(source.includes('rrCalOwner===currentUser.id'),'owner isolation');
+assert.ok(source.includes('supabaseClient.auth.onAuthStateChange'),'auth transition clears calendar');
 assert.ok(source.includes('focusCloudRun(row)'),'route focus must be reused');
 assert.ok(source.includes('rrRunCalendarYear'),'year picker must be available');
 assert.ok(source.includes('rrRunCalendarMonthSelect'),'month picker must be available');
