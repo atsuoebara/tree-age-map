@@ -1,0 +1,38 @@
+name: C-3 generate PWA icons (PR branch only)
+
+on:
+  push:
+    branches:
+      - feature/c3-pwa-install-foundation-20261106
+    paths:
+      - scripts/generate-pwa-icons.py
+      - .github/workflows/c3-generate-pwa-icons.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.ref == 'refs/heads/feature/c3-pwa-install-foundation-20261106'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check Pillow==11.1.0
+      - name: Generate and verify icons
+        run: python scripts/generate-pwa-icons.py
+      - name: Commit icons to PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/pwa/icon-192.png assets/pwa/icon-512.png assets/pwa/icon-maskable-512.png assets/pwa/apple-touch-icon.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Generate verified PWA icons from existing icon.PNG"
+            git push
+          fi
