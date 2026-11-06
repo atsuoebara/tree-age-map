@@ -34,5 +34,9 @@ jobs:
           git add assets/pwa/icon-192.png assets/pwa/icon-512.png assets/pwa/icon-maskable-512.png assets/pwa/apple-touch-icon.png
           if ! git diff --cached --quiet; then
             git commit -m "Generate verified PWA icons from existing icon.PNG"
-            git push
+            # Other PR-branch edits may have landed while the icons were generated.
+            # Rebase the generated-only commit before pushing; never force-push.
+            git fetch origin feature/c3-pwa-install-foundation-20261106
+            git rebase origin/feature/c3-pwa-install-foundation-20261106
+            git push origin HEAD:feature/c3-pwa-install-foundation-20261106
           fi
