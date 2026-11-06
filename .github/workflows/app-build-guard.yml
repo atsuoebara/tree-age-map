@@ -1,0 +1,30 @@
+name: APP_BUILD increment guard
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - scripts/check-build-version.py
+      - .github/workflows/app-build-guard.yml
+
+permissions:
+  contents: read
+
+jobs:
+  require-build-increment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify index.html release build
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
+          python scripts/check-build-version.py "$BASE_SHA" "$HEAD_SHA"
