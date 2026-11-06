@@ -1,6 +1,6 @@
 /* Runner's Rings C-3: narrowly scoped, opt-in-lifecycle static asset cache.
    Keep this build identical to APP_BUILD in index.html. No skipWaiting or clients.claim. */
-const RR_BUILD = '2026.11.06.03';
+const RR_BUILD = '2026.11.06.04';
 const RR_CACHE = 'rr-static-' + RR_BUILD;
 const RR_OFFLINE = '/offline.html';
 const RR_STATIC = [
@@ -51,7 +51,9 @@ self.addEventListener('fetch', event => {
       (url.pathname === '/' || url.pathname === '/index.html') &&
       !url.search) {
     event.respondWith(
-      fetch(request).catch(async () => {
+      // Avoid the browser HTTP cache: an offline reload must not replay
+      // an old login page instead of showing the dedicated offline screen.
+      fetch(new Request(request, { cache: 'no-store' })).catch(async () => {
         const cache = await caches.open(RR_CACHE);
         return (await cache.match(RR_OFFLINE)) ||
           new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
