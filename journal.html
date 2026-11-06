@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://runnersrings.com/journal.html">
 <meta property="og:title" content="Rings Journal｜開発・ランニングノート">
 <meta property="og:description" content="Rings Journal。地域走破、地図、データ連携、開発の考え方など、Runner's Ringsならではの機能と背景を紹介します。">
-<link rel="canonical" href="https://runnersrings.com/journal.html"><script>(function(){try{var v=localStorage.getItem('runners-rings-language');if(v==='ja'||v==='en')document.documentElement.lang=v;}catch(e){}})();</script>
+<link rel="canonical" href="https://runnersrings.com/journal.html"><script>(function(){var explicit=new URLSearchParams(location.search).get('lang')==='en';var v=null;try{if(explicit)localStorage.setItem('runners-rings-language','en');v=localStorage.getItem('runners-rings-language');}catch(e){}if(explicit||v==='en'||v==='ja')document.documentElement.lang=explicit?'en':v;})();</script>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
 <script>
@@ -312,12 +312,14 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 
 <script>
 const languageButtons=document.querySelectorAll('.languageButton');
-const savedLanguage=localStorage.getItem('runners-rings-language')||'ja';
+let savedLanguage=document.documentElement.lang==='en'?'en':'ja';
+try{const storedLanguage=localStorage.getItem('runners-rings-language');if(storedLanguage==='ja'||storedLanguage==='en')savedLanguage=storedLanguage;}catch(_){}
+if(new URLSearchParams(location.search).get('lang')==='en')savedLanguage='en';
 function applyLanguage(language){
   const nextLanguage=language==='en'?'en':'ja';
   document.documentElement.lang=nextLanguage;
   languageButtons.forEach(button=>button.classList.toggle('isActive',button.dataset.language===nextLanguage));
-  localStorage.setItem('runners-rings-language',nextLanguage);
+  try{localStorage.setItem('runners-rings-language',nextLanguage);}catch(_){}
 }
 languageButtons.forEach(button=>button.addEventListener('click',()=>applyLanguage(button.dataset.language)));
 applyLanguage(savedLanguage);

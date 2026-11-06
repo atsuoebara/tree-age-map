@@ -59,6 +59,8 @@ document.getElementById('ja').addEventListener('click',()=>setLanguage('ja'));do
 // Synchronize the independently rendered interview cards with the shared navbar language.
 new MutationObserver(()=>{const next=document.documentElement.lang==='en'?'en':'ja';if(next!==mode)setLanguage(next);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 try{if(localStorage.getItem('runners-rings-language')==='en')mode='en';}catch(_){}
+// An explicit English entry from /en/ overrides an older Japanese preference.
+if(new URLSearchParams(location.search).get('lang')==='en')mode='en';
 setLanguage(mode);
 if(!window.supabase){state='error';render();return;}
 try{const db=window.supabase.createClient(URL_BASE,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
