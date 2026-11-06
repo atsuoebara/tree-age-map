@@ -48,7 +48,7 @@
     later.textContent = en ? 'Later' : 'あとで';
     for (const button of [instructions, later]) {
       Object.assign(button.style, {
-        border: '1px solid #78eaff', borderRadius: '9px', padding: '8px 12px',
+        border: '1px solid #78eaff', borderRadius: '9px', padding: '11px 12px', minHeight: '44px',
         background: '#173e54', color: '#fff', font: 'inherit', cursor: 'pointer'
       });
       buttons.append(button);
@@ -96,8 +96,25 @@
           if (installing.state === 'installed') inspectWaiting(registration);
         });
       });
-      // Explicitly look for a newer SW on a visit; never auto-activate it.
-      registration.update().catch(() => {});
+      // A restored iPhone/PWA view may not reload. Check when the user returns,
+      // but never replace the page or activate a waiting worker automatically.
+      let checking = false;
+      function checkForUpdate() {
+        if (checking || !navigator.onLine) return;
+        checking = true;
+        inspectWaiting(registration);
+        registration.update().catch(() => {}).finally(() => {
+          checking = false;
+          inspectWaiting(registration);
+        });
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkForUpdate();
+      });
+      window.addEventListener('pageshow', event => {
+        if (event.persisted) checkForUpdate();
+      });
+      checkForUpdate();
     }).catch(error => {
       console.warn("Runner's Rings Service Worker registration skipped:", error);
     });
