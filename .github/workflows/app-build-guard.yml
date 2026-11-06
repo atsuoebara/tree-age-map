@@ -5,6 +5,8 @@ on:
     paths:
       - index.html
       - scripts/check-build-version.py
+      - scripts/check-pwa-build.py
+      - sw.js
       - .github/workflows/app-build-guard.yml
 
 permissions:
@@ -28,3 +30,4 @@ jobs:
         run: |
           git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
           python scripts/check-build-version.py "$BASE_SHA" "$HEAD_SHA"
+          python scripts/check-pwa-build.py
