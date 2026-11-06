@@ -4453,7 +4453,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.06.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.06.02'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -30541,6 +30541,17 @@ updateScrollToTopButton();
 <script defer src="/rr-engagement.js?v=20261105-side-by-side-01"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 <script defer src="/rr-site-nav.js?v=2026102907"></script>
+<!-- C-3: register after load; do not activate updates or reload automatically. -->
+<script>
+(function () {
+  if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (error) {
+      console.warn('Runner\'s Rings Service Worker registration skipped:', error);
+    });
+  }, { once: true });
+})();
+</script>
 <!-- Duplicate homepage translation patch retired: index.html is canonical. -->
 </body>
 </html>
