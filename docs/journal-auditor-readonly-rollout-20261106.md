@@ -1,6 +1,6 @@
 # Journal audit read-only account — implementation and QA plan (2026-11-06)
 
-Status: PREPARED ONLY. No audit-user account or RLS policy has been created.
+Status: DEPLOYED — independent real-token acceptance test PASSED per Muse's 2026-11-06 report. Password rotation and Secure Vault refresh remain operational follow-up.
 
 ## Goal
 Give one designated Supabase Auth user read-only access to `public.journal_posts` drafts for independent auditing. No `runs` access, no service_role sharing, no broadened read permissions for other registered users.
@@ -56,3 +56,12 @@ Only `journal_posts` SELECT is intended. The auditor's `authenticated` role may 
 - Ranking, Territory, regional rings, and public statistics: live UI verification pending.
 - Strava synchronization and file-import: actual end-to-end verification pending.
 - No rollback of the two `runs` policy removals unless an actual breakage merits incident response; broad access restoration has privacy cost.
+
+## Deployment and independent acceptance — 2026-11-06
+- A dedicated, confirmed Supabase Auth user was created; verified UID: `11384155-5321-4c59-902d-91e3bca94359`.
+- Production migration `grant_journal_auditor_select_only_20261106` added one UID-constrained `FOR SELECT TO authenticated` policy on `public.journal_posts`. The five original policies were retained unchanged.
+- Chappy's role-simulated RLS checks: draft ID 62 readable by auditor UID, private non-Journal tables returned 0 rows, unrelated user could not read draft.
+- **Muse independently reports successful actual email/password authentication and token-based access testing**: 59 Journal rows visible (50 published + 9 drafts); draft ID 62 readable; INSERT failed with HTTP 403; UPDATE and DELETE affected 0 rows; article 62 and `updated_at` stayed unchanged; `runs`, `ranking_settings`, `region_rings_consent`, `strava_connections`, `strava_oauth_states` each returned 0 rows; anonymous client still saw only 50 published posts.
+- **Result: Auditor access implementation accepted as complete (per independent Muse audit).**
+- **Operations to complete:** rotate the auditor password used for initial verification and refresh the secure credential vault entry; keep credentials and tokens out of chat and source control. Rotation has not yet been confirmed in this document.
+- This does **not** constitute acceptance of the separate `runs` remediation end-to-end ingestion tests. Those remain open until post-fix authenticated INSERT, Strava sync and file-import evidence are collected.
