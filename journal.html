@@ -54,7 +54,7 @@ footer a{color:#cbd5e1;text-decoration:none}footer a:hover{color:#ff2bd6}
 .lead{margin:14px 0 26px;color:#b9c6d6;font-size:14px;line-height:1.85}
 .articleCard{display:block;margin:0 0 14px;padding:18px;border-radius:16px;background:#132237;border:1px solid rgba(255,255,255,.08);color:inherit;text-decoration:none}
 .articleCard:hover{border-color:rgba(255,43,214,.55)}
-.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
+.articleDate{color:#8796aa;font-size:11px;margin-bottom:8px}.articleNewBadge{display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 7px;border-radius:999px;background:#eaff00;color:#112136;font-size:10px;font-weight:900;line-height:1.4;pointer-events:none}.articleTitle{font-size:19px;font-weight:800;line-height:1.5}
 .articleText{margin-top:8px;color:#b9c6d6;font-size:13px;line-height:1.75}
 .articleTag{display:inline-block;margin-top:12px;padding:5px 9px;border-radius:999px;background:rgba(234,255,0,.08);color:#eaff00;font-size:10px;font-weight:800}
 .buttonArea{margin-top:34px;text-align:center}.mainButton{display:inline-block;padding:12px 24px;border-radius:12px;background:#ff2bd6;color:#fff;font-size:13px;font-weight:800;text-decoration:none}
@@ -372,13 +372,30 @@ applyLanguage(savedLanguage);
     } catch (_) {}
     return null;
   }
+  // NEW is based on the publication instant and JST calendar days, not updated_at.
+  function isRecentPublished(publishedAt) {
+    if (typeof publishedAt !== 'string' || !publishedAt.trim()) return false;
+    const published = Date.parse(publishedAt);
+    const now = Date.now();
+    if (!Number.isFinite(published) || published > now) return false;
+    const jstOffset = 9 * 60 * 60 * 1000;
+    const day = 24 * 60 * 60 * 1000;
+    const age = Math.floor((now + jstOffset) / day) - Math.floor((published + jstOffset) / day);
+    return age >= 0 && age < 7;
+  }
   function makeCard(post, lang) {
     const link = document.createElement('a');
     link.className = 'articleCard';
     link.href = './journal/articles/' + encodeURIComponent(post.slug) + '/';
     const img = safeImage(post.image_url);
     if (img) {const photo=document.createElement('img');photo.className='cardImage';photo.src=img;photo.alt='';photo.loading='lazy';link.append(photo);}
-    link.append(textElement('div','articleDate',formatDate(post.published_at)));
+    const dateRow = textElement('div','articleDate',formatDate(post.published_at));
+    if (isRecentPublished(post.published_at)) {
+      const badge = textElement('span','articleNewBadge','NEW');
+      badge.setAttribute('aria-label',lang==='en'?'New article':'新しい記事');
+      dateRow.append(badge);
+    }
+    link.append(dateRow);
     link.append(textElement('div','articleTitle',post['title_'+lang] || post.title_ja || post.title_en || 'Journal'));
     link.append(textElement('div','articleText',post['summary_'+lang] || post.summary_ja || post.summary_en || ''));
     link.append(textElement('span','articleTag',post.category || 'Journal'));
