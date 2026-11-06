@@ -26,3 +26,9 @@ Scope: production database role-simulation via SQL. No persistent user data modi
 - Owner-only SELECT RLS row isolation confirmed.
 - Owner-only UPDATE in safe transaction now confirmed.
 - Public RPC read-only tests independently accepted by Muse.
+
+## User-reported production UI smoke check (2026-11-06)
+- Atsuo opened Runner’s Rings after the runs RLS fix and reported the initial map/rings/running-data display appeared normal.
+- Asked to verify Ranking; Atsuo then reported: “テリトリーも他も大丈夫” (Territory and other screens look fine).
+- Count as **user-reported UI smoke check, no obvious regressions**; not independent automated UI verification and not a detailed screenshot-based test of each view or responsive layout. Do not assert every individual screen was checked unless specifically evidenced.
+- No Strava sync or new file import was performed for this check: user reported no new run. Actual fresh INSERT and related sync pathways remain pending.
