@@ -1,0 +1,19 @@
+{
+  "name": "Runner's Rings",
+  "short_name": "Runner's Rings",
+  "description": "Visualize Your Running Journey as Growth Rings",
+  "lang": "ja",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1828",
+  "theme_color": "#0d1828",
+  "icons": [
+    {
+      "src": "/icon.PNG",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
