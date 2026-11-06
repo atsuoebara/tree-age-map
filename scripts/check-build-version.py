@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Require a strictly newer APP_BUILD when a PR changes index.html."""
+from datetime import date, datetime, timedelta, timezone
 import re
 import subprocess
 import sys
@@ -17,7 +18,6 @@ def parse_build(commit):
         raise ValueError(f"{commit}: expected exactly one APP_BUILD constant, found {len(matches)}")
     result = tuple(int(part) for part in matches[0].split("."))
     year, month, day, sequence = result
-    from datetime import date
     date(year, month, day)  # Reject malformed calendar dates.
     if sequence < 1:
         raise ValueError("Build sequence must start at 1")
@@ -31,6 +31,14 @@ def main(base, head):
         return 0
     old, old_str = parse_build(base)
     new, new_str = parse_build(head)
+    build_date = date(*new[:3])
+    latest_allowed_date = datetime.now(timezone.utc).date() + timedelta(days=1)
+    if build_date > latest_allowed_date:
+        print(
+            f"FAIL: future APP_BUILD date {build_date} is after UTC today + 1 day ({latest_allowed_date})",
+            file=sys.stderr,
+        )
+        return 1
     if new <= old:
         print(f"FAIL: index.html changed, but APP_BUILD was not advanced: {old_str} -> {new_str}", file=sys.stderr)
         return 1
