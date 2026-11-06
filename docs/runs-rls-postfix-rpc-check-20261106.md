@@ -9,12 +9,15 @@
 | anon `ranking_distance(2026)` | 26 rows | SQL function executes |
 | anon `ranking_distance_monthly(2026,11)` | 26 rows | SQL function executes |
 | anon `ranking_nations(2026)` | 2 rows | SQL function executes |
-| anon `ranking_explore(2026,'JPN')` | 0 rows | Function executes; expected row count NOT established |
+| anon `ranking_explore(2026,'JPN')` | 0 rows | Three-letter country code was incorrect for this RPC; negative-control call only |
+| anon `ranking_explore(2026,'JP')` | **4 rows** | Correct two-letter country code; independently reproduced by Muse |
 | anon `territory_leaders(2026)` | 34 rows | SQL function executes |
 | anon `territory_my_lead_count(2026,'JPN','MUNICIPALITY')` | permission denied (42501) | Intended private function not executable by anon |
 | anon `get_my_region_rings('JPN','1001',2026)` | permission denied (42501) | Intended private function not executable by anon |
 | authenticated with JWT sub matching an existing owner; `territory_my_lead_count(2026,'JPN','MUNICIPALITY')` | 15 | Function executes in role simulation |
 | authenticated with JWT sub matching same owner; `get_my_region_rings('JPN','1001',2026)` | 0 rows | Function executes; region code is a placeholder, so no positive data assertion |
+
+**Correction / discrepancy closed:** On 2026-11-06, re-executed the function with `p_year=2026`, `p_country='JPN'` (0 rows) and `p_country='JP'` (4 rows). The underlying 2026 `ranking_explore_verified.run_country` codes use ISO-style two-letter values (`JP`, `US`, `GB`, `KR`), and the RPC filters against `upper(p_country)`. The original test used a wrong three-letter value. The four-row outcome agrees with Muse's independent result. No RLS or function code was changed.
 
 **Important boundaries:** Results were gathered via production SQL session using `SET LOCAL ROLE` and a transaction-scoped `request.jwt.claim.sub` to simulate roles, with `ROLLBACK`. These are not end-to-end browser/API tests. Report counts only, not athlete details. Do not treat 0 rows as a failure or success of data correctness without expected fixtures.
 
