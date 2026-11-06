@@ -3,7 +3,7 @@
 import re
 import subprocess
 import sys
-
+PATTERN = re.compile(r"\bconst\s+APP_BUILD\s*=\s*['\"](\d{4}\.\d{2}\.\d{2}\.\d+)['\"]")
 PATTERN = re.compile(r"\\bconst\\s+APP_BUILD\\s*=\\s*['\"](\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d+)['\"]")
 
 
