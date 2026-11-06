@@ -1,6 +1,6 @@
 /* Runner's Rings C-3: narrowly scoped, opt-in-lifecycle static asset cache.
    Keep this build identical to APP_BUILD in index.html. No skipWaiting or clients.claim. */
-const RR_BUILD = '2026.11.06.04';
+const RR_BUILD = '2026.11.06.05';
 const RR_CACHE = 'rr-static-' + RR_BUILD;
 const RR_OFFLINE = '/offline.html';
 const RR_STATIC = [
@@ -59,5 +59,13 @@ self.addEventListener('fetch', event => {
           new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
       })
     );
+  }
+});
+
+/* Only describe this waiting worker's build; do not activate it from a page. */
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'RR_GET_BUILD' &&
+      event.ports && event.ports[0]) {
+    event.ports[0].postMessage({ type: 'RR_BUILD_INFO', build: RR_BUILD });
   }
 });
