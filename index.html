@@ -897,6 +897,16 @@
     .rrRunCalendarSwitcher button{min-height:44px;padding:9px 13px;border:1px solid #70a38d;border-radius:10px;background:#142a2b;color:#fff;font-weight:700;cursor:pointer}
     .rrRunCalendarSwitcher button[aria-pressed="true"]{background:#296b48;border-color:#86eda5}
     .rrRunCalendarMode{margin:10px 0 16px;border:1px solid #4b826f;border-radius:14px;padding:12px;min-width:0;background:#102c27}
+    .rrCalendarShareActions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:10px 0 14px}
+    .rrCalendarShareActions button{min-height:44px;padding:10px 14px;border:1px solid #91ecc1;border-radius:10px;background:#22644f;color:#fff;font-weight:800;cursor:pointer}
+    .rrCalendarShareActions button:disabled{opacity:.45;cursor:not-allowed}
+    #rrCalShareStatus{font-size:12px;color:#c6efda}
+    .rrCalShareOverlay{position:fixed;inset:0;z-index:999999;background:rgba(2,10,18,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;overflow:auto}
+    .rrCalShareOverlay[hidden]{display:none}
+    .rrCalShareOverlay img{max-width:min(94vw,520px);max-height:65vh;object-fit:contain;border-radius:12px}
+    .rrCalShareControls{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}
+    .rrCalShareControls button{min-height:44px;padding:11px 16px;border-radius:10px;background:#214f71;border:1px solid #8ddaff;color:#fff;font-weight:750}
+    .rrCalShareControls button:disabled{opacity:.45}
     .rrRunCalendarHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;text-align:center}
     .rrRunCalendarSelectors{display:flex;justify-content:center;gap:4px;flex:1;min-width:0}
     .rrRunCalendarSelectors label{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
@@ -3756,6 +3766,10 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         <button type="button" id="rrRunCalendarNext" aria-label="Next month">›</button>
       </div>
       <div id="rrRunCalendarMonthSummary" aria-live="polite" style="font-size:13px;color:#c9f9da;margin:4px 0 10px"></div>
+      <div class="rrCalendarShareActions">
+        <button type="button" id="rrCalPreviewShare" disabled><span data-art-lang="ja">📷 月間カレンダーを共有</span><span data-art-lang="en">📷 Share monthly calendar</span></button>
+        <span id="rrCalShareStatus" role="status" aria-live="polite"></span>
+      </div>
       <div class="rrRunCalendarWeek" id="rrRunCalendarWeek"></div>
       <div class="rrRunCalendarDays" id="rrRunCalendarDays"></div>
       <div class="rrRunCalendarDayRecords" id="rrRunCalendarDayRecords" aria-live="polite"></div>
@@ -4453,7 +4467,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.07.02'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.07.03'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -13309,6 +13323,7 @@ function rrCalDate(row){
 function rrCalRender(){
  if(rrCalMode!=='calendar')return;
  const english=rrCalEnglish(),logged=!!currentUser?.id&&rrCalOwner===currentUser.id;
+ rrCalShareButton.disabled=!logged;
  const monthStart=String(rrCalYear).padStart(4,'0')+'-'+String(rrCalMonth+1).padStart(2,'0')+'-';
  // Year selector lets runners jump directly to old Nike+/race records.
  const yearSelect=document.getElementById('rrRunCalendarYear'),monthSelect=document.getElementById('rrRunCalendarMonthSelect');
@@ -13371,12 +13386,129 @@ function rrCalRender(){
   b.append(name,distance);b.onclick=()=>focusCloudRun(row);rrCalRecords.append(b);
  }
 }
+
+/* Calendar share is explicitly initiated by the signed-in owner.
+   It only draws aggregate distance and counts; no GPS route, names or IDs. */
+let rrCalSharePreview=null;
+const rrCalShareButton=document.getElementById('rrCalPreviewShare');
+const rrCalShareStatus=document.getElementById('rrCalShareStatus');
+function rrCalShareAllowed(){return rrCalMode==='calendar'&&!!currentUser?.id&&rrCalOwner===currentUser.id}
+function rrCalShareRows(){
+ const prefix=String(rrCalYear).padStart(4,'0')+'-'+String(rrCalMonth+1).padStart(2,'0')+'-';
+ return cloudRows.filter(row=>rrCalDate(row).startsWith(prefix));
+}
+function rrCalShareMonthData(){
+ if(!rrCalShareAllowed())throw new Error('Calendar share requires owner session');
+ const rows=rrCalShareRows(),days=new Map(),last=new Date(rrCalYear,rrCalMonth+1,0).getDate();
+ for(const row of rows){
+  const day=Number(rrCalDate(row).slice(-2));
+  if(day<1||day>last)continue;
+  const dist=row.distance_km;
+  const km=dist!==null&&dist!==undefined&&dist!==''&&Number.isFinite(Number(dist))&&Number(dist)>=0?Number(dist):null;
+  const v=days.get(day)||{count:0,km:0,known:0};
+  v.count++;if(km!==null){v.km+=km;v.known++}days.set(day,v);
+ }
+ return {year:rrCalYear,month:rrCalMonth+1,days,last,runs:rows.length,
+  known:Array.from(days.values()).reduce((a,v)=>a+v.known,0),
+  km:Array.from(days.values()).reduce((a,v)=>a+v.km,0)};
+}
+function rrCalDrawShareCard(data,english){
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1480;
+ const c=canvas.getContext('2d');if(!c)throw Error('Canvas unavailable');
+ const W=canvas.width;
+ const bg=c.createLinearGradient(0,0,W,1480);bg.addColorStop(0,'#09192b');bg.addColorStop(1,'#114635');
+ c.fillStyle=bg;c.fillRect(0,0,W,1480);
+ function text(t,x,y,size,color='#ffffff',weight=600,align='left'){
+  c.textAlign=align;c.fillStyle=color;c.font=weight+' '+size+'px -apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif';c.fillText(String(t),x,y);
+ }
+ function rounded(x,y,w,h,r,color){
+  c.fillStyle=color;c.beginPath();c.roundRect(x,y,w,h,r);c.fill();
+ }
+ text("Runner's Rings",62,91,43,'#b6f2d7',800);
+ text(english?'MY RUNNING CALENDAR':'私のランニングカレンダー',62,161,43,'#ffffff',800);
+ text(data.year+' / '+String(data.month).padStart(2,'0'),62,246,70,'#ffffff',800);
+ rounded(60,290,960,148,24,'#1b5b4a');
+ text(english?'MONTHLY DISTANCE':'月間走行距離',91,337,25,'#c0f5db',600);
+ text((data.known?data.km.toFixed(1):'—')+' km',92,408,62,'#ffffff',800);
+ text(english?'RUNS':'ラン回数',734,337,25,'#c0f5db',600);
+ text(data.runs,734,408,62,'#ffffff',800);
+ const startX=60,gap=7,cellW=(960-gap*6)/7,cellH=112,headY=508,gridY=563;
+ const weekday=english?['SUN','MON','TUE','WED','THU','FRI','SAT']:['日','月','火','水','木','金','土'];
+ for(let i=0;i<7;i++)text(weekday[i],startX+i*(cellW+gap)+cellW/2,headY,24,'#b8e4d0',650,'center');
+ const leading=new Date(data.year,data.month-1,1).getDay();
+ for(let day=1;day<=data.last;day++){
+  const index=leading+day-1,col=index%7,row=Math.floor(index/7);
+  const x=startX+col*(cellW+gap),y=gridY+row*(cellH+gap),entry=data.days.get(day);
+  rounded(x,y,cellW,cellH,12,entry?'#257159':'#173a35');
+  text(day,x+13,y+30,24,'#ffffff',700);
+  if(entry){
+   text(entry.known?entry.km.toFixed(1)+'km':'—',x+cellW/2,y+77,26,'#ffffff',800,'center');
+   if(entry.count>1)text(entry.count+(english?' runs':'本'),x+cellW/2,y+110,20,'#c7f6df',550,'center');
+  }
+ }
+ const gridBottom=gridY+6*(cellH+gap);
+ text(english?'Based on saved runs · activity dates':'保存済みランの活動日をもとに表示',62,gridBottom+48,25,'#bedecf',500);
+ if(data.known<data.runs)text(english?'Some distances are unknown.':'一部の記録は距離不明です。',62,gridBottom+84,22,'#e8dca4',500);
+ c.fillStyle='#64dda6';c.fillRect(60,1377,960,2);
+ text("Visualize Your Running Journey as Growth Rings",60,1414,24,'#ddf4e8',550);
+ text('runnersrings.com',60,1453,22,'#92dfbf',600);
+ return canvas;
+}
+async function rrCalBlob(){
+ const data=rrCalShareMonthData();
+ const canvas=rrCalDrawShareCard(data,rrCalEnglish());
+ return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG creation failed')),'image/png'));
+}
+function rrCalSaveBlob(blob){
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='runners-rings-calendar-'+rrCalYear+'-'+String(rrCalMonth+1).padStart(2,'0')+'.png';
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+function rrCalClosePreview(){
+ const p=rrCalSharePreview;if(!p)return;
+ rrCalSharePreview=null;p.overlay.remove();URL.revokeObjectURL(p.url);
+}
+function rrCalShowPreview(blob){
+ rrCalClosePreview();
+ const english=rrCalEnglish(),url=URL.createObjectURL(blob),overlay=document.createElement('div');
+ overlay.className='rrCalShareOverlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+ overlay.setAttribute('aria-label',english?'Calendar image preview':'カレンダー共有画像のプレビュー');
+ const img=document.createElement('img');img.src=url;img.alt=english?'Monthly running calendar image':'月間ランニング記録カレンダーの共有画像';
+ const controls=document.createElement('div');controls.className='rrCalShareControls';
+ function action(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;controls.append(b);return b}
+ action(english?'Save image':'画像を保存',()=>{if(rrCalShareAllowed())rrCalSaveBlob(blob)});
+ const share=action(english?'Share image':'画像を共有',async()=>{
+  if(!rrCalShareAllowed())return;
+  const file=new File([blob],'runners-rings-calendar.png',{type:'image/png'});
+  if(navigator.share&&navigator.canShare?.({files:[file]})){
+   try{await navigator.share({files:[file],title:"Runner's Rings"});return}catch(e){if(e?.name==='AbortError')return;console.warn(e)}
+  }
+  rrCalSaveBlob(blob);
+ });
+ action(english?'Close':'閉じる',rrCalClosePreview);
+ overlay.append(img,controls);document.body.append(overlay);
+ rrCalSharePreview={overlay,url};overlay.addEventListener('click',e=>{if(e.target===overlay)rrCalClosePreview()});
+ share.focus();
+}
+rrCalShareButton.onclick=async()=>{
+ if(!rrCalShareAllowed())return;
+ rrCalShareButton.disabled=true;
+ rrCalShareStatus.textContent=rrCalEnglish()?'Creating image…':'画像を作成しています…';
+ try{
+  const blob=await rrCalBlob();
+  if(!rrCalShareAllowed())return;
+  rrCalShowPreview(blob);rrCalShareStatus.textContent='';
+ }catch(e){console.error('Calendar share:',e);rrCalShareStatus.textContent=rrCalEnglish()?'Could not create image.':'画像を作成できませんでした。'}
+ finally{rrCalShareButton.disabled=!rrCalShareAllowed()}
+};
+
 function rrCalSetMode(mode){
  rrCalMode=mode==='calendar'?'calendar':'list';
  const calendar=rrCalMode==='calendar';
  document.getElementById('cloudRunsList').style.display=calendar?'none':'';
  document.getElementById('historySortArea').style.display=calendar?'none':'';
  rrCalEl.hidden=!calendar;
+ if(!calendar)rrCalClosePreview();rrCalShareButton.disabled=!calendar||!rrCalShareAllowed();
  document.querySelectorAll('[data-rr-run-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.rrRunMode===rrCalMode)));
  if(calendar)rrCalRender();
 }
@@ -13387,7 +13519,7 @@ document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrC
 document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
  if(!session?.user?.id || (rrCalOwner && session.user.id!==rrCalOwner)){
-  rrCalOwner=null;rrCalDay=null;
+  rrCalOwner=null;rrCalDay=null;rrCalClosePreview();
   rrCalSetMode('list');
   rrCalGrid.replaceChildren();rrCalRecords.replaceChildren();
  }
