@@ -24,6 +24,47 @@ function html(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+// Approved, static affiliate placements for published articles. Never store HTML in journal_posts.
+// Isolated by slug and language; blocks are sourced from the audited PR #63 article diffs.
+const AFFILIATE_BLOCKS = {
+  "journal-20260927-221326-00b55b1a": {
+    "ja": "<aside class=\"rr-affiliate-block\" aria-label=\"アフィリエイト商品紹介\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>筆者の使用ウォッチ</strong><p>筆者（Atsuo）が普段使っているのは、Garmin の <a href=\"https://www.amazon.co.jp/dp/B0GZ294HH3?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Forerunner 170</a> です。この記事の記録画面も、このウォッチで計測したものが元になっています。</p><p style=\"font-size:.85rem;margin:.7rem 0 0\">※この記事にはアフィリエイトリンク（広告）が含まれます</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">Amazonのアソシエイトとして、Runner's Rings は適格販売により収入を得ています</p></aside>",
+    "en": "<aside class=\"rr-affiliate-block\" aria-label=\"Affiliate product information\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>Watch used by the author</strong><p>Atsuo regularly uses the Garmin <a href=\"https://www.amazon.co.jp/dp/B0GZ294HH3?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Forerunner 170</a>. The recording screen shown in this article is based on data captured with this watch.</p><p style=\"font-size:.85rem;margin:.7rem 0 0\">This article contains affiliate links (advertising).</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">As an Amazon Associate, Runner's Rings earns from qualifying purchases.</p></aside>"
+  },
+  "journal-20261018-083832-ab6cebf6": {
+    "ja": "<aside class=\"rr-affiliate-block\" aria-label=\"アフィリエイト商品紹介\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>筆者のレース補給</strong><p>参考までに、筆者がレースで携帯しているのは <a href=\"https://www.amazon.co.jp/dp/B0FVSK9LN8?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">オレは摂取す</a> と <a href=\"https://www.amazon.co.jp/dp/B07GN7G7CF?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">WINZONE エナジージェル（パイナップル味）</a> です。ジェルは胃腸との相性に個人差が大きいので、どれを使うにしても本番前に練習で試しておくことが大切です。</p><p style=\"font-size:.85rem;margin:.7rem 0 0\">※この記事にはアフィリエイトリンク（広告）が含まれます</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">Amazonのアソシエイトとして、Runner's Rings は適格販売により収入を得ています</p></aside>",
+    "en": "<aside class=\"rr-affiliate-block\" aria-label=\"Affiliate product information\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>Race fuel carried by the author</strong><p>Atsuo carries <a href=\"https://www.amazon.co.jp/dp/B0FVSK9LN8?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Ore wa Sesshu Su energy gel</a> and <a href=\"https://www.amazon.co.jp/dp/B07GN7G7CF?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">WINZONE Energy Gel (pineapple)</a> during races. Gel tolerance varies from person to person, so test your preferred products during training before race day.</p><p style=\"font-size:.85rem;margin:.7rem 0 0\">This article contains affiliate links (advertising).</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">As an Amazon Associate, Runner's Rings earns from qualifying purchases.</p></aside>"
+  },
+  "journal-20261103-160001-899a9d1d": {
+    "ja": "<aside class=\"rr-affiliate-block\" aria-label=\"アフィリエイト商品紹介\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>使用ギア</strong><ul><li>ウォッチ：<a href=\"https://www.amazon.co.jp/dp/B0GZ294HH3?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Garmin Forerunner 170</a></li><li>シューズ：ASICS メタスピードエッジ TOKYO（Green Gecko/Black、1013A163.300）※Amazonの商品リンクは確認中</li><li>ジェル：<a href=\"https://www.amazon.co.jp/dp/B0FVSK9LN8?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">オレは摂取す</a>／<a href=\"https://www.amazon.co.jp/dp/B07GN7G7CF?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">WINZONE エナジージェル（パイナップル味）</a></li></ul><p style=\"font-size:.85rem;margin:.7rem 0 0\">※この記事にはアフィリエイトリンク（広告）が含まれます</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">Amazonのアソシエイトとして、Runner's Rings は適格販売により収入を得ています</p></aside>",
+    "en": "<aside class=\"rr-affiliate-block\" aria-label=\"Affiliate product information\" style=\"border:1px solid #8c939d;border-radius:10px;padding:1rem;margin:1.5rem 0;line-height:1.75\"><strong>Gear used</strong><ul><li>Watch: <a href=\"https://www.amazon.co.jp/dp/B0GZ294HH3?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Garmin Forerunner 170</a></li><li>Shoes: ASICS METASPEED EDGE TOKYO (Green Gecko/Black, 1013A163.300) — Amazon product link pending verification</li><li>Gels: <a href=\"https://www.amazon.co.jp/dp/B0FVSK9LN8?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">Ore wa Sesshu Su</a> / <a href=\"https://www.amazon.co.jp/dp/B07GN7G7CF?tag=kidthephantom-22\" target=\"_blank\" rel=\"sponsored noopener noreferrer\">WINZONE Energy Gel (pineapple)</a></li></ul><p style=\"font-size:.85rem;margin:.7rem 0 0\">This article contains affiliate links (advertising).</p><p style=\"font-size:.8rem;margin:.4rem 0 0\">As an Amazon Associate, Runner's Rings earns from qualifying purchases.</p></aside>"
+  }
+};
+const AFFILIATE_ANCHORS = {
+  "journal-20260927-221326-00b55b1a": {
+    "ja": "なお、機種によって利用できるGPS設定や機能は異なります。",
+    "en": "Available GPS features and settings vary between devices."
+  },
+  "journal-20261018-083832-ab6cebf6": {
+    "ja": "それもトレーニングの一部です。",
+    "en": "It is a strategy that the runner can tolerate and consistently follow."
+  }
+};
+function articleBodyWithAffiliate(slug, language, body) {
+  const escaped = html(body);
+  const block = AFFILIATE_BLOCKS[slug]?.[language];
+  if (!block) return `<div class="body">${escaped}</div>`;
+  const anchor = AFFILIATE_ANCHORS[slug]?.[language];
+  if (!anchor) return `<div class="body">${escaped}</div>\n      ${block}`;
+  const token = html(anchor);
+  const start = escaped.indexOf(token);
+  if (start < 0 || escaped.indexOf(token, start + token.length) >= 0) {
+    throw new Error(`Affiliate anchor missing or ambiguous: ${slug}/${language}`);
+  }
+  const split = start + token.length;
+  return `<div class="body">${escaped.slice(0, split)}</div>\n      ${block}\n      <div class="body">${escaped.slice(split)}</div>`;
+}
+
 function absoluteImage(url) {
   if (!url) return null;
   try {
@@ -56,7 +97,7 @@ function articlePage(post) {
       <h1>${html(title)}</h1>
       ${visibleImage}
       ${summary ? `<p class="summary">${html(summary)}</p>` : ''}
-      <div class="body">${html(body)}</div>
+      ${articleBodyWithAffiliate(slug, language, body)}
       <div class="share">
         <button type="button" class="copy">${language === 'ja' ? 'リンクをコピー' : 'Copy link'}</button>
         <button type="button" class="native-share" hidden>${language === 'ja' ? '共有' : 'Share'}</button>
