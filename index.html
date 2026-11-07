@@ -13432,7 +13432,7 @@ function rrCalDrawShareCard(data,english){
  text((data.known?data.km.toFixed(1):'—')+' km',92,408,62,'#ffffff',800);
  text(english?'RUNS':'ラン回数',734,337,25,'#c0f5db',600);
  text(data.runs,734,408,62,'#ffffff',800);
- const startX=60,gap=7,cellW=(960-gap*6)/7,cellH=126,headY=508,gridY=563;
+ const startX=60,gap=7,cellW=(960-gap*6)/7,cellH=112,headY=508,gridY=563;
  const weekday=english?['SUN','MON','TUE','WED','THU','FRI','SAT']:['日','月','火','水','木','金','土'];
  for(let i=0;i<7;i++)text(weekday[i],startX+i*(cellW+gap)+cellW/2,headY,24,'#b8e4d0',650,'center');
  const leading=new Date(data.year,data.month-1,1).getDay();
