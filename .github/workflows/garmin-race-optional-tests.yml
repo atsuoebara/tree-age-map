@@ -10,6 +10,8 @@ on:
       - "supabase/functions/_shared/garmin_race_batch_probe_test.ts"
       - "supabase/functions/_shared/garmin_race_load_probe_test.ts"
       - "supabase/functions/_shared/garmin_race_r3_fixtures_test.ts"
+      - "supabase/functions/_shared/garmin_race_ui_copy_test.ts"
+      - "docs/garmin-race-analysis-ui-copy.ja-en.json"
       - "supabase/functions/_shared/fixtures/garmin-race/**"
       - ".github/workflows/garmin-race-optional-tests.yml"
   workflow_dispatch:
@@ -27,6 +29,6 @@ jobs:
         with:
           deno-version: v2.x
       - name: Typecheck isolated code and tests
-        run: deno check supabase/functions/_shared/garmin_race_optional.ts supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts
+        run: deno check supabase/functions/_shared/garmin_race_optional.ts supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts supabase/functions/_shared/garmin_race_ui_copy_test.ts
       - name: Run all isolated tests (no env vars or network)
-        run: deno test --no-config --no-remote supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts
+        run: deno test --no-config --no-remote supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts supabase/functions/_shared/garmin_race_ui_copy_test.ts
