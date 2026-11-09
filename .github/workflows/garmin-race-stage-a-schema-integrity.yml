@@ -1,0 +1,35 @@
+name: Garmin Stage A schema candidate integrity (review only)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-stage-a-apply-candidate.sql"
+      - ".github/workflows/garmin-race-stage-a-schema-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify identical audited PR67 SQL source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate=supabase/garmin-race-analysis-stage-a-apply-candidate.sql
+          expected_blob=eb20b8390955bcad86424198ddca9e212add1be8
+          actual_blob=$(git hash-object "$candidate")
+          echo "Audit SQL blob: $actual_blob"
+          test "$actual_blob" = "$expected_blob"
+      - name: Assert no migrations or runtime wiring in this PR
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | tee /tmp/changed-files
+          if grep -E '^(supabase/migrations/|supabase/functions/|index\.html$|sw\.js$)' /tmp/changed-files; then
+            echo "Unexpected runtime/migration file modified" >&2
+            exit 1
+          fi
