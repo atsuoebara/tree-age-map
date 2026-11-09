@@ -1,0 +1,17 @@
+name: Garmin isolated split UI preview tests
+on:
+  pull_request:
+    paths:
+      - "previews/garmin-race-splits-20261109.html"
+      - "tests/garmin-race-ui-preview.test.cjs"
+      - ".github/workflows/garmin-race-ui-preview.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise preview DOM without external network
+        run: node tests/garmin-race-ui-preview.test.cjs
