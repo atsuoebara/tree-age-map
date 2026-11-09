@@ -69,6 +69,8 @@ begin
                  or (seg->>'segment_index')::integer not between 1 and 251
                  or (seg->>'distance_m')::double precision <= 0
                  or (seg->>'clock_elapsed_s')::double precision < 0
+                 or seg->'segment_index' is null or seg->'distance_m' is null
+                 or seg->'clock_elapsed_s' is null
                 then raise exception 'segment invalid';
               end if;
               foreach metric_name in array array['heart_rate','cadence','power'] loop
@@ -77,6 +79,18 @@ begin
                    or (m->>'aggregation_method') is distinct from 'distance_weighted_linear'
                    or (m->>'coverage_fraction')::double precision not between 0 and 1
                    or (m->>'covered_distance_m')::double precision < 0
+                   or coalesce((m->>'covered_distance_m')::double precision
+                               > (seg->>'distance_m')::double precision + 0.01,true)
+                   or m->'source_field' is null or m->'raw_unit' is null
+                   or m->'coverage_fraction' is null or m->'covered_distance_m' is null
+                   or (
+                     (m->>'coverage_fraction')::double precision < 0.8
+                     and jsonb_typeof(m->'mean_raw_value') is distinct from 'null'
+                   )
+                   or (
+                     (m->>'coverage_fraction')::double precision >= 0.8
+                     and jsonb_typeof(m->'mean_raw_value') is distinct from 'number'
+                   )
                   then raise exception 'metric invalid';
                 end if;
                 if metric_name='heart_rate' and (m->>'source_field' is distinct from 'heartRate'
