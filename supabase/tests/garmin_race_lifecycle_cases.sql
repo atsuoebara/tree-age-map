@@ -68,6 +68,14 @@ BEGIN
    VALUES(a,r,'garmin-activity-details-v1','garmin_activity_details',v,
      'device_cumulative_m','clock_elapsed_seconds',2,1000,300,
      '[{"segment_index":1,"distance_m":1000}]'::jsonb,'[]'::jsonb);
+  -- Negative case: routine authoritative recheck updates only timestamp
+  -- (and may reaffirm the same permission payload). Neither may purge.
+  UPDATE public.garmin_api_connections
+     SET permissions_checked_at=clock_timestamp(), permissions='["ACTIVITY_EXPORT"]'::jsonb
+   WHERE user_id=a;
+  SELECT count(*) INTO n FROM public.run_race_analysis WHERE run_id=r;
+  IF n<>1 THEN RAISE EXCEPTION 'case % routine recheck purged analysis',case_name; END IF;
+  RAISE NOTICE 'PASS routine recheck preserves analysis before %',case_name;
   CASE case_name
    WHEN 'disable' THEN UPDATE public.garmin_api_connections SET import_enabled=false WHERE user_id=a;
    WHEN 'revoke' THEN UPDATE public.garmin_api_connections SET permissions='[]'::jsonb WHERE user_id=a;
