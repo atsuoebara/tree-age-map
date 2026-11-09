@@ -388,7 +388,7 @@ applyLanguage(savedLanguage);
     link.className = 'articleCard';
     link.href = './journal/articles/' + encodeURIComponent(post.slug) + '/';
     const img = safeImage(post.image_url);
-    if (img) {const photo=document.createElement('img');photo.className='cardImage';photo.src=img;photo.alt='';photo.loading='lazy';link.append(photo);}
+    if (img) {const photo=document.createElement('img');photo.className='cardImage';photo.alt='';photo.loading='lazy';photo.onerror=()=>{photo.onerror=null;photo.src=img;};photo.src=/^[a-zA-Z0-9_-]+$/.test(post.slug||'')?'/journal/media/'+encodeURIComponent(post.slug)+'.webp':img;link.append(photo);}
     const dateRow = textElement('div','articleDate',formatDate(post.published_at));
     if (isRecentPublished(post.published_at)) {
       const badge = textElement('span','articleNewBadge','NEW');
