@@ -1,0 +1,26 @@
+name: Garmin race optional sensor checks
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/_shared/garmin_race_optional.ts"
+      - "supabase/functions/_shared/garmin_race_optional_test.ts"
+      - ".github/workflows/garmin-race-optional-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deno-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck optional code and tests
+        run: deno check supabase/functions/_shared/garmin_race_optional.ts supabase/functions/_shared/garmin_race_optional_test.ts
+      - name: Run optional sensor tests (no env vars or network)
+        run: deno test --no-config --no-remote supabase/functions/_shared/garmin_race_optional_test.ts
