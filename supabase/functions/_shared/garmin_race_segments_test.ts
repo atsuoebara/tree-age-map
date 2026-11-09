@@ -57,3 +57,20 @@ Deno.test("synthetic marathon 42 full + final tail, sums conserved",()=>{
  assert(Math.abs(r.segments.reduce((x,s)=>x+s.distance_m,0)-r.total_distance_m)<0.01,"distance");
  assert(Math.abs(r.segments.reduce((x,s)=>x+s.clock_elapsed_s,0)-r.total_clock_elapsed_s)<0.03,"clock");
 });
+
+Deno.test("invalid NaN sample has invalid_sample flag, not nonmonotonic",()=>{
+ const r=get([p(0,0),p(Number.NaN,100),p(1000,300)]);
+ assert(r.excluded_samples===1,"one invalid point should be dropped");
+ assert(r.quality_flags.includes("invalid_sample"),"missing invalid_sample");
+ assert(!r.quality_flags.includes("nonmonotonic_samples"),"wrong reversal flag");
+});
+Deno.test("negative distance and missing clock are invalid not reversed",()=>{
+ const r=get([p(0,0),p(-2,100),p(500,NaN),p(1000,300)]);
+ assert(r.excluded_samples===2,"count");
+ assert(r.quality_flags.length===1 && r.quality_flags[0]==="invalid_sample","flag vocabulary");
+});
+Deno.test("simultaneous invalid and reversed samples retain distinct flags",()=>{
+ const r=get([p(0,0),p(500,100),p(NaN,110),p(400,120),p(1000,300)]);
+ assert(r.excluded_samples===2,"count");
+ assert(r.quality_flags.includes("invalid_sample") && r.quality_flags.includes("nonmonotonic_samples"),"distinct reasons");
+});
