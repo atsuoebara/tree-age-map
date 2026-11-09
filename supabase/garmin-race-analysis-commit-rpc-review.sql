@@ -3,7 +3,7 @@
 -- No production apply. Service role ONLY. Must audit before activation.
 -- Baseline: public.garmin_commit_activity(bigint,integer,jsonb) from
 -- supabase/garmin-activity-reliability.sql (repo main on 2026-11-09).
--- Reviewer should compare every existing validation, lock, duplicate branch
+-- F1: missing mandatory JSON keys MUST fail explicit validation (SQL NULL\n-- otherwise propagates through ordinary <> expressions).\n-- Reviewer should compare every existing validation, lock, duplicate branch
 -- and inbox completion against original; only optional analysis is new.
 create or replace function public.garmin_commit_activity(p_id bigint,p_attempt integer,p_record jsonb,p_analysis_candidate jsonb) returns text
 language plpgsql security invoker set search_path='' as $$
@@ -50,22 +50,26 @@ begin
            and jsonb_typeof(p_analysis_candidate)='object'
            and not indoor then
           begin
-            if p_analysis_candidate->>'analysis_version' <> 'garmin-activity-details-v1'
-               or p_analysis_candidate->>'distance_basis' <> 'device_cumulative_m'
-               or p_analysis_candidate->>'time_basis' <> 'clock_elapsed_seconds'
-               or jsonb_typeof(p_analysis_candidate->'segments') <> 'array'
+            if p_analysis_candidate->>'analysis_version' is distinct from 'garmin-activity-details-v1'
+               or p_analysis_candidate->>'distance_basis' is distinct from 'device_cumulative_m'
+               or p_analysis_candidate->>'time_basis' is distinct from 'clock_elapsed_seconds'
+               or jsonb_typeof(p_analysis_candidate->'segments') is distinct from 'array'
                or jsonb_array_length(p_analysis_candidate->'segments') not between 1 and 251
-               or jsonb_typeof(p_analysis_candidate->'quality_flags') <> 'array'
+               or jsonb_typeof(p_analysis_candidate->'quality_flags') is distinct from 'array'
+               or p_analysis_candidate->'accepted_samples' is null
                or (p_analysis_candidate->>'accepted_samples')::integer not between 2 and 20000
+               or p_analysis_candidate->'total_distance_m' is null
                or (p_analysis_candidate->>'total_distance_m')::double precision not between 0.001 and 250000
+               or p_analysis_candidate->'total_clock_elapsed_s' is null
                or (p_analysis_candidate->>'total_clock_elapsed_s')::double precision < 0
                or pg_catalog.octet_length(p_analysis_candidate::text) > 1000000
               then raise exception 'analysis invalid';
             end if;
             -- Pin per-segment metric schema and coverage. No arbitrary client JSON.
             for seg in select value from jsonb_array_elements(p_analysis_candidate->'segments') loop
-              if jsonb_typeof(seg)<>'object' or jsonb_typeof(seg->'quality_flags')<>'array'
-                 or jsonb_typeof(seg->'metrics')<>'object'
+              if jsonb_typeof(seg) is distinct from 'object'
+                 or jsonb_typeof(seg->'quality_flags') is distinct from 'array'
+                 or jsonb_typeof(seg->'metrics') is distinct from 'object'
                  or (seg->>'segment_index')::integer not between 1 and 251
                  or (seg->>'distance_m')::double precision <= 0
                  or (seg->>'clock_elapsed_s')::double precision < 0
@@ -75,7 +79,7 @@ begin
               end if;
               foreach metric_name in array array['heart_rate','cadence','power'] loop
                 m:=seg->'metrics'->metric_name;
-                if jsonb_typeof(m)<>'object'
+                if jsonb_typeof(m) is distinct from 'object'
                    or (m->>'aggregation_method') is distinct from 'distance_weighted_linear'
                    or (m->>'coverage_fraction')::double precision not between 0 and 1
                    or (m->>'covered_distance_m')::double precision < 0
@@ -83,6 +87,7 @@ begin
                                > (seg->>'distance_m')::double precision + 0.01,true)
                    or m->'source_field' is null or m->'raw_unit' is null
                    or m->'coverage_fraction' is null or m->'covered_distance_m' is null
+                   or m->'mean_raw_value' is null
                    or (
                      (m->>'coverage_fraction')::double precision < 0.8
                      and jsonb_typeof(m->'mean_raw_value') is distinct from 'null'
