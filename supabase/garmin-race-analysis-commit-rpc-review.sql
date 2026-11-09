@@ -4,7 +4,8 @@
 -- Baseline: public.garmin_commit_activity(bigint,integer,jsonb) from
 -- supabase/garmin-activity-reliability.sql (repo main on 2026-11-09).
 -- F1: missing mandatory JSON keys MUST fail explicit validation (SQL NULL
--- otherwise propagates through ordinary <> expressions).\n-- Reviewer should compare every existing validation, lock, duplicate branch
+-- otherwise propagates through ordinary <> expressions).
+-- Reviewer should compare every existing validation, lock, duplicate branch
 -- and inbox completion against original; only optional analysis is new.
 create or replace function public.garmin_commit_activity(p_id bigint,p_attempt integer,p_record jsonb,p_analysis_candidate jsonb) returns text
 language plpgsql security invoker set search_path='' as $$
