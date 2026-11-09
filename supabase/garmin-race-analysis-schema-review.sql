@@ -35,8 +35,9 @@ GRANT SELECT ON TABLE public.run_race_analysis TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.run_race_analysis TO service_role;
 GRANT USAGE, SELECT ON SEQUENCE public.run_race_analysis_id_seq TO service_role;
 
--- Defense in depth: an owner must have an active, matching export-authorized connection,
--- and the canonical Garmin run must still be present and nondeleted.
+-- Defense in depth: allow only authenticated owner and nondeleted Garmin run.
+-- Connection/permission changes purge analyses transactionally in dedicated trigger.
+-- Avoid SELECT on private garmin_api_connections in authenticated RLS policy.
 CREATE POLICY run_race_analysis_owner_read ON public.run_race_analysis
 FOR SELECT TO authenticated
 USING (
@@ -45,22 +46,15 @@ USING (
     SELECT 1 FROM public.runs r WHERE r.id=run_id AND r.user_id=user_id
       AND r.deleted_at IS NULL AND r.source='garmin'
   )
-  AND EXISTS (
-    SELECT 1 FROM public.garmin_api_connections c
-    WHERE c.user_id=run_race_analysis.user_id
-      AND c.connection_version=run_race_analysis.source_connection_version
-      AND c.import_enabled AND public.garmin_has_export(c.permissions)
-  )
 );
--- CAUTION: garmin_api_connections is intentionally not client-readable.
--- The EXISTS may evaluate to false for authenticated roles due to its RLS.
--- This read policy is a *proposal* and MUST be verified against actual privileges.
--- If inaccessible, replace with a hardened security-definer helper in a private schema,
--- with no public data exposure; do not grant authenticated SELECT on connections.
 
 -- Purge analysis on any soft delete or any physical DELETE of runs (FK cascade).
+-- SECURITY DEFINER is necessary: authenticated users can soft-delete their own
+-- runs but have no DELETE grant on analysis table. Migration ownership must be
+-- the tightly controlled database owner (not anon/authenticated/service_role).
+-- No SQL parameters; deletions are scoped exclusively to trigger OLD/NEW rows.
 CREATE FUNCTION public.purge_race_analysis_on_soft_delete() RETURNS trigger
-LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $
 BEGIN
   IF NEW.deleted_at IS NOT NULL AND OLD.deleted_at IS DISTINCT FROM NEW.deleted_at THEN
     DELETE FROM public.run_race_analysis a WHERE a.run_id = NEW.id AND a.user_id = NEW.user_id;
@@ -73,9 +67,11 @@ AFTER UPDATE OF deleted_at ON public.runs
 FOR EACH ROW EXECUTE FUNCTION public.purge_race_analysis_on_soft_delete();
 
 -- Purge on local disconnect / changed registration / disabled intake / lost export.
+-- The function executes with tightly controlled owner privileges and no
+-- arguments; never grants browser users DELETE rights on analysis.
 -- Never trust a webhook hint alone: existing permission reconciliation is authoritative.
 CREATE FUNCTION public.purge_race_analysis_on_garmin_change() RETURNS trigger
-LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $
 BEGIN
   IF TG_OP='DELETE' THEN
     DELETE FROM public.run_race_analysis WHERE user_id=OLD.user_id AND source_kind='garmin_activity_details';
@@ -97,12 +93,11 @@ FOR EACH ROW EXECUTE FUNCTION public.purge_race_analysis_on_garmin_change();
 COMMIT;
 
 -- BLOCKERS before applying:
--- [ ] User-driven soft-delete runs UPDATE uses authenticated role: that role
---     cannot DELETE run_race_analysis, so this SECURITY INVOKER trigger will fail.
---     Must replace with privately owned SECURITY DEFINER trigger, strict search_path,
---     constrained row selection and permissions audit before any migration.
--- [ ] Same applies when Garmin connection role lacks child-table DELETE privileges.
+-- [ ] SECURITY DEFINER function owners and EXECUTE privilege must be audited:
+--     postgres/migration owner only, not untrusted roles; no arbitrary parameters.
+-- [ ] Existing soft-delete UPDATE privileges and trigger rights need rollback-only tests.
 -- [ ] RLS owner SELECT must be tested with actual authenticated user.
+-- [ ] Revocation cleanup must be tested with actual connection update path.
 -- [ ] Atomic revised garmin_commit_activity (p_analysis_candidate) absent.
 -- [ ] Account deletion tree and concurrency suite not yet demonstrated.
 -- [ ] Deno load and batch tests not yet demonstrated.
