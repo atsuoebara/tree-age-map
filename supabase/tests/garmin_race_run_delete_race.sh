@@ -17,24 +17,18 @@ for kind in soft hard; do
   psql -X -v ON_ERROR_STOP=1 -v kind="$kind" -v receipt="$receipt" <<'SQL' > "/tmp/garmin-run-${kind}-commit.log" 2>&1 &
 BEGIN;
 SELECT set_config('application_name','garmin-ci-duplicate-:kind',true);
-DO $test$
-DECLARE result text;
-BEGIN
- SELECT public.garmin_commit_activity(
+SELECT public.garmin_commit_activity(
     :receipt,1,
     jsonb_build_object(
-      'source_external_id','garmin-api::kind',
+      'source_external_id','garmin-api:race-' || :'kind',
       'started_at','2026-11-09T00:00:00Z',
       'activity_date','2026-11-09','distance_km',1,
       'name','synthetic','indoor',false,
       'route','[[36.4,139.1],[36.41,139.11]]'::jsonb
     ),null::jsonb
-  ) INTO result;
- IF result IS DISTINCT FROM 'duplicate' THEN
-    RAISE EXCEPTION 'expected duplicate, got %',result;
- END IF;
- RAISE NOTICE 'PASS :kind duplicate RPC completed before delete';
-END $test$;
+  ) AS outcome \gset
+-- Force a SQL error on any result other than duplicate.
+SELECT 1 / CASE WHEN :'outcome'='duplicate' THEN 1 ELSE 0 END AS valid_duplicate;
 SELECT pg_sleep(5);
 COMMIT;
 SQL
