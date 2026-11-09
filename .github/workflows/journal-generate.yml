@@ -48,7 +48,7 @@ jobs:
           FIXTURE_PREVIEW: ${{ inputs.fixture_preview }}
         run: node scripts/generate-journal.mjs
       - name: Create lightweight public Journal images (keep originals in Supabase)
-        if: ${{ !inputs.fixture_preview }}
+        if: ${{ (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'push') || (inputs.dry_run == false && inputs.fixture_preview == false) }}
         run: |
           python -m pip install --disable-pip-version-check Pillow==11.3.0
           python scripts/optimize-journal-images.py
