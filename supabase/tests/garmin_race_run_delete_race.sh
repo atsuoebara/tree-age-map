@@ -16,7 +16,7 @@ for kind in soft hard; do
   # and connection row lock. The duplicate path does NOT lock canonical run rows.
   psql -X -v ON_ERROR_STOP=1 -v kind="$kind" -v receipt="$receipt" <<'SQL' > "/tmp/garmin-run-${kind}-commit.log" 2>&1 &
 BEGIN;
-SELECT set_config('application_name','garmin-ci-duplicate-:kind',true);
+SELECT set_config('application_name','garmin-ci-duplicate-' || :'kind',true);
 SELECT public.garmin_commit_activity(
     :receipt,1,
     jsonb_build_object(
