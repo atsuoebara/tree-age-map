@@ -1,14 +1,11 @@
 /**
- * Garmin race analysis optional sensor preview, NOT connected to production.
- * Never use this function to decide whether an activity may be imported.
- *
- * This module is intentionally side-effect free: no network, DB, logs or tokens.
- * R1: operates only after an entire HTTP request has passed the existing 8MB guard.
- * R2: malformed optional data becomes null; mandatory importer remains unchanged.
+ * Optional, isolated Garmin activityDetails sensor preview.
+ * NOT imported by the production receiver. Never determines import acceptance.
+ * Input already passed the receiver's strict 8,000,000-byte raw HTTP guard.
  */
 export type PreviewSample = {
-  startTimeInSeconds: number | null;
-  totalDistanceInMeters: number | null;
+  startTimeInSeconds: number;
+  totalDistanceInMeters: number;
   heartRate: number | null;
   stepsPerMinute: number | null;
   powerInWatts: number | null;
@@ -22,9 +19,11 @@ const finite = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
 /**
- * Bounded, no-throw sensor extraction. Call only inside optional analysis path.
- * Rejects invalid required time/distance sample shapes rather than treating
- * them as zeros; null sensor values remain null.
+ * Nonthrowing optional transformation. A bad sensor value is null.
+ * Missing/non-finite timestamp or cumulative distance makes the optional
+ * preview unavailable, but MUST NOT affect the original GPS-only importer.
+ * Nonmonotonic samples are *not* silently fixed here: split algorithm
+ * will flag/discard them at a separately audited stage.
  */
 export function previewGarminSensors(
   detail: unknown, maxSamples = MAX_PREVIEW_SAMPLES,
@@ -33,18 +32,20 @@ export function previewGarminSensors(
   try {
     if (!detail || typeof detail !== "object" || Array.isArray(detail)) return { ok: false, reason: "invalid" };
     const samples = (detail as Record<string, unknown>).samples;
-    if (!Array.isArray(samples)) return { ok: false, reason: "invalid" };
-    if (samples.length < 2) return { ok: false, reason: "invalid" };
+    if (!Array.isArray(samples) || samples.length < 2) return { ok: false, reason: "invalid" };
+    if (!Number.isSafeInteger(maxSamples) || maxSamples < 2 ||
+        !Number.isSafeInteger(maxBytes) || maxBytes < 1) return { ok: false, reason: "invalid" };
     if (samples.length > maxSamples) return { ok: false, reason: "too_many_samples" };
     const out: PreviewSample[] = [];
     for (const sample of samples) {
-      if (!sample || typeof sample !== "object" || Array.isArray(sample)) {
-        return { ok: false, reason: "invalid" };
-      }
+      if (!sample || typeof sample !== "object" || Array.isArray(sample)) return { ok: false, reason: "invalid" };
       const point = sample as Record<string, unknown>;
+      const time = finite(point.startTimeInSeconds);
+      const distance = finite(point.totalDistanceInMeters);
+      if (time === null || distance === null || distance < 0) return { ok: false, reason: "invalid" };
       out.push({
-        startTimeInSeconds: finite(point.startTimeInSeconds),
-        totalDistanceInMeters: finite(point.totalDistanceInMeters),
+        startTimeInSeconds: time,
+        totalDistanceInMeters: distance,
         heartRate: finite(point.heartRate),
         stepsPerMinute: finite(point.stepsPerMinute),
         powerInWatts: finite(point.powerInWatts),
