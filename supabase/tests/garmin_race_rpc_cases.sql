@@ -95,6 +95,22 @@ BEGIN
  IF n<>1 THEN RAISE EXCEPTION 'duplicate created extra analysis'; END IF;
  RAISE NOTICE 'PASS duplicate no new analysis';
 
+ -- Stale attempt cannot write a run or analysis, even when owner has export.
+ INSERT INTO public.garmin_activity_inbox(user_id,garmin_user_id,connection_version,state,attempts,payload)
+   VALUES(uid,'ci-garmin',cversion,'processing',2,'{}'::jsonb) RETURNING id INTO rid;
+ record:=jsonb_set(record,'{source_external_id}','"garmin-api:stale-attempt"'::jsonb);
+ SELECT public.garmin_commit_activity(rid,1,record,candidate) INTO outcome;
+ IF outcome IS DISTINCT FROM 'stale' THEN RAISE EXCEPTION 'stale attempt returned %',outcome; END IF;
+ IF EXISTS(SELECT 1 FROM public.runs WHERE source_external_id='garmin-api:stale-attempt') THEN
+   RAISE EXCEPTION 'stale attempt inserted run';
+ END IF;
+ IF EXISTS(SELECT 1 FROM public.garmin_activity_inbox WHERE id=rid AND state<>'processing') THEN
+   RAISE EXCEPTION 'stale attempt mutated receipt';
+ END IF;
+ SELECT count(*) INTO n FROM public.run_race_analysis;
+ IF n<>1 THEN RAISE EXCEPTION 'stale attempt inserted analysis'; END IF;
+ RAISE NOTICE 'PASS stale attempt rejected without modifying receipt or run';
+
  -- Permission loss: ignored without inserting the run or candidate.
  UPDATE public.garmin_api_connections SET permissions='[]'::jsonb WHERE user_id=uid;
  INSERT INTO public.garmin_activity_inbox(user_id,garmin_user_id,connection_version,state,attempts,payload)
@@ -111,6 +127,6 @@ BEGIN
  IF run_count<>6 OR analysis_count<>1 THEN
    RAISE EXCEPTION 'unexpected final run %, analysis %',run_count,analysis_count;
  END IF;
- RAISE NOTICE 'ALL 8 integration cases passed, 6 canonical runs and 1 analysis';
+ RAISE NOTICE 'ALL 9 integration cases passed, 6 canonical runs and 1 analysis';
 END $tests$;
 ROLLBACK;
