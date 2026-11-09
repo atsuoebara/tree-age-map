@@ -54,7 +54,7 @@ USING (
 -- the tightly controlled database owner (not anon/authenticated/service_role).
 -- No SQL parameters; deletions are scoped exclusively to trigger OLD/NEW rows.
 CREATE FUNCTION public.purge_race_analysis_on_soft_delete() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 BEGIN
   IF NEW.deleted_at IS NOT NULL AND OLD.deleted_at IS DISTINCT FROM NEW.deleted_at THEN
     DELETE FROM public.run_race_analysis a WHERE a.run_id = NEW.id AND a.user_id = NEW.user_id;
@@ -71,7 +71,7 @@ FOR EACH ROW EXECUTE FUNCTION public.purge_race_analysis_on_soft_delete();
 -- arguments; never grants browser users DELETE rights on analysis.
 -- Never trust a webhook hint alone: existing permission reconciliation is authoritative.
 CREATE FUNCTION public.purge_race_analysis_on_garmin_change() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 BEGIN
   IF TG_OP='DELETE' THEN
     DELETE FROM public.run_race_analysis WHERE user_id=OLD.user_id AND source_kind='garmin_activity_details';
