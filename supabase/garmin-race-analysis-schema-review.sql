@@ -98,6 +98,6 @@ COMMIT;
 -- [ ] Existing soft-delete UPDATE privileges and trigger rights need rollback-only tests.
 -- [ ] RLS owner SELECT must be tested with actual authenticated user.
 -- [ ] Revocation cleanup must be tested with actual connection update path.
--- [ ] Atomic revised garmin_commit_activity (p_analysis_candidate) absent.
+-- [ ] Four-argument commit RPC exists as an unaudited, un-applied PR file; end-to-end integration remains blocked.
 -- [ ] Account deletion tree and concurrency suite not yet demonstrated.
--- [ ] Deno load and batch tests not yet demonstrated.
+-- [ ] Deno isolated synthetic batch sizes measured; production Deno load/ACK not demonstrated.
