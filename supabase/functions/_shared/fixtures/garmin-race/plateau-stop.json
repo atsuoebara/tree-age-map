@@ -1,0 +1,48 @@
+{
+  "analysis_version": "garmin-activity-details-v1",
+  "distance_basis": "device_cumulative_m",
+  "time_basis": "clock_elapsed_seconds",
+  "total_distance_m": 1000,
+  "total_clock_elapsed_s": 420,
+  "accepted_samples": 3,
+  "excluded_samples": 1,
+  "quality_flags": [
+    "plateau_or_equal_time"
+  ],
+  "segments": [
+    {
+      "segment_index": 1,
+      "start_m": 0,
+      "end_m": 1000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 420,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 150
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 90
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 300
+        }
+      }
+    }
+  ]
+}
