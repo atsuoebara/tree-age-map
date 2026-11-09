@@ -48,16 +48,20 @@ SQL
   # connection row lock. A has already finished duplicate detection.
   if [[ "$kind" == soft ]]; then
     psql -XAt -v ON_ERROR_STOP=1 -c "
-      UPDATE public.runs SET deleted_at=clock_timestamp()
-      WHERE source_external_id='garmin-api:race-soft' AND deleted_at IS NULL
-      RETURNING id" > "/tmp/garmin-run-${kind}-deleted"
+      WITH changed AS (
+        UPDATE public.runs SET deleted_at=clock_timestamp()
+        WHERE source_external_id='garmin-api:race-soft' AND deleted_at IS NULL
+        RETURNING id
+      ) SELECT count(*) FROM changed" > "/tmp/garmin-run-${kind}-deleted"
   else
     psql -XAt -v ON_ERROR_STOP=1 -c "
-      DELETE FROM public.runs
-      WHERE source_external_id='garmin-api:race-hard'
-      RETURNING id" > "/tmp/garmin-run-${kind}-deleted"
+      WITH changed AS (
+        DELETE FROM public.runs
+        WHERE source_external_id='garmin-api:race-hard'
+        RETURNING id
+      ) SELECT count(*) FROM changed" > "/tmp/garmin-run-${kind}-deleted"
   fi
-  if [[ "$(wc -l < "/tmp/garmin-run-${kind}-deleted")" != 1 ]]; then
+  if [[ "$(cat "/tmp/garmin-run-${kind}-deleted")" != 1 ]]; then
     echo "Expected exactly one $kind deleted run"; exit 1
   fi
   if ! kill -0 "$saver" 2>/dev/null; then
