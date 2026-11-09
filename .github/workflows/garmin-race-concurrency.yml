@@ -1,0 +1,42 @@
+name: Garmin race concurrency (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-commit-rpc-review.sql"
+      - "supabase/tests/garmin_race_concurrency_setup.sql"
+      - "supabase/tests/garmin_race_concurrency.sh"
+      - ".github/workflows/garmin-race-concurrency.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  concurrent-revocation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_concurrency_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_concurrency_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_concurrency_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run two-session revocation/commit competition
+        run: bash supabase/tests/garmin_race_concurrency.sh
