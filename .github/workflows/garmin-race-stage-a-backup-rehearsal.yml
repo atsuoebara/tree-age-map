@@ -69,6 +69,6 @@ jobs:
           test "$source_runs" = "2"
           test "$restored_runs" = "$source_runs"
           test "$(psql -XAt -d garmin_gate0_synthetic_restore -c 'SELECT count(*) FROM public.garmin_api_connections')" = "1"
-          test "$(psql -XAt -d garmin_gate0_synthetic_restore -c 'SELECT count(*) FROM pg_constraint WHERE conrelid=\x27public.runs\x27::regclass AND contype=\x27p\x27')" = "1"
+          test "$(psql -XAt -d garmin_gate0_synthetic_restore -c \"SELECT count(*) FROM pg_constraint WHERE conrelid='public.runs'::regclass AND contype='p'\")" = "1"
           echo "PASS: synthetic local PG17 backup+restore, two runs and Garmin table preserved"
           echo "NOTE: not a real production backup or Supabase-managed schema rehearsal"
