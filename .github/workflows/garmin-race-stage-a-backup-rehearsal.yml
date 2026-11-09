@@ -60,10 +60,12 @@ jobs:
           umask 077
           backup_file=$(mktemp /tmp/gate0-synthetic-XXXXXX.dump)
           trap 'rm -f "$backup_file"' EXIT
-          pg_dump -Fc -d garmin_gate0_synthetic_source -f "$backup_file"
+          db_container=$(docker ps --filter ancestor=postgres:17 --format "{{.ID}}" | head -n 1)
+          test -n "$db_container"
+          docker exec "$db_container" pg_dump -U postgres -Fc -d garmin_gate0_synthetic_source > "$backup_file"
           test -s "$backup_file"
           createdb garmin_gate0_synthetic_restore
-          pg_restore --exit-on-error --single-transaction -d garmin_gate0_synthetic_restore "$backup_file"
+          docker exec -i "$db_container" pg_restore -U postgres --exit-on-error --single-transaction -d garmin_gate0_synthetic_restore < "$backup_file"
           source_runs=$(psql -XAt -d garmin_gate0_synthetic_source -c 'SELECT count(*) FROM public.runs')
           restored_runs=$(psql -XAt -d garmin_gate0_synthetic_restore -c 'SELECT count(*) FROM public.runs')
           test "$source_runs" = "2"
