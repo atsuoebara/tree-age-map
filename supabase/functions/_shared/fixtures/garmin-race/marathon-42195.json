@@ -1,0 +1,1476 @@
+{
+  "analysis_version": "garmin-activity-details-v1",
+  "distance_basis": "device_cumulative_m",
+  "time_basis": "clock_elapsed_seconds",
+  "total_distance_m": 42195,
+  "total_clock_elapsed_s": 12658.5,
+  "accepted_samples": 2,
+  "excluded_samples": 0,
+  "quality_flags": [],
+  "segments": [
+    {
+      "segment_index": 1,
+      "start_m": 0,
+      "end_m": 1000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 2,
+      "start_m": 1000,
+      "end_m": 2000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 3,
+      "start_m": 2000,
+      "end_m": 3000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 4,
+      "start_m": 3000,
+      "end_m": 4000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 5,
+      "start_m": 4000,
+      "end_m": 5000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 6,
+      "start_m": 5000,
+      "end_m": 6000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 7,
+      "start_m": 6000,
+      "end_m": 7000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 8,
+      "start_m": 7000,
+      "end_m": 8000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 9,
+      "start_m": 8000,
+      "end_m": 9000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 10,
+      "start_m": 9000,
+      "end_m": 10000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 11,
+      "start_m": 10000,
+      "end_m": 11000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 12,
+      "start_m": 11000,
+      "end_m": 12000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 13,
+      "start_m": 12000,
+      "end_m": 13000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 14,
+      "start_m": 13000,
+      "end_m": 14000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 15,
+      "start_m": 14000,
+      "end_m": 15000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 16,
+      "start_m": 15000,
+      "end_m": 16000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 17,
+      "start_m": 16000,
+      "end_m": 17000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 18,
+      "start_m": 17000,
+      "end_m": 18000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 19,
+      "start_m": 18000,
+      "end_m": 19000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 20,
+      "start_m": 19000,
+      "end_m": 20000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 21,
+      "start_m": 20000,
+      "end_m": 21000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 22,
+      "start_m": 21000,
+      "end_m": 22000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 23,
+      "start_m": 22000,
+      "end_m": 23000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 24,
+      "start_m": 23000,
+      "end_m": 24000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 25,
+      "start_m": 24000,
+      "end_m": 25000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 26,
+      "start_m": 25000,
+      "end_m": 26000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 27,
+      "start_m": 26000,
+      "end_m": 27000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 28,
+      "start_m": 27000,
+      "end_m": 28000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 29,
+      "start_m": 28000,
+      "end_m": 29000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 30,
+      "start_m": 29000,
+      "end_m": 30000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 31,
+      "start_m": 30000,
+      "end_m": 31000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 32,
+      "start_m": 31000,
+      "end_m": 32000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 33,
+      "start_m": 32000,
+      "end_m": 33000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 34,
+      "start_m": 33000,
+      "end_m": 34000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 35,
+      "start_m": 34000,
+      "end_m": 35000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 36,
+      "start_m": 35000,
+      "end_m": 36000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 37,
+      "start_m": 36000,
+      "end_m": 37000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 38,
+      "start_m": 37000,
+      "end_m": 38000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 39,
+      "start_m": 38000,
+      "end_m": 39000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 40,
+      "start_m": 39000,
+      "end_m": 40000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 41,
+      "start_m": 40000,
+      "end_m": 41000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 42,
+      "start_m": 41000,
+      "end_m": 42000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    },
+    {
+      "segment_index": 43,
+      "start_m": 42000,
+      "end_m": 42195,
+      "distance_m": 195,
+      "clock_elapsed_s": 58.5,
+      "quality_flags": [
+        "partial_segment"
+      ],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 195,
+          "coverage_fraction": 1,
+          "mean_raw_value": 148
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 195,
+          "coverage_fraction": 1,
+          "mean_raw_value": 88
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 195,
+          "coverage_fraction": 1,
+          "mean_raw_value": 290
+        }
+      }
+    }
+  ]
+}
