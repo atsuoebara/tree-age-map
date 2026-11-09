@@ -11,6 +11,8 @@ import io
 import json
 import re
 import urllib.request
+import http.client
+import time
 from pathlib import Path
 from urllib.parse import urlsplit
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -37,14 +39,38 @@ def public_image_url(value: str) -> str | None:
     return value
 
 def read_url(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "RunnersRingsJournalOptimizer/1.0"})
-    with urllib.request.urlopen(req, timeout=25) as response:
-        if public_image_url(response.geturl()) is None:
-            raise ValueError("Unexpected redirect URL")
-        content = response.read(MAX_SOURCE + 1)
-    if len(content) > MAX_SOURCE:
-        raise ValueError("Image too large")
-    return content
+    """Read until EOF, check byte count, and retry transient partial responses."""
+    last_error = None
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "RunnersRingsJournalOptimizer/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=25) as response:
+                if public_image_url(response.geturl()) is None:
+                    raise ValueError("Unexpected redirect URL")
+                declared = response.headers.get("Content-Length")
+                expected = int(declared) if declared is not None else None
+                if expected is not None and expected > MAX_SOURCE:
+                    raise ValueError("Image too large")
+                chunks = []
+                received = 0
+                while True:
+                    chunk = response.read(min(64 * 1024, MAX_SOURCE + 1 - received))
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    received += len(chunk)
+                    if received > MAX_SOURCE:
+                        raise ValueError("Image too large")
+                if expected is not None and received != expected:
+                    raise http.client.IncompleteRead(b"", expected - received)
+                return b"".join(chunks)
+        except (OSError, http.client.IncompleteRead) as exc:
+            last_error = exc
+            if attempt == 0:
+                time.sleep(1)
+    raise OSError(f"Incomplete image download after two attempts: {last_error}")
 
 def encode_webp(original: bytes, max_width: int) -> bytes:
     with Image.open(io.BytesIO(original)) as img:
@@ -84,9 +110,18 @@ def main() -> None:
             continue
         thumb = MEDIA / (slug + ".webp")
         hero = MEDIA / (slug + "-hero.webp")
-        if previous.get(slug) != url or not thumb.exists() or not hero.exists():
-            # Never reuse stale images if an editor changes a post image.
-            if previous.get(slug) != url:
+        entry = previous.get(slug)
+        old_url = entry.get("url") if isinstance(entry, dict) else entry
+        old_failed = isinstance(entry, dict) and entry.get("status") == "failed"
+        if old_url == url and old_failed:
+            # A failed source is not fetched again every 15 minutes.
+            # It is retried only after the source URL changes.
+            current[slug] = {"url": url, "status": "failed"}
+            failed += 1
+            print(f"WARNING: {slug} skipped: previously failed source unchanged")
+            continue
+        if old_url != url or not thumb.exists() or not hero.exists():
+            if old_url != url:
                 thumb.unlink(missing_ok=True)
                 hero.unlink(missing_ok=True)
             try:
@@ -96,11 +131,14 @@ def main() -> None:
                 thumb.write_bytes(thumb_data)
                 hero.write_bytes(hero_data)
                 print(f"Optimized {slug}: {len(original)} -> {len(thumb_data)} + {len(hero_data)} bytes")
-            except (OSError, ValueError, UnidentifiedImageError) as exc:
+            except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError) as exc:
+                thumb.unlink(missing_ok=True)
+                hero.unlink(missing_ok=True)
+                current[slug] = {"url": url, "status": "failed"}
                 failed += 1
-                print(f"WARNING: {slug} retains original image: {exc}")
+                print(f"WARNING: {slug} retains original image: {type(exc).__name__}: {exc}")
                 continue
-        current[slug] = url
+        current[slug] = {"url": url, "status": "ready"}
         # Keep original og:image and schema.org URL for social metadata and provenance.
         replacement = f'/journal/media/{slug}-hero.webp'
         new_source = HERO.sub(lambda m: m.group(1) + replacement + m.group(3), source)
