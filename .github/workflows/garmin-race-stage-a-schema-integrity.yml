@@ -26,6 +26,27 @@ jobs:
           actual_blob=$(git hash-object "$candidate")
           echo "Audit SQL blob: $actual_blob"
           test "$actual_blob" = "$expected_blob"
+      - name: Verify explicit single transaction SQL framing (no database connection)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path("supabase/garmin-race-analysis-stage-a-apply-candidate.sql")
+          sql = path.read_text(encoding="utf-8")
+          lines = [line.strip().upper() for line in sql.splitlines()
+                   if line.strip() and not line.lstrip().startswith("--")]
+          begins = [i for i, line in enumerate(lines) if line == "BEGIN;"]
+          commits = [i for i, line in enumerate(lines) if line == "COMMIT;"]
+          rollbacks = [i for i, line in enumerate(lines) if line == "ROLLBACK;"]
+          assert len(begins) == 1 and len(commits) == 1 and not rollbacks, (
+              f"Expected 1 BEGIN/COMMIT and 0 ROLLBACK; got {begins}, {commits}, {rollbacks}")
+          assert begins[0] == 0, "BEGIN must start statement body"
+          assert commits[0] == len(lines)-1, "COMMIT must terminate statement body"
+          assert not re.search(r"\\bCREATE\\s+(UNIQUE\\s+)?INDEX\\s+CONCURRENTLY\\b", sql, re.I), (
+              "CREATE INDEX CONCURRENTLY is incompatible with transaction block")
+          print("PASS: explicit BEGIN/COMMIT body framing (static inspection only)")
+          PY
       - name: Assert no migrations or runtime wiring in this PR
         shell: bash
         run: |
