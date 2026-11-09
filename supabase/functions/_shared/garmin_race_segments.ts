@@ -54,10 +54,10 @@ export function summarizeRace(samples: readonly Point[]): {ok:true; summary:Summ
   try {
     if (!Array.isArray(samples) || samples.length < 2 || samples.length > 20000) return {ok:false,reason:"invalid_size"};
     const clean: Point[] = [], globalFlags = new Set<string>();
-    let excluded=0;
+    // invalid_sample: missing/non-finite/negative required sample field.\n    // nonmonotonic_samples: finite distance or timestamp decreases.\n    // plateau_or_equal_time: repeated distance or timestamp.\n    let excluded=0;
     for (const p of samples) {
       if (!p || !ok(p.startTimeInSeconds) || !ok(p.totalDistanceInMeters) || p.totalDistanceInMeters < 0) {
-        excluded++; globalFlags.add("nonmonotonic_samples"); continue;
+        excluded++; globalFlags.add("invalid_sample"); continue;
       }
       const prev=clean.at(-1);
       if (prev && (p.startTimeInSeconds < prev.startTimeInSeconds || p.totalDistanceInMeters < prev.totalDistanceInMeters)) {
