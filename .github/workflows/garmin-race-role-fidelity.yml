@@ -1,0 +1,56 @@
+name: Garmin Supabase role fidelity (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-schema-review.sql"
+      - "supabase/garmin-race-analysis-commit-rpc-review.sql"
+      - "supabase/tests/garmin_race_lifecycle_setup.sql"
+      - "supabase/tests/garmin_race_reverse_setup.sql"
+      - "supabase/tests/garmin_race_role_fidelity_cases.sql"
+      - ".github/workflows/garmin-race-role-fidelity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  role-fidelity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_role_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_role_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_role_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse non-CI PostgreSQL
+        run: |
+          test "$PGDATABASE" = garmin_role_ci
+          test "$PGHOST" = 127.0.0.1
+      - name: Create synthetic Supabase schema fixtures
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_lifecycle_setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_reverse_setup.sql
+      - name: Apply EXACT review-only proposed schema and four-arg RPC
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-schema-review.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-commit-rpc-review.sql
+      - name: Verify anon, authenticated and service_role boundaries
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_role_fidelity_cases.sql
