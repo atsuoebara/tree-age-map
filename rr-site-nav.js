@@ -53,6 +53,8 @@ footerCSS.textContent=`
 #rrGlobalFooter .rrFooterLinks{display:flex;flex-wrap:wrap;gap:4px 13px;margin:12px 0}
 #rrGlobalFooter a{color:#b8dffe;text-decoration:underline;text-underline-offset:3px;padding:4px}
 #rrGlobalFooter a:focus-visible{outline:2px solid #eaff00}
+#rrGlobalFooter .rrCreatorCredit{margin:12px 0 2px;font:400 12px/1.7 system-ui,sans-serif;color:#9ba8b9;overflow-wrap:anywhere}
+#rrGlobalFooter .rrCreatorCredit a{color:#b8dffe}
 /* The common footer replaces each page's legacy footer. */
 body > footer:not(#rrGlobalFooter),main > footer:not(#rrGlobalFooter){display:none!important}
 `;
@@ -62,9 +64,14 @@ footerInner.className='rrFooterInner';
 const footerBrand=document.createElement('strong');footerBrand.textContent='Runner’s Rings';
 const footerLinks=document.createElement('nav');footerLinks.className='rrFooterLinks';
 footerLinks.setAttribute('aria-label','Footer navigation');
-footerInner.append(footerBrand,footerLinks);footer.append(footerInner);
+const creatorCredit=document.createElement('p');creatorCredit.className='rrCreatorCredit';
+const creatorLabel=document.createElement('span');
+const creatorLink=document.createElement('a');creatorLink.href='https://www.instagram.com/atsuoebarun/';creatorLink.target='_blank';creatorLink.rel='noopener noreferrer';creatorLink.textContent='Atsuo Ebara · Instagram';
+const creatorAccount=document.createElement('span');
+creatorCredit.append(creatorLabel,document.createTextNode('：'),creatorLink,creatorAccount);
+footerInner.append(footerBrand,footerLinks,creatorCredit);footer.append(footerInner);
 const footerItems=[...links,['./faq.html','よくある質問','FAQ'],['./privacy.html','プライバシー','Privacy'],['./terms.html','利用規約','Terms']];
-function updateFooter(){const en=english();footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));}
+function updateFooter(){const en=english();footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));creatorLabel.textContent=en?'Made by':'作っている人';creatorAccount.textContent=en?' (personal account)':'（個人アカウント）';creatorLink.setAttribute('aria-label',en?'Atsuo Ebara personal Instagram':'Atsuo Ebaraの個人Instagram');}
 update();
 document.body.append(footer);
 /* The same visible language control on every page, including phones. */
