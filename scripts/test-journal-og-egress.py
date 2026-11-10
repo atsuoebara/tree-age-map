@@ -17,7 +17,7 @@ spec.loader.exec_module(optimizer)
 SLUG = "journal-20261110-test"
 ORIGINAL = ("https://fhwvntpzwyenendhcgbw.supabase.co"
             "/storage/v1/object/public/journal-images/posts/1/example.png")
-SOCIAL = f"https://runnersrings.com/journal/media/{SLUG}-hero.webp"
+SOCIAL = f"https://runnersrings.com/journal/media/{SLUG}-hero.jpg"
 
 
 def fixture_html():
@@ -65,6 +65,11 @@ class TestJournalSocialImages(unittest.TestCase):
         self.assertIn(f'src="/journal/media/{SLUG}-hero.webp"', page)
         self.assertTrue((self.media / f"{SLUG}-hero.webp").exists())
         self.assertTrue((self.media / f"{SLUG}.webp").exists())
+        with Image.open(self.media / f"{SLUG}-hero.jpg") as social:
+            self.assertEqual(social.format, "JPEG")
+            self.assertEqual(social.size, (1200, 675))
+        with Image.open(self.media / f"{SLUG}-hero.webp") as hero:
+            self.assertEqual(hero.format, "WEBP")
         manifest = json.loads((self.media / "manifest.json").read_text())
         self.assertEqual(manifest[SLUG], {"url": ORIGINAL, "status": "ready"})
 
@@ -75,6 +80,39 @@ class TestJournalSocialImages(unittest.TestCase):
         self.assertEqual(self.page.read_text(encoding="utf-8"), page)
         self.assertEqual(json.loads((self.media / "manifest.json").read_text()), manifest)
 
+    def test_missing_jpeg_rebuilds_once_then_stays_stable(self):
+        with patch.object(optimizer, "read_url", return_value=self.png):
+            optimizer.main()
+        (self.media / f"{SLUG}-hero.jpg").unlink()
+        with patch.object(optimizer, "read_url", return_value=self.png) as download:
+            optimizer.main()
+            download.assert_called_once_with(ORIGINAL)
+        with patch.object(optimizer, "read_url") as download:
+            optimizer.main()
+            download.assert_not_called()
+        self.assertTrue((self.media / f"{SLUG}-hero.jpg").exists())
+
+    def test_legacy_webp_social_url_is_upgraded_to_jpeg(self):
+        with patch.object(optimizer, "read_url", return_value=self.png):
+            optimizer.main()
+        old = f"https://runnersrings.com/journal/media/{SLUG}-hero.webp"
+        page = self.page.read_text(encoding="utf-8").replace(SOCIAL, old)
+        self.page.write_text(page, encoding="utf-8")
+        with patch.object(optimizer, "read_url") as download:
+            optimizer.main()
+            download.assert_not_called()
+        self.assertIn(f'<meta property="og:image" content="{SOCIAL}">', self.page.read_text())
+
+    def test_transparent_image_converts_to_compatible_jpeg(self):
+        rgba = Image.new("RGBA", (1600, 1000), (0, 0, 0, 0))
+        out = io.BytesIO()
+        rgba.save(out, "PNG")
+        encoded = optimizer.encode_jpeg(out.getvalue(), 1200)
+        with Image.open(io.BytesIO(encoded)) as social:
+            self.assertEqual(social.format, "JPEG")
+            self.assertEqual(social.size, (1200, 750))
+            self.assertEqual(social.getpixel((0, 0)), (255, 255, 255))
+
     def test_download_failure_leaves_original_preview(self):
         with patch.object(optimizer, "read_url", side_effect=OSError("offline")):
             optimizer.main()
@@ -83,6 +121,7 @@ class TestJournalSocialImages(unittest.TestCase):
         manifest = json.loads((self.media / "manifest.json").read_text())
         self.assertEqual(manifest[SLUG]["status"], "failed")
         self.assertFalse((self.media / f"{SLUG}-hero.webp").exists())
+        self.assertFalse((self.media / f"{SLUG}-hero.jpg").exists())
 
 
 if __name__ == "__main__":
