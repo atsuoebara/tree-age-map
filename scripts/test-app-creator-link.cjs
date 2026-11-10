@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const index = fs.readFileSync('index.html','utf8');
+const sw = fs.readFileSync('sw.js','utf8');
+const footer = index.match(/<footer id="siteFooter">([\s\S]*?)<\/footer>/)?.[1];
+assert(footer, 'app footer not found');
+const count = (s,needle) => s.split(needle).length-1;
+assert.equal(count(footer,'https://www.instagram.com/atsuoebarun/'),1,'one Instagram link in footer');
+assert(footer.includes('class="rr-creator-credit"'),'creator credit must be inside footer');
+assert(footer.includes('rel="noopener noreferrer"'),'external link must be safe');
+assert(footer.includes('Atsuo Ebara · Instagram'),'visible link label must identify the account');
+assert(footer.includes('（個人アカウント）'),'personal account must be explicit');
+assert(index.includes("['作っている人','Made by']"),'English creator translation missing');
+assert(index.includes("['（個人アカウント）','(personal account)']"),'English account translation missing');
+assert(index.includes('href="./developer-message.html"'),'existing developer-message navigation retained');
+const a=index.match(/const APP_BUILD = '([^']+)'/)?.[1];
+const b=sw.match(/const RR_BUILD = '([^']+)'/)?.[1];
+assert.equal(a,b,'home and service worker builds must match');
+assert.equal(a,'2026.11.10.02','build must increment');
+console.log('App footer Instagram regression checks passed');

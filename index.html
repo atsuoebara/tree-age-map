@@ -2139,6 +2139,15 @@
 #siteFooter a:hover{
   color:#ff2bd6;
 }
+#siteFooter .rr-creator-credit{
+  margin:9px 0 13px;
+  font-size:12px;
+  line-height:1.7;
+  overflow-wrap:anywhere;
+}
+#siteFooter .rr-creator-credit a{
+  text-underline-offset:3px;
+}
 
 #shareAppButton{
   display:inline-flex;
@@ -4442,6 +4451,12 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <a href="./contact.html">お問い合わせ</a>
   </div>
 
+  <p class="rr-creator-credit">
+    <span>作っている人</span>：
+    <a href="https://www.instagram.com/atsuoebarun/" target="_blank" rel="noopener noreferrer" aria-label="Atsuo Ebara personal Instagram">Atsuo Ebara · Instagram</a>
+    <span>（個人アカウント）</span>
+  </p>
+
   <div>
     © 2026 Runner's Rings
   </div>
@@ -4467,7 +4482,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.10.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.10.02'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -29824,6 +29839,8 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['Runner’s Ringsは、過去を残すだけでなく、次の一本を考えるための地図でもあります。','Runner’s Rings is not only a map of your past — it is also a map for planning your next run.'],
   ['使い方を見る','How to use'],
   ['開発者からのメッセージ','Message from the developer'],
+  ['作っている人','Made by'],
+  ['（個人アカウント）','(personal account)'],
   ['Runner’s Ringsについて詳しく見る','Learn more about Runner’s Rings'],
   ["Runner's Ringsでできること",'What you can do with Runner’s Rings'],
   ["アクセス解析を見ると、Runner's Ringsには国内外から毎日訪れてくださる方がいます。とても励みになっています。",'Analytics show that people in Japan and around the world visit Runner’s Rings every day. It is a real encouragement.'],
