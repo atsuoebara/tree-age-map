@@ -4467,7 +4467,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.08.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.10.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -13864,7 +13864,12 @@ name.textContent =
 }
 
 
-async function renderCloudRuns() {
+// Reopening the cloud list shortly after a successful read does not need to
+// re-download every GPS route. Other refresh paths still fetch immediately.
+let cloudListLastFetchAt = 0;
+let cloudListLastFetchOwner = null;
+
+async function renderCloudRuns({ skipRecent = false } = {}) {
 
   // Discard stale results if a user signs out or switches accounts mid-fetch.
   const requestOwner = currentUser?.id || null;
@@ -13873,6 +13878,14 @@ async function renderCloudRuns() {
       'cloudRunsList'
     );
 
+  // Only the user's open/close gesture is throttled. Explicit post-import
+  // refreshes retain their previous behavior, and empty lists are rechecked.
+  if (skipRecent && requestOwner && cloudRows.length &&
+      cloudListLastFetchOwner === requestOwner &&
+      Date.now() - cloudListLastFetchAt < 30000) {
+    renderCloudRowsList();
+    return;
+  }
 
   if (
     !cloudRows.length
@@ -13897,6 +13910,8 @@ async function renderCloudRuns() {
 
     cloudRows =
       rows;
+    cloudListLastFetchOwner = requestOwner;
+    cloudListLastFetchAt = Date.now();
     rrCalOwner = requestOwner;
 
     cloudRunCount =
@@ -14919,7 +14934,7 @@ cloudRunsButton.onclick =
       });
 
       // 最新データの確認は画面遷移後に裏で行う。
-      renderCloudRuns()
+      renderCloudRuns({ skipRecent: true })
         .catch(
           error => {
             console.warn(
