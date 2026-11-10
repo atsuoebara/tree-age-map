@@ -1,0 +1,22 @@
+name: Journal creator link regression
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/generate-journal.mjs'
+      - 'scripts/test-journal-creator-link.cjs'
+      - '.github/workflows/test-journal-creator-link.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Japanese and English creator credit without publishing
+        run: node scripts/test-journal-creator-link.cjs
