@@ -1,0 +1,24 @@
+name: Visible global footer Instagram regression
+
+on:
+  pull_request:
+    paths:
+      - 'rr-site-nav.js'
+      - 'index.html'
+      - 'sw.js'
+      - 'scripts/test-visible-creator-footer.cjs'
+      - '.github/workflows/test-visible-creator-footer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check actual visible common footer and bilingual credit
+        run: node scripts/test-visible-creator-footer.cjs
