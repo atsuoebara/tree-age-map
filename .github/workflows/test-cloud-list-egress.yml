@@ -1,0 +1,23 @@
+name: Cloud list egress regression
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'scripts/test-cloud-list-egress.cjs'
+      - '.github/workflows/test-cloud-list-egress.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify reopen cache and mandatory refresh
+        run: node scripts/test-cloud-list-egress.cjs
