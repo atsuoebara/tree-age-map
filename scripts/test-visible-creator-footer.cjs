@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {spawnSync}=require('node:child_process');
+const nav=fs.readFileSync('rr-site-nav.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
+const result=spawnSync(process.execPath,['--check','rr-site-nav.js'],{encoding:'utf8'});
+assert.equal(result.status,0,result.stderr);
+assert(nav.includes("footer.id='rrGlobalFooter'"),'visible common footer absent');
+assert(nav.includes('footerInner.append(footerBrand,footerLinks,creatorCredit)'),'credit must be in the actual visible common footer');
+assert(nav.includes("footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)))"),'retain common navigation links');
+assert(nav.includes('creatorCredit.className=\'rrCreatorCredit\''),'credit class missing');
+assert(nav.includes("creatorLink.href='https://www.instagram.com/atsuoebarun/'"),'expected Instagram absent');
+assert(nav.includes("creatorLink.rel='noopener noreferrer'"),'safe external link missing');
+assert(nav.includes("creatorLabel.textContent=en?'Made by':'作っている人'"),'bilingual visible creator missing');
+assert(nav.includes("creatorAccount.textContent=en?' (personal account)':'（個人アカウント）'"),'personal account must translate');
+assert(nav.includes('creatorLink.setAttribute(\'aria-label\',en?'),'aria label must translate');
+assert(index.includes('/rr-site-nav.js?v=20261110-creator-01'),'navigation asset URL not bumped');
+const a=index.match(/const APP_BUILD = '([^']+)'/)?.[1], b=sw.match(/const RR_BUILD = '([^']+)'/)?.[1];
+assert.equal(a,b,'index and service worker builds differ');
+assert.equal(a,'2026.11.10.03','new app build expected');
+assert(nav.includes("body > footer:not(#rrGlobalFooter),main > footer:not(#rrGlobalFooter){display:none!important}"),'test must ensure legacy footer is hidden, so actual link location matters');
+console.log('Visible global footer Instagram regression: passed');
