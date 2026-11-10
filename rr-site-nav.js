@@ -26,6 +26,7 @@ const css=document.createElement('style');css.textContent=`
 #rrGlobalNavigation .rrNavDropdown{position:absolute;right:0;top:calc(100% + 7px);width:min(310px,calc(100vw - 24px));max-height:70vh;overflow:auto;background:#102339;border:1px solid #65859f;box-shadow:0 12px 30px #0008;border-radius:12px;padding:9px;display:grid;grid-template-columns:1fr;gap:2px}
 #rrGlobalNavigation .rrNavDropdown a{min-height:40px;display:flex;align-items:center}
 #rrGlobalNavigation .rrNavDropdown a:hover{background:#263d59}
+#rrGlobalNavigation .rrNavDropdown .rrNavSupportLink{margin-top:7px;min-height:44px;border:1px solid #85dbf2;background:#19344a;color:#dceeff;font-weight:800}
 #rrGlobalNavigation .rrNavDesktop{display:flex;flex-wrap:wrap;gap:2px;align-items:center}
 #rrGlobalNavigation .rrNavMobile{display:none}
 /* Duplicate five-card navigation is replaced by the global site menu. */
@@ -42,7 +43,8 @@ details.append(summary,dropdown);row.append(brand,desktop,details);nav.append(ro
 const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
 function english(){try{const selected=localStorage.getItem('runners-rings-language');if(selected==='en'||selected==='ja')return selected==='en';}catch(_){}return document.documentElement.lang==='en';}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
-function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)));if(typeof updateFooter==='function')updateFooter();}
+function makeMenuSupportLink(en){const a=document.createElement('a');a.className='rrNavSupportLink';a.href='https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00';a.target='_blank';a.rel='noopener noreferrer';a.textContent=en?'♡ Support Runner\'s Rings':'♡ Runner\'s Ringsを応援する';a.setAttribute('aria-label',en?'Support Runner\'s Rings (external Stripe checkout)':'Runner\'s Ringsを応援する（外部Stripe決済）');return a;}
+function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)),makeMenuSupportLink(en));if(typeof updateFooter==='function')updateFooter();}
 const footer=document.createElement('footer');
 footer.id='rrGlobalFooter';
 footer.setAttribute('aria-label','Runner\'s Rings footer');
