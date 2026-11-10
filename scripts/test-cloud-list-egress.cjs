@@ -45,6 +45,7 @@ const run=context.testRenderCloudRuns;
   await run({skipRecent:true});
   assert.equal(requests,4,'different account must fetch');
   rows=[];
+  context.cloudRows=[]; // Empty state as after an explicit local deletion/reset.
   await run({skipRecent:true});
   assert.equal(requests,5,'transition to empty result must fetch once');
   await run({skipRecent:true});
