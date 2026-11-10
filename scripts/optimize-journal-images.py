@@ -87,6 +87,22 @@ def encode_webp(original: bytes, max_width: int) -> bytes:
         img.save(out, format="WEBP", quality=77, method=5)
         return out.getvalue()
 
+def encode_jpeg(original: bytes, max_width: int) -> bytes:
+    """SNS-compatible JPEG; flatten transparent illustrations onto white."""
+    with Image.open(io.BytesIO(original)) as img:
+        if img.width * img.height > MAX_PIXELS:
+            raise ValueError("Too many pixels")
+        img = ImageOps.exif_transpose(img)
+        if img.width > max_width:
+            height = max(1, round(img.height * max_width / img.width))
+            img = img.resize((max_width, height), Image.Resampling.LANCZOS)
+        rgba = img.convert("RGBA")
+        canvas = Image.new("RGB", rgba.size, (255, 255, 255))
+        canvas.paste(rgba, mask=rgba.getchannel("A"))
+        out = io.BytesIO()
+        canvas.save(out, format="JPEG", quality=82, optimize=True)
+        return out.getvalue()
+
 def main() -> None:
     MEDIA.mkdir(parents=True, exist_ok=True)
     try:
@@ -109,15 +125,17 @@ def main() -> None:
         # The generator normally restores the original image URL each run.
         # When rerun directly on optimized HTML, recover it from our manifest.
         og_value = html.unescape(match.group(1))
-        optimized_url = f"https://runnersrings.com/journal/media/{slug}-hero.webp"
+        optimized_url = f"https://runnersrings.com/journal/media/{slug}-hero.jpg"
+        legacy_url = f"https://runnersrings.com/journal/media/{slug}-hero.webp"
         url = public_image_url(og_value)
-        if url is None and og_value == optimized_url and isinstance(entry, dict):
+        if url is None and og_value in (optimized_url, legacy_url) and isinstance(entry, dict):
             url = public_image_url(entry.get("url", ""))
         if url is None:
             # Never process unexpected external/social image URLs.
             continue
         thumb = MEDIA / (slug + ".webp")
         hero = MEDIA / (slug + "-hero.webp")
+        social = MEDIA / (slug + "-hero.jpg")
         old_url = entry.get("url") if isinstance(entry, dict) else entry
         old_failed = isinstance(entry, dict) and entry.get("status") == "failed"
         if old_url == url and old_failed:
@@ -127,20 +145,24 @@ def main() -> None:
             failed += 1
             print(f"WARNING: {slug} skipped: previously failed source unchanged")
             continue
-        if old_url != url or not thumb.exists() or not hero.exists():
+        if old_url != url or not thumb.exists() or not hero.exists() or not social.exists():
             if old_url != url:
                 thumb.unlink(missing_ok=True)
                 hero.unlink(missing_ok=True)
+                social.unlink(missing_ok=True)
             try:
                 original = read_url(url)
                 thumb_data = encode_webp(original, 600)
                 hero_data = encode_webp(original, 1200)
+                social_data = encode_jpeg(original, 1200)
                 thumb.write_bytes(thumb_data)
                 hero.write_bytes(hero_data)
-                print(f"Optimized {slug}: {len(original)} -> {len(thumb_data)} + {len(hero_data)} bytes")
+                social.write_bytes(social_data)
+                print(f"Optimized {slug}: {len(original)} -> {len(thumb_data)} + {len(hero_data)} + {len(social_data)} bytes")
             except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError) as exc:
                 thumb.unlink(missing_ok=True)
                 hero.unlink(missing_ok=True)
+                social.unlink(missing_ok=True)
                 current[slug] = {"url": url, "status": "failed"}
                 failed += 1
                 print(f"WARNING: {slug} retains original image: {type(exc).__name__}: {exc}")
@@ -149,12 +171,13 @@ def main() -> None:
         # Serve lightweight assets for the article body AND social previews.
         # The original source URL remains in manifest.json for future refreshes.
         replacement = f'/journal/media/{slug}-hero.webp'
-        social_url = f'https://runnersrings.com{replacement}'
+        social_url = f'https://runnersrings.com/journal/media/{slug}-hero.jpg'
         new_source = HERO.sub(lambda m: m.group(1) + replacement + m.group(3), source)
-        new_source = OG.sub(lambda m: f'<meta property="og:image" content="{social_url}">' if html.unescape(m.group(1)) == url or html.unescape(m.group(1)) == social_url else m.group(0), new_source)
-        new_source = TWITTER.sub(lambda m: f'<meta name="twitter:image" content="{social_url}">' if html.unescape(m.group(1)) == url or html.unescape(m.group(1)) == social_url else m.group(0), new_source)
+        new_source = OG.sub(lambda m: f'<meta property="og:image" content="{social_url}">' if html.unescape(m.group(1)) in (url, social_url, legacy_url) else m.group(0), new_source)
+        new_source = TWITTER.sub(lambda m: f'<meta name="twitter:image" content="{social_url}">' if html.unescape(m.group(1)) in (url, social_url, legacy_url) else m.group(0), new_source)
         # Keep BlogPosting structured data consistent with the visible hero / social card.
-        new_source = new_source.replace('"image":' + json.dumps(url), '"image":' + json.dumps(social_url))
+        for current_url in (url, legacy_url):
+            new_source = new_source.replace('"image":' + json.dumps(current_url), '"image":' + json.dumps(social_url))
         if new_source != source:
             page.write_text(new_source, encoding="utf-8")
         completed += 1
