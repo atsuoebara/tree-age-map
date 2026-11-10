@@ -1,6 +1,6 @@
 /* Runner's Rings C-3: narrowly scoped, opt-in-lifecycle static asset cache.
    Keep this build identical to APP_BUILD in index.html. No skipWaiting or clients.claim. */
-const RR_BUILD = '2026.11.10.02';
+const RR_BUILD = '2026.11.10.03';
 const RR_CACHE = 'rr-static-' + RR_BUILD;
 const RR_OFFLINE = '/offline.html';
 const RR_STATIC = [
