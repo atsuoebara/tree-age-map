@@ -12,7 +12,7 @@ assert(nav.includes("footer.id='rrGlobalFooter'"),'visible common footer absent'
 assert(nav.includes('footerInner.append(footerBrand,footerLinks,supportLink,coffeeLink,ofuseLink,creatorCredit)'),'support and credit must be in the actual visible common footer');
 assert(nav.includes("supportLink.href='https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00'"),'existing Stripe support URL must remain');
 assert(nav.includes("supportLink.className='rrSupportLink'"),'visible supporter CTA missing');
-assert(nav.includes("dropdown.replaceChildren(...links.map(x=>makeLink(x,en)),makeMenuSupportLink(en),makeCoffeeLink(en))"),'menu support link must be rendered in mobile dropdown');
+assert(nav.includes("dropdown.replaceChildren(...links.map(x=>makeLink(x,en)),makeMenuSupportLink(en),makeCoffeeLink(en),makeOfuseLink(en))"),'menu support link must be rendered in mobile dropdown');
 assert(nav.includes("a.className='rrNavSupportLink'"),'menu support link class absent');
 assert(nav.includes("a.href='https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00'"),'menu URL must match existing Stripe link');
 assert(nav.includes("a.target='_blank';a.rel='noopener noreferrer'"),'menu Stripe external link safety attributes missing');
