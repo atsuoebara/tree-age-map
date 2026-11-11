@@ -23,6 +23,20 @@
       "name": "Runner's Rings",
       "url": "https://runnersrings.com/",
       "logo": "https://runnersrings.com/icon.PNG"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://runnersrings.com/#app",
+      "name": "Runner's Rings",
+      "url": "https://runnersrings.com/",
+      "description": "走った道や街を地図に積み重ね、ランニングの軌跡を年輪として振り返る無料のWebアプリ。",
+      "applicationCategory": "SportsApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      }
     }
   ]
 }
@@ -3236,9 +3250,9 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   <p>走った記録ではなく、走った人生を残す。</p>
   <div id="appVersion"></div>
   <div id="publicSiteStats" aria-label="Runner's Rings 累計登録データ">
-    <span class="publicSiteStat" data-public-stat="users">登録者 <strong>--</strong><span>人</span></span>
-    <span class="publicSiteStat" data-public-stat="runs">登録ラン <strong>--</strong></span>
-    <span class="publicSiteStat" data-public-stat="distance">総走行距離 <strong>--</strong><span>km</span></span>
+    <span class="publicSiteStat" data-public-stat="users">登録者 <strong>集計中</strong><span hidden>人</span></span>
+    <span class="publicSiteStat" data-public-stat="runs">登録ラン <strong>集計中</strong></span>
+    <span class="publicSiteStat" data-public-stat="distance">総走行距離 <strong>集計中</strong><span hidden>km</span></span>
   </div>
   <section id="publicCountryStats" hidden aria-label="国別走行距離">
     <h2 class="publicCountryHeading">🌍 国別走行距離</h2>
@@ -3293,7 +3307,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <p class="authHeroText">
         Runner's Rings（ランナーズリングス）は、
         あなたが走った道や街を地図に積み重ねていく
-        ランニング記録アプリです。
+        ランニング記録アプリです。基本機能は無料で利用できます。
       </p>
 
       <p class="authHeroText">
@@ -4482,7 +4496,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.11.02'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.12.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -4825,6 +4839,8 @@ function updatePublicSiteStats(data = {}) {
                 .toLocaleString();
       }
 
+      const unitElement = element.querySelector('span[hidden]');
+      if (unitElement) unitElement.hidden = false;
       element.classList.add(
         'isVisible'
       );
@@ -29328,6 +29344,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ["Runner's Rings（ランナーズリングス）は、","Runner's Rings is an app that"],
   ["あなたが走った道や街を地図に積み重ねていく","maps the roads and places you have run into"],
   ["ランニング記録アプリです。","a growing visual record of your running journey."],
+  ["基本機能は無料で利用できます。","Its core features are free to use."],
   ["ログインすると、","Log in to "],
   ["あなたのランニングマップを表示します。","view your running map."],
   ["まずは","Start with "],
@@ -29868,6 +29885,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['（ランナーズリングス）','(Runner’s Rings)'],
   ['走った記録ではなく、走った人生を残す。','Preserve your running journey, not just your runs.'],
   ['登録者','Members'],['登録ラン','Activities'],['総走行距離','Total distance'],
+  ['集計中','Loading'],
   ['アカウント設定','Account settings'],
   ['Strava連携済み','Strava connected'],
   ['COROSから取り込む','Import from COROS'],
