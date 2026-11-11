@@ -50,8 +50,15 @@ const AFFILIATE_ANCHORS = {
     "en": "It is a strategy that the runner can tolerate and consistently follow."
   }
 };
+// Only approved support destinations become links; all other text stays HTML-escaped.
+function supportLinks(escaped) {
+  const pattern = /https:\/\/(?:buymeacoffee\.com\/runnersrings|ofuse\.me\/runnersrings|buy\.stripe\.com\/[A-Za-z0-9]+)/g;
+  return escaped.replace(pattern, (url) =>
+    `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+}
+
 function articleBodyWithAffiliate(slug, language, body) {
-  const escaped = html(body);
+  const escaped = supportLinks(html(body));
   const block = AFFILIATE_BLOCKS[slug]?.[language];
   if (!block) return `<div class="body">${escaped}</div>`;
   const anchor = AFFILIATE_ANCHORS[slug]?.[language];
