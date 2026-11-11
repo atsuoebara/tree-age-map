@@ -13528,10 +13528,41 @@ function rrCalSetMode(mode){
  if(calendar)rrCalRender();
 }
 document.querySelectorAll('[data-rr-run-mode]').forEach(b=>b.onclick=()=>rrCalSetMode(b.dataset.rrRunMode));
+/* Touch navigation belongs to the calendar date grid, not the whole page.
+ * Preserve vertical scrolling, ordinary day taps, and native year/month selects. */
+function rrCalShiftMonth(delta){
+ const next=new Date(rrCalYear,rrCalMonth+delta,1);
+ rrCalYear=next.getFullYear();
+ rrCalMonth=next.getMonth();
+ rrCalDay=null;
+ rrCalRender();
+}
+let rrCalSwipeStart=null;
+const rrCalSwipeThreshold=55;
+rrCalGrid.addEventListener('touchstart',event=>{
+ if(rrCalMode!=='calendar'||!currentUser?.id||rrCalOwner!==currentUser.id||event.touches.length!==1){
+  rrCalSwipeStart=null;
+  return;
+ }
+ const point=event.touches[0];
+ rrCalSwipeStart={x:point.clientX,y:point.clientY};
+},{passive:true});
+rrCalGrid.addEventListener('touchcancel',()=>{rrCalSwipeStart=null},{passive:true});
+rrCalGrid.addEventListener('touchend',event=>{
+ const start=rrCalSwipeStart;
+ rrCalSwipeStart=null;
+ if(!start||rrCalMode!=='calendar'||!currentUser?.id||rrCalOwner!==currentUser.id||event.changedTouches.length!==1)return;
+ const point=event.changedTouches[0];
+ const deltaX=point.clientX-start.x,deltaY=point.clientY-start.y;
+ // An intentional horizontal gesture must clearly exceed vertical movement.
+ if(Math.abs(deltaX)<rrCalSwipeThreshold||Math.abs(deltaX)<=Math.abs(deltaY)*1.4)return;
+ event.preventDefault(); // Avoid also opening the touched day with a synthetic click.
+ rrCalShiftMonth(deltaX<0?1:-1);
+},{passive:false});
 document.getElementById('rrRunCalendarYear').onchange=e=>{rrCalYear=Number(e.target.value);rrCalDay=null;rrCalRender()};
 document.getElementById('rrRunCalendarMonthSelect').onchange=e=>{rrCalMonth=Number(e.target.value)-1;rrCalDay=null;rrCalRender()};
-document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrCalYear--;rrCalMonth=11}else rrCalMonth--;rrCalDay=null;rrCalRender()};
-document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
+document.getElementById('rrRunCalendarPrev').onclick=()=>rrCalShiftMonth(-1);
+document.getElementById('rrRunCalendarNext').onclick=()=>rrCalShiftMonth(1);
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
  if(!session?.user?.id || (rrCalOwner && session.user.id!==rrCalOwner)){
   rrCalOwner=null;rrCalDay=null;rrCalClosePreview();
