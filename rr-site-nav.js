@@ -44,7 +44,8 @@ const path=location.pathname.replace(/\/$/,'').split('/').pop()||'index.html';
 function english(){try{const selected=localStorage.getItem('runners-rings-language');if(selected==='en'||selected==='ja')return selected==='en';}catch(_){}return document.documentElement.lang==='en';}
 function makeLink(item,isEnglish){const a=document.createElement('a');a.href=item[0];a.textContent=isEnglish?item[2]:item[1];if(item[0].replace('./','')===path)a.setAttribute('aria-current','page');return a;}
 function makeMenuSupportLink(en){const a=document.createElement('a');a.className='rrNavSupportLink';a.href='https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00';a.target='_blank';a.rel='noopener noreferrer';a.textContent=en?'♡ Support Runner\'s Rings':'♡ Runner\'s Ringsを応援する';a.setAttribute('aria-label',en?'Support Runner\'s Rings (external Stripe checkout)':'Runner\'s Ringsを応援する（外部Stripe決済）');return a;}
-function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)),makeMenuSupportLink(en));if(typeof updateFooter==='function')updateFooter();}
+function makeCoffeeLink(en){const a=document.createElement('a');a.className='rrNavSupportLink';a.href='https://buymeacoffee.com/runnersrings';a.target='_blank';a.rel='noopener noreferrer';a.textContent=en?'☕ Buy Me a Coffee':'☕ コーヒーで応援';return a;}
+function update(){const en=english();summary.textContent=en?'☰ Menu':'☰ メニュー';desktop.replaceChildren(...links.map(x=>makeLink(x,en)));dropdown.replaceChildren(...links.map(x=>makeLink(x,en)),makeMenuSupportLink(en),makeCoffeeLink(en));if(typeof updateFooter==='function')updateFooter();}
 const footer=document.createElement('footer');
 footer.id='rrGlobalFooter';
 footer.setAttribute('aria-label','Runner\'s Rings footer');
@@ -68,14 +69,15 @@ const footerBrand=document.createElement('strong');footerBrand.textContent='Runn
 const footerLinks=document.createElement('nav');footerLinks.className='rrFooterLinks';
 footerLinks.setAttribute('aria-label','Footer navigation');
 const supportLink=document.createElement('a');supportLink.className='rrSupportLink';supportLink.href='https://buy.stripe.com/eVqbJ38UAa4JaMU0r53ks00';supportLink.target='_blank';supportLink.rel='noopener noreferrer';
+const coffeeLink=document.createElement('a');coffeeLink.className='rrSupportLink';coffeeLink.href='https://buymeacoffee.com/runnersrings';coffeeLink.target='_blank';coffeeLink.rel='noopener noreferrer';
 const creatorCredit=document.createElement('p');creatorCredit.className='rrCreatorCredit';
 const creatorLabel=document.createElement('span');
 const creatorLink=document.createElement('a');creatorLink.href='https://www.instagram.com/atsuoebarun/';creatorLink.target='_blank';creatorLink.rel='noopener noreferrer';creatorLink.textContent='Atsuo Ebara · Instagram';
 const creatorAccount=document.createElement('span');
 creatorCredit.append(creatorLabel,document.createTextNode('：'),creatorLink,creatorAccount);
-footerInner.append(footerBrand,footerLinks,supportLink,creatorCredit);footer.append(footerInner);
+footerInner.append(footerBrand,footerLinks,supportLink,coffeeLink,creatorCredit);footer.append(footerInner);
 const footerItems=[...links,['./faq.html','よくある質問','FAQ'],['./privacy.html','プライバシー','Privacy'],['./terms.html','利用規約','Terms']];
-function updateFooter(){const en=english();supportLink.textContent=en?'Support Runner\'s Rings':'Runner\'s Ringsを応援する';supportLink.setAttribute('aria-label',en?'Support Runner\'s Rings (external Stripe checkout)':'Runner\'s Ringsを応援する（外部Stripe決済）');footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));creatorLabel.textContent=en?'Made by':'作っている人';creatorAccount.textContent=en?' (personal account)':'（個人アカウント）';creatorLink.setAttribute('aria-label',en?'Atsuo Ebara personal Instagram':'Atsuo Ebaraの個人Instagram');}
+function updateFooter(){const en=english();supportLink.textContent=en?'Support via Stripe':'Stripeで応援';coffeeLink.textContent=en?'☕ Buy Me a Coffee':'☕ コーヒーで応援';supportLink.setAttribute('aria-label',en?'Support Runner\'s Rings (external Stripe checkout)':'Runner\'s Ringsを応援する（外部Stripe決済）');footerLinks.replaceChildren(...footerItems.map(x=>makeLink(x,en)));creatorLabel.textContent=en?'Made by':'作っている人';creatorAccount.textContent=en?' (personal account)':'（個人アカウント）';creatorLink.setAttribute('aria-label',en?'Atsuo Ebara personal Instagram':'Atsuo Ebaraの個人Instagram');}
 update();
 document.body.append(footer);
 /* The same visible language control on every page, including phones. */
