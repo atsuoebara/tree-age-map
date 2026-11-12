@@ -15,6 +15,11 @@ assert.ok(script);
 const app=script[1];
 const head=app.slice(0,app.indexOf("let lang='ja';"));
 const cases=vm.runInNewContext(head+';({slow:syntheticResult("slow"),even:syntheticResult("even"),fast:syntheticResult("fast"),missing:syntheticResult("missing")})');
+// Regression: rendered JA footer must describe the actual synthetic PR #86 integration.
+const footers=vm.runInNewContext(head+';({ja:copy.ja.footer,en:copy.en.footer})');
+assert.match(footers.ja,/PR #86の判定ロジックを架空の1km区間データで実行/);
+assert.doesNotMatch(footers.ja,/判定ロジックとは未接続/);
+assert.match(footers.en,/Uses PR #86 logic on synthetic 1 km splits only/);
 assert.equal(cases.slow.reason,'later_splits_slower');
 assert.equal(cases.even.reason,'relatively_even');
 assert.equal(cases.fast.reason,'later_splits_faster');
