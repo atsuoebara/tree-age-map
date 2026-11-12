@@ -60,8 +60,8 @@ Deno.test("missing or malformed time/distance cannot be analyzed", () => {
 });
 Deno.test("reversed timestamps or stopped distance are not silently repaired", () => {
   for (const samples of [
-    [{startTimeInSeconds:0,totalDistanceInMeters:0},{startTimeInSeconds:100,totalDistanceInMeters:500},{startTimeInSeconds:80,totalDistanceInMeters:600},{startTimeInSeconds:240,totalDistanceInMeters:1000}],
-    [{startTimeInSeconds:0,totalDistanceInMeters:0},{startTimeInSeconds:100,totalDistanceInMeters:500},{startTimeInSeconds:120,totalDistanceInMeters:500},{startTimeInSeconds:240,totalDistanceInMeters:1000}],
+    [{startTimeInSeconds:0,totalDistanceInMeters:0},{startTimeInSeconds:100,totalDistanceInMeters:100},{startTimeInSeconds:80,totalDistanceInMeters:200},{startTimeInSeconds:240,totalDistanceInMeters:300}],
+    [{startTimeInSeconds:0,totalDistanceInMeters:0},{startTimeInSeconds:100,totalDistanceInMeters:100},{startTimeInSeconds:120,totalDistanceInMeters:100},{startTimeInSeconds:240,totalDistanceInMeters:300}],
   ]) {
     const v=base(); v.detail={samples};
     const r=previewSingleRaceRun(v);
