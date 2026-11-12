@@ -5,6 +5,7 @@ on:
     paths:
       - 'supabase/tests/garmin_shape_one_shot_setup.sql'
       - 'supabase/tests/garmin_shape_one_shot.sh'
+      - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   push:
     branches:
@@ -12,6 +13,7 @@ on:
     paths:
       - 'supabase/tests/garmin_shape_one_shot_setup.sql'
       - 'supabase/tests/garmin_shape_one_shot.sh'
+      - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   workflow_dispatch:
 
@@ -50,3 +52,5 @@ jobs:
           test "$PGDATABASE" = "garmin_probe_ci"
       - name: Exercise real PostgreSQL competing claims and expiry
         run: bash supabase/tests/garmin_shape_one_shot.sh
+      - name: Exercise real PostgreSQL finish vs revoke race in both orders
+        run: bash supabase/tests/garmin_shape_one_shot_revoke_race.sh
