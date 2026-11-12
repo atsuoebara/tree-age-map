@@ -1,0 +1,17 @@
+name: Synthetic race recommendation integration checks
+on:
+  pull_request:
+    paths:
+      - 'previews/race-training-integrated-synthetic-20261112.html'
+      - 'tests/race-training-integrated-synthetic.test.cjs'
+      - '.github/workflows/race-training-integrated-synthetic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test decision-to-display synthetic integration
+        run: node tests/race-training-integrated-synthetic.test.cjs
