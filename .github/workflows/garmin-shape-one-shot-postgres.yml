@@ -7,6 +7,7 @@ on:
       - 'supabase/tests/garmin_shape_one_shot.sh'
       - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
       - 'supabase/tests/garmin_shape_purge_lifecycle.sql'
+      - 'supabase/tests/garmin_shape_multiowner_purge.sql'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'supabase/tests/garmin_shape_one_shot.sh'
       - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
       - 'supabase/tests/garmin_shape_purge_lifecycle.sql'
+      - 'supabase/tests/garmin_shape_multiowner_purge.sql'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   workflow_dispatch:
 
@@ -58,3 +60,5 @@ jobs:
         run: bash supabase/tests/garmin_shape_one_shot_revoke_race.sh
       - name: Exercise synthetic Garmin disconnect and run deletion purge
         run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_purge_lifecycle.sql
+      - name: Verify owner and run scoping across three accounts
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_multiowner_purge.sql
