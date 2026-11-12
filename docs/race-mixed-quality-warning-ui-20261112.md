@@ -21,3 +21,8 @@ Demonstrate what a small-screen runner-facing view might look like if the user c
 
 ## Muse audit requests
 Check CSS responsiveness and 44px control sizes, no external I/O, language+scenario interactions, all-four-fixture counts and 0.42km tail display, unavoidable uncertainty labels and no recommendations even on nominally clean, no production refs, and fail-safe separation from PR #86/#91/#92/#93. No merge / deploy / DB modifications without Atsuo approval.
+
+## PR #95 follow-up to Muse observations (synthetic only)
+- The summary now explicitly states that the warning count is **among complete 1 km splits**; the final 0.42 km partial lap is excluded from both the full-km denominator and the warning count, **but remains visible and explicitly marked `品質不明` / `Uncertain quality`**. This is a denominator clarification, not quality certification or removal of data.
+- The `aria-label` for the split-list section now changes with the Japanese/English language toggle while retaining the selected fictional scenario. The `lang` attribute and `aria-pressed` state remain synchronized.
+- Automated UI regression assertions verify both language labels, explanatory denominator text, and the tail's warning label. All source data and times remain fictional. No official mixed-quality policy is selected, no training suggestions, data connections, app routing or extra costs.
