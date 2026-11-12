@@ -6,6 +6,7 @@ on:
       - 'src/garmin-sample-shape-probe.mjs'
       - 'src/garmin-one-shot-probe-contract.mjs'
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
+      - 'tests/garmin-revoke-retry-integration.test.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
@@ -17,6 +18,7 @@ on:
       - 'src/garmin-sample-shape-probe.mjs'
       - 'src/garmin-one-shot-probe-contract.mjs'
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
+      - 'tests/garmin-revoke-retry-integration.test.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
@@ -39,6 +41,8 @@ jobs:
         run: node tests/garmin-sample-shape-probe.test.mjs
       - name: One-shot atomic lease contract synthetic tests
         run: node tests/garmin-one-shot-probe-contract.test.mjs
+      - name: Synthetic Garmin remote revoke failure and retry against receiver source
+        run: node tests/garmin-revoke-retry-integration.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
