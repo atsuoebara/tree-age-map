@@ -10,6 +10,7 @@ on:
       - 'supabase/tests/garmin_shape_multiowner_purge.sql'
       - 'supabase/tests/garmin_shape_type_fidelity.sql'
       - 'supabase/tests/garmin_account_delete_order_ci.sql'
+      - 'supabase/tests/garmin_account_delete_rollback_ci.sql'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   push:
     branches:
@@ -22,6 +23,7 @@ on:
       - 'supabase/tests/garmin_shape_multiowner_purge.sql'
       - 'supabase/tests/garmin_shape_type_fidelity.sql'
       - 'supabase/tests/garmin_account_delete_order_ci.sql'
+      - 'supabase/tests/garmin_account_delete_rollback_ci.sql'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   workflow_dispatch:
 
@@ -70,3 +72,5 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_type_fidelity.sql
       - name: Verify account deletion ordering without harming other owners
         run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_account_delete_order_ci.sql
+      - name: Inject deletion failures and verify atomic rollback and retry
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_account_delete_rollback_ci.sql
