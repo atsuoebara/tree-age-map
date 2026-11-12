@@ -22,4 +22,23 @@ assert.equal(countGarminSampleShape({activityDetails:[]}).reason,'invalid_activi
 assert.equal(countGarminSampleShape({activityDetails:[{samples:[]} ,{samples:[]}]},{maxActivities:1}).reason,'invalid_activities');
 assert.equal(countGarminSampleShape({activityDetails:[{samples:Array.from({length:2},()=>null)},{samples:[null]}]},{maxSamples:2}).reason,'too_many_samples');
 assert.equal(countGarminSampleShape({activityDetails:[{samples:[]}], foo:secret}).ok,true);
+
+const boundaries=[
+  [{activityDetails:[{samples:[{startTimeInSeconds:0,totalDistanceInMeters:0,heartRate:0,heartrate:120}]}]},true],
+  [{activityDetails:[{samples:[{startTimeInSeconds:null,totalDistanceInMeters:'1',heartRate:'PRIVATE'}]}]},true],
+  [{activityDetails:[{samples:[1,'PRIVATE',{},null]}]},true],
+  [{activityDetails:[{samples:[{startTimeInSeconds:Infinity,totalDistanceInMeters:NaN}]}]},true],
+  [{activityDetails:'invalid'},false],
+  [{activityDetails:[{samples:[{userAccessToken:'PRIVATE'}]}]},true],
+];
+for(const [input,expected] of boundaries){
+  const r=countGarminSampleShape(input);
+  assert.equal(r.ok,expected);
+  assert.equal(JSON.stringify(r).includes('PRIVATE'),false);
+}
+const maxValid={activityDetails:[{samples:Array.from({length:20000},()=>({heartRate:120,startTimeInSeconds:1,totalDistanceInMeters:2}))}]};
+assert.equal(countGarminSampleShape(maxValid).sampleCount,20000);
+assert.equal(countGarminSampleShape({activityDetails:[{samples:Array.from({length:20001},()=>null)}]}).reason,'too_many_samples');
+console.log('Additional Garmin privacy and boundary cases PASS');
+
 console.log('Garmin one-shot pure shape probe synthetic tests PASS');
