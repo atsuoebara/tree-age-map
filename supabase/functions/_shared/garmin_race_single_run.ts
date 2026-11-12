@@ -5,7 +5,7 @@
  * This module is NOT connected to the production Garmin receiver or website.
  */
 import { previewGarminSensors } from "./garmin_race_optional.ts";
-import { summarizeRace } from "./garmin_race_segments.ts";
+import { summarizeRace, type Summary } from "./garmin_race_segments.ts";
 
 export type Intent = "race" | "time_trial" | "record_attempt" | "jog" | "recovery" | "other";
 export type Request = {
@@ -21,7 +21,7 @@ export type Request = {
 };
 export type Result =
   | { ok: false; reason: "not_selected" | "not_race_effort" | "invalid_date" | "pre_activation" | "missing_samples" | "unreliable_samples" | "invalid_laps" }
-  | { ok: true; runId: string; provisional: true; basis: "one_run_clock_elapsed"; summary: NonNullable<ReturnType<typeof summarizeRace> extends infer T ? T extends {ok:true;summary:infer S} ? S : never : never> };
+  | { ok: true; runId: string; provisional: true; basis: "one_run_clock_elapsed"; summary: Summary };
 
 export function previewSingleRaceRun(request: Request): Result {
   if (!request || typeof request.runId !== "string" || !request.runId.trim() ||
