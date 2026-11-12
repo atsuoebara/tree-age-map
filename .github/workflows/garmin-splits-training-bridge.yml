@@ -1,0 +1,22 @@
+name: Garmin split to training synthetic bridge
+on:
+  pull_request:
+    paths:
+      - 'src/race-training-split-preview-adapter.cjs'
+      - 'previews/garmin-splits-training-bridge-synthetic-20261112.html'
+      - 'tests/garmin-splits-training-bridge.test.cjs'
+      - '.github/workflows/garmin-splits-training-bridge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise synthetic bridge and fail-closed inputs
+        run: node tests/garmin-splits-training-bridge.test.cjs
+      - name: Ensure original training modules remain valid
+        run: node tests/race-training-suggestions.test.cjs
+      - name: Ensure integrated training preview remains valid
+        run: node tests/race-training-integrated-synthetic.test.cjs
