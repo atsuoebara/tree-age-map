@@ -40,6 +40,25 @@ export type C4Result =
   | { ok: false; reason: "unauthorized" | "run_mismatch" | "source_mismatch" | "stale_connection" | "payload_mismatch" }
   | Result;
 
+// Parse RFC3339 only after checking its civil date is real. Do not trust Date.parse
+// normalization of dates such as February 30 or locale-specific timestamp strings.
+function strictInstant(value: unknown): number | null {
+  if (typeof value !== "string") return null;
+  const m = /^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d+))?(Z|([+-])(\\d{2}):(\\d{2}))$/.exec(value);
+  if (!m) return null;
+  const [year, month, day, hour, minute, second] = m.slice(1, 7).map(Number);
+  const tzHour = m[10] ? Number(m[10]) : 0;
+  const tzMinute = m[11] ? Number(m[11]) : 0;
+  if (year < 100 || month < 1 || month > 12 || day < 1 || day > 31 ||
+      hour > 23 || minute > 59 || second > 59 || tzHour > 23 || tzMinute > 59) return null;
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month ||
+      date.getUTCDate() !== day || date.getUTCHours() !== hour ||
+      date.getUTCMinutes() !== minute || date.getUTCSeconds() !== second) return null;
+  const ms = m[7] ? Number("0." + m[7]) * 1000 : 0;
+  return date.getTime() + ms - (m[9] === "-" ? -1 : 1) * (tzHour * 60 + tzMinute) * 60000;
+}
+
 /**
  * Does not prove caller identity or packet origin: consumers must first verify
  * session, run ownership, Garmin receipt authenticity and database RLS.
@@ -56,12 +75,16 @@ export function previewOwnedGarminRace(
       payload.run_id !== run.id) return {ok:false, reason:"run_mismatch"};
   if (run.source !== "garmin" || typeof run.source_external_id !== "string" ||
       !run.source_external_id.startsWith("garmin-api:") ||
+      run.source_external_id.length <= "garmin-api:".length ||
       payload.source_external_id !== run.source_external_id)
     return {ok:false, reason:"source_mismatch"};
-  if (!payload.connection_version || !payload.active_connection_version ||
+  if (typeof payload.connection_version !== "string" || !payload.connection_version.trim() ||
+      typeof payload.active_connection_version !== "string" || !payload.active_connection_version.trim() ||
       payload.connection_version !== payload.active_connection_version)
     return {ok:false, reason:"stale_connection"};
-  if (!payload.started_at || payload.started_at !== run.started_at)
+  const runStart = strictInstant(run.started_at);
+  const payloadStart = strictInstant(payload.started_at);
+  if (runStart === null || payloadStart === null || runStart !== payloadStart)
     return {ok:false, reason:"payload_mismatch"};
   return previewSingleRaceRun({
     runId: run.id,
