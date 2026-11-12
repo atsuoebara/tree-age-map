@@ -97,7 +97,7 @@ INSERT INTO probe_scope.probe VALUES('A3','owner-A','gen-A2','{"activityCount":1
 -- Attempt to attach A3 to another owner is refused by composite FK.
 DO $$BEGIN
  BEGIN
-  INSERT INTO probe_scope.probe VALUES('A3','owner-B','gen-B1','{}');
+  INSERT INTO probe_scope.probe VALUES('A2','owner-B','gen-B1','{}');
   RAISE EXCEPTION 'test unexpectedly accepted cross-owner';
  EXCEPTION WHEN foreign_key_violation THEN NULL; END;
  BEGIN
