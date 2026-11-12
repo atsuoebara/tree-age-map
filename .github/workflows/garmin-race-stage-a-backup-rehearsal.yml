@@ -1,0 +1,76 @@
+name: Garmin Gate 0 synthetic backup restore rehearsal (CI only)
+
+on:
+  pull_request:
+    paths:
+      - "docs/garmin-race-stage-a-gate0-backup-restore-runbook-20261109.md"
+      - ".github/workflows/garmin-race-stage-a-backup-rehearsal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: garmin_gate0_synthetic_source
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_gate0_synthetic_source"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - name: Confirm disposable CI-only target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGPORT" = "5432"
+          test "$PGUSER" = "postgres"
+      - name: Create fake route data in local database
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -d garmin_gate0_synthetic_source <<'SQL'
+          CREATE TABLE public.runs(id bigint PRIMARY KEY, user_id uuid, route jsonb NOT NULL);
+          INSERT INTO public.runs VALUES
+            (1,'00000000-0000-4000-8000-000000000001','{"route":"synthetic-a"}'),
+            (2,'00000000-0000-4000-8000-000000000002','{"route":"synthetic-b"}');
+          CREATE TABLE public.garmin_api_connections(user_id uuid PRIMARY KEY, import_enabled boolean NOT NULL);
+          INSERT INTO public.garmin_api_connections VALUES ('00000000-0000-4000-8000-000000000001',true);
+          SQL
+      - name: Backup and restore local data in a separate disposable database
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          backup_file=$(mktemp /tmp/gate0-synthetic-XXXXXX.dump)
+          trap 'rm -f "$backup_file"' EXIT
+          db_container=$(docker ps --filter ancestor=postgres:17 --format "{{.ID}}" | head -n 1)
+          test -n "$db_container"
+          docker exec "$db_container" pg_dump -U postgres -Fc -d garmin_gate0_synthetic_source > "$backup_file"
+          test -s "$backup_file"
+          createdb garmin_gate0_synthetic_restore
+          docker exec -i "$db_container" pg_restore -U postgres --exit-on-error --single-transaction -d garmin_gate0_synthetic_restore < "$backup_file"
+          source_runs=$(psql -XAt -d garmin_gate0_synthetic_source -c 'SELECT count(*) FROM public.runs')
+          restored_runs=$(psql -XAt -d garmin_gate0_synthetic_restore -c 'SELECT count(*) FROM public.runs')
+          test "$source_runs" = "2"
+          test "$restored_runs" = "$source_runs"
+          test "$(psql -XAt -d garmin_gate0_synthetic_restore -c 'SELECT count(*) FROM public.garmin_api_connections')" = "1"
+          test "$(psql -XAt -d garmin_gate0_synthetic_restore -c "SELECT count(*) FROM pg_constraint WHERE conrelid='public.runs'::regclass AND contype='p'")" = "1"
+          echo "PASS: synthetic local PG17 backup+restore, two runs and Garmin table preserved"
+          echo "NOTE: not a real production backup or Supabase-managed schema rehearsal"

@@ -1,0 +1,58 @@
+name: Garmin Stage A schema candidate integrity (review only)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-stage-a-apply-candidate.sql"
+      - ".github/workflows/garmin-race-stage-a-schema-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify identical audited PR67 SQL source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate=supabase/garmin-race-analysis-stage-a-apply-candidate.sql
+          expected_blob=eb20b8390955bcad86424198ddca9e212add1be8
+          actual_blob=$(git hash-object "$candidate")
+          echo "Audit SQL blob: $actual_blob"
+          test "$actual_blob" = "$expected_blob"
+      - name: Verify explicit single transaction SQL framing (no database connection)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path("supabase/garmin-race-analysis-stage-a-apply-candidate.sql")
+          sql = path.read_text(encoding="utf-8")
+          lines = [line.strip().upper() for line in sql.splitlines()
+                   if line.strip() and not line.lstrip().startswith("--")]
+          begins = [i for i, line in enumerate(lines) if line == "BEGIN;"]
+          commits = [i for i, line in enumerate(lines) if line == "COMMIT;"]
+          rollbacks = [i for i, line in enumerate(lines) if line == "ROLLBACK;"]
+          assert len(begins) == 1 and len(commits) == 1 and not rollbacks, (
+              f"Expected 1 BEGIN/COMMIT and 0 ROLLBACK; got {begins}, {commits}, {rollbacks}")
+          assert begins[0] == 0, "BEGIN must start statement body"
+          assert commits[0] == len(lines)-1, "COMMIT must terminate statement body"
+          assert not re.search(r"\\bCREATE\\s+(UNIQUE\\s+)?INDEX\\s+CONCURRENTLY\\b", sql, re.I), (
+              "CREATE INDEX CONCURRENTLY is incompatible with transaction block")
+          print("PASS: explicit BEGIN/COMMIT body framing (static inspection only)")
+          PY
+      - name: Assert no migrations or runtime wiring in this PR
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | tee /tmp/changed-files
+          if grep -E '^(supabase/migrations/|supabase/functions/|index\.html$|sw\.js$)' /tmp/changed-files; then
+            echo "Unexpected runtime/migration file modified" >&2
+            exit 1
+          fi
