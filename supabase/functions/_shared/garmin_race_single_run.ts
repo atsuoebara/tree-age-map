@@ -16,11 +16,15 @@ export type Request = {
   activityStartedAt: string;
   // Release activation instant, supplied by trusted application configuration.
   activatedAt: string;
+  // All three values below MUST come from a trusted server, not client input.
+  ingestedAt: string; // timestamp of this run's new import
+  requestedAt: string; // diagnostic request timestamp
+  maxAgeSeconds: number; // explicit release policy; no default 7-day decision
   // Authenticated owner checks are outside this pure module.
   detail: unknown;
 };
 export type Result =
-  | { ok: false; reason: "not_selected" | "not_race_effort" | "invalid_date" | "pre_activation" | "missing_samples" | "unreliable_samples" | "unverified_continuity" | "invalid_laps" }
+  | { ok: false; reason: "not_selected" | "not_race_effort" | "invalid_date" | "pre_activation" | "not_new_import" | "not_recent" | "invalid_policy" | "missing_samples" | "unreliable_samples" | "unverified_continuity" | "invalid_laps" }
   | { ok: true; runId: string; provisional: true; basis: "one_run_clock_elapsed"; summary: Summary };
 
 // Conservative PR #91 proposal; these thresholds are not validated on real race data.
@@ -52,9 +56,20 @@ export function previewSingleRaceRun(request: Request): Result {
     return { ok: false, reason: "not_race_effort" };
   const activity = parseStrictInstant(request.activityStartedAt);
   const activation = parseStrictInstant(request.activatedAt);
-  if (activity === null || activation === null)
+  const ingested = parseStrictInstant(request.ingestedAt);
+  const now = parseStrictInstant(request.requestedAt);
+  if ([activity, activation, ingested, now].some(t => t === null))
     return { ok: false, reason: "invalid_date" };
-  if (activity < activation) return { ok: false, reason: "pre_activation" };
+  if (!Number.isSafeInteger(request.maxAgeSeconds) || request.maxAgeSeconds <= 0 ||
+      request.maxAgeSeconds > 31 * 86400) return { ok: false, reason: "invalid_policy" };
+  // TS narrowing: all timestamps were validated immediately above.
+  const activityMs = activity as number, activationMs = activation as number;
+  const ingestedMs = ingested as number, nowMs = now as number;
+  if (activityMs < activationMs) return { ok: false, reason: "pre_activation" };
+  if (ingestedMs < activationMs || ingestedMs < activityMs || nowMs < ingestedMs)
+    return { ok: false, reason: "not_new_import" };
+  if (nowMs < activityMs || nowMs - activityMs > request.maxAgeSeconds * 1000)
+    return { ok: false, reason: "not_recent" };
   const extraction = previewGarminSensors(request.detail);
   if (!extraction.ok) return { ok: false, reason: "missing_samples" };
   for (let i = 1; i < extraction.samples.length; i++) {
