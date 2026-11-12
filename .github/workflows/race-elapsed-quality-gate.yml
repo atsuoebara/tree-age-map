@@ -1,0 +1,22 @@
+name: Race elapsed quality gate design checks
+on:
+  pull_request:
+    paths:
+      - 'src/race-elapsed-quality-gate-review.cjs'
+      - 'tests/race-elapsed-quality-gate-review.test.cjs'
+      - 'docs/race-elapsed-quality-gate-v01-20261112.md'
+      - '.github/workflows/race-elapsed-quality-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise fail-closed quality gate
+        run: node tests/race-elapsed-quality-gate-review.test.cjs
+      - name: Preserve audited suggestion logic
+        run: node tests/race-training-suggestions.test.cjs
+      - name: Preserve synthetic Garmin bridge
+        run: node tests/garmin-splits-training-bridge.test.cjs
