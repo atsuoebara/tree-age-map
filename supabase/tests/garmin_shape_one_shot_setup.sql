@@ -47,6 +47,6 @@ begin
  returning 1 into taken;
  return found;
 end $$;
-insert into probe_ci.one_shot(id,owner_ref,connection_version,activated_at,expires_at,state)
+create or replace function probe_ci.revoke(p_owner text,p_version text)\nreturns boolean language plpgsql as $\ndeclare taken integer;\nbegin\n update probe_ci.one_shot\n set state='revoked', result_counts=null, claim_token=null,\n     connection_version='revoked-generation'\n where id=1 and owner_ref=p_owner and connection_version=p_version\n   and state in ('eligible','claimed','finished')\n returning 1 into taken;\n return found;\nend $;\ninsert into probe_ci.one_shot(id,owner_ref,connection_version,activated_at,expires_at,state)
 values(1,'synthetic-owner','synthetic-v1',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '2 minutes','eligible');
 commit;
