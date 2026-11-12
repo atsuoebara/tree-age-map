@@ -41,4 +41,29 @@ assert.equal(countGarminSampleShape(maxValid).sampleCount,20000);
 assert.equal(countGarminSampleShape({activityDetails:[{samples:Array.from({length:20001},()=>null)}]}).reason,'too_many_samples');
 console.log('Additional Garmin privacy and boundary cases PASS');
 
+
+const maxBatch={activityDetails:Array.from({length:100},(_,a)=>({
+  userId:'sensitive-account-'+a,
+  samples:Array.from({length:200},(_,i)=>({
+    startTimeInSeconds:1700000000+i,
+    totalDistanceInMeters:a*2000+i*10,
+    heartRate:140,
+    userAccessToken:'TOP-SECRET-'+a
+  }))
+}))};
+const maxStart=performance.now();
+const maxReport=countGarminSampleShape(maxBatch);
+const maxDuration=performance.now()-maxStart;
+assert.equal(maxReport.ok,true);
+assert.equal(maxReport.activityCount,100);
+assert.equal(maxReport.sampleCount,20000);
+assert.equal(maxReport.fields.heartRate.number,20000);
+assert.ok(maxDuration<2500,'20k sample smoke test is unexpectedly slow');
+assert.ok(!JSON.stringify(maxReport).includes('sensitive-account'));
+assert.ok(!JSON.stringify(maxReport).includes('TOP-SECRET'));
+// A second call currently succeeds: the pure function DOES NOT enforce "one shot".
+// The one-shot gate MUST be atomic, external, server-owned and time-limited before use in production.
+assert.deepEqual(countGarminSampleShape(maxBatch),maxReport);
+console.log('Garmin max-batch synthetic shape probe PASS');
+
 console.log('Garmin one-shot pure shape probe synthetic tests PASS');
