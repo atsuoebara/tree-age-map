@@ -10,7 +10,12 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f7f9fe;font:15px/1.55 system-ui,-apple-system,sans-serif}
 main{width:min(100%,620px);margin:auto;padding:18px 14px 48px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.tag{color:var(--accent);font-weight:800;font-size:11px;letter-spacing:.03em}
+.tag{color:var(--accent);font-weight:800;font-size:11px;letter-spacing:.03em;min-width:0;overflow-wrap:anywhere}
+.languageSwitch{display:flex;flex:none;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#132237}
+.languageButton{min-width:44px;min-height:44px;padding:9px 10px;border:0;border-radius:999px;background:transparent;color:#aeb9c8;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.languageButton.isActive{background:#ff2bd6;color:#fff}
+.languageButton:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
 button,select{font:inherit;color:white;background:#223149;border:1px solid #7888a0;border-radius:12px;padding:9px 11px;max-width:100%}
 button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 h1{font-size:clamp(22px,6vw,29px);line-height:1.35;margin:16px 0 6px}h2{font-size:17px;margin:0 0 8px}
@@ -29,7 +34,7 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);margin
 </head>
 <body>
 <main>
-<div class="top"><span class="tag">RUNNER'S RINGS · DRAFT · SYNTHETIC</span><button id="lang" type="button">English</button></div>
+<div class="top"><span class="tag">RUNNER'S RINGS · DRAFT · SYNTHETIC</span><div class="languageSwitch" role="group" aria-label="Language"><button class="languageButton isActive" data-language="ja" aria-pressed="true" type="button">日本語</button><button class="languageButton" data-language="en" aria-pressed="false" type="button">EN</button></div></div>
 <h1 id="title">分析から見つける、次の練習</h1>
 <p class="lead" id="intro">レースの1km区間の傾向から、一般的な練習方法をご紹介します。</p>
 <section class="panel">
@@ -140,7 +145,7 @@ function render(){
  for(const [id,key] of Object.entries({'title':'title','intro':'intro','scenario-label':'scenarioLabel','example-note':'exampleNote','finding-title':'findingTitle','training-heading':'trainingHeading','caution-title':'cautionTitle','caution-text':'cautionText','disclaimer':'disclaimer','footer':'footer'})){
   document.getElementById(id).textContent=c[key];
  }
- document.getElementById('lang').textContent=c.langButton;
+ document.querySelectorAll('.languageButton').forEach(button=>{const active=button.dataset.language===lang;button.classList.toggle('isActive',active);button.setAttribute('aria-pressed',String(active));});
  const select=document.getElementById('scenario');
  for(const opt of select.options){opt.textContent=c.scenarios[opt.value];}
  document.getElementById('finding-status').textContent=c.findings[kind];
@@ -159,7 +164,7 @@ function render(){
  }
  if(!selectedIds.length){const p=document.createElement('p');p.className='note';p.textContent=c.empty;root.append(p);}
 }
-document.getElementById('lang').addEventListener('click',()=>{lang=lang==='ja'?'en':'ja';render()});
+document.querySelectorAll('.languageButton').forEach(button=>button.addEventListener('click',()=>{if(lang!==button.dataset.language){lang=button.dataset.language;render();}}));
 document.getElementById('scenario').addEventListener('change',render);
 render();
 </script>
