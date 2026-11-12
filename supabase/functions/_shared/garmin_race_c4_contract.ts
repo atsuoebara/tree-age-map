@@ -44,7 +44,7 @@ export type C4Result =
 // normalization of dates such as February 30 or locale-specific timestamp strings.
 function strictInstant(value: unknown): number | null {
   if (typeof value !== "string") return null;
-  const m = /^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d+))?(Z|([+-])(\\d{2}):(\\d{2}))$/.exec(value);
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
   if (!m) return null;
   const [year, month, day, hour, minute, second] = m.slice(1, 7).map(Number);
   const tzHour = m[10] ? Number(m[10]) : 0;
