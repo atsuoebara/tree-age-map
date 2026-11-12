@@ -1,0 +1,24 @@
+name: Synthetic mixed-quality warning UI
+on:
+  pull_request:
+    paths:
+      - 'previews/race-mixed-quality-warning-synthetic-20261112.html'
+      - 'tests/race-mixed-quality-warning-ui.test.cjs'
+      - 'docs/race-mixed-quality-warning-ui-20261112.md'
+      - '.github/workflows/race-mixed-quality-warning-ui.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify warning preview and bilingual scenarios
+        run: node tests/race-mixed-quality-warning-ui.test.cjs
+      - name: Preserve PR93 policy comparison
+        run: node tests/race-mixed-quality-policy-review.test.cjs
+      - name: Preserve PR91 quality gate
+        run: node tests/race-elapsed-quality-gate-review.test.cjs
+      - name: Preserve PR92 diagnostics
+        run: node tests/race-source-continuity-diagnostic.test.cjs

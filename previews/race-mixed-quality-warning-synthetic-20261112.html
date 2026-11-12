@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>1km elapsed quality | DRAFT SYNTHETIC</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#10131b;color:#f6f7fb}
+*{box-sizing:border-box}body{margin:0;padding:18px 12px 40px}.wrap{max-width:620px;margin:auto}
+header,.panel,.lap{background:#1d2230;border:1px solid #3d4252;border-radius:14px;padding:16px;margin-bottom:12px}
+h1{font-size:1.3rem;margin:8px 0}h2{font-size:1.06rem}.sub{color:#cbd0db;line-height:1.55}
+.flag{display:inline-block;font-weight:700;font-size:.8rem;border:1px solid #ffcd72;color:#ffdd98;padding:5px 8px;border-radius:8px}
+.notice{border-left:4px solid #ffcd72;padding:10px;background:#302a24;line-height:1.6}
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 16px}
+button,select{min-height:44px;padding:10px 12px;color:#fff;background:#292e40;border:1px solid #777d8f;border-radius:12px;font-size:1rem}
+button{min-width:44px;cursor:pointer}.chosen{background:#ff2bd6;border-color:#ff2bd6;color:#080810}
+select{width:min(100%,325px)}.lap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.lap strong{font-size:1rem}.time{font-variant-numeric:tabular-nums;font-weight:700}
+.lap-detail{font-size:.86rem;color:#dde1ec;margin-top:6px}.unknown{color:#ffdd98}
+#suggestions{font-weight:700}footer{color:#c4c8d1;font-size:.84rem;line-height:1.6}
+@media(max-width:350px){.lap{align-items:flex-start;flex-direction:column}.controls{align-items:stretch}select{width:100%}}
+</style></head><body><main class="wrap">
+<header><span class="flag">DRAFT · SYNTHETIC / 架空データ</span><h1 id="title">1km区間の表示方針（試作）</h1>
+<p id="intro" class="sub">実際のGarminデータではありません。区間時間は架空の数値であり、精度は認定されていません。</p></header>
+<div class="controls"><label for="scenario"><span id="choose">架空シナリオ</span><div><select id="scenario" aria-label="架空シナリオ"><option value="mixed">途中に計測上の懸念あり</option><option value="plateau">途中に停止候補あり</option><option value="clean">全区間が正常そうな例</option><option value="partial">末尾0.42kmの例</option></select></div></label>
+<div role="group" aria-label="Language"><button id="ja" type="button" class="chosen" aria-pressed="true">日本語</button><button id="en" type="button" aria-pressed="false">EN</button></div></div>
+<section class="panel"><h2 id="summaryTitle">表示方針の比較</h2><div class="notice" id="notice" role="status">品質が確かめられていない区間があります。参考情報として表示し、練習提案には使いません。</div>
+<p id="summary"></p><p id="suggestions">練習提案：表示しません</p></section>
+<section id="laps" aria-label="1km区間一覧"></section>
+<footer id="footer">診断ではなく表示方法の試作です。正常そうな区間も品質認定はされていません。停止候補は信号待ちやGPSフリーズのどちらとも断定できません。経過時間には停止を含み、移動ペースや公式計測ではありません。</footer>
+</main><script>
+'use strict';
+// Inline data are fictional and never connected to Garmin, storage, Supabase, or the #86 training engine.
+const base=[302,308,315,327,310,320,328,318];
+const scenarios={
+ mixed:['simulated_clean','gps_gap','simulated_clean','clock_gap','simulated_clean','unknown','simulated_clean','plateau_ambiguous'],
+ plateau:['simulated_clean','simulated_clean','simulated_clean','plateau_ambiguous','simulated_clean','simulated_clean','simulated_clean','simulated_clean'],
+ clean:Array(8).fill('simulated_clean'),
+ partial:['simulated_clean','simulated_clean','gps_gap','simulated_clean','simulated_clean','simulated_clean','simulated_clean','simulated_clean','unknown']
+};
+const i18n={
+ ja:{title:'1km区間の表示方針（試作）',intro:'実際のGarminデータではありません。区間時間は架空の数値であり、精度は認定されていません。',
+ choose:'架空シナリオ',summaryTitle:'表示方針の比較',notice:'区間時間は品質未認定の参考表示です。疑わしい区間は隠さず注意を示し、練習提案には使いません。',
+ suggestions:'練習提案：表示しません',footer:'診断ではなく表示方法の試作です。正常そうな区間も品質認定はされていません。停止候補は信号待ちやGPSフリーズのどちらとも断定できません。経過時間には停止を含み、移動ペースや公式計測ではありません。',
+ labels:{simulated_clean:'異常の観測なし（未認定）',gps_gap:'GPS距離の空白（疑い）',clock_gap:'時間の空白（疑い）',plateau_ambiguous:'距離停滞の観測（原因不明）',unknown:'品質不明'},
+ opts:['途中に計測上の懸念あり','途中に停止候補あり','全区間が正常そうな例','末尾0.42kmの例'],
+ count:(n,q)=>'完全1km区間 '+n+'本 ／ 注意対象 '+q+'本（いずれも品質未認定）',km:'区間',partial:'端数区間'},
+ en:{title:'1 km split display policy (prototype)',intro:'No real Garmin data. Split times are fictional and have not been quality-certified.',
+ choose:'Synthetic scenario',summaryTitle:'Display policy comparison',notice:'Times are unverified reference values. Show uncertain splits with a warning, without issuing training advice.',
+ suggestions:'Training suggestions: not shown',footer:'Display prototype only, not a diagnosis. Even apparently clean splits are uncertified. Distance plateaus cannot distinguish a traffic stop from GPS freeze. Clock elapsed includes stops and is neither moving pace nor an official split.',
+ labels:{simulated_clean:'No issue observed (uncertified)',gps_gap:'Possible GPS distance gap',clock_gap:'Possible clock gap',plateau_ambiguous:'Distance plateau (cause unknown)',unknown:'Uncertain quality'},
+ opts:['Mixed measurement concerns','Possible stop mid-run','All apparently clean','Final 0.42 km partial'],
+ count:(n,q)=>n+' complete 1 km splits / '+q+' flagged (all uncertified)',km:'Split',partial:'Partial split'}};
+let language='ja';const $=id=>document.getElementById(id);
+function mmss(seconds){const m=Math.floor(seconds/60),s=seconds%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function render(){
+ const t=i18n[language],type=$('scenario').value,labels=scenarios[type]||scenarios.mixed;
+ // "clean" is NOT a trusted quality label; all rows remain uncertified.
+ const rows=labels.map((kind,i)=>({kind,distanceKm:(type==='partial'&&i===8)?0.42:1,seconds:(type==='partial'&&i===8)?143:base[i]}));
+ const flagged=rows.filter(x=>x.distanceKm===1&&x.kind!=='simulated_clean').length;
+ $('title').textContent=t.title;$('intro').textContent=t.intro;$('choose').textContent=t.choose;
+ $('summaryTitle').textContent=t.summaryTitle;$('notice').textContent=t.notice;$('suggestions').textContent=t.suggestions;$('footer').textContent=t.footer;
+ $('summary').textContent=t.count(rows.filter(x=>x.distanceKm===1).length,flagged);
+ $('scenario').querySelectorAll('option').forEach((o,i)=>o.textContent=t.opts[i]);
+ $('scenario').setAttribute('aria-label',t.choose);
+ $('laps').replaceChildren();
+ for(let i=0;i<rows.length;i++){
+  const x=rows[i],section=document.createElement('article');section.className='lap';
+  const left=document.createElement('div'),h=document.createElement('strong'),desc=document.createElement('div');
+  h.textContent=(x.distanceKm===1?t.km:t.partial)+' '+(i+1)+' · '+x.distanceKm.toFixed(2)+' km';
+  desc.className='lap-detail'+(x.kind==='simulated_clean'?'':' unknown');desc.textContent=t.labels[x.kind];
+  left.append(h,desc);const time=document.createElement('span');time.className='time';time.textContent=mmss(x.seconds);
+  section.append(left,time);$('laps').append(section);
+ }
+ $('ja').classList.toggle('chosen',language==='ja');$('en').classList.toggle('chosen',language==='en');
+ $('ja').setAttribute('aria-pressed',String(language==='ja'));$('en').setAttribute('aria-pressed',String(language==='en'));
+ document.documentElement.lang=language;
+}
+$('ja').addEventListener('click',()=>{language='ja';render()});
+$('en').addEventListener('click',()=>{language='en';render()});
+$('scenario').addEventListener('change',render);
+render();
+</script></body></html>
