@@ -52,3 +52,28 @@ Deno.test("JOG, unconfirmed choice, expired race rejected by existing C3 gate",(
  assert(!results[1].ok&&results[1].reason==="not_selected","unconfirmed accepted");
  assert(!results[2].ok&&results[2].reason==="not_recent","expired accepted");
 });
+
+Deno.test("same instant in +09:00 and Z is accepted",()=>{
+ const x=setup(); x.payload.started_at="2026-11-12T22:00:00Z";
+ const r=previewOwnedGarminRace(x.auth,x.run,x.payload,x.choice);
+ assert(r.ok,"equivalent RFC3339 timestamp rejected: "+JSON.stringify(r));
+});
+Deno.test("nonsensical civil date is rejected even on both sides",()=>{
+ const x=setup(); x.run.started_at="2026-02-30T07:00:00+09:00";
+ x.payload.started_at=x.run.started_at;
+ const r=previewOwnedGarminRace(x.auth,x.run,x.payload,x.choice);
+ assert(!r.ok&&r.reason==="payload_mismatch","invalid date matched");
+});
+Deno.test("empty Garmin activity suffix is rejected",()=>{
+ const x=setup(); x.run.source_external_id="garmin-api:";
+ x.payload.source_external_id="garmin-api:";
+ const r=previewOwnedGarminRace(x.auth,x.run,x.payload,x.choice);
+ assert(!r.ok&&r.reason==="source_mismatch","empty activity ID accepted");
+});
+Deno.test("nonstring connection version values are rejected",()=>{
+ const x=setup();
+ (x.payload as unknown as Record<string,unknown>).connection_version=123;
+ (x.payload as unknown as Record<string,unknown>).active_connection_version=123;
+ const r=previewOwnedGarminRace(x.auth,x.run,x.payload,x.choice);
+ assert(!r.ok&&r.reason==="stale_connection","nonstring connection versions accepted");
+});
