@@ -1,0 +1,43 @@
+name: Garmin sample shape probe (isolated)
+
+on:
+  pull_request:
+    paths:
+      - 'src/garmin-sample-shape-probe.mjs'
+      - 'tests/garmin-sample-shape-probe.test.mjs'
+      - 'scripts/inspect-garmin-activity-shape.mjs'
+      - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - '.github/workflows/garmin-sample-shape-probe.yml'
+  push:
+    branches:
+      - 'feature/garmin-race-analysis-implementation-20261109'
+    paths:
+      - 'src/garmin-sample-shape-probe.mjs'
+      - 'tests/garmin-sample-shape-probe.test.mjs'
+      - 'scripts/inspect-garmin-activity-shape.mjs'
+      - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - '.github/workflows/garmin-sample-shape-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pure Garmin shape probe privacy and boundary cases
+        run: node tests/garmin-sample-shape-probe.test.mjs
+      - name: Offline JSON shape inspector synthetic tests
+        run: node tests/inspect-garmin-activity-shape.test.mjs
+      - name: Ensure live Garmin receiver does not import isolated probe
+        run: |
+          if grep -Eq 'garmin-sample-shape-probe|inspect-garmin-activity-shape' supabase/functions/garmin-activity-push/index.ts; then
+            echo 'Isolated probe unexpectedly referenced by production receiver' >&2
+            exit 1
+          fi
