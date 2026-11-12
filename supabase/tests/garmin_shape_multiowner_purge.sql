@@ -99,7 +99,10 @@ DO $$BEGIN
  BEGIN
   INSERT INTO probe_scope.probe VALUES('A2','owner-B','gen-B1','{}');
   RAISE EXCEPTION 'test unexpectedly accepted cross-owner';
- EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ EXCEPTION WHEN foreign_key_violation THEN NULL;
+  WHEN raise_exception THEN
+   IF SQLERRM <> 'stale_or_unowned_probe' THEN RAISE; END IF;
+  END;
  BEGIN
   INSERT INTO probe_scope.probe VALUES('A2','owner-A','gen-A1','{}');
   RAISE EXCEPTION 'test unexpectedly accepted stale generation';
