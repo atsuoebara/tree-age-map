@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Runner's Rings — training suggestions isolated UI preview</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#172337;--line:#34425a;--muted:#bdcbdc;--accent:#77e8c4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f7f9fe;font:15px/1.55 system-ui,-apple-system,sans-serif}
+main{width:min(100%,620px);margin:auto;padding:18px 14px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tag{color:var(--accent);font-weight:800;font-size:11px;letter-spacing:.03em}
+button,select{font:inherit;color:white;background:#223149;border:1px solid #7888a0;border-radius:12px;padding:9px 11px;max-width:100%}
+button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1{font-size:clamp(22px,6vw,29px);line-height:1.35;margin:16px 0 6px}h2{font-size:17px;margin:0 0 8px}
+.lead,.muted,.note{color:var(--muted)}.lead{margin:0 0 16px}
+label{display:block;margin-bottom:6px;font-weight:700}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;margin-top:12px;overflow-wrap:anywhere}
+.result{border-left:4px solid var(--accent)}
+.status{display:inline-block;color:var(--accent);font-weight:800;margin-bottom:6px}
+.reason{font-size:14px;margin:5px 0;color:var(--muted)}
+.card{padding:11px 0;border-top:1px solid var(--line)}.card:first-child{border-top:0}
+.card strong{display:block;font-size:16px;margin-bottom:3px}.card p{margin:0;color:var(--muted);font-size:14px}
+.note{font-size:13px;line-height:1.6}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);margin-top:19px;padding-top:14px}
+@media(max-width:350px){main{padding:14px 10px 36px}.panel{padding:12px}.top{gap:6px}.tag{font-size:10px}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><span class="tag">RUNNER'S RINGS · DRAFT · SYNTHETIC</span><button id="lang" type="button">English</button></div>
+<h1 id="title">分析から見つける、次の練習</h1>
+<p class="lead" id="intro">レースの1km区間の傾向から、一般的な練習方法をご紹介します。</p>
+<section class="panel">
+<label for="scenario" id="scenario-label">架空データの表示例を選択</label>
+<select id="scenario">
+<option value="slow">後半の区間経過時間が長い例</option>
+<option value="even">前後が比較的均等な例</option>
+<option value="fast">後半の区間経過時間が短い例</option>
+<option value="missing">測定データが不足している例</option>
+</select>
+<p class="note" id="example-note">この選択は表示確認用です。実際のレース記録を読み込みません。</p>
+</section>
+<section class="panel result" aria-live="polite">
+<h2 id="finding-title">分析結果（表示例）</h2>
+<div class="status" id="finding-status"></div>
+<p class="reason" id="finding-reason"></p>
+<h2 id="training-heading">一般的な練習の紹介</h2>
+<div id="recommendations"></div>
+</section>
+<section class="panel">
+<h2 id="caution-title">この表示について</h2>
+<p class="note" id="caution-text">停止時間を含む経過時間による観測です。坂道・天候・信号・疲労などの原因は判定できません。</p>
+<p class="note" id="disclaimer">一般的な練習情報の紹介です。診断や個人に合わせた練習処方ではありません。</p>
+</section>
+<footer id="footer">独立した架空データのUI試作です。PR #86の判定ロジックとは未接続で、Garmin・Supabase・本番サイト・保存機能にも接続していません。</footer>
+</main>
+<script>
+'use strict';
+// Display fixtures only. The audited decision algorithm in PR #86 is NOT imported.
+const copy={
+ja:{
+title:'分析から見つける、次の練習',intro:'レースの1km区間の傾向から、一般的な練習方法をご紹介します。',
+scenarioLabel:'架空データの表示例を選択',exampleNote:'この選択は表示確認用です。実際のレース記録を読み込みません。',
+findingTitle:'分析結果（表示例）',trainingHeading:'一般的な練習の紹介',cautionTitle:'この表示について',
+cautionText:'停止時間を含む経過時間による観測です。坂道・天候・信号・疲労などの原因は判定できません。',
+disclaimer:'一般的な練習情報の紹介です。診断や個人に合わせた練習処方ではありません。',
+footer:'独立した架空データのUI試作です。PR #86の判定ロジックとは未接続で、Garmin・Supabase・本番サイト・保存機能にも接続していません。',
+scenarios:{slow:'後半の区間経過時間が長い例',even:'前後が比較的均等な例',fast:'後半の区間経過時間が短い例',missing:'測定データが不足している例'},
+findings:{slow:'後半の経過時間が前半より長い傾向（架空の例）',even:'前後の経過時間が比較的均等（架空の例）',fast:'後半の経過時間が前半より短い傾向（架空の例）',missing:'データ不足のため傾向を判定できません'},
+reasons:{slow:'後半の1km区間の経過時間の中央値が前半より10%以上長い例です。原因は特定できません。',even:'前後の中央値の差が10%未満の例です。',fast:'後半の1km区間の経過時間の中央値が前半より10%以上短い例です。',missing:'完全な1km区間が不足、または品質条件を満たしていない例です。'},
+training:{long_easy:['ゆっくり長く走る練習','無理のない会話できる強度で、走る時間を徐々に延ばす一般的な練習。'],even_pace:['一定ペース走','走り始めを抑え、一定のペース感覚を練習する。'],easy_run:['イージーラン','負荷を抑えて走り、基礎的な持久力づくりに取り組む。']},
+empty:'データ不足のため練習候補は表示しません。',langButton:'English'
+},
+en:{
+title:'Find your next training idea',intro:'Explore general training ideas based on 1 km elapsed-time trends.',
+scenarioLabel:'Choose a synthetic display example',exampleNote:'These choices demonstrate the interface only. No real activities are loaded.',
+findingTitle:'Observation (example)',trainingHeading:'General training ideas',cautionTitle:'About this display',
+cautionText:'Observations use elapsed time including stops. This cannot determine causes such as hills, weather, traffic lights, or fatigue.',
+disclaimer:'General training information, not a diagnosis or personalized prescription.',
+footer:'Isolated synthetic UI preview. Not wired to PR #86 logic, Garmin, Supabase, production UI, or storage.',
+scenarios:{slow:'Longer later splits',even:'Relatively even splits',fast:'Shorter later splits',missing:'Insufficient sensor data'},
+findings:{slow:'Later elapsed-time splits are longer (synthetic example)',even:'Earlier and later splits are relatively even (synthetic example)',fast:'Later elapsed-time splits are shorter (synthetic example)',missing:'Insufficient data to classify a trend'},
+reasons:{slow:'The later 1 km median exceeds the earlier median by at least 10% in this example. No cause is inferred.',even:'The two medians differ by less than 10% in this example.',fast:'The later 1 km median is at least 10% shorter in this example.',missing:'Not enough complete 1 km splits, or quality requirements are unmet.'},
+training:{long_easy:['Easy long run','Build endurance gradually at a comfortable, conversational effort.'],even_pace:['Even-paced running','Practice starting conservatively and holding an even effort.'],easy_run:['Easy running','Easy running can support foundational endurance.']},
+empty:'No suggestions are shown when data is insufficient.',langButton:'日本語'
+}};
+const choices={slow:['long_easy','even_pace'],even:['easy_run'],fast:['even_pace'],missing:[]};
+let lang='ja';
+function render(){
+ const c=copy[lang],kind=document.getElementById('scenario').value;
+ document.documentElement.lang=lang;
+ for(const [id,key] of Object.entries({'title':'title','intro':'intro','scenario-label':'scenarioLabel','example-note':'exampleNote','finding-title':'findingTitle','training-heading':'trainingHeading','caution-title':'cautionTitle','caution-text':'cautionText','disclaimer':'disclaimer','footer':'footer'})){
+  document.getElementById(id).textContent=c[key];
+ }
+ document.getElementById('lang').textContent=c.langButton;
+ const select=document.getElementById('scenario');
+ for(const opt of select.options){opt.textContent=c.scenarios[opt.value];}
+ document.getElementById('finding-status').textContent=c.findings[kind];
+ document.getElementById('finding-reason').textContent=c.reasons[kind];
+ const root=document.getElementById('recommendations');root.replaceChildren();
+ for(const id of choices[kind]){
+  const article=document.createElement('article');article.className='card';
+  const strong=document.createElement('strong');strong.textContent=c.training[id][0];
+  const p=document.createElement('p');p.textContent=c.training[id][1];
+  article.append(strong,p);root.append(article);
+ }
+ if(!choices[kind].length){const p=document.createElement('p');p.className='note';p.textContent=c.empty;root.append(p);}
+}
+document.getElementById('lang').addEventListener('click',()=>{lang=lang==='ja'?'en':'ja';render()});
+document.getElementById('scenario').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
