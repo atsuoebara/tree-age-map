@@ -6,9 +6,11 @@ const TRAINING = Object.freeze({
   easy_run: {ja:'イージーラン',en:'Easy running',detailJa:'負荷を抑えて走り、基礎的な持久力づくりに取り組む。',detailEn:'Easy running can support foundational endurance.'}
 });
 function suggestTraining(input) {
-  const output={status:'insufficient_data',reason:'insufficient_data',recommendations:[],disclaimer:'General training information, not a diagnosis or personalized prescription.'};
+  const output={status:'insufficient_data',reason:'insufficient_data',recommendations:[],disclaimer:'General training information, not a diagnosis or personalized prescription.',disclaimerJa:'一般的な練習情報の紹介です。診断や個人に合わせた練習処方ではありません。',disclaimerEn:'General training information, not a diagnosis or personalized prescription.'};
   if(!input || !Array.isArray(input.splits) || input.splits.length<6) return output;
   const splits=input.splits;
+  // Fail closed on malformed elements, including partial segments.
+  if (splits.some(x=>x===null || typeof x!=='object' || Array.isArray(x))) return output;
   // Only complete 1 km splits with valid elapsed seconds; exclude a final partial segment.
   const complete=splits.filter(x=>x && x.distanceKm===1 && Number.isFinite(x.elapsedSeconds) && x.elapsedSeconds>0 && x.qualityOk===true);
   if (complete.length<6 || complete.length!==splits.filter(x=>x&&x.distanceKm===1).length) return output;
