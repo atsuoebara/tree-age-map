@@ -1,0 +1,32 @@
+name: Garmin synthetic split UI screenshots
+on:
+  pull_request:
+    paths:
+      - "previews/garmin-race-splits-20261109.html"
+      - "tests/garmin-race-preview-visual.cjs"
+      - ".github/workflows/garmin-race-ui-screenshots.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install temporary browser test dependency
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.58.2
+      - name: Install Chromium for synthetic visual test
+        run: npx playwright install chromium --with-deps
+      - name: Render synthetic preview at mobile viewport sizes
+        run: node tests/garmin-race-preview-visual.cjs
+      - name: Attach screenshots to workflow only
+        uses: actions/upload-artifact@v4
+        with:
+          name: garmin-synthetic-mobile-screenshots
+          path: garmin-split-preview-screenshots/*.png
+          retention-days: 14
+          if-no-files-found: error
