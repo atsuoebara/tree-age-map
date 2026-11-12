@@ -4,6 +4,9 @@ const base = (): Request => ({
   runId: "synthetic-run-A", confirmed: true, intent: "race",
   activityStartedAt: "2026-11-13T07:00:00+09:00",
   activatedAt: "2026-11-12T00:00:00+09:00",
+  ingestedAt: "2026-11-13T09:00:00+09:00",
+  requestedAt: "2026-11-13T10:00:00+09:00",
+  maxAgeSeconds: 7 * 86400, // TEST-ONLY candidate; production duration undecided
   detail: {samples: Array.from({length: 101}, (_, i) => ({
     startTimeInSeconds: 1800000000 + i * 25,
     totalDistanceInMeters: i * 100,
@@ -99,4 +102,47 @@ Deno.test("bad input does not throw and source object remains unchanged", () => 
   const v=base(); const before=JSON.stringify(v);
   previewSingleRaceRun(v);
   assert(JSON.stringify(v)===before, "mutated input");
+});
+
+Deno.test("one-week candidate: fresh at boundary, expired one second later", () => {
+  const current=base();
+  current.activityStartedAt="2026-11-12T00:00:00+09:00";
+  current.ingestedAt="2026-11-12T02:00:00+09:00";
+  current.requestedAt="2026-11-19T00:00:00+09:00";
+  assert(previewSingleRaceRun(current).ok, "exact configured boundary rejected");
+  current.requestedAt="2026-11-19T00:00:01+09:00";
+  const expired=previewSingleRaceRun(current);
+  assert(!expired.ok && expired.reason==="not_recent", "expired race accepted");
+});
+Deno.test("expired run cannot become fresh by being imported later", () => {
+  const v=base();
+  v.activityStartedAt="2026-11-13T07:00:00+09:00";
+  v.ingestedAt="2026-12-10T10:00:00+09:00";
+  v.requestedAt="2026-12-10T11:00:00+09:00";
+  const r=previewSingleRaceRun(v);
+  assert(!r.ok && r.reason==="not_recent", "old race revived by fresh import");
+});
+Deno.test("prelaunch import rejected even for activity starting at activation", () => {
+  const v=base();
+  v.ingestedAt="2026-11-11T23:59:59+09:00";
+  const r=previewSingleRaceRun(v);
+  assert(!r.ok && r.reason==="not_new_import", "old import accepted");
+});
+Deno.test("missing trust metadata or invalid policy fails closed", () => {
+  const a=base(); a.requestedAt="not a timestamp";
+  const b=base(); b.maxAgeSeconds=0;
+  const c=base(); c.maxAgeSeconds=Number.NaN;
+  const d=base(); d.ingestedAt="2026-11-13T11:00:00+09:00";
+  const results=[previewSingleRaceRun(a),previewSingleRaceRun(b),previewSingleRaceRun(c),previewSingleRaceRun(d)];
+  assert(!results[0].ok && results[0].reason==="invalid_date", "invalid clock accepted");
+  assert(!results[1].ok && results[1].reason==="invalid_policy", "zero window accepted");
+  assert(!results[2].ok && results[2].reason==="invalid_policy", "NaN window accepted");
+  assert(!results[3].ok && results[3].reason==="not_new_import", "request before import accepted");
+});
+Deno.test("shorter release-window configuration is honored, not hardcoded", () => {
+  const v=base();
+  v.maxAgeSeconds=24*3600;
+  v.requestedAt="2026-11-14T07:00:01+09:00";
+  const r=previewSingleRaceRun(v);
+  assert(!r.ok && r.reason==="not_recent", "one-day policy not applied");
 });
