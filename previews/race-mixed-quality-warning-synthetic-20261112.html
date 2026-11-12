@@ -41,13 +41,13 @@ const i18n={
  suggestions:'練習提案：表示しません',footer:'診断ではなく表示方法の試作です。正常そうな区間も品質認定はされていません。停止候補は信号待ちやGPSフリーズのどちらとも断定できません。経過時間には停止を含み、移動ペースや公式計測ではありません。',
  labels:{simulated_clean:'異常の観測なし（未認定）',gps_gap:'GPS距離の空白（疑い）',clock_gap:'時間の空白（疑い）',plateau_ambiguous:'距離停滞の観測（原因不明）',unknown:'品質不明'},
  opts:['途中に計測上の懸念あり','途中に停止候補あり','全区間が正常そうな例','末尾0.42kmの例'],
- count:(n,q)=>'完全1km区間 '+n+'本 ／ 注意対象 '+q+'本（いずれも品質未認定）',km:'区間',partial:'端数区間'},
+ count:(n,q)=>'完全1km区間 '+n+'本 ／ そのうち注意対象 '+q+'本（端数区間は集計外・すべて品質未認定）',lapsLabel:'1km区間一覧',km:'区間',partial:'端数区間'},
  en:{title:'1 km split display policy (prototype)',intro:'No real Garmin data. Split times are fictional and have not been quality-certified.',
  choose:'Synthetic scenario',summaryTitle:'Display policy comparison',notice:'Times are unverified reference values. Show uncertain splits with a warning, without issuing training advice.',
  suggestions:'Training suggestions: not shown',footer:'Display prototype only, not a diagnosis. Even apparently clean splits are uncertified. Distance plateaus cannot distinguish a traffic stop from GPS freeze. Clock elapsed includes stops and is neither moving pace nor an official split.',
  labels:{simulated_clean:'No issue observed (uncertified)',gps_gap:'Possible GPS distance gap',clock_gap:'Possible clock gap',plateau_ambiguous:'Distance plateau (cause unknown)',unknown:'Uncertain quality'},
  opts:['Mixed measurement concerns','Possible stop mid-run','All apparently clean','Final 0.42 km partial'],
- count:(n,q)=>n+' complete 1 km splits / '+q+' flagged (all uncertified)',km:'Split',partial:'Partial split'}};
+ count:(n,q)=>n+' complete 1 km splits / '+q+' of those flagged (partial split excluded; all uncertified)',lapsLabel:'List of 1 km splits',km:'Split',partial:'Partial split'}};
 let language='ja';const $=id=>document.getElementById(id);
 function mmss(seconds){const m=Math.floor(seconds/60),s=seconds%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function render(){
@@ -60,6 +60,7 @@ function render(){
  $('summary').textContent=t.count(rows.filter(x=>x.distanceKm===1).length,flagged);
  $('scenario').querySelectorAll('option').forEach((o,i)=>o.textContent=t.opts[i]);
  $('scenario').setAttribute('aria-label',t.choose);
+ $('laps').setAttribute('aria-label',t.lapsLabel);
  $('laps').replaceChildren();
  for(let i=0;i<rows.length;i++){
   const x=rows[i],section=document.createElement('article');section.className='lap';
