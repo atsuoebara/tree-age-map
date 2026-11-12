@@ -1,0 +1,22 @@
+name: Race source continuity diagnostic
+on:
+  pull_request:
+    paths:
+      - 'src/race-source-continuity-diagnostic.cjs'
+      - 'tests/race-source-continuity-diagnostic.test.cjs'
+      - 'docs/race-source-continuity-diagnostic-v01-20261112.md'
+      - '.github/workflows/race-source-continuity-diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify diagnostic observations never certify split quality
+        run: node tests/race-source-continuity-diagnostic.test.cjs
+      - name: Preserve #91 quality-gate regression
+        run: node tests/race-elapsed-quality-gate-review.test.cjs
+      - name: Preserve #90 bridge
+        run: node tests/garmin-splits-training-bridge.test.cjs
