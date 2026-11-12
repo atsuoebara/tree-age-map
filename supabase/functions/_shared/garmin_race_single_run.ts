@@ -29,7 +29,7 @@ const MAX_TIME_GAP_S = 120;
 
 function parseStrictInstant(value: string): number | null {
   if (typeof value !== "string") return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\\.(\d+))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
   if (!m) return null;
   const [year, month, day, hour, minute, second] = m.slice(1, 7).map(Number);
   const offsetHour = m[10] ? Number(m[10]) : 0;
