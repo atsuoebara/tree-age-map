@@ -1,0 +1,17 @@
+name: Race training suggestions UI isolated checks
+on:
+  pull_request:
+    paths:
+      - 'previews/race-training-suggestions-20261112.html'
+      - 'tests/race-training-suggestions-preview.test.cjs'
+      - '.github/workflows/race-training-suggestions-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify offline mockup safety and content
+        run: node tests/race-training-suggestions-preview.test.cjs
