@@ -1,0 +1,52 @@
+name: Garmin one-shot shape lease (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/tests/garmin_shape_one_shot_setup.sql'
+      - 'supabase/tests/garmin_shape_one_shot.sh'
+      - '.github/workflows/garmin-shape-one-shot-postgres.yml'
+  push:
+    branches:
+      - 'feature/garmin-race-analysis-implementation-20261109'
+    paths:
+      - 'supabase/tests/garmin_shape_one_shot_setup.sql'
+      - 'supabase/tests/garmin_shape_one_shot.sh'
+      - '.github/workflows/garmin-shape-one-shot-postgres.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  concurrent-one-shot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_probe_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_probe_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_probe_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert isolated CI database
+        run: |
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = "garmin_probe_ci"
+      - name: Exercise real PostgreSQL competing claims and expiry
+        run: bash supabase/tests/garmin_shape_one_shot.sh
