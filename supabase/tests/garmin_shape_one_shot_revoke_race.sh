@@ -5,7 +5,7 @@ set -euo pipefail
 export PGOPTIONS="-c statement_timeout=10000 -c lock_timeout=8000"
 PSQL=(psql -X -qAt -v ON_ERROR_STOP=1)
 q() { "${PSQL[@]}" -c "$1"; }
-"${PSQL[@]}" -f supabase/tests/garmin_shape_one_shot_setup.sql >/dev/null
+q "select to_regclass('probe_ci.one_shot') is not null;" | grep -qx t
 reset_claimed() {
  q "update probe_ci.one_shot set state='claimed', claim_token='00000000-0000-0000-0000-000000000001',connection_version='synthetic-v1',result_counts=null,activated_at=clock_timestamp()-interval '1 minute',expires_at=clock_timestamp()+interval '2 minutes' where id=1;" >/dev/null
 }
