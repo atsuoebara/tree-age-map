@@ -1,0 +1,19 @@
+name: Preview language switch consistency
+on:
+  pull_request:
+    paths:
+      - 'previews/race-training-suggestions-20261112.html'
+      - 'previews/race-training-integrated-synthetic-20261112.html'
+      - 'tests/race-preview-language-switch.test.cjs'
+      - '.github/workflows/race-preview-language-switch.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node tests/race-preview-language-switch.test.cjs
+      - run: node tests/race-training-suggestions-preview.test.cjs
+      - run: node tests/race-training-integrated-synthetic.test.cjs
