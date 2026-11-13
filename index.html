@@ -13351,6 +13351,36 @@ function rrCalDate(row){
  const y=+v.slice(0,4),m=+v.slice(5,7),d=+v.slice(8,10);
  return y>=1900&&y<=9999&&m>0&&m<13&&d>0&&d<=new Date(y,m,0).getDate()?v:'';
 }
+// REVIEW ONLY: disabled until a separate audited release decision.
+// Never make this user-controlled or infer launch time from the current clock.
+const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;
+const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;
+async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,statusNode){
+ if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED)return;
+ if(!currentUser?.id||currentUser.id!==selectionOwnerId||
+    rrCalOwner!==selectionOwnerId||rrCalMode!=='calendar'||rrCalDay===null)return;
+ if(rrCalDate(row)!==selectionDate)return;
+ if(!cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId))return;
+ // Fail closed: feature rollout boundary must be explicitly approved/configured.
+ if(!Number.isSafeInteger(RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS)){
+  statusNode.textContent=rrCalEnglish()?'This feature is not enabled yet.':'「今を知ろう」はまだ利用できません。';
+  return;
+ }
+ const {reviewSelectedCalendarRun}=await import('./src/ima-wo-shirou-calendar-selection-review.mjs');
+ // Guard again after async import (logout, account change or day change).
+ if(!currentUser?.id||currentUser.id!==selectionOwnerId||
+    rrCalOwner!==selectionOwnerId||rrCalMode!=='calendar'||rrCalDate(row)!==selectionDate||
+    !cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId)||
+    !statusNode.isConnected)return;
+ const verdict=reviewSelectedCalendarRun({
+  row,currentUserId:selectionOwnerId,selectedAsGachiRun:true,
+  nowMs:Date.now(),featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS
+ });
+ statusNode.textContent=verdict.eligible
+  ? (rrCalEnglish()?'Within 8 days; analysis is not yet available.':'8日間の対象期間内です。解析はまだ利用できません。')
+  : (rrCalEnglish()?'This run cannot be analysed.':'このランは解析できません。');
+ // No FIT auto-link, no 1km result, no writes, no provider calls.
+}
 function rrCalRender(){
  if(rrCalMode!=='calendar')return;
  const english=rrCalEnglish(),logged=!!currentUser?.id&&rrCalOwner===currentUser.id;
@@ -13415,6 +13445,15 @@ function rrCalRender(){
   const distance=document.createElement('small'),km=Number(row.distance_km);
   distance.textContent=Number.isFinite(km)&&km>=0?km.toFixed(2)+' km':(english?'Unknown':'距離不明');
   b.append(name,distance);b.onclick=()=>focusCloudRun(row);rrCalRecords.append(b);
+  if(RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED){
+   const action=document.createElement('button');action.type='button';
+   action.className='rrRunCalendarEntry';
+   action.textContent=english?'Review this run':'このランで今を知ろう';
+   const status=document.createElement('p');status.setAttribute('role','status');
+   rrCalRecords.append(action,status);
+   const selectionOwnerId=currentUser.id,selectionDate=rrCalDate(row);
+   action.onclick=()=>rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,status);
+  }
  }
 }
 
