@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>今を知ろう｜FIT確認（隔離デモ）</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;background:#0c1624;color:#f0f5ff}
+*{box-sizing:border-box}body{margin:0}.page{width:min(100%,480px);margin:auto;padding:20px 16px 48px}
+h1{font-size:1.55rem;margin:.5rem 0}h2{font-size:1.06rem;margin:0 0 12px}
+p{line-height:1.65}.muted{color:#b3c3d7}.eyebrow{font-size:.78rem;letter-spacing:.06em;color:#cce789}
+.card{border:1px solid #37536d;border-radius:16px;background:#16273a;padding:16px;margin:14px 0}
+.notice{border-left:3px solid #f5d17e;padding:8px 12px;background:#283244;font-size:.88rem}
+select{display:block;width:100%;min-height:46px;border:1px solid #7590a9;border-radius:10px;background:#0e1d2d;color:white;padding:9px;font:inherit;margin-top:8px}
+label{font-weight:650;display:block}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric{font-size:1.5rem;font-variant-numeric:tabular-nums;font-weight:750}.caption{font-size:.76rem;color:#b3c3d7}
+.table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.91rem}
+th{text-align:left;color:#b8c9de;font-weight:600;border-bottom:1px solid #49617d;padding:10px 6px}
+td{border-bottom:1px solid #33485e;padding:12px 6px}td:last-child{text-align:right}
+.empty{color:#f5d17e}.good{color:#cce789}
+.small{font-size:.83rem;color:#c4d0df}.chip{display:inline-block;border-radius:50px;border:1px solid #c7d98b;color:#e0f1ae;padding:3px 9px;font-size:.78rem}
+button{min-height:44px;border:1px solid #7f92a6;border-radius:10px;background:#223950;color:#fff;padding:8px 12px;font:inherit}
+button[disabled]{opacity:.55;cursor:not-allowed}
+</style></head>
+<body><main class="page">
+<div class="eyebrow">RUNNER’S RINGS · 今を知ろう</div>
+<h1>FITの1km記録を確認</h1>
+<p class="muted">走った日の努力を、1kmずつ振り返るための試作画面。</p>
+<div class="notice" role="status">開発用・架空データの画面です。正式な分析結果ではありません。本人のFITファイルを読み込む機能は、まだありません。</div>
+<section class="card">
+<label for="case">表示パターンを切り替える（デモ）</label>
+<select id="case">
+<option value="consistent">整合性に問題が見つからない例</option>
+<option value="mismatch">セッション距離が一致しない例</option>
+<option value="paused">停止記録がある例</option>
+<option value="blocked">区間分析できない例</option>
+</select>
+<p id="state" class="chip">候補・未認証</p>
+<div class="metrics">
+<div><div class="caption">記録の距離</div><div id="distance" class="metric">5.00 km</div></div>
+<div><div class="caption">経過時間（停止を含む）</div><div id="elapsed" class="metric">27:00</div></div>
+</div>
+</section>
+<section class="card" aria-labelledby="split-title">
+<h2 id="split-title">1kmラップ候補</h2>
+<p id="split-note" class="small">時計の経過時間。走行中だけのペースではありません。</p>
+<div id="lap-region" aria-live="polite"></div>
+</section>
+<section class="card" aria-labelledby="quality-title">
+<h2 id="quality-title">データ確認</h2>
+<p id="quality-message" role="status"></p>
+<ul id="quality-flags" class="small"></ul>
+<p class="small">セッション総距離・記録の累積距離・記録時刻・停止イベントを照合。欠測や差異を勝手に補間・修正しません。</p>
+</section>
+<section class="card">
+<h2>確認後の操作</h2>
+<p class="small">現段階では、保存・共有・年輪への追加を行いません。</p>
+<button type="button" disabled>分析を保存（未実装）</button>
+<button type="button" disabled>画像を共有（未実装）</button>
+</section>
+<p class="small">すべての表示は端末上の固定デモ値です。実ファイル、Garmin、Strava、データベース、外部通信、保存機能には接続していません。</p>
+</main>
+<script>
+'use strict';
+const scenarios=Object.freeze({
+ consistent:{distance:'5.00 km',elapsed:'27:00',laps:[315,318,320,324,343],message:'この架空例では、設定した距離・時計の整合に異常が見つかっていません。品質の保証ではありません。',flags:[],split:true},
+ mismatch:{distance:'5.00 km',elapsed:'27:00',laps:[315,318,320,324,343],message:'セッション総距離と最終記録の距離が一致しません。ラップ候補は参考表示のみ。',flags:['session_vs_last_record_distance_mismatch'],split:true},
+ paused:{distance:'5.00 km',elapsed:'28:00',laps:[315,318,380,324,343],message:'停止・再開イベントが見つかりました。区間の時間には停止時間を含みます。',flags:['timer_event_present_verify_pause'],split:true},
+ blocked:{distance:'2.40 km',elapsed:'19:00',laps:[],message:'累積距離または時刻が足りないため、1km区間を表示できません。',flags:['timestamp_or_cumulative_distance_missing'],split:false}
+});
+const time=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const region=document.getElementById('lap-region');
+function render(){
+ const d=scenarios[document.getElementById('case').value];
+ document.getElementById('distance').textContent=d.distance;
+ document.getElementById('elapsed').textContent=d.elapsed;
+ document.getElementById('quality-message').textContent=d.message;
+ const state=document.getElementById('state');
+ state.textContent=d.split?'候補・未認証':'区間分析不可';
+ state.className=d.split?'chip':'empty';
+ const list=document.getElementById('quality-flags');list.replaceChildren();
+ if(!d.flags.length){const li=document.createElement('li');li.textContent='検出した警告なし（品質認証ではありません）';list.append(li);}
+ for(const flag of d.flags){const li=document.createElement('li');li.textContent=flag;list.append(li);}
+ region.replaceChildren();
+ if(!d.split){const p=document.createElement('p');p.className='empty';p.textContent='この記録では1kmラップを計算できません。';region.append(p);return;}
+ const table=document.createElement('table');table.className='table';
+ const head=document.createElement('thead');const heading=document.createElement('tr');
+ for(const label of ['区間','経過時間']){const th=document.createElement('th');th.textContent=label;heading.append(th);}head.append(heading);table.append(head);
+ const body=document.createElement('tbody');
+ d.laps.forEach((seconds,i)=>{const tr=document.createElement('tr');const name=document.createElement('td');name.textContent=(i+1)+' km';const val=document.createElement('td');val.textContent=time(seconds);tr.append(name,val);body.append(tr);});
+ table.append(body);region.append(table);
+}
+document.getElementById('case').addEventListener('change',render);render();
+</script></body></html>
