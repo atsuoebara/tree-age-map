@@ -1,0 +1,32 @@
+name: Brand effort and joy copy check (isolated)
+on:
+  pull_request:
+    paths:
+      - 'about-runners-rings.html'
+      - 'developer-message.html'
+      - 'team.html'
+      - 'docs/runner-rings-brand-principles-effort-and-joy-20261113.md'
+      - 'tests/brand-effort-and-joy-copy.test.mjs'
+      - '.github/workflows/brand-effort-and-joy-copy-check.yml'
+  push:
+    branches:
+      - 'feature/brand-effort-beyond-20261113'
+    paths:
+      - 'about-runners-rings.html'
+      - 'developer-message.html'
+      - 'team.html'
+      - 'docs/runner-rings-brand-principles-effort-and-joy-20261113.md'
+      - 'tests/brand-effort-and-joy-copy.test.mjs'
+      - '.github/workflows/brand-effort-and-joy-copy-check.yml'
+permissions:
+  contents: read
+jobs:
+  copy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bilingual brand copy and original messaging
+        run: node tests/brand-effort-and-joy-copy.test.mjs
