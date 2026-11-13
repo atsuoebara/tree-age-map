@@ -89,7 +89,8 @@ for(const label of [
  '累積距離が途中で減少しています',
  '記録点の数が足りないか、多すぎます',
  '時刻を補完せず解析を停止します',
- '距離を補正せず解析を停止します'
+ '距離を補正せず解析を停止します',
+ '後続の完全な1km区間も確認できません'
 ])assert.ok(html.includes(label),'missing comprehensible blocked-FIT reason '+label);
 
 
