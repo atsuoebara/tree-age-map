@@ -1,0 +1,19 @@
+name: Ima wo Shirou synthetic FIT quality matrix
+on:
+  pull_request:
+    paths:
+      - 'tests/ima-wo-shirou-fit-quality-matrix.test.mjs'
+      - 'docs/ima-wo-shirou-fit-quality-matrix-20261114.md'
+      - '.github/workflows/ima-wo-shirou-fit-quality-matrix.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Synthetic FIT quality matrix
+        run: node --test tests/ima-wo-shirou-fit-quality-matrix.test.mjs
+      - name: Preserve existing user-FIT local parser
+        run: node tests/race-fit-local-file-review.test.mjs
