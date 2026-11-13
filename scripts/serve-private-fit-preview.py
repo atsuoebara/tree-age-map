@@ -7,7 +7,6 @@ import argparse
 import http.cookies
 import http.server
 import ipaddress
-import mimetypes
 from pathlib import Path
 import secrets
 import threading
@@ -75,11 +74,18 @@ def create_server(host, port=8765, token=None, now=time.monotonic):
         def do_GET(self):
             self.reply(False)
         def reply(self, head):
-            # First access consumes the capability and locks to that client IP.
+            # A guessed Host header is not an acceptable origin. Refuse DNS
+            # rebinding and aliases; preview works only at the configured IP.
+            expected_host = f"{host}:{self.server.server_port}"
+            if self.headers.get("Host") != expected_host:
+                self.send_common(403); self.end_headers(); return
             if now() > expires:
                 self.send_common(410); self.end_headers(); return
             path = urlsplit(self.path).path
             if path == "/open/" + secret:
+                # Prefetch/HEAD must never consume the first-client capability.
+                if head:
+                    self.send_common(405); self.send_header("Allow", "GET"); self.end_headers(); return
                 with lock:
                     if holder["client"] is None:
                         holder["client"] = self.client_address[0]
