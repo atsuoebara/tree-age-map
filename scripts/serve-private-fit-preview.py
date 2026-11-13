@@ -37,10 +37,12 @@ def permitted(path):
             return ROOT / "fit-sdk" / "src" / name
     return None
 
-def create_server(host, port=8765, token=None, now=time.monotonic):
+def create_server(host, port=8765, token=None, now=time.monotonic, allow_insecure_lan=False):
     addr = ipaddress.ip_address(host)
     if addr.version != 4 or not (addr.is_private or addr.is_loopback) or addr.is_unspecified:
         raise ValueError("Choose your PC's private IPv4 address or 127.0.0.1; never bind a public/wildcard address")
+    if not addr.is_loopback and not allow_insecure_lan:
+        raise ValueError("Non-loopback HTTP preview is blocked by default: security review required")
     secret = token or secrets.token_urlsafe(32)
     expires = now() + TTL_SECONDS
     lock = threading.Lock()
@@ -125,11 +127,16 @@ def create_server(host, port=8765, token=None, now=time.monotonic):
 
 def main():
     p = argparse.ArgumentParser(description="Ephemeral FIT review on a trusted private LAN; serves NO real FIT bytes")
-    p.add_argument("--host", required=True, help="PC private IPv4 address, e.g. 192.168.1.12 (not 0.0.0.0)")
+    p.add_argument("--host", default="127.0.0.1", help="Safe default: localhost only. iPhone cannot connect to localhost of PC.")
+    p.add_argument("--allow-insecure-lan", action="store_true",
+                   help="UNSAFE: enable cleartext LAN HTTP only after separate owner approval and audit")
     p.add_argument("--port", type=int, default=8765)
     args = p.parse_args()
-    server, token = create_server(args.host, args.port)
-    print("Open this URL on your iPhone Safari while on the SAME TRUSTED Wi-Fi:")
+    server, token = create_server(args.host, args.port, allow_insecure_lan=args.allow_insecure_lan)
+    if args.host == "127.0.0.1":
+        print("LOCAL PC ONLY: safe synthetic FIT rehearsal. This is NOT an iPhone link.")
+    else:
+        print("UNENCRYPTED LAN EXPERIMENT (do not use real FIT): iPhone on same trusted Wi-Fi.")
     print(f"http://{args.host}:{server.server_port}/open/{token}")
     print("Temporary access: 15 minutes, bound to first client IP. Stop with Ctrl+C.")
     print("Do not forward the port, share the URL, or use public Wi-Fi. HTTP is unencrypted.")
