@@ -70,8 +70,17 @@ const readable={
  cumulative_distance_origin_not_zero:'記録の累積距離が0mから始まっていません',
  timestamp_or_cumulative_distance_missing:'各記録の時刻または累積距離が不足しています。補完せず分析を止めます',
  session_vs_last_record_distance_mismatch:'セッション総距離と最終記録距離に差があります',
- no_timer_events:'停止イベント情報がないため連続走行と断定できません',
  timer_event_present_verify_pause:'停止・再開イベントがあるため時間の確認が必要です',
+ record_distance_origin_nonzero:'先頭の累積距離が0mではありません。開始地点が確定できません',
+ first_distance_nonzero_origin_unknown:'先頭の距離0m以前の区間が不明です。勝手に距離を差し引きません',
+ record_after_session_end:'セッション終了時刻より後の記録点があります。時刻の整合確認が必要です',
+ start_without_prior_stop:'対応する停止記録のない再開イベントがあります',
+ unmatched_stop_event:'再開記録と対応しない停止イベントがあります',
+ duplicate_stop_event:'停止イベントが重複しています',
+ zero_duration_stop_interval:'停止・再開イベントが同じ時刻です',
+ observed_timer_stop_resume:'停止と再開のイベントが記録されています（走行停止の確証ではありません）',
+ no_timer_events:'停止イベント情報がないため連続走行と断定できません',
+
  unverified_sample_gap:'記録の間隔が大きく、区間精度を確認できません',
  long_record_clock_gap:'時刻間隔が長い箇所があります'
 };
