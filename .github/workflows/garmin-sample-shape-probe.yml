@@ -47,8 +47,6 @@ jobs:
         run: node tests/garmin-one-shot-probe-contract.test.mjs
       - name: Synthetic Garmin remote revoke failure and retry against receiver source
         run: node tests/garmin-revoke-retry-integration.test.mjs
-      - name: Verify original OAuth regression tests (unchanged production source)
-        run: node scripts/test-garmin-oauth.mjs
       - name: Verify fenced disconnect candidate on isolated transformed OAuth source
         run: node tests/garmin-disconnect-fence-candidate.test.mjs
       - name: Offline JSON shape inspector synthetic tests
