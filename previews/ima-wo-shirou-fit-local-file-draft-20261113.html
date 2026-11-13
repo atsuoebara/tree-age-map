@@ -41,7 +41,7 @@ import {reviewSingleUserFitBuffer} from '../src/race-fit-local-file-review.mjs';
 const $=id=>document.getElementById(id);
 const flags=$('flags'),laps=$('laps'),reviewButton=$('review');
 let selectionVersion=0,reviewing=false;
-const resetOutput=()=>{selectionVersion++;flags.replaceChildren();laps.replaceChildren();$('distance').textContent='';$('status').textContent='未解析です';};
+const resetOutput=()=>{selectionVersion++;reviewing=false;reviewButton.disabled=false;flags.replaceChildren();laps.replaceChildren();$('distance').textContent='';$('status').textContent='未解析です';};
 for(const id of ['fit','owner','race'])$(id).addEventListener('change',resetOutput);
 const readable={
  owner_or_race_confirmation_missing:'本人確認とレース確認を選択してください',
@@ -98,7 +98,8 @@ $('review').addEventListener('click',async()=>{
  }catch{
   if(version===selectionVersion)show({status:'blocked',reason:'fit_decoding_failed',flags:[]});
  }finally{
-  reviewing=false;reviewButton.disabled=false;
+  // An obsolete iOS File read must not change a newer review's button state.
+  if(version===selectionVersion){reviewing=false;reviewButton.disabled=false;}
  }
 });
 </script></body></html>
