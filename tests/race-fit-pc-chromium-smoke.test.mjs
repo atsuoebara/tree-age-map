@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {spawn,spawnSync} from 'node:child_process';
 import {once} from 'node:events';
-import {existsSync,mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {existsSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -92,7 +92,24 @@ try{
  assert.match(await expr("document.querySelector('#distance').textContent"),/5\.00 km／経過時間 27:00/);
  assert.match(await expr("document.querySelector('#flags').textContent"),/停止イベント情報がない/);
  assert.equal(await expr("document.querySelectorAll('button[disabled]').length"),2);
- console.log('REAL PC CHROMIUM FIT SMOKE PASS: actual private localhost page, file input, SDK, 5x1km, no save/share');
+
+ // Now exercise real browser rejection: a CRC-broken FIT must clear old rows.
+ const corrupt=join(root,'invalid.fit');
+ const broken=Buffer.from(readFileSync(fixture));broken[60]^=0x01;writeFileSync(corrupt,broken);
+ await call('DOM.setFileInputFiles',{nodeId:input.nodeId,files:[corrupt]});
+ await expr("document.querySelector('#review').click()");
+ await waitFor(async()=> (await expr("document.querySelector('#status').textContent")).includes('候補を表示できません'),'broken FIT rejected');
+ assert.equal(await expr("document.querySelectorAll('#laps tbody tr').length"),0,'bad FIT must not retain previous lap rows');
+ assert.equal(await expr("document.querySelector('#distance').textContent"),'','bad FIT must not retain distance');
+ assert.equal(await expr("document.querySelectorAll('#flags li').length"),0,'blocked FIT must not show false no-warning label');
+ // Valid FIT without consent must also be denied; previous rows remain cleared.
+ await call('DOM.setFileInputFiles',{nodeId:input.nodeId,files:[fixture]});
+ await expr("document.querySelector('#owner').click(); document.querySelector('#review').click()");
+ await waitFor(async()=> (await expr("document.querySelector('#status').textContent")).includes('本人確認とレース確認'),'missing consent denied');
+ assert.equal(await expr("document.querySelectorAll('#laps tbody tr').length"),0);
+ assert.equal(await expr("document.querySelectorAll('#flags li').length"),0);
+
+ console.log('REAL PC CHROMIUM FIT SMOKE PASS: 5x1km, corrupted FIT denied/cleared, missing consent denied, save/share disabled');
 }finally{
  if(ws){try{ws.close();}catch{}}
  const chromeExit=browser.exitCode===null?once(browser,'exit'):Promise.resolve();
