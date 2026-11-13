@@ -76,7 +76,7 @@ assert.equal(deletes().length,1);
 // This is intentionally a failing production-safety expectation, not a fix.
 callLog=[];
 let remoteAttempt=0;
-let liveRegistration={connection_version:newGeneration,import_enabled:true};
+let liveRegistration={connection_version:c.connection_version,import_enabled:false};
 fetcher=async(url,init)=>{
  if(url.endsWith('/user/registration')){
   remoteAttempt++;
@@ -92,6 +92,8 @@ fetcher=async(url,init)=>{
 };
 await assert.rejects(evaluate('reconcile(connection)'),/permissions unavailable/);
 assert.equal(remoteAttempt,1);
+// User finishes a NEW OAuth authorization while the previous result is uncertain.
+liveRegistration={connection_version:newGeneration,import_enabled:true};
 assert.equal(liveRegistration.connection_version,newGeneration);
 assert.equal(liveRegistration.import_enabled,true);
 assert.equal(deletes().length,0);
