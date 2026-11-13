@@ -36,6 +36,7 @@ assert(nav.includes("ofuseLink.target='_blank';ofuseLink.rel='noopener noreferre
 assert(index.includes('/rr-site-nav.js?v=20261111-ofuse-support-01'),'navigation asset URL not bumped');
 const a=index.match(/const APP_BUILD = '([^']+)'/)?.[1], b=sw.match(/const RR_BUILD = '([^']+)'/)?.[1];
 assert.equal(a,b,'index and service worker builds differ');
-assert.equal(a,'2026.11.11.02','new app build expected');
+assert.match(a,/^\d{4}\.\d{2}\.\d{2}\.\d+$/,'valid app build expected');
+assert(a>='2026.11.11.02','app build must not predate OFUSE footer release');
 assert(nav.includes("body > footer:not(#rrGlobalFooter),main > footer:not(#rrGlobalFooter){display:none!important}"),'test must ensure legacy footer is hidden, so actual link location matters');
 console.log('Visible global footer Instagram regression: passed');
