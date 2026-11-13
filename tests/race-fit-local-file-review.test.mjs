@@ -30,6 +30,22 @@ assert.equal(review(makeFit(),{confirmedOwner:false,confirmedRace:true}).status,
 assert.equal(review(makeFit(),{confirmedOwner:true,confirmedRace:false}).status,'blocked');
 assert.equal(review(new ArrayBuffer(0),opts).status,'blocked');
 assert.equal(review(new ArrayBuffer(20),opts).status,'blocked');
+// Keep strict fail-closed behavior for realistic non-zero first FIT record time/distance.
+function makeNonZeroOriginFit({delayS=0,firstDistanceM=0}={}){
+ const encoder=new Encoder();
+ encoder.writeMesg({mesgNum:18,sport:'running',startTime:start,timestamp:at(600),totalDistance:2000});
+ for(let i=0;i<=10;i++)encoder.writeMesg({mesgNum:20,timestamp:at(delayS+i*60),distance:firstDistanceM+i*200});
+ const bytes=encoder.close();
+ return bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength);
+}
+const delayed=review(makeNonZeroOriginFit({delayS:3}),opts);
+assert.equal(delayed.status,'blocked');
+assert.equal(delayed.reason,'record_and_session_start_must_match');
+assert.equal(delayed.segments.length,0);
+const nonzero=review(makeNonZeroOriginFit({firstDistanceM:12}),opts);
+assert.equal(nonzero.status,'blocked');
+assert.equal(nonzero.reason,'cumulative_distance_origin_not_zero');
+assert.equal(nonzero.segments.length,0);
 const html=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
 for(const x of ['name="viewport"','noindex,nofollow','type="file"','id="owner"','id="race"','file.arrayBuffer()',
  "import {reviewSingleUserFitBuffer} from '../src/race-fit-local-file-review.mjs'",
@@ -56,5 +72,13 @@ for(const required of [
  "時刻を補完しません"
 ])assert.ok(html.includes(required),'missing iPhone read safety or actionable error: '+required);
 assert.ok(!html.includes('result.heartRate')&&!html.includes('result.latitude'));
+for(const label of [
+ '記録時刻の重複または逆行を検出しました',
+ '累積距離が途中で減少しています',
+ '記録点の数が足りないか、多すぎます',
+ '時刻を補完せず解析を停止します',
+ '距離を補正せず解析を停止します'
+])assert.ok(html.includes(label),'missing comprehensible blocked-FIT reason '+label);
+
 
 console.log('Browser-local user FIT SDK -> 1km candidate + diagnostics PASS; original bytes unpersisted; synthetic generated binary only.');
