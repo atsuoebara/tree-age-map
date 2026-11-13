@@ -95,3 +95,12 @@ for(const label of [
 
 
 console.log('Browser-local user FIT SDK -> 1km candidate + diagnostics PASS; original bytes unpersisted; synthetic generated binary only.');
+
+
+// 2026-11-14: exact user-approved pause / auto-pause warning on private FIT preview.
+// Keep it review-only; no cloud calls or result persistence.
+const pauseWarning='信号待ちやトイレ休憩、自動ポーズなどの影響により、正しく分析できない場合があります。';
+assert.equal(html.split(pauseWarning).length-1,1,'exact pause warning must appear once');
+assert.ok(html.includes('<p class="warning" id="pause-quality-warning">'),'caveat should be visible beside result');
+for(const pattern of [/\bfetch\s*\(/,/XMLHttpRequest/,/WebSocket/,/localStorage/,/sessionStorage/,/indexedDB/,/navigator\.sendBeacon/,/\bFormData\s*\(/,/\binnerHTML\s*=/])
+ assert.ok(!pattern.test(html),'preview must not upload, persist or embed unsafe results: '+pattern);
