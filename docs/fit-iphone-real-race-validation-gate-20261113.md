@@ -47,6 +47,13 @@
 - GitHub ActionsではChrome実画面の自動E2E試験を継続。Windows本物の環境でのブラウザ表示や`.cmd`ファイルを実行しての検証はまだ未完了。PowerShell実行ポリシー変更、PCのポート外部開放は禁止。
 - この手順の主目的は、**PCブラウザで「架空FITを読み込む→5本のラップを見る」こと**。iPhoneとの通信や実レースの取り込みは次の別工程とする。
 
+## Windowsローカル確認用の最小ZIP作成（2026-11-13）
+- `scripts/build-private-fit-pc-bundle.py`：検証HTMLにある相対importをFIT SDK下位まで再帰確認し、`serve-private-fit-preview.py`が許可するファイルだけをZIPに同梱する。Windows用`.cmd`、Pythonプレビューサーバ、必要なJS、匿名5km FIT、READMEのみ。元のGitHubリポジトリ全体、Supabase、設定ファイル、本人FIT、認証情報は含めない。
+- `tests/test_private_fit_pc_bundle.py`：ZIPの内容・匿名FIT・書込ファイル・不要なファイルの排除・再現性を確認。既存Chromeを使った実際の架空FITファイル選択・5本のラップ表示試験も成功。
+- GitHub Actions **run #43378085372 completed/success**：`rr-fit-pc-preview-synthetic`を有効期間7日のActions artifactとして添付（実行結果のArtifacts欄から取得する）。CI初回はテスト側のREADME文字列期待値が不一致で失敗したが修正済。
+- PCで実際に起動したわけではなく、ZIPの中身の自動検査とCI上のChrome試験のみ。Python 3がPCに無ければこの方式は起動できない。無断でソフトをインストールしない。
+- 使用するFITは同梱の`synthetic-5km-27min.fit`だけ。実レースFITの使用・本番公開・iPhoneへのLAN接続は未承認のまま。
+
 ## 実機前ゲート（未確認）
 1. 隔離した検証ページを**本人だけに安全に渡す方式**を設計・むせ監査する。一般公開Pagesへ配置するのは避ける。ローカルサーバ検証もiPhone側のHTTPS/CORS/MIME条件を別途確認。
 2. iPhone Safariで`FITファイル選択`、自己申告の二つのチェック、端末内解析、警告・表、縦横表示、キーボード/VoiceOver、16MiB超過時の拒否を確認する。**実機確認者は本人**。
