@@ -39,6 +39,8 @@ on:
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
       - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-review-mobile-synthetic-20261113.html'
+      - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
   push:
@@ -81,6 +83,8 @@ on:
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
       - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-review-mobile-synthetic-20261113.html'
+      - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
   workflow_dispatch:
@@ -135,6 +139,8 @@ jobs:
         run: node tests/race-fit-session-total-review.test.mjs
       - name: Verify effort-first Gachiran mobile preview isolation
         run: node tests/gachiran-effort-next-step-preview.test.mjs
+      - name: Verify FIT-only mobile diagnostic preview is synthetic and private
+        run: node tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
