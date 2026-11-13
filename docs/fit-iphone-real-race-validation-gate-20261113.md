@@ -15,6 +15,12 @@
 - **プライベートIPv4が分からない場合は想像で入力しない**。PCの構成、Windows Defender Firewallの許可範囲、家庭内LANの外部公開有無を確認する。初回の実機確認は本人の判断に従い、こちらから勝手にサーバ起動しない。
 - CI：`tests/test_private_fit_preview_server.py` はlocalhostで正常な認証・拒否・15分失効・ファイルallowlist・HTTP MIME・POST拒否を検証する。実機/実データ/暗号化まで検証するものではない。サーバプロセスは起動せず、GitHub Actions内でテスト用のlocalhostサーバのみ一時起動する。
 
+## 追加のプレ公開レビュー（2026-11-13）
+- `scripts/serve-private-fit-preview.py` のHostヘッダーを起動時のIPv4:portに固定し、不明なホスト名を403にする。開通URLのHEADは405として、ブラウザの先読み・ヘルスチェックが最初の端末IPを占有しないようにする。
+- `tests/test_private_fit_preview_server.py` で検証HTMLと全静的ES module importを再帰追跡し、認証済みGETで200とJS MIMEを確認。FIT SDKの下位モジュールも含む。プライベートLANサーバの予期しないファイル配信や、外部モジュールの参照を防ぐためのテスト。
+- CI run **43371848682 completed/success**。途中のテスト正規表現の誤記は修正済み。**静的import全体の確認はブラウザSafariでのロード確認の代わりではない。**
+- iPhone実機試行の許可はまだ出していない。HTTPで配信されるJavaScriptがネットワーク上で改ざんされ得るリスクは残るため、完全なプライベートHTTPSと同等ではなく、むせ独立監査＋本人判断までは**実FITを使った試行を開始しない**。
+
 ## 実機前ゲート（未確認）
 1. 隔離した検証ページを**本人だけに安全に渡す方式**を設計・むせ監査する。一般公開Pagesへ配置するのは避ける。ローカルサーバ検証もiPhone側のHTTPS/CORS/MIME条件を別途確認。
 2. iPhone Safariで`FITファイル選択`、自己申告の二つのチェック、端末内解析、警告・表、縦横表示、キーボード/VoiceOver、16MiB超過時の拒否を確認する。**実機確認者は本人**。
