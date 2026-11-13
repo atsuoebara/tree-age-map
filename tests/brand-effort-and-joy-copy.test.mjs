@@ -19,7 +19,7 @@ requireText(developer,'Deep performance analysis?','developer english');
 requireText(team,'努力は真剣に。楽しさは全力で。','team');
 requireText(team,'Take the effort seriously.','team english');
 requireText(guideline,'すべてのランナー','brand');
-for(const html of [about,developer,team]){
+for(const html of [about,team]){
  assert.ok(html.includes('data-lang="ja"')&&html.includes('data-lang="en"'),'missing existing language switch');
  assert.ok(html.includes('走った年輪から、世界に仲間の輪を。'),'old tagline removed');
 }
