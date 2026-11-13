@@ -8,6 +8,13 @@
 - 出力は`candidate_unverified`、`analysisAllowed=false`、`writeAllowed=false`。受信API、年輪、保存機能、SNS共有、ランキングには接続しない。
 - Garmin Starterからの書面回答は解除APIの意味論を解決していない。今回の本人持込FIT経路とは別扱い。
 
+## 非公開LANプレビュー：実装候補（未使用・未承認）
+- `scripts/serve-private-fit-preview.py`：追加費用0円、Python 3標準ライブラリだけで動く15分限りのHTTP配信。PCのプライベートIPv4を明示して起動。起動ごとに長いランダムなアクセスURLを作成し、最初に開いた端末のIPに限定。Cookie認証後、検証用HTMLと必要な`src`の固定モジュール、`fit-sdk/src/*.js`のみGET配信。`POST/PUT/DELETE`禁止、no-store、noindex、外部へのconnect-srcをCSPで拒否。
+- **重要**：LAN内のHTTPは暗号化されない。ページのJSやアクセスCookieが同じネットワーク上で盗聴され得るため、外出先、公衆Wi-Fi、共同Wi-Fi、ポート転送、VPN越えでの利用はしない。信頼できる家庭内Wi-Fiのみ。ラン本人のFIT本体は端末内の`File.arrayBuffer()`で読み、サーバへは送らない設計。実際のトラフィックをiPhone実機で検証した証明ではない。
+- **PCとiPhoneが同じ信頼済みWi-Fiに接続されている場合の手順案**：PCでPR #67の開発ブランチをチェックアウトし、PowerShell等でリポジトリのルートへ移動。`ipconfig`でPCのプライベートIPv4を確認。`python scripts/serve-private-fit-preview.py --host 192.168.x.x`（x.xは手元の値）で起動。表示される15分限定URLをiPhone Safariで開く。接続できなければPCファイアウォール・同一サブネット・iPhoneのWi-Fiを確認。**ユーザー承認前に外部向け例外ルールや公開設定を追加しない**。確認を終えたらPCで`Ctrl+C`。
+- **プライベートIPv4が分からない場合は想像で入力しない**。PCの構成、Windows Defender Firewallの許可範囲、家庭内LANの外部公開有無を確認する。初回の実機確認は本人の判断に従い、こちらから勝手にサーバ起動しない。
+- CI：`tests/test_private_fit_preview_server.py` はlocalhostで正常な認証・拒否・15分失効・ファイルallowlist・HTTP MIME・POST拒否を検証する。実機/実データ/暗号化まで検証するものではない。サーバプロセスは起動せず、GitHub Actions内でテスト用のlocalhostサーバのみ一時起動する。
+
 ## 実機前ゲート（未確認）
 1. 隔離した検証ページを**本人だけに安全に渡す方式**を設計・むせ監査する。一般公開Pagesへ配置するのは避ける。ローカルサーバ検証もiPhone側のHTTPS/CORS/MIME条件を別途確認。
 2. iPhone Safariで`FITファイル選択`、自己申告の二つのチェック、端末内解析、警告・表、縦横表示、キーボード/VoiceOver、16MiB超過時の拒否を確認する。**実機確認者は本人**。
