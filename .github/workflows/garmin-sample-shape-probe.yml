@@ -14,6 +14,8 @@ on:
       - 'src/garmin-lifecycle-integration-plan.mjs'
       - 'src/race-strava-first-match-contract.mjs'
       - 'src/race-strava-stream-gate.mjs'
+      - 'src/race-user-fit-only-gate.mjs'
+      - 'tests/race-user-fit-only-gate.test.mjs'
       - 'tests/race-strava-stream-gate.test.mjs'
       - 'tests/race-strava-first-match-contract.test.mjs'
       - 'tests/garmin-lifecycle-integration-plan.test.mjs'
@@ -38,6 +40,8 @@ on:
       - 'src/garmin-lifecycle-integration-plan.mjs'
       - 'src/race-strava-first-match-contract.mjs'
       - 'src/race-strava-stream-gate.mjs'
+      - 'src/race-user-fit-only-gate.mjs'
+      - 'tests/race-user-fit-only-gate.test.mjs'
       - 'tests/race-strava-stream-gate.test.mjs'
       - 'tests/race-strava-first-match-contract.test.mjs'
       - 'tests/garmin-lifecycle-integration-plan.test.mjs'
@@ -81,6 +85,8 @@ jobs:
         run: node tests/race-strava-first-match-contract.test.mjs
       - name: Verify Strava stream shape and 2026 provider policy hard gate
         run: node tests/race-strava-stream-gate.test.mjs
+      - name: Verify user-provided FIT-only offline shape and provenance boundaries
+        run: node tests/race-user-fit-only-gate.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
