@@ -11,6 +11,8 @@ on:
       - 'scripts/test-garmin-oauth.mjs'
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
+      - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'tests/garmin-lifecycle-integration-plan.test.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
       - 'scripts/garmin-disconnect-fence-candidate.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
@@ -29,6 +31,8 @@ on:
       - 'scripts/test-garmin-oauth.mjs'
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
+      - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'tests/garmin-lifecycle-integration-plan.test.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
       - 'scripts/garmin-disconnect-fence-candidate.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
@@ -63,6 +67,8 @@ jobs:
         run: node tests/garmin-disconnect-midflight-reconnect.test.mjs
       - name: Verify Garmin consent and remote revoke lifecycle model
         run: node tests/garmin-consent-lifecycle-contract.test.mjs
+      - name: Audit three-actor Garmin integration design contract
+        run: node tests/garmin-lifecycle-integration-plan.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
