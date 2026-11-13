@@ -19,7 +19,7 @@ assert.deepEqual(good.segments.map(x=>Math.round(x.clockElapsedS)),[300,300]);
 assert.equal(good.distanceM,2000);
 assert.equal(good.sessionTotalDistanceM,2000);
 assert.equal(good.clockElapsedS,600);
-assert.ok(!('messages' in good)&&!('records' in good)&&!('latitude' in JSON.stringify(good)));
+assert.ok(!('messages' in good)&&!('records' in good)&&!JSON.stringify(good).includes('latitude'));
 const mismatch=review(makeFit({total:2200}),opts);
 assert.ok(mismatch.flags.includes('session_vs_last_record_distance_mismatch'));
 assert.equal(mismatch.writeAllowed,false);
