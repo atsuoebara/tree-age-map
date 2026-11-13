@@ -83,7 +83,7 @@ class GateTests(unittest.TestCase):
         cookie = headers["Set-Cookie"].split(";", 1)[0]
         discovered = set()
         to_visit = [M.PREVIEW]
-        pattern = re.compile(r"(?:\\bfrom\\s*|\\bimport\\s*\\(|\\bimport\\s*)['\\\"](\\.{1,2}/[^'\\\"]+)['\\\"]")
+        pattern = re.compile(r"""(?:from\s*|import\s*\(?\s*)["'](\.{1,2}/[^"']+)["']""")
         while to_visit:
             path = to_visit.pop()
             if path in discovered:
