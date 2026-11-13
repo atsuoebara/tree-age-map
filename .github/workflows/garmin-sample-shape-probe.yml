@@ -15,6 +15,8 @@ on:
       - 'src/race-strava-first-match-contract.mjs'
       - 'src/race-strava-stream-gate.mjs'
       - 'src/race-user-fit-only-gate.mjs'
+      - 'src/race-fit-only-split-probe.mjs'
+      - 'tests/race-fit-only-split-probe.test.mjs'
       - 'tests/race-user-fit-only-gate.test.mjs'
       - 'tests/race-strava-stream-gate.test.mjs'
       - 'tests/race-strava-first-match-contract.test.mjs'
@@ -41,6 +43,8 @@ on:
       - 'src/race-strava-first-match-contract.mjs'
       - 'src/race-strava-stream-gate.mjs'
       - 'src/race-user-fit-only-gate.mjs'
+      - 'src/race-fit-only-split-probe.mjs'
+      - 'tests/race-fit-only-split-probe.test.mjs'
       - 'tests/race-user-fit-only-gate.test.mjs'
       - 'tests/race-strava-stream-gate.test.mjs'
       - 'tests/race-strava-first-match-contract.test.mjs'
@@ -87,6 +91,8 @@ jobs:
         run: node tests/race-strava-stream-gate.test.mjs
       - name: Verify user-provided FIT-only offline shape and provenance boundaries
         run: node tests/race-user-fit-only-gate.test.mjs
+      - name: Verify synthetic FIT-only kilometre clock elapsed candidates
+        run: node tests/race-fit-only-split-probe.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
