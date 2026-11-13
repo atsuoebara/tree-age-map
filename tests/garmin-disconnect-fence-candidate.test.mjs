@@ -65,4 +65,28 @@ async function scenario(kind){
 await scenario('normal');
 await scenario('reconnect-before-patch');
 await scenario('gone-before-patch');
-console.log('Review-only OAuth source candidate PASS: normal disconnect, stale stop does not disable new generation, deleted row safe.');
+// Negative control: the UNMODIFIED production source uses user-only PATCH.
+// At the moment it reaches PATCH after reconnect, it disables the new generation.
+const originalIsolated=source.replace("import { logoBase64 } from './logo.ts';","const logoBase64 = '';").replace("if (typeof Deno !== 'undefined') Deno.serve(createHandler(name => Deno.env.get(name)));",'');
+const {createHandler:originalHandler}=await import('data:text/javascript;base64,'+Buffer.from(originalIsolated).toString('base64'));
+const originalCalls=[];
+let newRegistration={user_id:'owner-1',connection_version:NEW,import_enabled:true};
+const originalMock=async(url,init={})=>{
+ originalCalls.push({url,method:init.method||'GET'});
+ if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner-1'});
+ if(url.includes('/rest/v1/garmin_api_connections')&&init.method==='PATCH'){
+  // Reconnect has already replaced the old row. The old disconnect's unguarded
+  // PATCH nonetheless targets only owner_id and incorrectly disables this row.
+  assert.ok(!url.includes('connection_version=eq.'),'negative control must be real user-only PATCH');
+  newRegistration={...newRegistration,import_enabled:false};
+  return Response.json([newRegistration]);
+ }
+ if(url.endsWith('/rpc/garmin_worker_lease'))return Response.json(false);
+ throw Error('Unexpected original source request');
+};
+const oldResult=await originalHandler(k=>env[k],originalMock)(disconnectRequest());
+assert.equal(oldResult.status,303);
+assert.equal(newRegistration.connection_version,NEW);
+assert.equal(newRegistration.import_enabled,false,'negative control must reproduce the existing race defect');
+assert.ok(originalCalls.some(x=>x.url.endsWith('/rpc/garmin_worker_lease')));
+console.log('OAuth original-vs-candidate offline PASS: original unsafe user-only disable reproduced; fenced candidate protects the new generation.');
