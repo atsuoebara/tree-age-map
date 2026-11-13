@@ -44,6 +44,8 @@ on:
       - 'src/race-fit-local-file-review.mjs'
       - 'tests/race-fit-local-file-review.test.mjs'
       - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'scripts/make-synthetic-race-fit.mjs'
+      - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
@@ -94,6 +96,8 @@ on:
       - 'src/race-fit-local-file-review.mjs'
       - 'tests/race-fit-local-file-review.test.mjs'
       - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'scripts/make-synthetic-race-fit.mjs'
+      - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
@@ -157,6 +161,8 @@ jobs:
         run: node tests/race-fit-local-file-review.test.mjs
       - name: Exercise FIT mobile controller with deferred synthetic file reads
         run: node tests/race-fit-local-ui-controller.test.mjs
+      - name: Verify private iPhone 5km synthetic FIT generation and split labels
+        run: node tests/race-fit-private-rehearsal-fixture.test.mjs
       - name: Verify temporary private LAN preview serves only allowed scripts
         run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
       - name: Offline JSON shape inspector synthetic tests
