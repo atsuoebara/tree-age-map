@@ -11,6 +11,7 @@ from pathlib import Path
 import secrets
 import threading
 import time
+import webbrowser
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -131,13 +132,20 @@ def main():
     p.add_argument("--allow-insecure-lan", action="store_true",
                    help="UNSAFE: enable cleartext LAN HTTP only after separate owner approval and audit")
     p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--open-browser", action="store_true", help="Open the local preview in this PC's default browser")
     args = p.parse_args()
     server, token = create_server(args.host, args.port, allow_insecure_lan=args.allow_insecure_lan)
     if args.host == "127.0.0.1":
         print("LOCAL PC ONLY: safe synthetic FIT rehearsal. This is NOT an iPhone link.")
     else:
         print("UNENCRYPTED LAN EXPERIMENT (do not use real FIT): iPhone on same trusted Wi-Fi.")
-    print(f"http://{args.host}:{server.server_port}/open/{token}")
+    url = f"http://{args.host}:{server.server_port}/open/{token}"
+    print(url)
+    if args.open_browser:
+        if args.host != "127.0.0.1":
+            server.server_close()
+            raise ValueError("Automatic browser opening is only permitted on 127.0.0.1")
+        threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     print("Temporary access: 15 minutes, bound to first client IP. Stop with Ctrl+C.")
     print("Do not forward the port, share the URL, or use public Wi-Fi. HTTP is unencrypted.")
     try:
