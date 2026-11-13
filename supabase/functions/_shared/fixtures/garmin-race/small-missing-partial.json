@@ -1,0 +1,119 @@
+{
+  "analysis_version": "garmin-activity-details-v1",
+  "distance_basis": "device_cumulative_m",
+  "time_basis": "clock_elapsed_seconds",
+  "total_distance_m": 2250,
+  "total_clock_elapsed_s": 820,
+  "accepted_samples": 4,
+  "excluded_samples": 0,
+  "quality_flags": [],
+  "segments": [
+    {
+      "segment_index": 1,
+      "start_m": 0,
+      "end_m": 1000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 300,
+      "quality_flags": [],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 150
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 90
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 300
+        }
+      }
+    },
+    {
+      "segment_index": 2,
+      "start_m": 1000,
+      "end_m": 2000,
+      "distance_m": 1000,
+      "clock_elapsed_s": 420,
+      "quality_flags": [
+        "sensor_missing"
+      ],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 0,
+          "coverage_fraction": 0,
+          "mean_raw_value": null
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 90
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 1000,
+          "coverage_fraction": 1,
+          "mean_raw_value": 300
+        }
+      }
+    },
+    {
+      "segment_index": 3,
+      "start_m": 2000,
+      "end_m": 2250,
+      "distance_m": 250,
+      "clock_elapsed_s": 100,
+      "quality_flags": [
+        "sensor_missing",
+        "partial_segment"
+      ],
+      "metrics": {
+        "heart_rate": {
+          "source_field": "heartRate",
+          "raw_unit": "bpm",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 0,
+          "coverage_fraction": 0,
+          "mean_raw_value": null
+        },
+        "cadence": {
+          "source_field": "stepsPerMinute",
+          "raw_unit": "steps/minute as provided",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 250,
+          "coverage_fraction": 1,
+          "mean_raw_value": 45
+        },
+        "power": {
+          "source_field": "powerInWatts",
+          "raw_unit": "W",
+          "aggregation_method": "distance_weighted_linear",
+          "covered_distance_m": 250,
+          "coverage_fraction": 1,
+          "mean_raw_value": 150
+        }
+      }
+    }
+  ]
+}

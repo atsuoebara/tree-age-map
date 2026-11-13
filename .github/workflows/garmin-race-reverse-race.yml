@@ -1,0 +1,43 @@
+name: Garmin reverse save/revoke race (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-schema-review.sql"
+      - "supabase/garmin-race-analysis-commit-rpc-review.sql"
+      - "supabase/tests/garmin_race_reverse_setup.sql"
+      - "supabase/tests/garmin_race_reverse_race.sh"
+      - ".github/workflows/garmin-race-reverse-race.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reverse-race:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_reverse_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_reverse_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_reverse_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute actual saved-first then authoritative revocation race
+        run: bash supabase/tests/garmin_race_reverse_race.sh

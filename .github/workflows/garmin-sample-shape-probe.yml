@@ -1,0 +1,208 @@
+name: Garmin sample shape probe (isolated)
+
+on:
+  pull_request:
+    paths:
+      - 'src/garmin-sample-shape-probe.mjs'
+      - 'src/garmin-one-shot-probe-contract.mjs'
+      - 'tests/garmin-one-shot-probe-contract.test.mjs'
+      - 'tests/garmin-revoke-retry-integration.test.mjs'
+      - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/test-garmin-oauth.mjs'
+      - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
+      - 'src/garmin-consent-lifecycle-contract.mjs'
+      - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'src/garmin-unknown-revoke-recovery-gate.mjs'
+      - 'src/garmin-three-actor-source-gap-audit.mjs'
+      - 'tests/garmin-three-actor-source-gap-audit.test.mjs'
+      - 'tests/garmin-unknown-revoke-recovery-gate.test.mjs'
+      - 'src/race-strava-first-match-contract.mjs'
+      - 'src/race-strava-stream-gate.mjs'
+      - 'src/race-user-fit-only-gate.mjs'
+      - 'src/race-fit-only-split-probe.mjs'
+      - 'src/race-fit-sdk-isolated-adapter.mjs'
+      - 'src/race-fit-clock-anomaly-review.mjs'
+      - 'src/race-fit-timer-event-review.mjs'
+      - 'src/race-fit-session-total-review.mjs'
+      - 'tests/race-fit-session-total-review.test.mjs'
+      - 'tests/race-fit-timer-event-review.test.mjs'
+      - 'tests/race-fit-clock-anomaly-review.test.mjs'
+      - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
+      - 'tests/race-fit-only-split-probe.test.mjs'
+      - 'tests/race-user-fit-only-gate.test.mjs'
+      - 'tests/race-strava-stream-gate.test.mjs'
+      - 'tests/race-strava-first-match-contract.test.mjs'
+      - 'tests/garmin-lifecycle-integration-plan.test.mjs'
+      - 'tests/garmin-consent-lifecycle-contract.test.mjs'
+      - 'scripts/garmin-disconnect-fence-candidate.mjs'
+      - 'tests/garmin-sample-shape-probe.test.mjs'
+      - 'scripts/inspect-garmin-activity-shape.mjs'
+      - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-review-mobile-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'tests/race-fit-local-file-review.test.mjs'
+      - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'tests/race-fit-pc-chromium-smoke.test.mjs'
+      - 'scripts/make-synthetic-race-fit.mjs'
+      - 'scripts/make-synthetic-race-fit-portable.py'
+      - 'tests/race-fit-portable-python-fixture.test.mjs'
+      - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
+      - 'scripts/serve-private-fit-preview.py'
+      - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'scripts/build-private-fit-pc-bundle.py'
+      - 'tests/test_private_fit_pc_bundle.py'
+      - 'tests/test_fit_windows_local_launcher.py'
+      - 'tests/test_private_fit_preview_server.py'
+      - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
+      - 'tests/gachiran-effort-next-step-preview.test.mjs'
+      - '.github/workflows/garmin-sample-shape-probe.yml'
+  push:
+    branches:
+      - 'feature/garmin-race-analysis-implementation-20261109'
+    paths:
+      - 'src/garmin-sample-shape-probe.mjs'
+      - 'src/garmin-one-shot-probe-contract.mjs'
+      - 'tests/garmin-one-shot-probe-contract.test.mjs'
+      - 'tests/garmin-revoke-retry-integration.test.mjs'
+      - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/test-garmin-oauth.mjs'
+      - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
+      - 'src/garmin-consent-lifecycle-contract.mjs'
+      - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'src/garmin-unknown-revoke-recovery-gate.mjs'
+      - 'src/garmin-three-actor-source-gap-audit.mjs'
+      - 'tests/garmin-three-actor-source-gap-audit.test.mjs'
+      - 'tests/garmin-unknown-revoke-recovery-gate.test.mjs'
+      - 'src/race-strava-first-match-contract.mjs'
+      - 'src/race-strava-stream-gate.mjs'
+      - 'src/race-user-fit-only-gate.mjs'
+      - 'src/race-fit-only-split-probe.mjs'
+      - 'src/race-fit-sdk-isolated-adapter.mjs'
+      - 'src/race-fit-clock-anomaly-review.mjs'
+      - 'src/race-fit-timer-event-review.mjs'
+      - 'src/race-fit-session-total-review.mjs'
+      - 'tests/race-fit-session-total-review.test.mjs'
+      - 'tests/race-fit-timer-event-review.test.mjs'
+      - 'tests/race-fit-clock-anomaly-review.test.mjs'
+      - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
+      - 'tests/race-fit-only-split-probe.test.mjs'
+      - 'tests/race-user-fit-only-gate.test.mjs'
+      - 'tests/race-strava-stream-gate.test.mjs'
+      - 'tests/race-strava-first-match-contract.test.mjs'
+      - 'tests/garmin-lifecycle-integration-plan.test.mjs'
+      - 'tests/garmin-consent-lifecycle-contract.test.mjs'
+      - 'scripts/garmin-disconnect-fence-candidate.mjs'
+      - 'tests/garmin-sample-shape-probe.test.mjs'
+      - 'scripts/inspect-garmin-activity-shape.mjs'
+      - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-review-mobile-synthetic-20261113.html'
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'tests/race-fit-local-file-review.test.mjs'
+      - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'tests/race-fit-pc-chromium-smoke.test.mjs'
+      - 'scripts/make-synthetic-race-fit.mjs'
+      - 'scripts/make-synthetic-race-fit-portable.py'
+      - 'tests/race-fit-portable-python-fixture.test.mjs'
+      - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
+      - 'scripts/serve-private-fit-preview.py'
+      - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'scripts/build-private-fit-pc-bundle.py'
+      - 'tests/test_private_fit_pc_bundle.py'
+      - 'tests/test_fit_windows_local_launcher.py'
+      - 'tests/test_private_fit_preview_server.py'
+      - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
+      - 'tests/gachiran-effort-next-step-preview.test.mjs'
+      - '.github/workflows/garmin-sample-shape-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pure Garmin shape probe privacy and boundary cases
+        run: node tests/garmin-sample-shape-probe.test.mjs
+      - name: One-shot atomic lease contract synthetic tests
+        run: node tests/garmin-one-shot-probe-contract.test.mjs
+      - name: Synthetic Garmin remote revoke failure and retry against receiver source
+        run: node tests/garmin-revoke-retry-integration.test.mjs
+      - name: Verify current Garmin OAuth regression tests
+        run: node scripts/test-garmin-oauth.mjs
+      - name: Verify fenced disconnect candidate on isolated transformed OAuth source
+        run: node tests/garmin-disconnect-fence-candidate.test.mjs
+      - name: Verify reconnect during in-flight external Garmin revocation
+        run: node tests/garmin-disconnect-midflight-reconnect.test.mjs
+      - name: Verify Garmin consent and remote revoke lifecycle model
+        run: node tests/garmin-consent-lifecycle-contract.test.mjs
+      - name: Audit three-actor Garmin integration design contract
+        run: node tests/garmin-lifecycle-integration-plan.test.mjs
+      - name: Verify uncertain Garmin revoke recovery remains fail closed
+        run: node tests/garmin-unknown-revoke-recovery-gate.test.mjs
+      - name: Audit live Garmin OAuth worker and isolated DB source integration gaps
+        run: node tests/garmin-three-actor-source-gap-audit.test.mjs
+      - name: Verify Strava-first canonical run matching without duplicate writes
+        run: node tests/race-strava-first-match-contract.test.mjs
+      - name: Verify Strava stream shape and 2026 provider policy hard gate
+        run: node tests/race-strava-stream-gate.test.mjs
+      - name: Verify user-provided FIT-only offline shape and provenance boundaries
+        run: node tests/race-user-fit-only-gate.test.mjs
+      - name: Verify synthetic FIT-only kilometre clock elapsed candidates
+        run: node tests/race-fit-only-split-probe.test.mjs
+      - name: Verify generated FIT binary SDK decode to isolated kilometre probe
+        run: node tests/race-fit-sdk-isolated-adapter.test.mjs
+      - name: Verify FIT clock anomalies and no imputed timestamps
+        run: node tests/race-fit-clock-anomaly-review.test.mjs
+      - name: Verify FIT timer stop-resume events preserve clock elapsed time
+        run: node tests/race-fit-timer-event-review.test.mjs
+      - name: Review FIT session distance against record distance without persistence
+        run: node tests/race-fit-session-total-review.test.mjs
+      - name: Verify effort-first Gachiran mobile preview isolation
+        run: node tests/gachiran-effort-next-step-preview.test.mjs
+      - name: Verify FIT-only mobile diagnostic preview is synthetic and private
+        run: node tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs
+      - name: Verify user FIT local-only file picker SDK diagnostics without API or DB
+        run: node tests/race-fit-local-file-review.test.mjs
+      - name: Exercise FIT mobile controller with deferred synthetic file reads
+        run: node tests/race-fit-local-ui-controller.test.mjs
+      - name: Browser smoke test actual localhost FIT selection and 1km splits
+        run: |
+          CHROME_BIN=$(command -v google-chrome || command -v chromium || command -v chromium-browser)
+          CHROME_BIN="$CHROME_BIN" node tests/race-fit-pc-chromium-smoke.test.mjs
+      - name: Verify private iPhone 5km synthetic FIT generation and split labels
+        run: node tests/race-fit-private-rehearsal-fixture.test.mjs
+      - name: Verify portable synthetic FIT bytes against SDK and private reviewer
+        run: node tests/race-fit-portable-python-fixture.test.mjs
+      - name: Verify temporary private LAN preview serves only allowed scripts
+        run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
+      - name: Verify Windows FIT launcher remains loopback-only
+        run: python3 -m unittest discover -s tests -p test_fit_windows_local_launcher.py -v
+      - name: Verify minimal Windows private FIT package content
+        run: python3 -m unittest discover -s tests -p test_private_fit_pc_bundle.py -v
+      - name: Build private PC-only FIT rehearsal ZIP
+        run: python3 scripts/build-private-fit-pc-bundle.py /tmp/rr-fit-pc-preview-synthetic.zip
+      - name: Attach synthetic-only PC FIT rehearsal ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: rr-fit-pc-preview-synthetic
+          path: /tmp/rr-fit-pc-preview-synthetic.zip
+          retention-days: 7
+          if-no-files-found: error
+      - name: Offline JSON shape inspector synthetic tests
+        run: node tests/inspect-garmin-activity-shape.test.mjs
+      - name: Ensure live Garmin receiver does not import isolated probe
+        run: |
+          if grep -Eq 'garmin-sample-shape-probe|inspect-garmin-activity-shape|garmin-one-shot-probe-contract' supabase/functions/garmin-activity-push/index.ts; then
+            echo 'Isolated probe unexpectedly referenced by production receiver' >&2
+            exit 1
+          fi

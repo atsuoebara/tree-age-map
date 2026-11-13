@@ -1,0 +1,96 @@
+name: Garmin one-shot shape lease (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/tests/garmin_shape_one_shot_setup.sql'
+      - 'supabase/tests/garmin_shape_one_shot.sh'
+      - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
+      - 'supabase/tests/garmin_shape_purge_lifecycle.sql'
+      - 'supabase/tests/garmin_shape_multiowner_purge.sql'
+      - 'supabase/tests/garmin_shape_type_fidelity.sql'
+      - 'supabase/tests/garmin_account_delete_order_ci.sql'
+      - 'supabase/tests/garmin_account_delete_rollback_ci.sql'
+      - 'supabase/tests/garmin_reconnect_disconnect_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lifecycle_concurrent_setup.sql'
+      - 'supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh'
+      - 'supabase/tests/garmin_consent_three_actor_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lease_recovery_setup.sql'
+      - 'supabase/tests/garmin_consent_lease_recovery_ci.sh'
+      - '.github/workflows/garmin-shape-one-shot-postgres.yml'
+  push:
+    branches:
+      - 'feature/garmin-race-analysis-implementation-20261109'
+    paths:
+      - 'supabase/tests/garmin_shape_one_shot_setup.sql'
+      - 'supabase/tests/garmin_shape_one_shot.sh'
+      - 'supabase/tests/garmin_shape_one_shot_revoke_race.sh'
+      - 'supabase/tests/garmin_shape_purge_lifecycle.sql'
+      - 'supabase/tests/garmin_shape_multiowner_purge.sql'
+      - 'supabase/tests/garmin_shape_type_fidelity.sql'
+      - 'supabase/tests/garmin_account_delete_order_ci.sql'
+      - 'supabase/tests/garmin_account_delete_rollback_ci.sql'
+      - 'supabase/tests/garmin_reconnect_disconnect_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lifecycle_concurrent_setup.sql'
+      - 'supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh'
+      - 'supabase/tests/garmin_consent_three_actor_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lease_recovery_setup.sql'
+      - 'supabase/tests/garmin_consent_lease_recovery_ci.sh'
+      - '.github/workflows/garmin-shape-one-shot-postgres.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  concurrent-one-shot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_probe_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_probe_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_probe_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert isolated CI database
+        run: |
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = "garmin_probe_ci"
+      - name: Exercise real PostgreSQL competing claims and expiry
+        run: bash supabase/tests/garmin_shape_one_shot.sh
+      - name: Exercise real PostgreSQL finish vs revoke race in both orders
+        run: bash supabase/tests/garmin_shape_one_shot_revoke_race.sh
+      - name: Exercise synthetic Garmin disconnect and run deletion purge
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_purge_lifecycle.sql
+      - name: Verify owner and run scoping across three accounts
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_multiowner_purge.sql
+      - name: Verify production-like UUID bigint nullable run owners and FK deletion behavior
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_shape_type_fidelity.sql
+      - name: Verify account deletion ordering without harming other owners
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_account_delete_order_ci.sql
+      - name: Inject deletion failures and verify atomic rollback and retry
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_account_delete_rollback_ci.sql
+      - name: Detect disconnect versus reconnect race and verify generation fence
+        run: bash supabase/tests/garmin_reconnect_disconnect_race_ci.sh
+      - name: Verify concurrent Garmin consent lifecycle timeout and rollback
+        run: bash supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh
+      - name: Race manual disconnect OAuth callback and Push worker in PostgreSQL
+        run: bash supabase/tests/garmin_consent_three_actor_race_ci.sh
+      - name: Verify owner lease crash expiry UNKNOWN and safe claims
+        run: bash supabase/tests/garmin_consent_lease_recovery_ci.sh

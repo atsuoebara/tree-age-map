@@ -1,0 +1,93 @@
+{
+  "_meta": {
+    "status": "DRAFT_REVIEW_ONLY",
+    "locale": [
+      "ja",
+      "en"
+    ],
+    "scope": "Garmin optional race analysis proposed display copy; no UI wiring, no production changes",
+    "version": "2026-11-09"
+  },
+  "messages": {
+    "feature_title": {
+      "ja": "Garminの1kmごとの解析",
+      "en": "Garmin 1 km split analysis"
+    },
+    "feature_intro": {
+      "ja": "Garminから取得したランニング記録に、1kmごとの経過時間とセンサー値を追加表示します。解析は利用できる記録に限られ、通常のラン保存とは別の任意機能です。",
+      "en": "For eligible running activities received from Garmin, show elapsed time and sensor values for each 1 km segment. This optional analysis is separate from saving your run."
+    },
+    "elapsed_label": {
+      "ja": "区間経過時間",
+      "en": "Segment elapsed time"
+    },
+    "elapsed_help": {
+      "ja": "Garminの累積距離を基準に1kmごとに計算します。停止時間を含む時計上の経過時間で、移動時間や公式大会ラップではありません。",
+      "en": "Calculated for each 1 km of Garmin-reported cumulative distance. This is clock elapsed time, including stops—not moving time or official race splits."
+    },
+    "distance_basis": {
+      "ja": "距離：Garminの累積距離",
+      "en": "Distance: Garmin-reported cumulative distance"
+    },
+    "sensor_intro": {
+      "ja": "心拍・ピッチ・パワーはGarminが提供した数値を元の単位のまま集計します。単位の自動変換や推定による補完は行いません。",
+      "en": "Heart rate, cadence and power are aggregated from values provided by Garmin in their original units. Values are not converted or estimated to fill gaps."
+    },
+    "heart_rate": {
+      "ja": "平均心拍（bpm）",
+      "en": "Average heart rate (bpm)"
+    },
+    "cadence": {
+      "ja": "平均ピッチ（Garmin提供値：歩数/分）",
+      "en": "Average cadence (Garmin-provided steps/min)"
+    },
+    "cadence_help": {
+      "ja": "ピッチはGarminから届いた値をそのまま使用します。2倍にするなどの換算は行いません。",
+      "en": "Cadence is used exactly as provided by Garmin. It is not doubled or otherwise converted."
+    },
+    "power": {
+      "ja": "平均パワー（W）",
+      "en": "Average power (W)"
+    },
+    "missing": {
+      "ja": "データ不足",
+      "en": "Insufficient data"
+    },
+    "missing_help": {
+      "ja": "この区間で有効なセンサー値が距離の80%未満しかない場合、平均値は表示しません。欠損値を0として扱ったり、推測で埋めたりしません。",
+      "en": "If valid sensor readings cover less than 80% of this segment's distance, no average is shown. Missing readings are not treated as zero or filled with estimates."
+    },
+    "partial_segment": {
+      "ja": "端数区間",
+      "en": "Partial segment"
+    },
+    "partial_help": {
+      "ja": "最後の区間が1km未満の場合、その実際の距離と経過時間を表示します。",
+      "en": "When the final segment is shorter than 1 km, its actual distance and elapsed time are shown."
+    },
+    "quality_notice": {
+      "ja": "解析値はGarminの記録に依存します。欠損・不連続・同一時刻の点がある場合、解析区間から一部の点を除外することがあります。",
+      "en": "Analysis depends on Garmin data. Some samples may be excluded from segment calculations if values are missing, out of order, or share a timestamp or distance."
+    },
+    "optional_unavailable": {
+      "ja": "この記録では追加解析を表示できません。ランニング記録の保存とは別の処理です。",
+      "en": "Additional analysis is unavailable for this activity. It is processed separately from saving the run."
+    },
+    "optional_failure": {
+      "ja": "追加解析を作成できませんでした。ランニング記録の保存結果には影響しません。",
+      "en": "Additional analysis could not be created. This does not affect the result of saving the run."
+    },
+    "connection_notice": {
+      "ja": "Garmin連携の解除、取り込みの無効化、必要な権限の失効が確認された場合、追加解析データは削除されます。保存済みのランニング記録は残ります。",
+      "en": "If your Garmin connection is removed, importing is disabled, or loss of required permissions is confirmed, the additional analysis is deleted. Your saved run remains."
+    },
+    "privacy_notice": {
+      "ja": "追加解析は本人だけが閲覧できます。ランニング記録を削除すると、その記録の追加解析も削除されます。",
+      "en": "Only you can view your additional analysis. Deleting a run also deletes its additional analysis."
+    },
+    "no_claim": {
+      "ja": "この機能はGarminの利用可能なデータに基づく参考解析です。公式大会記録や計測保証ではありません。",
+      "en": "This feature provides reference analysis from available Garmin data. It is not an official race result or a measurement guarantee."
+    }
+  }
+}

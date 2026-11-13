@@ -1,0 +1,46 @@
+name: Garmin race RPC integration (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-commit-rpc-review.sql"
+      - "supabase/tests/garmin_race_rpc_setup.sql"
+      - "supabase/tests/garmin_race_rpc_cases.sql"
+      - ".github/workflows/garmin-race-rpc-integration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-rpc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create disposable schema and roles
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_rpc_setup.sql
+      - name: Load proposed four-argument RPC exactly as PR file
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-commit-rpc-review.sql
+      - name: Run F1, duplicate and revoked-consent integration fixtures (ROLLBACK)
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_rpc_cases.sql

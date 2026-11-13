@@ -1,0 +1,46 @@
+name: Garmin race lifecycle (isolated PostgreSQL)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-schema-review.sql"
+      - "supabase/tests/garmin_race_lifecycle_setup.sql"
+      - "supabase/tests/garmin_race_lifecycle_cases.sql"
+      - ".github/workflows/garmin-race-lifecycle.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: garmin_lifecycle_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d garmin_lifecycle_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: garmin_lifecycle_ci
+      PGUSER: postgres
+      PGPASSWORD: ci_only_secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup disposable owner and Garmin fixture
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_lifecycle_setup.sql
+      - name: Load actual PR schema migration
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-schema-review.sql
+      - name: Exercise owner RLS, soft delete and Garmin lifecycle purge
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_lifecycle_cases.sql

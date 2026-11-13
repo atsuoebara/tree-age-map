@@ -1,0 +1,38 @@
+name: Garmin race optional sensor checks
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/_shared/garmin_race_optional.ts"
+      - "supabase/functions/_shared/garmin_race_optional_test.ts"
+      - "supabase/functions/_shared/garmin_race_segments.ts"
+      - "supabase/functions/_shared/garmin_race_segments_test.ts"
+      - "supabase/functions/_shared/garmin_race_single_run.ts"
+      - "supabase/functions/_shared/garmin_race_single_run_test.ts"
+      - "supabase/functions/_shared/garmin_race_c4_contract.ts"
+      - "supabase/functions/_shared/garmin_race_c4_contract_test.ts"
+      - "supabase/functions/_shared/garmin_race_batch_probe_test.ts"
+      - "supabase/functions/_shared/garmin_race_load_probe_test.ts"
+      - "supabase/functions/_shared/garmin_race_r3_fixtures_test.ts"
+      - "supabase/functions/_shared/garmin_race_ui_copy_test.ts"
+      - "docs/garmin-race-analysis-ui-copy.ja-en.json"
+      - "supabase/functions/_shared/fixtures/garmin-race/**"
+      - ".github/workflows/garmin-race-optional-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deno-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck isolated code and tests
+        run: deno check supabase/functions/_shared/garmin_race_optional.ts supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_single_run.ts supabase/functions/_shared/garmin_race_single_run_test.ts supabase/functions/_shared/garmin_race_c4_contract_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts supabase/functions/_shared/garmin_race_ui_copy_test.ts
+      - name: Run all isolated tests (no env vars or network)
+        run: deno test --no-config --no-remote supabase/functions/_shared/garmin_race_optional_test.ts supabase/functions/_shared/garmin_race_segments_test.ts supabase/functions/_shared/garmin_race_single_run.ts supabase/functions/_shared/garmin_race_single_run_test.ts supabase/functions/_shared/garmin_race_c4_contract.ts supabase/functions/_shared/garmin_race_c4_contract_test.ts supabase/functions/_shared/garmin_race_batch_probe_test.ts supabase/functions/_shared/garmin_race_load_probe_test.ts supabase/functions/_shared/garmin_race_r3_fixtures_test.ts supabase/functions/_shared/garmin_race_ui_copy_test.ts
