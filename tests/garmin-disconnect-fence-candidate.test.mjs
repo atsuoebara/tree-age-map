@@ -65,6 +65,57 @@ async function scenario(kind){
 await scenario('normal');
 await scenario('reconnect-before-patch');
 await scenario('gone-before-patch');
+
+// Additional review-only edge cases: two concurrent manual disconnect requests,
+// plus missing generation and an unavailable DB. No external Garmin calls.
+{
+ const calls=[];
+ let row={user_id:'owner-1',connection_version:OLD,import_enabled:true};
+ const mock=async(url,init={})=>{
+  const method=init.method||'GET';
+  calls.push({url,method});
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner-1'});
+  if(url.includes('/rest/v1/garmin_api_connections')&&url.includes('select=connection_version'))
+   return Response.json(row?[{connection_version:row.connection_version}]:[]);
+  if(url.includes('/rest/v1/garmin_api_connections')&&method==='PATCH'){
+   assert.ok(url.includes('connection_version=eq.'+OLD));
+   if(!row?.import_enabled)return Response.json([]);
+   row={...row,import_enabled:false};return Response.json([row]);
+  }
+  if(url.endsWith('/rpc/garmin_worker_lease'))return Response.json(false);
+  throw Error('Unexpected concurrent disconnect request '+method+' '+url);
+ };
+ const handler=createHandler(k=>env[k],mock);
+ const results=await Promise.all([handler(disconnectRequest()),handler(disconnectRequest())]);
+ assert.deepEqual(results.map(x=>x.status),[303,303]);
+ assert.equal(calls.filter(x=>x.url.endsWith('/rpc/garmin_worker_lease')).length,1);
+ assert.equal(row.import_enabled,false);
+}
+{
+ let leases=0;
+ const mock=async(url,init={})=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner-1'});
+  if(url.includes('select=connection_version'))return Response.json([]);
+  if(url.endsWith('/rpc/garmin_worker_lease'))leases++;
+  throw Error('Unexpected write after missing connection');
+ };
+ const result=await createHandler(k=>env[k],mock)(disconnectRequest());
+ assert.equal(result.status,303);
+ assert.equal(leases,0);
+}
+{
+ let leases=0;
+ const mock=async(url,init={})=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:'owner-1'});
+  if(url.includes('select=connection_version'))return new Response('unavailable',{status:503});
+  if(url.endsWith('/rpc/garmin_worker_lease'))leases++;
+  throw Error('Unexpected call after failed source read');
+ };
+ const result=await createHandler(k=>env[k],mock)(disconnectRequest());
+ assert.notEqual(result.status,303,'failed DB read must not claim completed disconnect');
+ assert.equal(leases,0);
+}
+
 // Negative control: the UNMODIFIED production source uses user-only PATCH.
 // At the moment it reaches PATCH after reconnect, it disables the new generation.
 const originalIsolated=source.replace("import { logoBase64 } from './logo.ts';","const logoBase64 = '';").replace("if (typeof Deno !== 'undefined') Deno.serve(createHandler(name => Deno.env.get(name)));",'');
