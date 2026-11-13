@@ -45,16 +45,18 @@
 - 実ロールと本番スキーマを模した隔離PostgreSQL 16試験、既存OAuth mockの仕様追随、および既存ラン・受信ACK非退行。
 - Garminからの書面回答がない場合は本番への切替を許可しない。回答を得てもむせ独立監査とオーナー明示承認が必要。
 
-## Garminサポートへの照会文（ドラフト／未送信）
-Subject: OAuth2 PKCE registration DELETE behavior during a concurrent reauthorization
+## Garminサポートからの返答（2026-11-13 12:46 JST）
+- 実際に送信された問い合わせ件名：`Runner's Rings – OAuth2 PKCE registration DELETE and concurrent reauthorization`。
+- Starter AccessとPersonal APIは**セルフサービス**であり、Garminサポートでは個別の技術サポート・実装レビュー・アーキテクチャ助言・アプリ個別評価を提供しない旨の回答を受領。
+- 質問した **旧Tokenの `DELETE /user/registration` が再認可後の新同意に及ぼす作用／HTTP 204,401,403,404,410の保証／タイムアウト後の安全な再試行／sandbox** について回答は得られていない。
+- Enterprise Accessの案内はあったが、**有料化・プラン変更をしない**。同じ質問への追加の催促を前提に作業を止めない。これは「新同意に影響しない」とGarminが認めたことを意味しない。
+- 参照する原文：開発者用Gmailの同件スレッド（問い合わせ11/13、返信11/13）、サポート整理番号 `6D37PD-NVYWV`。秘密トークン・個人データは問い合わせに含めていない。
 
-We are an approved Garmin Connect Developer Program integration using OAuth2 PKCE and the Activity API. Our application provides a disconnect action that calls DELETE /wellness-api/rest/user/registration using the existing user's access token.
-
-Could you confirm whether a DELETE request authenticated with an older access token can invalidate or deregister a newer OAuth consent / token for the same Garmin account and client ID, if the user completes reauthorization while the DELETE request is in flight?
-
-We would also appreciate clarification on the guaranteed meanings of 204, 401, 403, 404, and 410 for this endpoint, especially when a prior DELETE timed out, and whether a developer sandbox supports testing this race. We will not send any real user tokens or personal data in this inquiry.
-
-Thank you for helping us implement a consent-safe disconnect flow.
+### 回答が得られない場合の実務判断
+1. 旧DELETEの作用範囲は**未確認**のままとし、再接続直後の遠隔再送やHTTP timeout後の自動再送を「安全」としない。
+2. ローカル取込停止と `revoke_unknown` の保持、保留中のOAuth認可の自動有効化禁止は既存の隔離設計を維持する。
+3. その条件で安全に実装できない自動解除・自動再連携の改修は**No-Go**。**現行運用の安全性まで保証するものではなく**、別途実運用リスクとして監査する。
+4. Garmin由来の自動1km分析が未解決でも、本人持込のFIT・従来の年輪・その他の本人限定分析は別ゲートで前進可能。追加コストを伴うGarmin支援契約は選ばない。
 
 ## 判定
-**公式仕様の公開範囲確認：完了／遠隔登録解除の安全性：未証明（No-Go）**。PR #67 Draft、#68 HOLD。本人の明示承認なしにGarminへの問い合わせを送信せず、実データテストや本番DB/Edge/OAuth変更をしない。
+**公式仕様の公開範囲確認：完了／Garminへの技術照会：返信受領・具体的な回答なし／遠隔登録解除の安全性：未証明（No-Go）**。PR #67 Draft、#68 HOLD。実データテスト・本番DB/Edge/OAuth変更・有料化はしない。
