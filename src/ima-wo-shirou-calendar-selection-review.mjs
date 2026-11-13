@@ -8,13 +8,15 @@ function utcStart(s){
   if(!preciseTimestamp(s))return null;
   const parsed=Date.parse(s);
   if(!Number.isSafeInteger(parsed)||parsed<0)return null;
-  // Date.parse normalizes malformed date components on some engines; reject
-  // impossible timestamps by requiring a valid UTC roundtrip for Z timestamps.
-  if(s.endsWith('Z')){
-    const y=s.slice(0,4),m=s.slice(5,7),d=s.slice(8,10);
-    if(new Date(parsed).toISOString().slice(0,10)!==y+'-'+m+'-'+d &&
-       s.slice(11,19)==='00:00:00')return null;
-  }
+  // Validate civil date and clock fields independently: Date.parse may normalize
+  // impossible dates (e.g. February 31) rather than rejecting them.
+  const year=Number(s.slice(0,4)),month=Number(s.slice(5,7)),day=Number(s.slice(8,10));
+  const hour=Number(s.slice(11,13)),minute=Number(s.slice(14,16)),second=Number(s.slice(17,19));
+  const utcDay=new Date(Date.UTC(year,month-1,day));
+  if(year<100 || utcDay.toISOString().slice(0,10)!==s.slice(0,10) ||
+     hour>23 || minute>59 || second>59)return null;
+  const zone=s.match(/[+-]([0-9]{2}):([0-9]{2})$/);
+  if(zone && (Number(zone[1])>23 || Number(zone[2])>59))return null;
   return parsed;
 }
 export function reviewSelectedCalendarRun({
