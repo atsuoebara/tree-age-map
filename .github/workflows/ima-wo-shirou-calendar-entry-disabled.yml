@@ -1,0 +1,22 @@
+name: Ima wo Shirou disabled calendar entry
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/ima-wo-shirou-calendar-entry-disabled.test.cjs'
+      - 'docs/ima-wo-shirou-calendar-entry-disabled-review-20261113.md'
+      - '.github/workflows/ima-wo-shirou-calendar-entry-disabled.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify disabled entry and owner constraints
+        run: node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+      - name: Keep original calendar regression
+        run: node scripts/test-run-record-calendar.cjs
+      - name: Verify existing 8-day selection gate
+        run: node --test tests/ima-wo-shirou-calendar-selection-review.test.mjs tests/ima-wo-shirou-eight-day-eligibility.test.mjs
