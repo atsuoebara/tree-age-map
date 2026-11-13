@@ -7,7 +7,7 @@ export const actors=Object.freeze({
 });
 export const mutations=Object.freeze({
  request_disconnect:{expected:'connected',next:'disconnect_requested',scope:'owner+generation',import:false,remote:false},
- claim_remote_revoke:{expected:'disconnect_requested|revoke_unknown',next:'revoke_inflight',scope:'owner+generation+lease',import:false,remote:false},
+ claim_remote_revoke:{expected:'disconnect_requested',next:'revoke_inflight',scope:'owner+generation+lease',import:false,remote:false},
  complete_remote_revoke:{expected:'revoke_inflight',next:'disconnected',scope:'owner+generation+lease',import:false,remote:false},
  mark_remote_unknown:{expected:'revoke_inflight',next:'revoke_unknown',scope:'owner+generation+lease',import:false,remote:false},
  stage_new_consent:{expected:'disconnect_requested|revoke_inflight|revoke_unknown',next:'same',scope:'owner+generation',import:false,remote:false},
