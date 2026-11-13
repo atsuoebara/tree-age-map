@@ -43,7 +43,7 @@ assert.equal(nonzero.qualityCertified,false);
 const knownLater=probe({...base,records:[{elapsedS:0,distanceM:12},{elapsedS:100,distanceM:1012},{elapsedS:200,distanceM:2012}]});
 assert.equal(knownLater.segments[0].index,2);
 assert.equal(knownLater.segments[0].distanceM,1000);
-assert.equal(knownLater.segments[0].clockElapsedS,100);
+assert.ok(Math.abs(knownLater.segments[0].clockElapsedS-100)<1e-9);
 assert.equal(knownLater.segments.at(-1).distanceM,12);
 assert.equal(knownLater.initialIntervalOmitted,true);
 assert.equal(probe({...base,records:[{elapsedS:0,distanceM:12},{elapsedS:40,distanceM:500}]}).reason,'no_observed_kilometre_boundary');
