@@ -22,7 +22,7 @@ class BundleTest(unittest.TestCase):
             self.assertEqual(names,set(paths)|{"README-FIRST.txt","synthetic-5km-27min.fit"})
             self.assertEqual(len(archive.read("synthetic-5km-27min.fit")),294)
             self.assertIn(b"127.0.0.1",archive.read("scripts/open-local-fit-preview-windows.cmd"))
-            self.assertIn(b"localhost",archive.read("README-FIRST.txt"))
+            self.assertIn(b"127.0.0.1",archive.read("README-FIRST.txt"))
             self.assertFalse(any(p.startswith(("supabase/","docs/",".git/",".github/")) for p in names))
             self.assertFalse(any("password" in p.lower() or "token" in p.lower() for p in names))
             self.assertFalse(any(p.endswith((".env",".json",".ts",".map")) for p in names))
