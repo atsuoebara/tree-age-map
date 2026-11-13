@@ -12,7 +12,8 @@ assert.ok(actors.push_worker.includes('claim_remote_revoke'));
 for(const [action,rule] of Object.entries(mutations)){
  assert.ok(rule.scope.startsWith('owner+'),action+' must always scope mutations by owner');
  assert.equal(rule.remote,false,action+' must not call a remote provider from a DB transaction');
- if(action!=='activate_new_consent')assert.notEqual(rule.next,'connected',action+' must never auto-activate new consent');
+ if(!['activate_new_consent','reconcile_permissions'].includes(action))assert.notEqual(rule.next,'connected',action+' must never auto-activate new consent');
+ if(action==='reconcile_permissions')assert.equal(rule.expected,'connected','permission refresh only for active registration');
  if(['complete_remote_revoke','mark_remote_unknown'].includes(action)){
   assert.ok(rule.scope.includes('generation'));
   assert.ok(rule.scope.includes('lease'));
