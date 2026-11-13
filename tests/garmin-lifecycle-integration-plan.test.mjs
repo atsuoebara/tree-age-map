@@ -26,6 +26,7 @@ assert.equal(externalDelete.timeoutNext,'revoke_unknown');
 assert.equal(externalDelete.safeToActivateNewConsentDuringFlight,false);
 assert.equal(externalDelete.providerScopeKnown,false);
 assert.equal(externalDelete.retryAfterTimeoutWithoutProviderGuarantee,false);
+assert.equal(mutations.claim_remote_revoke.expected,'disconnect_requested','UNKNOWN must not be reclaimed automatically');
 assert.ok(['owner','generation','lease_token','lease_deadline','attempt_id'].every(x=>externalDelete.requiredProof.includes(x)));
 assert.ok(goNoGo.includes('official_provider_delete_scope_confirmed'));
 assert.ok(goNoGo.includes('muse_independent_audit_and_owner_approval'));
