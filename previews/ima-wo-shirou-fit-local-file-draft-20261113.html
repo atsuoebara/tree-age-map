@@ -83,7 +83,7 @@ $('review').addEventListener('click',async()=>{
  if(reviewing)return;
  const file=$('fit').files?.[0];clear();
  if(!file){$('status').textContent='本人のFITファイルを1つ選んでください';return;}
- if(!/\\.fit$/i.test(file.name)||file.size<16||file.size>16*1024*1024){show({status:'blocked',reason:'file_size_or_type_invalid',flags:[]});return;}
+ if(!/\.fit$/i.test(file.name)||file.size<16||file.size>16*1024*1024){show({status:'blocked',reason:'file_size_or_type_invalid',flags:[]});return;}
  const confirmedOwner=$('owner').checked,confirmedRace=$('race').checked;
  if(!confirmedOwner||!confirmedRace){show({status:'blocked',reason:'owner_or_race_confirmation_missing',flags:[]});return;}
  const version=selectionVersion;
