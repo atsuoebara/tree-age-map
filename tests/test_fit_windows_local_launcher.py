@@ -10,6 +10,10 @@ class WindowsLauncherTests(unittest.TestCase):
         self.assertIn('cd /d "%~dp0.."',cmd)
         self.assertIn('"scripts\\serve-private-fit-preview.py"',cmd)
         self.assertEqual(cmd.count("--host 127.0.0.1 --port 0 --open-browser"),2)
+        self.assertIn('py -3 -c "import sys;',cmd)
+        self.assertIn('python -c "import sys;',cmd)
+        self.assertIn("sys.version_info.major == 3",cmd)
+        self.assertEqual(cmd.count('if not errorlevel 1 ('),4)
         self.assertNotIn("--allow-insecure-lan",cmd)
         for dangerous in ["netsh","powershell -enc","curl ","Invoke-WebRequest","0.0.0.0","--host 192.168."]:
             self.assertNotIn(dangerous,cmd)
