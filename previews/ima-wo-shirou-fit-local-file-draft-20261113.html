@@ -81,6 +81,7 @@ const readable={
  observed_timer_stop_resume:'停止と再開のイベントが記録されています（走行停止の確証ではありません）',
  no_timer_events:'停止イベント情報がないため連続走行と断定できません',
 
+ unknown_initial_distance_interval_omitted:'開始直後の距離が不明なため、最初の区間は表示していません。後続の区間も未認証です',
  unverified_sample_gap:'記録の間隔が大きく、区間精度を確認できません',
  long_record_clock_gap:'時刻間隔が長い箇所があります'
 };
@@ -92,12 +93,14 @@ function show(result){
   $('status').textContent='候補を表示できません：'+(readable[result.reason]||'入力内容または記録データを確認してください');
  }else{
   $('status').textContent='参考候補・未認証（正式な分析結果ではありません）';
-  $('distance').textContent='記録距離 '+(result.distanceM/1000).toFixed(2)+' km／経過時間 '+clock(result.clockElapsedS);
+  $('distance').textContent=result.initialIntervalOmitted
+   ?'最初の記録からの観測距離 '+(result.distanceM/1000).toFixed(2)+' km／セッション開始から最終記録まで '+clock(result.clockElapsedS)+'（先頭区間不明・未認証）'
+   :'記録距離 '+(result.distanceM/1000).toFixed(2)+' km／経過時間 '+clock(result.clockElapsedS);
   const table=document.createElement('table'),head=document.createElement('thead'),tr=document.createElement('tr');
   for(const label of ['区間','経過時間']){const th=document.createElement('th');th.textContent=label;tr.append(th);}
   head.append(tr);table.append(head);const body=document.createElement('tbody');
   for(const s of result.segments){const row=document.createElement('tr'),name=document.createElement('td'),time=document.createElement('td');
-   name.textContent=s.partial?'端数 '+Math.round(s.distanceM)+' m':s.index+' km';time.textContent=clock(s.clockElapsedS);
+   name.textContent=s.partial?'端数 '+Math.round(s.distanceM)+' m（'+s.index+'km目）':s.index+' km';time.textContent=clock(s.clockElapsedS);
    row.append(name,time);body.append(row);}
   table.append(body);laps.append(table);
  }
