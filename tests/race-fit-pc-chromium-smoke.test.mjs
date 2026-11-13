@@ -114,8 +114,8 @@ try{
  // roundtrips of the synthetic source's 12m first reading and 2012m last.
  const distanceLabels=nonzeroDetails.match(/FIT最終累積距離 ([0-9]+\.[0-9]{2}) km／記録点間の距離増分 ([0-9]+\.[0-9]{2}) km/);
  assert.ok(distanceLabels);
- assert.ok(Number(distanceLabels[1])>Number(distanceLabels[2]),'last absolute distance must exceed observed increment');
- assert.ok(Number(distanceLabels[1])-Number(distanceLabels[2])<0.03,'first unknown distance cannot exceed synthetic 20m');
+ assert.equal(distanceLabels[1],'2.01','FIT final cumulative distance must include first observed distance');
+ assert.equal(distanceLabels[2],'2.00','observed record-to-record increment must exclude first observed distance');
  assert.match(nonzeroDetails,/先頭区間不明・未認証/);
  const nonzeroRows=await expr("[...document.querySelectorAll('#laps tbody tr')].map(tr=>tr.innerText.trim())");
  assert.equal(nonzeroRows.length,2,'only 2nd fully observed kilometre plus terminal 12m is allowed');
