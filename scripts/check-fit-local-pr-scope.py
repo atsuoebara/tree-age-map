@@ -34,6 +34,7 @@ ALLOWED={
  "tests/race-fit-private-rehearsal-fixture.test.mjs",
  "tests/race-fit-portable-python-fixture.test.mjs",
  "tests/race-fit-pc-chromium-smoke.test.mjs",
+ "tests/race-fit-synthetic-marathon.test.mjs",
  "tests/test_private_fit_preview_server.py",
  "tests/test_fit_windows_local_launcher.py",
  "tests/test_private_fit_pc_bundle.py",
