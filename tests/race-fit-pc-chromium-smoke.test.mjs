@@ -2,6 +2,7 @@
 // Never contacts the Internet, uploads FIT data or modifies production files.
 import assert from 'node:assert/strict';
 import {spawn,spawnSync} from 'node:child_process';
+import {once} from 'node:events';
 import {existsSync,mkdtempSync,readFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -94,7 +95,17 @@ try{
  console.log('REAL PC CHROMIUM FIT SMOKE PASS: actual private localhost page, file input, SDK, 5x1km, no save/share');
 }finally{
  if(ws){try{ws.close();}catch{}}
+ const chromeExit=browser.exitCode===null?once(browser,'exit'):Promise.resolve();
+ const serverExit=server.exitCode===null?once(server,'exit'):Promise.resolve();
  browser.kill('SIGTERM');
  server.kill('SIGTERM');
- rmSync(root,{recursive:true,force:true,maxRetries:3,retryDelay:100});
+ // Chrome may still be writing its profile after the test has passed.
+ await Promise.race([Promise.all([chromeExit,serverExit]),new Promise(ok=>setTimeout(ok,5000))]);
+ try{
+  rmSync(root,{recursive:true,force:true,maxRetries:12,retryDelay:200});
+ }catch(error){
+  // A running browser child must not turn a successful analysis into a failure.
+  if(!['ENOTEMPTY','EBUSY','EPERM'].includes(error.code))throw error;
+  console.warn('Temporary synthetic Chrome profile cleanup incomplete:',error.code);
+ }
 }
