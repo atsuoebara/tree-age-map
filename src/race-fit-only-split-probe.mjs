@@ -41,7 +41,9 @@ export function probeFitOnlyKilometres(input={}){
  if(boundaries.length>MAX_BOUNDARIES)return deny('segment_cap_exceeded');
  if(unknownStart)flags.add('unknown_initial_distance_interval_omitted');
  if(plateauCount>0)flags.add('plateau_cause_unknown');
- if(unknownStart&&boundaries.length===0)return deny('no_observed_kilometre_boundary',{qualityFlags:[...flags]});
+ // A single crossed boundary does not establish even one complete observed 1km.
+ // Do not show a lone tail fragment when the beginning is unknown.
+ if(unknownStart&&boundaries.length<2)return deny('no_complete_observed_kilometre',{qualityFlags:[...flags]});
  const segments=[];
  for(let i=1;i<boundaries.length;i++){
   const start=boundaries[i-1],end=boundaries[i];
