@@ -67,14 +67,20 @@ This is an unreleased prototype. Do NOT use your real FIT yet.
 Keep all files together. Do not run scripts directly from inside the ZIP.
 """
     buf=io.BytesIO()
+    # Freeze entry metadata: reproducible package SHA regardless of clock/mtime.
+    def add_stable(archive,name,data):
+        info=zipfile.ZipInfo(name,date_time=(2020,1,1,0,0,0))
+        info.compress_type=zipfile.ZIP_DEFLATED
+        info.external_attr=0o600 << 16
+        archive.writestr(info,data,compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
     with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
         for item in items:
             src=ROOT/item
             if not src.is_file() or src.is_symlink() or not src.resolve().is_relative_to(ROOT):
                 raise ValueError("Unapproved or missing source: "+item)
-            archive.writestr(item,src.read_bytes())
-        archive.writestr("synthetic-5km-27min.fit",fixture)
-        archive.writestr("README-FIRST.txt",readme)
+            add_stable(archive,item,src.read_bytes())
+        add_stable(archive,"synthetic-5km-27min.fit",fixture)
+        add_stable(archive,"README-FIRST.txt",readme)
     return buf.getvalue(),items
 
 if __name__=="__main__":
