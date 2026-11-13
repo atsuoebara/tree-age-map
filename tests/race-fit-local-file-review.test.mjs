@@ -72,6 +72,14 @@ for(const required of [
  "時刻を補完しません"
 ])assert.ok(html.includes(required),'missing iPhone read safety or actionable error: '+required);
 assert.ok(!html.includes('result.heartRate')&&!html.includes('result.latitude'));
+for(const diagnosticText of [
+ '先頭の累積距離が0mではありません',
+ '先頭の距離0m以前の区間が不明です',
+ 'セッション終了時刻より後の記録点があります',
+ '対応する停止記録のない再開イベントがあります',
+ '再開記録と対応しない停止イベントがあります'
+])assert.ok(html.includes(diagnosticText),'missing actual real-FIT diagnostic explanation: '+diagnosticText);
+
 for(const label of [
  '記録時刻の重複または逆行を検出しました',
  '累積距離が途中で減少しています',
