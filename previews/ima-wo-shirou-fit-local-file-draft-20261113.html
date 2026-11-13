@@ -76,7 +76,7 @@ function show(result){
    row.append(name,time);body.append(row);}
   table.append(body);laps.append(table);
  }
- const warnings=result.flags?.length?result.flags:['検出した警告はありません（品質認証ではありません）'];
+ const warnings=result.status!=='candidate_unverified'?[]:(result.flags?.length?result.flags:['検出した警告はありません（品質認証ではありません）']);
  for(const flag of warnings){const li=document.createElement('li');li.textContent=readable[flag]||flag;flags.append(li);}
 }
 $('review').addEventListener('click',async()=>{
