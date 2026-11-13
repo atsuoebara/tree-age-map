@@ -12,6 +12,8 @@ on:
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
       - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'src/race-strava-first-match-contract.mjs'
+      - 'tests/race-strava-first-match-contract.test.mjs'
       - 'tests/garmin-lifecycle-integration-plan.test.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
       - 'scripts/garmin-disconnect-fence-candidate.mjs'
@@ -32,6 +34,8 @@ on:
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
       - 'src/garmin-lifecycle-integration-plan.mjs'
+      - 'src/race-strava-first-match-contract.mjs'
+      - 'tests/race-strava-first-match-contract.test.mjs'
       - 'tests/garmin-lifecycle-integration-plan.test.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
       - 'scripts/garmin-disconnect-fence-candidate.mjs'
@@ -69,6 +73,8 @@ jobs:
         run: node tests/garmin-consent-lifecycle-contract.test.mjs
       - name: Audit three-actor Garmin integration design contract
         run: node tests/garmin-lifecycle-integration-plan.test.mjs
+      - name: Verify Strava-first canonical run matching without duplicate writes
+        run: node tests/race-strava-first-match-contract.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
