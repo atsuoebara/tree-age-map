@@ -29,6 +29,7 @@ export function reviewSingleUserFitBuffer(buffer,{confirmedOwner=false,confirmed
   // Do NOT include raw FIT messages, GPS samples, identifiers or sensor values in output.
   return {status:'candidate_unverified',reason:'fit_local_review_only',segments,flags:[...flagged],
    distanceM:totals.recordDistanceM,sessionTotalDistanceM:totals.sessionTotalDistanceM,
+   initialIntervalOmitted:split.initialIntervalOmitted,firstObservedDistanceM:split.firstObservedDistanceM,
    clockElapsedS:totals.clockElapsedSeconds,qualityCertified:false,analysisAllowed:false,
    writeAllowed:false,providerDataCombined:false};
  }catch{return no('fit_decoding_failed');}
