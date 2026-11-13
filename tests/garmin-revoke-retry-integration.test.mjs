@@ -71,6 +71,37 @@ fetcher=async(url,init)=>{
 };
 assert.equal(await evaluate('reconcile(connection)'),false);
 assert.equal(deletes().length,1);
+// Negative control: after a transient 503, a NEW registration is installed in DB.
+// The unmodified worker can still retry remote DELETE with a captured OLD connection.
+// This is intentionally a failing production-safety expectation, not a fix.
+callLog=[];
+let remoteAttempt=0;
+let liveRegistration={connection_version:newGeneration,import_enabled:true};
+fetcher=async(url,init)=>{
+ if(url.endsWith('/user/registration')){
+  remoteAttempt++;
+  return remoteAttempt===1?new Response('',{status:503}):new Response(null,{status:204});
+ }
+ if(url.includes('/rest/v1/garmin_api_connections')&&init.method==='DELETE'){
+  assert.ok(url.includes(pathFragment),'local cleanup must remain fenced to OLD generation');
+  if(url.includes('connection_version=eq.'+liveRegistration.connection_version))
+    liveRegistration=null;
+  return []; // Old generation did not match the newly connected row
+ }
+ throw Error('Unexpected synthetic retry after reconnect');
+};
+await assert.rejects(evaluate('reconcile(connection)'),/permissions unavailable/);
+assert.equal(remoteAttempt,1);
+assert.equal(liveRegistration.connection_version,newGeneration);
+assert.equal(liveRegistration.import_enabled,true);
+assert.equal(deletes().length,0);
+assert.equal(await evaluate('reconcile(connection)'),false);
+assert.equal(remoteAttempt,2,'existing worker DOES resend remote DELETE from captured old credentials');
+assert.equal(remoteDeletes().length,2);
+assert.equal(liveRegistration.connection_version,newGeneration,'new local row remains protected');
+assert.equal(liveRegistration.import_enabled,true);
+assert.equal(deletes().length,1);
+
 // GET-only permission hint must NOT directly delete the new registration.
 callLog=[];
 sandbox.hint={deregistrations:[{userId:'synthetic-garmin'}]};
@@ -85,4 +116,4 @@ assert.ok(callLog.some(x=>x.url.endsWith('/rpc/garmin_invalidate_permissions')))
 // Don't falsely claim to prove a globally once-only remote DELETE: repeat call can
 // reach Garmin again. Worker lease + version fence are separate safeguards.
 assert.ok(actualHandler,'source handler must initialize');
-console.log('Production reconcile offline mocks PASS: 503 retries, 204/404/410, generation fencing, hint-only invalidation.');
+console.log('Production reconcile offline mocks PASS: 503 retries, 204/404/410, generation fencing, hint-only invalidation; old remote DELETE retransmission after new connection REPRODUCED, provider impact unknown.');
