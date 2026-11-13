@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const root=new URL('../',import.meta.url);
+const read=name=>readFileSync(new URL(name,root),'utf8');
+const about=read('about-runners-rings.html');
+const developer=read('developer-message.html');
+const team=read('team.html');
+const guideline=read('docs/runner-rings-brand-principles-effort-and-joy-20261113.md');
+const requireText=(html,text,label)=>assert.ok(html.includes(text),label+': '+text);
+requireText(about,'努力を可視化し、努力の先へ。','about');
+requireText(about,'努力は真剣に。楽しさは全力で。','about');
+requireText(about,'Make effort visible. Go beyond it.','about english');
+requireText(about,'走った証を、次の一歩の力に。','about');
+requireText(developer,'専門的な分析？ そこは大手に任せます（笑）。','developer');
+requireText(developer,'下手うまGPSアート','developer');
+requireText(developer,'笑えるJournal','developer');
+requireText(developer,'努力を可視化し、努力の先へ。','developer');
+requireText(developer,'Deep performance analysis?','developer english');
+requireText(team,'努力は真剣に。楽しさは全力で。','team');
+requireText(team,'Take the effort seriously.','team english');
+requireText(guideline,'すべてのランナー','brand');
+for(const html of [about,developer,team]){
+ assert.ok(html.includes('data-lang="ja"')&&html.includes('data-lang="en"'),'missing existing language switch');
+ assert.ok(html.includes('走った年輪から、世界に仲間の輪を。'),'old tagline removed');
+}
+assert.equal((about.match(/id="effortPhilosophyTitle"/g)||[]).length,1,'duplicate brand heading');
+assert.equal((developer.match(/専門的な分析？ そこは大手に任せます（笑）。/g)||[]).length,1);
+assert.equal((team.match(/努力は真剣に。楽しさは全力で。/g)||[]).length,1);
+assert.ok(developer.includes('id="jaContent"')&&developer.includes('id="enContent"'));
+assert.ok(about.includes('開発者からのメッセージを読む'));
+assert.ok(team.includes('最終判断と運営責任は人間の運営者が担います'));
+console.log('Brand effort + joy copy static contract PASS: bilingual, original messaging preserved, one insertion per page');
