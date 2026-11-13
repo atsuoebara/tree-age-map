@@ -50,6 +50,8 @@ on:
       - 'tests/race-fit-portable-python-fixture.test.mjs'
       - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
+      - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'tests/test_fit_windows_local_launcher.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
@@ -105,6 +107,8 @@ on:
       - 'tests/race-fit-portable-python-fixture.test.mjs'
       - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
+      - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'tests/test_fit_windows_local_launcher.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
@@ -177,6 +181,8 @@ jobs:
         run: node tests/race-fit-portable-python-fixture.test.mjs
       - name: Verify temporary private LAN preview serves only allowed scripts
         run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
+      - name: Verify Windows FIT launcher remains loopback-only
+        run: python3 -m unittest discover -s tests -p test_fit_windows_local_launcher.py -v
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
