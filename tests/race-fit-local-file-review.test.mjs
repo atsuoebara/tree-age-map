@@ -46,6 +46,7 @@ for(const required of [
  "$('fit').files?.[0]!==file",
  "if(version===selectionVersion)show(result)",
  "reviewing=false;reviewButton.disabled=false",
+ "if(version===selectionVersion){reviewing=false;reviewButton.disabled=false;}",
  "['fit','owner','race']",
  "addEventListener('change',resetOutput)",
  "input[type=file]::file-selector-button",
