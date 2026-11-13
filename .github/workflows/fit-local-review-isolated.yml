@@ -37,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Includes the nonzero Garmin FIT origin regression, without rebasing distance.
       - name: Run user-owned offline FIT module tests
         run: |
           for test in tests/race-user-fit-only-gate.test.mjs tests/race-fit-only-split-probe.test.mjs tests/race-fit-sdk-isolated-adapter.test.mjs tests/race-fit-session-total-review.test.mjs tests/race-fit-clock-anomaly-review.test.mjs tests/race-fit-timer-event-review.test.mjs tests/race-fit-local-file-review.test.mjs tests/race-fit-local-ui-controller.test.mjs tests/race-fit-private-rehearsal-fixture.test.mjs tests/race-fit-portable-python-fixture.test.mjs tests/race-fit-synthetic-marathon.test.mjs; do
