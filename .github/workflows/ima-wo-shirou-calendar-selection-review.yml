@@ -1,0 +1,20 @@
+name: Ima wo Shirou isolated calendar selection review
+on:
+  pull_request:
+    paths:
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'tests/ima-wo-shirou-calendar-selection-review.test.mjs'
+      - 'docs/ima-wo-shirou-calendar-selection-review-20261113.md'
+      - '.github/workflows/ima-wo-shirou-calendar-selection-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify selected calendar record and eight-day gate
+        run: node --test tests/ima-wo-shirou-calendar-selection-review.test.mjs tests/ima-wo-shirou-eight-day-eligibility.test.mjs
+      - name: Preserve existing calendar tests
+        run: node scripts/test-run-record-calendar.cjs
