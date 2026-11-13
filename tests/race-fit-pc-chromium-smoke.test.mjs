@@ -8,6 +8,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import http from 'node:http';
+import {Encoder} from '../fit-sdk/src/index.js';
 const root=mkdtempSync(join(tmpdir(),'rr-fit-browser-'));
 const path=u=>fileURLToPath(new URL(u,import.meta.url));
 const chrome=process.env.CHROME_BIN||['/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'].find(existsSync);
@@ -93,6 +94,31 @@ try{
  assert.match(await expr("document.querySelector('#flags').textContent"),/停止イベント情報がない/);
  assert.equal(await expr("document.querySelectorAll('button[disabled]').length"),2);
 
+ // Garmin-like first record: absolute FIT distance starts at 12m, not 0m.
+ // A known 1km must be bounded by two observed absolute 1km crossings.
+ const nonzeroFile=join(root,'synthetic-nonzero-origin.fit');
+ const start=new Date('2020-01-01T00:00:00Z');
+ const atSec=s=>new Date(start.getTime()+s*1000);
+ const enc=new Encoder();
+ enc.writeMesg({mesgNum:18,sport:'running',startTime:start,timestamp:atSec(600),totalDistance:2012});
+ for(let i=0;i<=10;i++)enc.writeMesg({mesgNum:20,timestamp:atSec(i*60),distance:12+i*200});
+ writeFileSync(nonzeroFile,enc.close());
+ await call('DOM.setFileInputFiles',{nodeId:input.nodeId,files:[nonzeroFile]});
+ await expr("document.querySelector('#review').click()");
+ await waitFor(async()=> (await expr("document.querySelector('#distance').textContent")).includes('記録点間の距離増分'),'nonzero origin candidate display');
+ const nonzeroTitle=await expr("document.querySelector('#status').textContent");
+ assert.match(nonzeroTitle,/参考候補・未認証/);
+ const nonzeroDetails=await expr("document.querySelector('#distance').textContent");
+ assert.match(nonzeroDetails,/FIT最終累積距離 2\.01 km／記録点間の距離増分 2\.00 km／計測経過時間 10:00/);
+ assert.match(nonzeroDetails,/先頭区間不明・未認証/);
+ const nonzeroRows=await expr("[...document.querySelectorAll('#laps tbody tr')].map(tr=>tr.innerText.trim())");
+ assert.equal(nonzeroRows.length,2,'only 2nd fully observed kilometre plus terminal 12m is allowed');
+ assert.match(nonzeroRows[0],/2 km/);
+ assert.match(nonzeroRows[0],/5:00/);
+ assert.match(nonzeroRows[1],/端数 12 m/);
+ assert.match(await expr("document.querySelector('#flags').textContent"),/最初の区間は表示していません/);
+ assert.equal(await expr("document.querySelectorAll('button[disabled]').length"),2);
+
  // Now exercise real browser rejection: a CRC-broken FIT must clear old rows.
  const corrupt=join(root,'invalid.fit');
  const broken=Buffer.from(readFileSync(fixture));broken[60]^=0x01;writeFileSync(corrupt,broken);
@@ -109,7 +135,7 @@ try{
  assert.equal(await expr("document.querySelectorAll('#laps tbody tr').length"),0);
  assert.equal(await expr("document.querySelectorAll('#flags li').length"),0);
 
- console.log('REAL PC CHROMIUM FIT SMOKE PASS: 5x1km, corrupted FIT denied/cleared, missing consent denied, save/share disabled');
+ console.log('REAL PC CHROMIUM FIT SMOKE PASS: 5x1km, nonzero Garmin-like start (2nd km only), corrupt FIT and missing consent blocked, save/share disabled');
 }finally{
  if(ws){try{ws.close();}catch{}}
  const chromeExit=browser.exitCode===null?once(browser,'exit'):Promise.resolve();
