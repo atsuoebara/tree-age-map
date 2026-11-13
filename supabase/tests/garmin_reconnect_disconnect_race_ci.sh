@@ -31,7 +31,7 @@ for ordering in reconnect_first disconnect_first; do
  wait "$a";wait "$b"
  q "select (connection_version='$NEW' and import_enabled and credential='new') from reconnect_race.connections where user_id='$OWNER';" | grep -qx t
  # Old worker cleanup fenced by generation can never delete the newly registered row.
- q "delete from reconnect_race.connections where user_id='$OWNER' and connection_version='$OLD' returning user_id;" | grep -qx '' || {
+ q "with removed as (delete from reconnect_race.connections where user_id='$OWNER' and connection_version='$OLD' returning user_id) select count(*) from removed;" | grep -qx 0 || {
    echo "Old worker unexpectedly deleted newer registration" >&2;exit 1;
  }
  q "select count(*) from reconnect_race.connections where user_id='$OWNER' and connection_version='$NEW' and import_enabled;" | grep -qx 1
