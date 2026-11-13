@@ -23,6 +23,8 @@ on:
       - 'src/race-fit-sdk-isolated-adapter.mjs'
       - 'src/race-fit-clock-anomaly-review.mjs'
       - 'src/race-fit-timer-event-review.mjs'
+      - 'src/race-fit-session-total-review.mjs'
+      - 'tests/race-fit-session-total-review.test.mjs'
       - 'tests/race-fit-timer-event-review.test.mjs'
       - 'tests/race-fit-clock-anomaly-review.test.mjs'
       - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
@@ -63,6 +65,8 @@ on:
       - 'src/race-fit-sdk-isolated-adapter.mjs'
       - 'src/race-fit-clock-anomaly-review.mjs'
       - 'src/race-fit-timer-event-review.mjs'
+      - 'src/race-fit-session-total-review.mjs'
+      - 'tests/race-fit-session-total-review.test.mjs'
       - 'tests/race-fit-timer-event-review.test.mjs'
       - 'tests/race-fit-clock-anomaly-review.test.mjs'
       - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
@@ -127,6 +131,8 @@ jobs:
         run: node tests/race-fit-clock-anomaly-review.test.mjs
       - name: Verify FIT timer stop-resume events preserve clock elapsed time
         run: node tests/race-fit-timer-event-review.test.mjs
+      - name: Review FIT session distance against record distance without persistence
+        run: node tests/race-fit-session-total-review.test.mjs
       - name: Verify effort-first Gachiran mobile preview isolation
         run: node tests/gachiran-effort-next-step-preview.test.mjs
       - name: Offline JSON shape inspector synthetic tests
