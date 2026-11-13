@@ -21,7 +21,7 @@ export function normalizeDecodedFitForOfflineProbe(messages,{userConfirmedFile=f
    ...(row.cadence==null?{}:{cadence:row.cadence}),
    ...(row.power==null?{}:{power:row.power})});
  }
- if(records[0].distanceM!==0)return refuse('cumulative_distance_origin_not_zero');
+ // Do not infer a zero start: the pure probe excludes the unknown initial interval.
  return probeFitOnlyKilometres({userConfirmedFile,privateView,confirmRunning,sourceProvenance,session:{sport:'running'},records});
 }
 export function decodeAthleteFitArrayBufferForOfflineProbe(arrayBuffer,options={}){
