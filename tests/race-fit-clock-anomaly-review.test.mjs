@@ -19,7 +19,7 @@ assert.ok(late.flags.includes('first_record_delayed_clock_unknown'));
 assert.equal(late.firstRecordDelayS,5);
 const origin=review(messages([{timestamp:at(0),distance:12},{timestamp:at(60),distance:300}]),options);
 assert.ok(origin.flags.includes('first_distance_nonzero_origin_unknown'));
-assert.equal(origin.strictProbeReason,'cumulative_distance_origin_not_zero');
+assert.equal(origin.strictProbeReason,'no_observed_kilometre_boundary');
 const gap=review(messages([{timestamp:at(0),distance:0},{timestamp:at(180),distance:200},{timestamp:at(240),distance:400}]),options);
 assert.ok(gap.flags.includes('long_record_clock_gap'));
 assert.equal(gap.qualityCertified,false);
