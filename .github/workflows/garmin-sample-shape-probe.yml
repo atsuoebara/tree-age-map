@@ -32,6 +32,8 @@ on:
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
   push:
     branches:
@@ -66,6 +68,8 @@ on:
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
+      - 'previews/gachiran-effort-next-step-synthetic-20261113.html'
+      - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
   workflow_dispatch:
 
@@ -111,6 +115,8 @@ jobs:
         run: node tests/race-fit-clock-anomaly-review.test.mjs
       - name: Verify FIT timer stop-resume events preserve clock elapsed time
         run: node tests/race-fit-timer-event-review.test.mjs
+      - name: Verify effort-first Gachiran mobile preview isolation
+        run: node tests/gachiran-effort-next-step-preview.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
