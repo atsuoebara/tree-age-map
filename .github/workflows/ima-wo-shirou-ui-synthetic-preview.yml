@@ -1,0 +1,20 @@
+name: Ima wo Shirou synthetic calendar UI preview
+on:
+  pull_request:
+    paths:
+      - 'previews/ima-wo-shirou-calendar-synthetic-20261113.html'
+      - 'tests/ima-wo-shirou-ui-synthetic-preview.test.cjs'
+      - 'docs/ima-wo-shirou-synthetic-preview-review-20261113.md'
+      - '.github/workflows/ima-wo-shirou-ui-synthetic-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate synthetic-only UI and selection semantics
+        run: node --test tests/ima-wo-shirou-ui-synthetic-preview.test.cjs
+      - name: Keep calendar regression intact
+        run: node scripts/test-run-record-calendar.cjs
