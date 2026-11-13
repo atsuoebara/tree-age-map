@@ -5,6 +5,8 @@ on:
       - 'src/ima-wo-shirou-calendar-selection-review.mjs'
       - 'tests/ima-wo-shirou-calendar-selection-review.test.mjs'
       - 'docs/ima-wo-shirou-calendar-selection-review-20261113.md'
+      - 'docs/ima-wo-shirou-calendar-main-contract-20261113.md'
+      - 'tests/ima-wo-shirou-calendar-contract.test.cjs'
       - '.github/workflows/ima-wo-shirou-calendar-selection-review.yml'
   workflow_dispatch:
 permissions:
@@ -16,5 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify selected calendar record and eight-day gate
         run: node --test tests/ima-wo-shirou-calendar-selection-review.test.mjs tests/ima-wo-shirou-eight-day-eligibility.test.mjs
+      - name: Verify actual fetchCloudRuns row contract
+        run: node --test tests/ima-wo-shirou-calendar-contract.test.cjs
       - name: Preserve existing calendar tests
         run: node scripts/test-run-record-calendar.cjs
