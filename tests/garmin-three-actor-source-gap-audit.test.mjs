@@ -25,7 +25,7 @@ const empty=auditGarminThreeActorSources({});
 assert.ok(empty.findings.every(f=>f.status==='evidence_missing'));
 // Synthetic guarded fixtures: detectors can distinguish source with a claimed guard.
 const guarded={
- oauth:`if(route === '/disconnect'){const generation = await getOwnerGeneration(); await json(db+'?connection_version=eq.'+generation, {method: 'PATCH'}); } const x='on_conflict=user_id'; await garmin_consent_stage_owner(); await garmin_consent_recover_unknown();`,
+ oauth:`if(route === '/disconnect'){const rows = await json(\x60\x24{db}?user_id=eq.owner&connection_version=eq.old\x60, {method: 'PATCH'}); } const x='on_conflict=user_id'; await garmin_consent_stage_owner(); await garmin_consent_recover_unknown();`,
  worker:'https://apis.garmin.com/wellness-api/rest/user/registration; await garmin_consent_claim_remote_revoke(); await garmin_consent_recover_unknown();',
  leaseSql:'CREATE OR REPLACE FUNCTION consent_lease_ci.expire(); CREATE OR REPLACE FUNCTION public.garmin_consent_recover_unknown()',
  recovery:'export function reviewUnknownRevoke(){}'
