@@ -12,6 +12,8 @@ on:
       - 'scripts/*fit*.mjs'
       - 'scripts/*fit*.cmd'
       - 'scripts/serve-private-fit-preview.py'
+      - 'scripts/check-fit-local-pr-scope.py'
+      - 'tests/test_fit_local_pr_scope.py'
       - 'tests/race-fit-*'
       - 'tests/race-user-fit-only-gate.test.mjs'
       - 'tests/test_*fit*.py'
@@ -24,6 +26,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject unrelated changed paths (relative to main)
+        run: |
+          git fetch --no-tags origin main
+          BASE=$(git merge-base origin/main HEAD)
+          python3 scripts/check-fit-local-pr-scope.py "$BASE" HEAD
+          python3 -m unittest discover -s tests -p test_fit_local_pr_scope.py -v
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
