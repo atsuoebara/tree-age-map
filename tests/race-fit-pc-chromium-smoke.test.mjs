@@ -109,10 +109,10 @@ try{
  const nonzeroTitle=await expr("document.querySelector('#status').textContent");
  assert.match(nonzeroTitle,/参考候補・未認証/);
  const nonzeroDetails=await expr("document.querySelector('#distance').textContent");
- assert.match(nonzeroDetails,/FIT最終累積距離 [0-9]+\\.[0-9]{2} km／記録点間の距離増分 [0-9]+\\.[0-9]{2} km／計測経過時間 10:00/);
+ assert.match(nonzeroDetails,/FIT最終累積距離 [0-9]+\.[0-9]{2} km／記録点間の距離増分 [0-9]+\.[0-9]{2} km／計測経過時間 10:00/);
  // FIT SDK quantizes record distances, so labels must not assume exact decimal
  // roundtrips of the synthetic source's 12m first reading and 2012m last.
- const distanceLabels=nonzeroDetails.match(/FIT最終累積距離 ([0-9]+\\.[0-9]{2}) km／記録点間の距離増分 ([0-9]+\\.[0-9]{2}) km/);
+ const distanceLabels=nonzeroDetails.match(/FIT最終累積距離 ([0-9]+\.[0-9]{2}) km／記録点間の距離増分 ([0-9]+\.[0-9]{2}) km/);
  assert.ok(distanceLabels);
  assert.ok(Number(distanceLabels[1])>Number(distanceLabels[2]),'last absolute distance must exceed observed increment');
  assert.ok(Number(distanceLabels[1])-Number(distanceLabels[2])<0.03,'first unknown distance cannot exceed synthetic 20m');
