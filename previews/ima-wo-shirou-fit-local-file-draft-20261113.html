@@ -95,7 +95,7 @@ function show(result){
  }else{
   $('status').textContent='参考候補・未認証（正式な分析結果ではありません）';
   $('distance').textContent=result.initialIntervalOmitted
-   ?'最初の記録からの観測距離 '+(result.distanceM/1000).toFixed(2)+' km／セッション開始から最終記録まで '+clock(result.clockElapsedS)+'（先頭区間不明・未認証）'
+   ?'FIT最終累積距離 '+(result.distanceM/1000).toFixed(2)+' km／記録点間の距離増分 '+((result.distanceM-result.firstObservedDistanceM)/1000).toFixed(2)+' km／計測経過時間 '+clock(result.clockElapsedS)+'（先頭区間不明・未認証）'
    :'記録距離 '+(result.distanceM/1000).toFixed(2)+' km／経過時間 '+clock(result.clockElapsedS);
   const table=document.createElement('table'),head=document.createElement('thead'),tr=document.createElement('tr');
   for(const label of ['区間','経過時間']){const th=document.createElement('th');th.textContent=label;tr.append(th);}
