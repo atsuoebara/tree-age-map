@@ -6,7 +6,6 @@ export const States=Object.freeze({
   REVOKE_INFLIGHT:'revoke_inflight',
   REVOKE_UNKNOWN:'revoke_unknown',
   DISCONNECTED:'disconnected',
-  REAUTH_PENDING:'reauth_pending',
 });
 export function initialConsent(owner,generation) {
   if(!owner||!generation) throw Error('owner_generation_required');
@@ -21,8 +20,8 @@ export function transitionConsent(record,event){
   if(event.type==='reauthorize') {
     if(!event.generation||event.generation===record.generation) return deny('invalid_generation');
     if(record.state===States.REVOKE_INFLIGHT||record.state===States.REVOKE_UNKNOWN||
-       record.state===States.DISCONNECT_REQUESTED||record.state===States.REAUTH_PENDING)
-      return accept({state:States.REAUTH_PENDING,canImport:false,pendingGeneration:event.generation});
+       record.state===States.DISCONNECT_REQUESTED)
+      return accept({canImport:false,pendingGeneration:event.generation});
     if(record.state===States.CONNECTED||record.state===States.DISCONNECTED)
       return accept({state:States.CONNECTED,generation:event.generation,canImport:true,pendingGeneration:null});
     return deny('unknown_state');
@@ -42,7 +41,7 @@ export function transitionConsent(record,event){
     return accept({state:States.REVOKE_UNKNOWN,canImport:false});
   }
   if(event.type==='revoke_confirmed') {
-    if(![States.REVOKE_INFLIGHT,States.REVOKE_UNKNOWN,States.REAUTH_PENDING].includes(record.state))
+    if(![States.REVOKE_INFLIGHT,States.REVOKE_UNKNOWN].includes(record.state))
       return deny('not_revoking');
     // Do not activate pending consent automatically; the old provider DELETE might
     // have invalidated it. Clear the pending generation and require a fresh safe
@@ -50,7 +49,7 @@ export function transitionConsent(record,event){
     return accept({state:States.DISCONNECTED,canImport:false,pendingGeneration:null});
   }
   if(event.type==='retry_revoke') {
-    if(record.state!==States.REVOKE_UNKNOWN&&record.state!==States.REAUTH_PENDING)
+    if(record.state!==States.REVOKE_UNKNOWN)
       return deny('retry_not_due');
     return accept({state:States.REVOKE_INFLIGHT,canImport:false});
   }
