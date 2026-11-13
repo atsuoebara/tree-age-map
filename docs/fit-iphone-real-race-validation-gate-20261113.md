@@ -28,6 +28,12 @@
 - iPhoneのSafariで開く導線は未監査。まず架空ファイルで表示/読込のみ試す。非暗号化HTTP上で**本人の実FITは読み込まない**。架空のFITでの表示が成立しても、個人FITを試す許可や解析精度の品質保証にはならない。
 - サンプルFITの出力をGithubへコミットする必要はない。PCからiPhoneへファイル転送する手順も、本人の環境に合わせて別途確認する。
 
+## iPhoneに直接保存できる架空FIT（2026-11-13）
+- `scripts/make-synthetic-race-fit-portable.py` はPython標準ライブラリだけで、294バイトの匿名FIT（2020-01-01の架空日付、5km・27分）を生成する。既存ファイルへの上書きは禁止。
+- `tests/race-fit-portable-python-fixture.test.mjs` は生成された**実バイナリ**を同梱FIT SDKの`checkIntegrity`と`read`で検証し、`reviewSingleUserFitBuffer`の1km候補が5:15・5:18・5:20・5:24・5:43になること、GPS/心拍フィールドなし、DB書込不可を確認した。**CI #43373777905 completed/success**。
+- 個人情報がないFITをChatGPTの会話添付として作成済み。iPhoneでSafari等から`.fit`をダウンロードし、端末の「ファイル」に保存すれば、本人FITを使わずファイル選択の動作を試せる。
+- **重要**：この添付ファイルがあることは、非公開LANプレビューや実iPhone側画面をデプロイ済みという意味ではない。実機画面の利用には別途安全な配信手段と独立監査が必要。実レースFITをHTTPプレビューで使うことは引き続きNo-Go。
+
 ## 実機前ゲート（未確認）
 1. 隔離した検証ページを**本人だけに安全に渡す方式**を設計・むせ監査する。一般公開Pagesへ配置するのは避ける。ローカルサーバ検証もiPhone側のHTTPS/CORS/MIME条件を別途確認。
 2. iPhone Safariで`FITファイル選択`、自己申告の二つのチェック、端末内解析、警告・表、縦横表示、キーボード/VoiceOver、16MiB超過時の拒否を確認する。**実機確認者は本人**。
