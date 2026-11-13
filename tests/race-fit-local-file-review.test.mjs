@@ -38,4 +38,22 @@ for(const x of ['name="viewport"','noindex,nofollow','type="file"','id="owner"',
 for(const pat of [/fetch\s*\(/,/XMLHttpRequest/,/WebSocket/,/localStorage/,/sessionStorage/,/indexedDB/,/navigator\.sendBeacon/,/innerHTML\s*=/])
  assert.ok(!pat.test(html),'isolated UI cannot transmit or persist data: '+pat);
 assert.equal((html.match(/type="button" disabled/g)||[]).length,2);
+for(const required of [
+ "let selectionVersion=0,reviewing=false",
+ "if(reviewing)return",
+ "reviewing=true;reviewButton.disabled=true",
+ "version!==selectionVersion",
+ "$('fit').files?.[0]!==file",
+ "if(version===selectionVersion)show(result)",
+ "reviewing=false;reviewButton.disabled=false",
+ "['fit','owner','race']",
+ "addEventListener('change',resetOutput)",
+ "input[type=file]::file-selector-button",
+ "button:focus-visible",
+ "元データからFIT形式で再出力してください",
+ "ZIPはこの画面では読み取れません",
+ "時刻を補完しません"
+])assert.ok(html.includes(required),'missing iPhone read safety or actionable error: '+required);
+assert.ok(!html.includes('result.heartRate')&&!html.includes('result.latitude'));
+
 console.log('Browser-local user FIT SDK -> 1km candidate + diagnostics PASS; original bytes unpersisted; synthetic generated binary only.');
