@@ -18,6 +18,12 @@ requireText(developer,'努力を可視化し、努力の先へ。','developer');
 requireText(developer,'Deep performance analysis?','developer english');
 requireText(team,'努力は真剣に。楽しさは全力で。','team');
 requireText(team,'Take the effort seriously.','team english');
+const joySlogan='Take the effort seriously. Go all out on the fun.';
+for(const [label,page] of [['about',about],['developer-message',developer],['team',team]]){
+  assert.ok(page.includes(joySlogan),label+' must use the canonical English slogan');
+  assert.ok(!page.includes('Take the effort seriously. Enjoy every bit of it.'),label+' must not retain the old variant');
+}
+
 requireText(guideline,'すべてのランナー','brand');
 for(const html of [about,team]){
  assert.ok(html.includes('data-lang="ja"')&&html.includes('data-lang="en"'),'missing existing language switch');
