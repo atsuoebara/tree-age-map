@@ -3,12 +3,12 @@
 <meta name="robots" content="noindex,nofollow"><title>今を知ろう｜本人FITローカル確認（開発用）</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#0c1522;color:#edf4fc}
-*{box-sizing:border-box}body{margin:0}.page{max-width:480px;margin:auto;padding:20px 16px 48px}h1{font-size:1.6rem}
+*{box-sizing:border-box}body{margin:0}.page{max-width:480px;margin:auto;padding:20px 16px 48px}h1{font-size:1.6rem}h2{font-size:1.16rem}button:focus-visible,input:focus-visible{outline:3px solid #f7d97c;outline-offset:3px}input[type=file]::file-selector-button{min-height:44px;border:1px solid #a3bfd2;border-radius:9px;background:#24415a;color:#fff;padding:8px 12px;margin-right:8px}
 .card{background:#162739;border:1px solid #3a5570;border-radius:15px;padding:17px;margin:15px 0}
 label{display:block;margin:14px 0;line-height:1.65}input[type=file]{display:block;width:100%;max-width:100%;padding:12px 0;font-size:1rem}
 input[type=checkbox]{width:21px;height:21px;vertical-align:middle;margin-right:9px}
 button{font:inherit;min-height:48px;padding:9px 14px;border:1px solid #d8ef9c;background:#2f4932;color:#f5ffe0;border-radius:10px}
-button:disabled{opacity:.45}.muted{color:#b6c8d9}.warning{border-left:4px solid #eac477;padding:10px;background:#302c29;line-height:1.7}
+button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#b6c8d9}.warning{border-left:4px solid #eac477;padding:10px;background:#302c29;line-height:1.7}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}td,th{border-bottom:1px solid #415569;padding:12px 4px;text-align:left}td:last-child{text-align:right}
 .small{font-size:.84rem;line-height:1.65}.status{font-weight:700;line-height:1.65}li{margin:8px 0;overflow-wrap:anywhere}
 </style></head><body><main class="page">
@@ -21,7 +21,7 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}td,t
 <label><input id="owner" type="checkbox">このファイルは自分のラン記録です</label>
 <label><input id="race" type="checkbox">この1回のレース・記録挑戦を振り返ります</label>
 <button type="button" id="review">端末内で確認する</button>
-<p class="small muted">ファイルを選ぶだけでは解析しません。押したときだけ読み取り、ネット送信や保存は行いません。</p>
+<p class="small muted" id="hint">ファイルを選ぶだけでは解析しません。押したときだけ読み取り、ネット送信や保存は行いません。新しいファイルを選び直すと前の結果は消えます。</p>
 </section>
 <section class="card">
 <h2>結果</h2>
@@ -39,17 +39,20 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}td,t
 <script type="module">
 import {reviewSingleUserFitBuffer} from '../src/race-fit-local-file-review.mjs';
 const $=id=>document.getElementById(id);
-const flags=$('flags'),laps=$('laps');
+const flags=$('flags'),laps=$('laps'),reviewButton=$('review');
+let selectionVersion=0,reviewing=false;
+const resetOutput=()=>{selectionVersion++;flags.replaceChildren();laps.replaceChildren();$('distance').textContent='';$('status').textContent='未解析です';};
+for(const id of ['fit','owner','race'])$(id).addEventListener('change',resetOutput);
 const readable={
  owner_or_race_confirmation_missing:'本人確認とレース確認を選択してください',
- file_size_or_type_invalid:'ファイルサイズまたは形式を確認してください',
- fit_integrity_invalid:'FITファイルの整合性を確認できません',
- fit_decode_error:'FITの読み取りに失敗しました',
- fit_decoding_failed:'FITの解析でエラーが発生しました',
- single_running_session_required:'ランニングの単一セッションを確認できません',
- record_and_session_start_must_match:'セッション開始時刻と最初の記録が一致しません',
+ file_size_or_type_invalid:'FITファイルを1つ選んでください（16MB以内・.fit形式）。ZIPはこの画面では読み取れません',
+ fit_integrity_invalid:'FITファイルが破損しているか、対応外の形式です。元データからFIT形式で再出力してください',
+ fit_decode_error:'FIT内の記録を正しく読み取れません。元データのFITを確認してください',
+ fit_decoding_failed:'読み取り中に問題が発生しました。ファイルを選び直して確認してください',
+ single_running_session_required:'ランニング1回分のFITを選んでください。複数セッションや他の種目は対象外です',
+ record_and_session_start_must_match:'開始時刻と最初の記録が一致しないため、1km候補は表示できません（時刻を補完しません）',
  cumulative_distance_origin_not_zero:'記録の累積距離が0mから始まっていません',
- timestamp_or_cumulative_distance_missing:'時刻または距離データが不足しています',
+ timestamp_or_cumulative_distance_missing:'各記録の時刻または累積距離が不足しています。補完せず分析を止めます',
  session_vs_last_record_distance_mismatch:'セッション総距離と最終記録距離に差があります',
  no_timer_events:'停止イベント情報がないため連続走行と断定できません',
  timer_event_present_verify_pause:'停止・再開イベントがあるため時間の確認が必要です',
@@ -77,13 +80,25 @@ function show(result){
  for(const flag of warnings){const li=document.createElement('li');li.textContent=readable[flag]||flag;flags.append(li);}
 }
 $('review').addEventListener('click',async()=>{
+ if(reviewing)return;
  const file=$('fit').files?.[0];clear();
  if(!file){$('status').textContent='本人のFITファイルを1つ選んでください';return;}
- if(!/\.fit$/i.test(file.name)||file.size<16||file.size>16*1024*1024){show({status:'blocked',reason:'file_size_or_type_invalid',flags:[]});return;}
+ if(!/\\.fit$/i.test(file.name)||file.size<16||file.size>16*1024*1024){show({status:'blocked',reason:'file_size_or_type_invalid',flags:[]});return;}
  const confirmedOwner=$('owner').checked,confirmedRace=$('race').checked;
  if(!confirmedOwner||!confirmedRace){show({status:'blocked',reason:'owner_or_race_confirmation_missing',flags:[]});return;}
+ const version=selectionVersion;
+ reviewing=true;reviewButton.disabled=true;
  $('status').textContent='端末内で確認中…';
- try{const buffer=await file.arrayBuffer();show(reviewSingleUserFitBuffer(buffer,{confirmedOwner,confirmedRace}));}
- catch{show({status:'blocked',reason:'fit_decoding_failed',flags:[]});}
+ try{
+  const buffer=await file.arrayBuffer();
+  // File picker or checkbox may change while iOS Files provides bytes.
+  if(version!==selectionVersion||$('fit').files?.[0]!==file)return;
+  const result=reviewSingleUserFitBuffer(buffer,{confirmedOwner,confirmedRace});
+  if(version===selectionVersion)show(result);
+ }catch{
+  if(version===selectionVersion)show({status:'blocked',reason:'fit_decoding_failed',flags:[]});
+ }finally{
+  reviewing=false;reviewButton.disabled=false;
+ }
 });
 </script></body></html>
