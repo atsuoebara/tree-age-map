@@ -8,6 +8,7 @@ on:
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
       - 'tests/garmin-revoke-retry-integration.test.mjs'
       - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/test-garmin-oauth.mjs'
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
@@ -25,6 +26,7 @@ on:
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
       - 'tests/garmin-revoke-retry-integration.test.mjs'
       - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/test-garmin-oauth.mjs'
       - 'tests/garmin-disconnect-midflight-reconnect.test.mjs'
       - 'src/garmin-consent-lifecycle-contract.mjs'
       - 'tests/garmin-consent-lifecycle-contract.test.mjs'
@@ -53,6 +55,8 @@ jobs:
         run: node tests/garmin-one-shot-probe-contract.test.mjs
       - name: Synthetic Garmin remote revoke failure and retry against receiver source
         run: node tests/garmin-revoke-retry-integration.test.mjs
+      - name: Verify current Garmin OAuth regression tests
+        run: node scripts/test-garmin-oauth.mjs
       - name: Verify fenced disconnect candidate on isolated transformed OAuth source
         run: node tests/garmin-disconnect-fence-candidate.test.mjs
       - name: Verify reconnect during in-flight external Garmin revocation
