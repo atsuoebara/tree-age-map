@@ -44,6 +44,8 @@ on:
       - 'src/race-fit-local-file-review.mjs'
       - 'tests/race-fit-local-file-review.test.mjs'
       - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'scripts/serve-private-fit-preview.py'
+      - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
@@ -92,6 +94,8 @@ on:
       - 'src/race-fit-local-file-review.mjs'
       - 'tests/race-fit-local-file-review.test.mjs'
       - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'scripts/serve-private-fit-preview.py'
+      - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
       - 'tests/gachiran-effort-next-step-preview.test.mjs'
       - '.github/workflows/garmin-sample-shape-probe.yml'
@@ -153,6 +157,8 @@ jobs:
         run: node tests/race-fit-local-file-review.test.mjs
       - name: Exercise FIT mobile controller with deferred synthetic file reads
         run: node tests/race-fit-local-ui-controller.test.mjs
+      - name: Verify temporary private LAN preview serves only allowed scripts
+        run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
