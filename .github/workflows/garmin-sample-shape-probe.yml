@@ -51,6 +51,8 @@ on:
       - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
       - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'scripts/build-private-fit-pc-bundle.py'
+      - 'tests/test_private_fit_pc_bundle.py'
       - 'tests/test_fit_windows_local_launcher.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
@@ -108,6 +110,8 @@ on:
       - 'tests/race-fit-private-rehearsal-fixture.test.mjs'
       - 'scripts/serve-private-fit-preview.py'
       - 'scripts/open-local-fit-preview-windows.cmd'
+      - 'scripts/build-private-fit-pc-bundle.py'
+      - 'tests/test_private_fit_pc_bundle.py'
       - 'tests/test_fit_windows_local_launcher.py'
       - 'tests/test_private_fit_preview_server.py'
       - 'tests/ima-wo-shirou-fit-review-mobile-preview.test.mjs'
@@ -183,6 +187,17 @@ jobs:
         run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
       - name: Verify Windows FIT launcher remains loopback-only
         run: python3 -m unittest discover -s tests -p test_fit_windows_local_launcher.py -v
+      - name: Verify minimal Windows private FIT package content
+        run: python3 -m unittest discover -s tests -p test_private_fit_pc_bundle.py -v
+      - name: Build private PC-only FIT rehearsal ZIP
+        run: python3 scripts/build-private-fit-pc-bundle.py /tmp/rr-fit-pc-preview-synthetic.zip
+      - name: Attach synthetic-only PC FIT rehearsal ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: rr-fit-pc-preview-synthetic
+          path: /tmp/rr-fit-pc-preview-synthetic.zip
+          retention-days: 7
+          if-no-files-found: error
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
