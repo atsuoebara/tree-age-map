@@ -15,6 +15,8 @@ on:
       - 'supabase/tests/garmin_consent_lifecycle_concurrent_setup.sql'
       - 'supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh'
       - 'supabase/tests/garmin_consent_three_actor_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lease_recovery_setup.sql'
+      - 'supabase/tests/garmin_consent_lease_recovery_ci.sh'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   push:
     branches:
@@ -32,6 +34,8 @@ on:
       - 'supabase/tests/garmin_consent_lifecycle_concurrent_setup.sql'
       - 'supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh'
       - 'supabase/tests/garmin_consent_three_actor_race_ci.sh'
+      - 'supabase/tests/garmin_consent_lease_recovery_setup.sql'
+      - 'supabase/tests/garmin_consent_lease_recovery_ci.sh'
       - '.github/workflows/garmin-shape-one-shot-postgres.yml'
   workflow_dispatch:
 
@@ -88,3 +92,5 @@ jobs:
         run: bash supabase/tests/garmin_consent_lifecycle_concurrent_ci.sh
       - name: Race manual disconnect OAuth callback and Push worker in PostgreSQL
         run: bash supabase/tests/garmin_consent_three_actor_race_ci.sh
+      - name: Verify owner lease crash expiry UNKNOWN and safe claims
+        run: bash supabase/tests/garmin_consent_lease_recovery_ci.sh
