@@ -17,6 +17,8 @@ on:
       - 'src/race-user-fit-only-gate.mjs'
       - 'src/race-fit-only-split-probe.mjs'
       - 'src/race-fit-sdk-isolated-adapter.mjs'
+      - 'src/race-fit-clock-anomaly-review.mjs'
+      - 'tests/race-fit-clock-anomaly-review.test.mjs'
       - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
       - 'tests/race-fit-only-split-probe.test.mjs'
       - 'tests/race-user-fit-only-gate.test.mjs'
@@ -47,6 +49,8 @@ on:
       - 'src/race-user-fit-only-gate.mjs'
       - 'src/race-fit-only-split-probe.mjs'
       - 'src/race-fit-sdk-isolated-adapter.mjs'
+      - 'src/race-fit-clock-anomaly-review.mjs'
+      - 'tests/race-fit-clock-anomaly-review.test.mjs'
       - 'tests/race-fit-sdk-isolated-adapter.test.mjs'
       - 'tests/race-fit-only-split-probe.test.mjs'
       - 'tests/race-user-fit-only-gate.test.mjs'
@@ -99,6 +103,8 @@ jobs:
         run: node tests/race-fit-only-split-probe.test.mjs
       - name: Verify generated FIT binary SDK decode to isolated kilometre probe
         run: node tests/race-fit-sdk-isolated-adapter.test.mjs
+      - name: Verify FIT clock anomalies and no imputed timestamps
+        run: node tests/race-fit-clock-anomaly-review.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
