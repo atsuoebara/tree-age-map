@@ -39,7 +39,7 @@ e('fit').files=[file('first.fit',128,old)];
 const first=e('review').dispatch('click');
 assert.equal(e('review').disabled,true);
 assert.equal(e('status').textContent,'端末内で確認中…');
-assert.equal(e('review').dispatch('click'),undefined,'second click ignored');
+assert.equal(await e('review').dispatch('click'),undefined,'second click ignored');
 assert.equal(calls.length,0,'wait for file bytes');
 e('fit').files=[newFile];e('fit').dispatch('change');
 assert.equal(e('status').textContent,'未解析です','changing file clears old status');
