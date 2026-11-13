@@ -7,6 +7,8 @@ on:
       - 'src/garmin-one-shot-probe-contract.mjs'
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
       - 'tests/garmin-revoke-retry-integration.test.mjs'
+      - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/garmin-disconnect-fence-candidate.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
@@ -19,6 +21,8 @@ on:
       - 'src/garmin-one-shot-probe-contract.mjs'
       - 'tests/garmin-one-shot-probe-contract.test.mjs'
       - 'tests/garmin-revoke-retry-integration.test.mjs'
+      - 'tests/garmin-disconnect-fence-candidate.test.mjs'
+      - 'scripts/garmin-disconnect-fence-candidate.mjs'
       - 'tests/garmin-sample-shape-probe.test.mjs'
       - 'scripts/inspect-garmin-activity-shape.mjs'
       - 'tests/inspect-garmin-activity-shape.test.mjs'
@@ -43,6 +47,10 @@ jobs:
         run: node tests/garmin-one-shot-probe-contract.test.mjs
       - name: Synthetic Garmin remote revoke failure and retry against receiver source
         run: node tests/garmin-revoke-retry-integration.test.mjs
+      - name: Verify original OAuth regression tests (unchanged production source)
+        run: node scripts/test-garmin-oauth.mjs
+      - name: Verify fenced disconnect candidate on isolated transformed OAuth source
+        run: node tests/garmin-disconnect-fence-candidate.test.mjs
       - name: Offline JSON shape inspector synthetic tests
         run: node tests/inspect-garmin-activity-shape.test.mjs
       - name: Ensure live Garmin receiver does not import isolated probe
