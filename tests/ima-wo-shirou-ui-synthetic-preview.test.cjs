@@ -20,6 +20,6 @@ test('selection is per run, never auto selected or certified',()=>{
 });
 test('synthetic time never used as production rollout',()=>{
  assert.match(html,/NOT a production rollout policy/);
- assert.match(html,/featureStartedAtMs=t-86400000/);
+ assert.match(html,/featureStartedAtMs=t-20\*86400000/);
  assert.doesNotMatch(html,/index\.html\?lang/);
 });
