@@ -43,9 +43,13 @@ assert.equal(delayed.status,'blocked');
 assert.equal(delayed.reason,'record_and_session_start_must_match');
 assert.equal(delayed.segments.length,0);
 const nonzero=review(makeNonZeroOriginFit({firstDistanceM:12}),opts);
-assert.equal(nonzero.status,'blocked');
-assert.equal(nonzero.reason,'cumulative_distance_origin_not_zero');
-assert.equal(nonzero.segments.length,0);
+assert.equal(nonzero.status,'candidate_unverified');
+assert.equal(nonzero.initialIntervalOmitted,true);
+assert.ok(nonzero.flags.includes('unknown_initial_distance_interval_omitted'));
+assert.equal(nonzero.qualityCertified,false);
+assert.equal(nonzero.writeAllowed,false);
+assert.deepEqual(nonzero.segments.filter(s=>!s.partial).map(s=>s.index),[2]);
+assert.equal(nonzero.segments.at(-1).distanceM,12);
 const html=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
 for(const x of ['name="viewport"','noindex,nofollow','type="file"','id="owner"','id="race"','file.arrayBuffer()',
  "import {reviewSingleUserFitBuffer} from '../src/race-fit-local-file-review.mjs'",
