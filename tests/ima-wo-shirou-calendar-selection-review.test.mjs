@@ -34,3 +34,8 @@ test('feature launch cutoff not guessed; old runs denied',()=>{
  assert.equal(review({...common,featureStartedAtMs:undefined}).reason,'timestamp_missing_or_invalid');
  assert.equal(review({...common,featureStartedAtMs:baseMs+1}).reason,'pre_feature_activity_not_eligible');
 });
+
+test('impossible civil dates and clock times are rejected',()=>{
+ assert.equal(review({...common,row:{...row,started_at:'2026-02-31T00:00:00Z'}}).reason,'run_start_missing_or_invalid');
+ assert.equal(review({...common,row:{...row,started_at:'2026-11-13T25:00:00Z'}}).reason,'run_start_missing_or_invalid');
+});
