@@ -1,0 +1,52 @@
+name: FIT local review (isolated)
+on:
+  push:
+    branches:
+      - feature/fit-local-review-isolated-20261113
+  pull_request:
+    paths:
+      - 'src/race-fit-*.mjs'
+      - 'src/race-user-fit-only-gate.mjs'
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+      - 'scripts/*fit*.py'
+      - 'scripts/*fit*.mjs'
+      - 'scripts/*fit*.cmd'
+      - 'scripts/serve-private-fit-preview.py'
+      - 'tests/race-fit-*'
+      - 'tests/race-user-fit-only-gate.test.mjs'
+      - 'tests/test_*fit*.py'
+      - '.github/workflows/fit-local-review-isolated.yml'
+permissions:
+  contents: read
+jobs:
+  fit-local-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run user-owned offline FIT module tests
+        run: |
+          for test in tests/race-user-fit-only-gate.test.mjs tests/race-fit-only-split-probe.test.mjs tests/race-fit-sdk-isolated-adapter.test.mjs tests/race-fit-session-total-review.test.mjs tests/race-fit-clock-anomaly-review.test.mjs tests/race-fit-timer-event-review.test.mjs tests/race-fit-local-file-review.test.mjs tests/race-fit-local-ui-controller.test.mjs tests/race-fit-private-rehearsal-fixture.test.mjs tests/race-fit-portable-python-fixture.test.mjs; do
+            node "$test"
+          done
+      - name: Verify only safe local server and synthetic ZIP
+        run: |
+          python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
+          python3 -m unittest discover -s tests -p test_fit_windows_local_launcher.py -v
+          python3 -m unittest discover -s tests -p test_private_fit_pc_bundle.py -v
+      - name: Test actual Chrome FIT selection and rejection
+        run: |
+          CHROME_BIN=$(command -v google-chrome || command -v chromium || command -v chromium-browser)
+          CHROME_BIN="$CHROME_BIN" node tests/race-fit-pc-chromium-smoke.test.mjs
+      - name: Build synthetic-only private Windows test ZIP
+        run: python3 scripts/build-private-fit-pc-bundle.py /tmp/rr-fit-pc-preview-isolated.zip
+      - name: Attach private FIT synthetic ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: rr-fit-pc-preview-isolated
+          path: /tmp/rr-fit-pc-preview-isolated.zip
+          retention-days: 7
+          if-no-files-found: error
