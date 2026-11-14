@@ -1,0 +1,28 @@
+name: Rings Now synthetic Safari cache and old tab boundaries
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-safari-cache-old-tab-boundary.test.mjs'
+      - 'docs/rings-now-safari-cache-old-tab-boundary-20261114.md'
+      - '.github/workflows/rings-now-safari-cache-old-tab-boundary.yml'
+      - 'sw.js'
+      - 'index.html'
+      - 'previews/rings-now-iphone-synthetic-handoff-20261114.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cache-old-tab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Simulate real SW script and old tab bfcache lifecycle
+        run: node --test tests/rings-now-safari-cache-old-tab-boundary.test.mjs
+      - name: Regress synthetic data and privacy boundaries
+        run: |
+          node --test tests/rings-now-synthetic-no-egress-evidence.test.mjs
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
+          node --test tests/rings-now-iphone-session-boundary.test.mjs
