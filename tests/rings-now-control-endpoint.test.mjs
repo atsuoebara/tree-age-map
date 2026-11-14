@@ -53,6 +53,6 @@ test('endpoint never touches production pages or secrets and cannot turn on',()=
  assert.doesNotMatch(sw,/rings-now-control/);
  assert.match(index,/RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;/);
  assert.match(index,/RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;/);
- for(const re of [/\\bfetch\\s*\\(/,/\\bXMLHttpRequest\\b/,/\\blocalStorage\\b/,/\\bindexedDB\\b/,/\\bconsole\\./,/createClient\\s*\\(/])assert.doesNotMatch(src+entry,re);
- assert.doesNotMatch(src+entry,/enabled\\s*:\\s*true/);
+ for(const re of [/\bfetch\s*\(/,/\bXMLHttpRequest\b/,/\blocalStorage\b/,/\bindexedDB\b/,/\bconsole\./,/createClient\s*\(/])assert.doesNotMatch(src+entry,re);
+ assert.doesNotMatch(src+entry,/enabled\s*:\s*true/);
 });
