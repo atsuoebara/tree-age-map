@@ -18,7 +18,7 @@ PR #119の`createRingsNowIphoneIsolatedHandoff`を実際に呼び、既存のペ
 
 ## セキュリティと残課題
 - 新HTMLにはCSP（`default-src 'none'`、`script-src 'self' 'unsafe-inline'`、`connect-src 'none'`等）、noindex、外部通信API不使用を明記。HTTPSを配信する公開GitHub Pagesのコードは誰でも読める。CSP単独の保護保証や絶対に通信が不可能との断言はしない。iPhoneのブラウザネットワーク確認は別途必要。
-- 本PRは **新規4ファイル**（合成専用HTML、ハッシュ検証アダプター、Nodeテスト、文書、CI）ではなく、正しくは**新規5ファイル**。既存画面・SW・DB・SDK・カレンダーコードは一切変更しない。
+- 本PRは **新規5ファイル**（合成専用HTML、ハッシュ検証アダプター、Nodeテスト、文書、CI）。既存画面・SW・DB・SDK・カレンダーコードは一切変更しない。
 - 本番解析をONにすること、実Garmin FITを解析すること、実FIT画面の公開方式決定は**いずれも未承認**。
 - 合成のバイナリにもSHA衝突の理論上の可能性はあるが、既知の固定ファイルの同一性検証として使う。実FITや個人ランデータはGitHub、チャット、CI、証跡へアップロードしない。
 - PR #109 PC ZIP方式はHOLD。
