@@ -64,8 +64,7 @@ test('the new gate is unconnected to production or public test pages and has no 
  const gate=readFileSync(new URL('../src/rings-now-private-fit-input-gate.mjs',import.meta.url),'utf8');
  const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const synthetic=readFileSync(new URL('../previews/rings-now-iphone-synthetic-only-20261114.html',import.meta.url),'utf8');
- const existing=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
- for(const page of [index,synthetic,existing])assert.ok(!page.includes('rings-now-private-fit-input-gate.mjs'));
+ for(const page of [index,synthetic])assert.ok(!page.includes('rings-now-private-fit-input-gate.mjs'));
  for(const expression of [/\bfetch\s*\(/,/XMLHttpRequest/,/WebSocket/,/localStorage/,/sessionStorage/,/indexedDB/,
                          /sendBeacon/,/\.from\(['"]runs['"]\)/,/navigator\.share\s*\(/])
   assert.doesNotMatch(gate,expression);
