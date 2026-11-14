@@ -48,7 +48,7 @@ test('old real-FIT preview exists, and document must treat it as publicly reacha
  assert.match(doc,/アクセス制限にならない/);
 });
 test('real-FIT distribution remains explicitly prohibited pending separate consent',()=>{
- for(const phrase of ['HTTPS','CSP','サービスワーカー','むせ独立監査','Atsuo本人',
+ for(const phrase of ['HTTPS','CSP','Service Worker','むせ独立監査','Atsuo本人',
   '実FIT','通信','8日','同一性','GitHub Pages']){
   assert.ok(doc.includes(phrase),phrase+' security issue required in review');
  }
