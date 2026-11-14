@@ -24,6 +24,7 @@ export function createRingsNowPaginatedSnapshotSource({readSession,readPage}={})
   if(!uuid(ownerId)||activeOwner(readSession)!==ownerId)
    return reject('session_owner_missing_or_changed');
   const results=[],ids=new Set();
+  let lastRunId=0;
   let offset=0;
   while(true){
    if(rev!==revision||activeOwner(readSession)!==ownerId)
@@ -46,6 +47,13 @@ export function createRingsNowPaginatedSnapshotSource({readSession,readPage}={})
       row.user_id!==ownerId||row.deleted_at!=null||
       !/^[1-9]\d*$/.test(String(row.id))||ids.has(String(row.id)))
       return reject('row_invalid_or_not_owned');
+    // Do not trust an injected page provider's declared 'id.asc': an
+    // out-of-order/overlapping offset page can silently skip records.
+    // Use safe numeric IDs, matching the downstream #138 owner contract.
+    const runId=Number(row.id);
+    if(!Number.isSafeInteger(runId)||runId<=lastRunId)
+      return reject('page_order_or_id_invalid');
+    lastRunId=runId;
     ids.add(String(row.id));
     if(results.length===MAX_ROWS)return reject('too_many_rows');
     // Freeze a minimal copy: caller's route/GPS/HR data is never propagated.
