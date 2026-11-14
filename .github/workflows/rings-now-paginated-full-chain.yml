@@ -1,0 +1,23 @@
+name: Rings Now paginated full chain review
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-paginated-full-chain.test.mjs'
+      - '.github/workflows/rings-now-paginated-full-chain.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Paginated source through auth and selection plus regression
+        run: |
+          node --test tests/rings-now-paginated-full-chain.test.mjs
+          node --test tests/rings-now-paginated-snapshot-source.test.mjs
+          node --test tests/rings-now-auth-event-selection-invalidation.test.mjs
+          node --test tests/rings-now-end-to-end-isolated.test.mjs
