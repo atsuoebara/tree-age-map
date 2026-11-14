@@ -1,0 +1,42 @@
+name: Rings Now legacy public FIT preview retirement
+on:
+  pull_request:
+    paths:
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+      - 'tests/rings-now-iphone-file-readiness.test.cjs'
+      - 'tests/rings-now-private-fit-delivery-gate.test.cjs'
+      - 'tests/race-fit-local-file-review.test.mjs'
+      - 'tests/race-fit-local-ui-controller.test.mjs'
+      - 'tests/rings-now-private-fit-input-gate.test.mjs'
+      - 'tests/rings-now-private-fit-ui-controller.test.mjs'
+      - 'tests/test_private_fit_preview_server.py'
+      - 'tests/race-fit-pc-chromium-smoke.test.mjs'
+      - 'scripts/check-fit-local-pr-scope.py'
+      - 'docs/rings-now-legacy-preview-retirement-20261114.md'
+      - '.github/workflows/rings-now-legacy-preview-retirement.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retirement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject legacy public FIT file selection; keep mobile synthetic and production OFF
+        run: |
+          node --test tests/rings-now-iphone-file-readiness.test.cjs
+          node --test tests/rings-now-private-fit-delivery-gate.test.cjs
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-private-fit-ui-controller.test.mjs
+          node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+          node tests/race-fit-local-file-review.test.mjs
+          node tests/race-fit-local-ui-controller.test.mjs
+          node tests/race-fit-pc-chromium-smoke.test.mjs
+      - name: Old local server cannot serve file input and SDK dependency from HTML
+        run: python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
+      - name: iPhone synthetic-only page still matches built 294-byte FIT
+        run: python3 -m unittest discover -s tests -p test_rings_now_iphone_synthetic_page.py -v
