@@ -1,0 +1,28 @@
+name: Rings Now iPhone evidence and calendar contract
+on:
+  pull_request:
+    paths:
+      - 'docs/rings-now-iphone-evidence-calendar-handoff-20261114.md'
+      - 'tests/rings-now-iphone-calendar-handoff.test.cjs'
+      - '.github/workflows/rings-now-iphone-calendar-handoff.yml'
+      - 'index.html'
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'previews/rings-now-iphone-synthetic-only-20261114.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Keep iPhone evidence distinct from production release and FIT provenance
+        run: node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+      - name: Preserve existing calendar safety checks
+        run: |
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+          node --test tests/ima-wo-shirou-calendar-contract.test.cjs
