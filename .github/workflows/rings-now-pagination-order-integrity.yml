@@ -1,0 +1,24 @@
+name: Rings Now pagination order integrity
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-paginated-snapshot-source.mjs'
+      - 'tests/rings-now-pagination-order-integrity.test.mjs'
+      - '.github/workflows/rings-now-pagination-order-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pagination-order:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Ordering integrity and full chain regression
+        run: |
+          node --check src/rings-now-paginated-snapshot-source.mjs
+          node --test tests/rings-now-pagination-order-integrity.test.mjs
+          node --test tests/rings-now-paginated-snapshot-source.test.mjs
+          node --test tests/rings-now-paginated-full-chain.test.mjs
