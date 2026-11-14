@@ -37,6 +37,23 @@ class BundleTest(unittest.TestCase):
                 self.assertTrue((p/"scripts/open-local-fit-preview-windows.cmd").is_file())
                 self.assertTrue((p/"fit-sdk/src/index.js").is_file())
                 self.assertTrue((p/"src/race-fit-local-file-review.mjs").is_file())
+    def test_real_fit_use_is_conditional_and_original_never_bundled(self):
+        binary,_=mod.build_zip()
+        with zipfile.ZipFile(io.BytesIO(binary)) as archive:
+            names=archive.namelist()
+            self.assertEqual([n for n in names if n.lower().endswith(".fit")],["synthetic-5km-27min.fit"])
+            readme=archive.read("README-FIRST.txt").decode("utf-8")
+            launcher=archive.read("scripts/open-local-fit-preview-windows.cmd").decode("utf-8")
+            self.assertIn("independent audit passes and the owner explicitly approves",readme)
+            self.assertIn("Until then use only the synthetic sample",readme)
+            self.assertIn("never a production diagnosis",readme)
+            self.assertIn("2026-11-03",readme)
+            self.assertIn("do not upload it to GitHub",readme)
+            self.assertIn("Never bind to LAN",readme)
+            self.assertIn("only after independent audit and owner approval",launcher)
+            self.assertNotIn("--allow-insecure-lan",launcher)
+            self.assertNotIn("Do NOT use your real FIT yet.",readme)
+
     def test_reproducible_bytes(self):
         a,_=mod.build_zip()
         b,_=mod.build_zip()
