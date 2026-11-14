@@ -1,0 +1,27 @@
+name: Rings Now stale open tab simulated rollout
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-open-tab-rollout-simulation.mjs'
+      - 'tests/rings-now-open-tab-rollout-simulation.test.mjs'
+      - 'docs/rings-now-open-tab-rollout-simulation-20261114.md'
+      - '.github/workflows/rings-now-open-tab-rollout-simulation.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  open-tab-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Simulate code update, unnotified old tabs and rollback
+        run: node --test tests/rings-now-open-tab-rollout-simulation.test.mjs
+      - name: Regress stale tab policy, Safari bfcache and evidence gate
+        run: |
+          node --test tests/rings-now-stale-tab-retirement-policy.test.mjs
+          node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
