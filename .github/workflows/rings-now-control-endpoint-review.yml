@@ -1,0 +1,26 @@
+name: Rings Now inactive Supabase endpoint review
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/rings-now-control/**'
+      - 'tests/rings-now-control-endpoint.test.mjs'
+      - 'docs/rings-now-control-endpoint-20261114.md'
+      - '.github/workflows/rings-now-control-endpoint-review.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  endpoint-off:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inactive endpoint tests
+        run: node --test tests/rings-now-control-endpoint.test.mjs
+      - name: Contract and privacy regressions
+        run: |
+          node --test tests/rings-now-a-network-contract-review.test.mjs
+          node --test tests/rings-now-a-deployment-evidence-gate.test.mjs
