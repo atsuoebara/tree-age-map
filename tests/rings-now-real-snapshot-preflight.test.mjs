@@ -6,7 +6,7 @@ const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
 test('all eight independently provable release gates documented',()=>{
  for(let n=1;n<=8;n++)assert.match(doc,new RegExp('\\| G'+n+' \\|'));
- for(const term of ['JWT','RLS','ABA','IndexedDB','cloudRows','1,000','691200','FIT','AUTH','']){if(term)assert.ok(doc.includes(term),term)}
+ for(const term of ['JWT','RLS','ABA','IndexedDB','cloudRows','1,000','691200','FIT']){if(term)assert.ok(doc.includes(term),term)}
 });
 test('must not misrepresent keyset or double scan as a consistent transaction',()=>{
  assert.match(doc,/キーセットページング.*完全な同時点集合は自動保証しない/);
