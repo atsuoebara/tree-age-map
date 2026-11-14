@@ -1,0 +1,28 @@
+name: Rings Now iPhone HTTPS delivery threat model gate
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-https-delivery-evidence-gate.mjs'
+      - 'tests/rings-now-https-delivery-evidence-gate.test.mjs'
+      - 'docs/rings-now-https-delivery-threat-model-20261114.md'
+      - '.github/workflows/rings-now-https-delivery-evidence-gate.yml'
+      - 'index.html'
+      - 'previews/rings-now-iphone-synthetic-handoff-20261114.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify HTTPS evidence gate always requires human authorization
+        run: node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
+      - name: Verify existing preflight and synthetic-only regressions
+        run: |
+          node --test tests/rings-now-local-delivery-preflight.test.mjs
+          node --test tests/rings-now-iphone-synthetic-handoff-page.test.mjs
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
