@@ -1,0 +1,28 @@
+name: Rings Now synthetic old-tab rollout and withdrawal replay
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-old-tab-rollout-replay.mjs'
+      - 'tests/rings-now-old-tab-rollout-replay.test.mjs'
+      - 'docs/rings-now-old-tab-rollout-replay-20261114.md'
+      - '.github/workflows/rings-now-old-tab-rollout-replay.yml'
+      - 'src/rings-now-stale-tab-retirement-policy.mjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  old-tab-replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Replay old tabs and unobserved withdrawals
+        run: node --test tests/rings-now-old-tab-rollout-replay.test.mjs
+      - name: Existing stale-tab policy and bfcache lifecycle regressions
+        run: |
+          node --test tests/rings-now-stale-tab-retirement-policy.test.mjs
+          node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
