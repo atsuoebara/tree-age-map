@@ -1,0 +1,28 @@
+name: Rings Now iPhone private delivery static preflight
+on:
+  pull_request:
+    paths:
+      - 'scripts/rings-now-local-delivery-preflight.mjs'
+      - 'tests/rings-now-local-delivery-preflight.test.mjs'
+      - 'docs/rings-now-iphone-acceptance-and-private-delivery-20261114.md'
+      - '.github/workflows/rings-now-private-delivery-preflight.yml'
+      - 'previews/rings-now-iphone-synthetic-handoff-20261114.html'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static review preflight and actual iPhone synthetic page checks
+        run: node --test tests/rings-now-local-delivery-preflight.test.mjs
+      - name: Existing approved synthetic safety checks
+        run: |
+          node --test tests/rings-now-iphone-synthetic-handoff-page.test.mjs
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
+          node --test tests/rings-now-iphone-session-boundary.test.mjs
