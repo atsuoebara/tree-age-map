@@ -1,0 +1,27 @@
+name: Rings Now A zero incremental cost hosting review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-a-zero-cost-hosting-review.mjs'
+      - 'tests/rings-now-a-zero-cost-hosting-review.test.mjs'
+      - 'docs/rings-now-a-zero-cost-hosting-review-20261114.md'
+      - '.github/workflows/rings-now-a-zero-cost-hosting-review.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review-hosting-options:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Zero-cost candidate review tests
+        run: node --test tests/rings-now-a-zero-cost-hosting-review.test.mjs
+      - name: Regression contract and deployment evidence tests
+        run: |
+          node --test tests/rings-now-a-network-contract-review.test.mjs
+          node --test tests/rings-now-a-deployment-evidence-gate.test.mjs
+          node --test tests/rings-now-retirement-options-review.test.mjs
