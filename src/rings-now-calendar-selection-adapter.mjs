@@ -4,6 +4,11 @@
 import {reviewSelectedCalendarRun} from './ima-wo-shirou-calendar-selection-review.mjs';
 const blocked=reason=>({status:'blocked',reason,analysisAllowed:false,realFitAllowed:false,productionAllowed:false});
 const nonemptyId=x=>x!=null && /^[1-9]\d*$/.test(String(x));
+// Real Supabase Auth owners use UUIDs, unlike the numeric mock owners in tests.
+// This is still only a format check: it does not authenticate the caller.
+const ownerId=x=>(typeof x==='string'&&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(x)) ||
+  (x!=null && nonemptyId(x));
 const isDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x);
 const validDistance=x=>Number.isFinite(x)&&x>0&&x<1000;
 export function createRingsNowCalendarSelectionAdapter({
@@ -22,11 +27,11 @@ export function createRingsNowCalendarSelectionAdapter({
   const snapshotRows=()=>{
     let data,owner;
     try{data=readRows();owner=readCurrentUserId()}catch{return null}
-    if(!Array.isArray(data)||data.length>1000||!nonemptyId(owner))return null;
+    if(!Array.isArray(data)||data.length>1000||!ownerId(owner))return null;
     const ids=new Set(),rows=[];
     for(const row of data){
       if(!row||typeof row!=='object'||Array.isArray(row)||!nonemptyId(row.id)||
-         !nonemptyId(row.user_id)||String(row.user_id)!==String(owner)||
+         !ownerId(row.user_id)||String(row.user_id)!==String(owner)||
          !isDate(row.activity_date)||!validDistance(row.distance_km)||
          typeof row.started_at!=='string'||row.deleted_at!=null||
          ids.has(String(row.id)))return null;
