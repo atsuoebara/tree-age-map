@@ -1,0 +1,30 @@
+name: Rings Now isolated iPhone FIT UI controller
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-private-fit-ui-controller.mjs'
+      - 'tests/rings-now-private-fit-ui-controller.test.mjs'
+      - 'docs/rings-now-private-fit-ui-controller-20261114.md'
+      - '.github/workflows/rings-now-private-fit-ui-controller.yml'
+      - 'src/rings-now-private-fit-input-gate.mjs'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'index.html'
+      - 'previews/rings-now-iphone-synthetic-only-20261114.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: UI consent, cancellation, async races and synthetic file
+        run: node --test tests/rings-now-private-fit-ui-controller.test.mjs
+      - name: Previously audited input and calendar invariants
+        run: |
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
