@@ -50,57 +50,12 @@ assert.equal(nonzero.qualityCertified,false);
 assert.equal(nonzero.writeAllowed,false);
 assert.deepEqual(nonzero.segments.filter(s=>!s.partial).map(s=>s.index),[2]);
 assert.equal(nonzero.segments.at(-1).distanceM,12);
-const html=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
-for(const x of ['name="viewport"','noindex,nofollow','type="file"','id="owner"','id="race"','file.arrayBuffer()',
- "import {reviewSingleUserFitBuffer} from '../src/race-fit-local-file-review.mjs'",
- '参考候補・未認証','type="button" disabled','停止時間を含む時計の経過時間','正式な分析結果ではありません'])
- assert.ok(html.includes(x),'missing '+x);
-for(const pat of [/fetch\s*\(/,/XMLHttpRequest/,/WebSocket/,/localStorage/,/sessionStorage/,/indexedDB/,/navigator\.sendBeacon/,/innerHTML\s*=/])
- assert.ok(!pat.test(html),'isolated UI cannot transmit or persist data: '+pat);
-assert.equal((html.match(/type="button" disabled/g)||[]).length,2);
-for(const required of [
- "let selectionVersion=0,reviewing=false",
- "if(reviewing)return",
- "reviewing=true;reviewButton.disabled=true",
- "version!==selectionVersion",
- "$('fit').files?.[0]!==file",
- "if(version===selectionVersion)show(result)",
- "reviewing=false;reviewButton.disabled=false",
- "if(version===selectionVersion){reviewing=false;reviewButton.disabled=false;}",
- "['fit','owner','race']",
- "addEventListener('change',resetOutput)",
- "input[type=file]::file-selector-button",
- "button:focus-visible",
- "元データからFIT形式で再出力してください",
- "ZIPはこの画面では読み取れません",
- "時刻を補完しません"
-])assert.ok(html.includes(required),'missing iPhone read safety or actionable error: '+required);
-assert.ok(!html.includes('result.heartRate')&&!html.includes('result.latitude'));
-for(const diagnosticText of [
- '先頭の累積距離が0mではありません',
- '先頭の距離0m以前の区間が不明です',
- 'セッション終了時刻より後の記録点があります',
- '対応する停止記録のない再開イベントがあります',
- '再開記録と対応しない停止イベントがあります'
-])assert.ok(html.includes(diagnosticText),'missing actual real-FIT diagnostic explanation: '+diagnosticText);
 
-for(const label of [
- '記録時刻の重複または逆行を検出しました',
- '累積距離が途中で減少しています',
- '記録点の数が足りないか、多すぎます',
- '時刻を補完せず解析を停止します',
- '距離を補正せず解析を停止します',
- '後続の完全な1km区間も確認できません'
-])assert.ok(html.includes(label),'missing comprehensible blocked-FIT reason '+label);
-
-
-console.log('Browser-local user FIT SDK -> 1km candidate + diagnostics PASS; original bytes unpersisted; synthetic generated binary only.');
-
-
-// 2026-11-14: exact user-approved pause / auto-pause warning on private FIT preview.
-// Keep it review-only; no cloud calls or result persistence.
-const pauseWarning='信号待ちやトイレ休憩、自動ポーズなどの影響により、正しく分析できない場合があります。';
-assert.equal(html.split(pauseWarning).length-1,1,'exact pause warning must appear once');
-assert.ok(html.includes('<p class="warning" id="pause-quality-warning">'),'caveat should be visible beside result');
-for(const pattern of [/\bfetch\s*\(/,/XMLHttpRequest/,/WebSocket/,/localStorage/,/sessionStorage/,/indexedDB/,/navigator\.sendBeacon/,/\bFormData\s*\(/,/\binnerHTML\s*=/])
- assert.ok(!pattern.test(html),'preview must not upload, persist or embed unsafe results: '+pattern);
+// Preserve FIT SDK diagnostics on synthetic data, while the former public
+// trial UI is intentionally inert. The modern UI has independent tests.
+const oldHtml=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
+const ui=readFileSync(new URL('../src/rings-now-private-fit-ui-controller.mjs',import.meta.url),'utf8');
+assert.match(oldHtml,/script-src 'none'/);
+assert.doesNotMatch(oldHtml,/<input\b|<script\b|reviewSingleUserFitBuffer|\.arrayBuffer\(/);
+assert.ok(ui.includes('信号待ちやトイレ休憩、自動ポーズなどの影響により、正しく分析できない場合があります。'));
+console.log('Local FIT SDK diagnostics PASS; former public FIT reader disabled.');
