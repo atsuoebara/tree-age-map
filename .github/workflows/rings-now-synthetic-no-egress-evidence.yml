@@ -1,0 +1,28 @@
+name: Rings Now synthetic FIT no-egress evidence
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-synthetic-no-egress-evidence.test.mjs'
+      - 'docs/rings-now-synthetic-no-egress-evidence-20261114.md'
+      - '.github/workflows/rings-now-synthetic-no-egress-evidence.yml'
+      - 'src/rings-now-private-fit-input-gate.mjs'
+      - 'src/rings-now-iphone-synthetic-inspector.mjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-no-egress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Observe synthetic path with network and storage traps
+        run: node --test --test-concurrency=1 tests/rings-now-synthetic-no-egress-evidence.test.mjs
+      - name: Existing isolation and evidence gate regressions
+        run: |
+          node --test tests/rings-now-iphone-synthetic-handoff-page.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
+          node --test tests/rings-now-local-delivery-preflight.test.mjs
