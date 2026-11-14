@@ -1,0 +1,26 @@
+name: Rings Now iPhone lifecycle acceptance ledger
+on:
+  pull_request:
+    paths:
+      - 'docs/rings-now-iphone-real-device-lifecycle-evidence-20261114.md'
+      - 'tests/rings-now-iphone-real-device-lifecycle-evidence.test.mjs'
+      - '.github/workflows/rings-now-iphone-real-device-lifecycle-evidence.yml'
+      - 'src/rings-now-https-delivery-evidence-gate.mjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lifecycle-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check evidence ledger and production OFF
+        run: node --test tests/rings-now-iphone-real-device-lifecycle-evidence.test.mjs
+      - name: Regression for Safari simulated boundaries and approval gate
+        run: |
+          node --test tests/rings-now-safari-cache-old-tab-boundary.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
