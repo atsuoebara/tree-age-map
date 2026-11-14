@@ -1,0 +1,32 @@
+name: Rings Now iPhone real FIT delivery safety contract
+on:
+  pull_request:
+    paths:
+      - 'docs/rings-now-iphone-private-fit-delivery-gate-20261114.md'
+      - 'tests/rings-now-private-fit-delivery-gate.test.cjs'
+      - '.github/workflows/rings-now-private-fit-delivery-gate.yml'
+      - 'sw.js'
+      - 'index.html'
+      - 'src/rings-now-private-fit-input-gate.mjs'
+      - 'src/rings-now-private-fit-ui-controller.mjs'
+      - 'previews/rings-now-iphone-synthetic-only-20261114.html'
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  delivery-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard no public real FIT page and SW scope
+        run: node --test tests/rings-now-private-fit-delivery-gate.test.cjs
+      - name: Retain isolated UI, input, calendar and iPhone synthetic safety
+        run: |
+          node --test tests/rings-now-private-fit-ui-controller.test.mjs
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
