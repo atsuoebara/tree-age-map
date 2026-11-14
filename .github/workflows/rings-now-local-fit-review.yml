@@ -1,0 +1,26 @@
+name: Rings Now localhost-only FIT UI review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-local-fit-review-page.mjs'
+      - 'scripts/serve-rings-now-local-review.mjs'
+      - 'tests/rings-now-local-fit-review.test.mjs'
+      - '.github/workflows/rings-now-local-fit-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  private-local-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax, dependency graph and privacy gates
+        run: |
+          node --check src/rings-now-local-fit-review-page.mjs
+          node --check scripts/serve-rings-now-local-review.mjs
+          node --test tests/rings-now-local-fit-review.test.mjs
+      - name: Existing FIT gate regression
+        run: node --test tests/rings-now-private-fit-ui-controller.test.mjs
