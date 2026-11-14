@@ -6,21 +6,26 @@
 const denied=reason=>Object.freeze({status:'blocked',reason,rows:Object.freeze([]),
  analysisAllowed:false,realFitAllowed:false,productionAllowed:false});
 export function createRingsNowAuthTransitionEpochGate({
- boundary,source=null,subscribeAuthChanges
+ boundary,source=null,subscribeAuthChanges,onInvalidateSelection=null
 }={}){
  if(!boundary||typeof boundary.refresh!=='function'||
     typeof boundary.readRows!=='function'||
     typeof boundary.readCurrentUserId!=='function'||
     typeof boundary.clear!=='function'||
     (source!==null&&typeof source.clear!=='function')||
-    typeof subscribeAuthChanges!=='function')
+    typeof subscribeAuthChanges!=='function'||
+    (onInvalidateSelection!==null&&typeof onInvalidateSelection!=='function'))
   throw new TypeError('Existing boundary and synchronous auth subscription required');
  let epoch=0,readyEpoch=null,disposed=false,unsubscribe=null;
  function invalidate(){
   epoch++;
   readyEpoch=null;
-  boundary.clear();
-  source?.clear();
+  // A consumer may already hold a confirmed gachi selection. Invalidate it
+  // synchronously on the auth event, before a same-owner relogin can refresh.
+  // Caller must supply adapter.invalidate; this is a review-only hook.
+  try{onInvalidateSelection?.()}finally{
+   try{boundary.clear()}finally{source?.clear()}
+  }
  }
  const listener=()=>{if(!disposed)invalidate()};
  try{
