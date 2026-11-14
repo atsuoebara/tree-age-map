@@ -1,0 +1,25 @@
+name: Rings Now auth transition epoch review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-auth-transition-epoch-gate.mjs'
+      - 'tests/rings-now-auth-transition-epoch-gate.test.mjs'
+      - '.github/workflows/rings-now-auth-transition-epoch-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  auth-epoch-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic auth changes and previous regression checks
+        run: |
+          node --check src/rings-now-auth-transition-epoch-gate.mjs
+          node --test tests/rings-now-auth-transition-epoch-gate.test.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-uuid-owner-compat.test.mjs
+          node --test tests/rings-now-calendar-source-preflight.test.mjs
