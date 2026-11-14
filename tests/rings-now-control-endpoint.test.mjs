@@ -2,9 +2,9 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {handleRingsNowControl} from '../supabase/functions/rings-now-control/contract.mjs';
-const URL='https://example.invalid/functions/v1/rings-now-control';
+const ENDPOINT_URL='https://example.invalid/functions/v1/rings-now-control';
 const payload={protocol:'rings-now-review-v1',build:'v1'};
-const call=(body,options={})=>handleRingsNowControl(new Request(URL,{
+const call=(body,options={})=>handleRingsNowControl(new Request(ENDPOINT_URL,{
   method:'POST',headers:{'content-type':'application/json',...(options.headers||{})},
   body:typeof body==='string'?body:JSON.stringify(body),
 }));
@@ -38,7 +38,7 @@ test('oversized bodies and wrong content type fail closed',async()=>{
 });
 test('GET, HEAD and OPTIONS do not enable control',async()=>{
  for(const method of ['GET','HEAD','OPTIONS']){
-  const response=await handleRingsNowControl(new Request(URL,{method}));
+  const response=await handleRingsNowControl(new Request(ENDPOINT_URL,{method}));
   assert.equal(response.status,405);
   assert.match(response.headers.get('cache-control'),/no-store/);
   if(method!=='HEAD')assert.deepEqual(await response.json(),{...payload,enabled:false});
