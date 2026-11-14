@@ -1,0 +1,28 @@
+name: Rings Now Safari forward and bfcache synthetic probe
+on:
+  pull_request:
+    paths:
+      - 'previews/rings-now-safari-forward-bfcache-start-20261114.html'
+      - 'previews/rings-now-safari-forward-bfcache-probe-20261114.html'
+      - 'tests/rings-now-safari-forward-bfcache-probe.test.mjs'
+      - 'docs/rings-now-safari-forward-bfcache-probe-20261114.md'
+      - '.github/workflows/rings-now-safari-forward-bfcache-probe.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-forward-bfcache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test real inline browser lifecycle code under simulated DOM events
+        run: node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
+      - name: Regress earlier approved synthetic lifecycle and production OFF
+        run: |
+          node --test tests/rings-now-iphone-real-device-lifecycle-evidence.test.mjs
+          node --test tests/rings-now-safari-cache-old-tab-boundary.test.mjs
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
