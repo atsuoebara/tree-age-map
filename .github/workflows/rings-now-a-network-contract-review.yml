@@ -1,0 +1,28 @@
+name: Rings Now A network contract isolated review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-a-network-contract-review.mjs'
+      - 'tests/rings-now-a-network-contract-review.test.mjs'
+      - 'docs/rings-now-a-network-contract-review-20261114.md'
+      - '.github/workflows/rings-now-a-network-contract-review.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate isolated anonymous control contract
+        run: node --test tests/rings-now-a-network-contract-review.test.mjs
+      - name: Regression on previous three-option comparison and stale tabs
+        run: |
+          node --test tests/rings-now-retirement-options-review.test.mjs
+          node --test tests/rings-now-open-tab-rollout-simulation.test.mjs
+          node --test tests/rings-now-stale-tab-retirement-policy.test.mjs
+          node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
