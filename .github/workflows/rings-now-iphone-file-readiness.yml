@@ -1,0 +1,17 @@
+name: Rings Now iPhone FIT browser readiness
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-iphone-file-readiness.test.cjs'
+      - 'docs/rings-now-iphone-readiness-20261114.md'
+      - '.github/workflows/rings-now-iphone-file-readiness.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect mobile FIT picker, privacy and live OFF gate
+        run: node --test tests/rings-now-iphone-file-readiness.test.cjs
