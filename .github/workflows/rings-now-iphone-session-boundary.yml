@@ -1,0 +1,32 @@
+name: Rings Now iPhone session boundary isolated
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-iphone-session-boundary.mjs'
+      - 'tests/rings-now-iphone-session-boundary.test.mjs'
+      - 'docs/rings-now-iphone-session-boundary-20261114.md'
+      - '.github/workflows/rings-now-iphone-session-boundary.yml'
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'src/ima-wo-shirou-eight-day-eligibility.mjs'
+      - 'index.html'
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  iPhone-lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: iPhone bfcache and exact selected-row security gate
+        run: node --test tests/rings-now-iphone-session-boundary.test.mjs
+      - name: Existing iPhone FIT input and UI synthetic regression
+        run: |
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-private-fit-ui-controller.test.mjs
+          node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+          node --test tests/rings-now-iphone-file-readiness.test.cjs
