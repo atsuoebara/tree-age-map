@@ -43,21 +43,12 @@ jobs:
           for test in tests/race-user-fit-only-gate.test.mjs tests/race-fit-only-split-probe.test.mjs tests/race-fit-sdk-isolated-adapter.test.mjs tests/race-fit-session-total-review.test.mjs tests/race-fit-clock-anomaly-review.test.mjs tests/race-fit-timer-event-review.test.mjs tests/race-fit-local-file-review.test.mjs tests/race-fit-local-ui-controller.test.mjs tests/race-fit-private-rehearsal-fixture.test.mjs tests/race-fit-portable-python-fixture.test.mjs tests/race-fit-synthetic-marathon.test.mjs; do
             node "$test"
           done
-      - name: Verify only safe local server and synthetic ZIP
+      - name: Verify retired local server and original launcher safety
         run: |
           python3 -m unittest discover -s tests -p test_private_fit_preview_server.py -v
           python3 -m unittest discover -s tests -p test_fit_windows_local_launcher.py -v
-          python3 -m unittest discover -s tests -p test_private_fit_pc_bundle.py -v
-      - name: Test actual Chrome FIT selection and rejection
-        run: |
-          CHROME_BIN=$(command -v google-chrome || command -v chromium || command -v chromium-browser)
-          CHROME_BIN="$CHROME_BIN" node tests/race-fit-pc-chromium-smoke.test.mjs
-      - name: Build synthetic-only private Windows test ZIP
-        run: python3 scripts/build-private-fit-pc-bundle.py /tmp/rr-fit-pc-preview-isolated.zip
-      - name: Attach private FIT synthetic ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: rr-fit-pc-preview-isolated
-          path: /tmp/rr-fit-pc-preview-isolated.zip
-          retention-days: 7
-          if-no-files-found: error
+      # The old FIT public HTML is a static retirement notice. The PC ZIP
+      # builder is HOLD and deliberately cannot bundle the retired page.
+      # FIT SDK/1km logic remains covered by the synthetic module tests above.
+      - name: Check retired FIT HTML is inert (no real file input)
+        run: node tests/race-fit-pc-chromium-smoke.test.mjs
