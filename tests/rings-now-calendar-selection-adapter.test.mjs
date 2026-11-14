@@ -10,7 +10,7 @@ const row=(id,distance,started=BASE-HOUR)=>({
 function fixture(opts={}){
  let now=opts.now??BASE,owner=opts.owner??'7',rows=opts.rows??[row(11,5),row(12,8)];
  const adapter=create({readRows:()=>rows,readCurrentUserId:()=>owner,
-   nowMs:()=>now,featureStartedAtMs:opts.start??BASE-2*DAY8});
+   nowMs:()=>now,featureStartedAtMs:Object.hasOwn(opts,'start')?opts.start:BASE-2*DAY8});
  return {adapter,setTime:v=>now=v,setRows:v=>rows=v,setOwner:v=>owner=v};
 }
 test('same date runs remain separate and chosen one needs strict gachi confirmation',()=>{
