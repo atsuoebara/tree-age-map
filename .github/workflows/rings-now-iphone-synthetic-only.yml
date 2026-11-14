@@ -1,0 +1,22 @@
+name: Rings Now iPhone synthetic-only gate
+on:
+  pull_request:
+    paths:
+      - 'previews/rings-now-iphone-synthetic-only-20261114.html'
+      - 'tests/test_rings_now_iphone_synthetic_page.py'
+      - 'scripts/make-synthetic-race-fit-portable.py'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'docs/rings-now-iphone-synthetic-test-20261114.md'
+      - '.github/workflows/rings-now-iphone-synthetic-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-safe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact fake FIT bytes, hash gate and local-only behavior
+        run: python3 -m unittest discover -s tests -p test_rings_now_iphone_synthetic_page.py -v
+      - name: Verify unchanged FIT review decoder on synthetic fixture
+        run: node tests/race-fit-private-rehearsal-fixture.test.mjs
