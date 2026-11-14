@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+<title>Rings Now｜Safari進む・bfcache観測（合成のみ）</title>
+<style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#101926;color:#f2f7ff}body{margin:0}.wrap{padding:20px 16px 55px;max-width:480px;margin:auto;line-height:1.7}button{padding:14px;min-height:48px;border-radius:10px;border:1px solid #acc8dd;background:#235b79;color:white;font:inherit}.panel{background:#24384e;padding:15px;border-radius:12px;margin:14px 0}.ok{color:#c9f3ba}.warn{color:#ffcf98}table{width:100%}td{padding:8px;border-bottom:1px solid #63768a}</style>
+</head><body><main class="wrap">
+<h1>Safari「進む」復帰テスト</h1>
+<p>架空の5区間を使った履歴復帰試験。<strong>FITファイルを選ぶ必要はありません。</strong></p>
+<div class="panel"><button id="show" type="button">架空の5区間を表示</button><div id="laps" role="status" aria-live="polite"></div></div>
+<div class="panel"><p id="resume" role="status" aria-live="polite">復帰判定待ち</p><p id="state">表示：未作成</p></div>
+<p>表示後、Safariの「戻る」で開始ページに戻り、次に「進む」でこの画面へ復帰してください。画面上の5区間は離脱時に消去されます。</p>
+<p class="warn">「復帰：bfcache (persisted=true)」はSafariがページを保持して戻した観測。「復帰：新規読み込み (persisted=false)」ならbfcache復帰を証明しません。どちらも5区間が自動復活しないことを確認してください。</p>
+<p>実FIT入力・実データ送信・保存・本番認証・診断はありません。SafariのHTTPキャッシュ、CDN、旧タブ強制停止の証明にもなりません。</p>
+</main>
+<script>
+'use strict';
+const laps=document.getElementById('laps');
+const state=document.getElementById('state');
+const resume=document.getElementById('resume');
+const fake=Object.freeze(['5:15','5:18','5:20','5:24','5:43']);
+let disabled=false;
+function clear(){laps.replaceChildren();state.textContent='表示：消去済み';disabled=true;document.getElementById('show').disabled=true}
+document.getElementById('show').addEventListener('click',()=>{
+ if(disabled)return;
+ const table=document.createElement('table');
+ fake.forEach((pace,i)=>{
+  const row=document.createElement('tr');
+  const label=document.createElement('td');label.textContent=(i+1)+'km';
+  const value=document.createElement('td');value.textContent=pace;
+  row.append(label,value);table.append(row);
+ });
+ laps.replaceChildren(table);state.textContent='表示：架空の5区間';
+});
+window.addEventListener('pagehide',clear);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clear()});
+window.addEventListener('pageshow',event=>{
+ resume.textContent=event.persisted===true?'復帰：bfcache (persisted=true)':'復帰：新規読み込み (persisted=false)';
+ if(event.persisted===true)clear();
+});
+</script></body></html>
