@@ -57,7 +57,7 @@ def build_zip():
 1. Extract this entire ZIP into a folder on your Windows PC.
 2. Double-click scripts\\open-local-fit-preview-windows.cmd
 3. A Python 3 installation is needed. The launcher does NOT install software.
-4. When the browser opens, choose synthetic-5km-27min.fit from this folder.
+4. First, choose synthetic-5km-27min.fit from this folder. Do not start with a real FIT.
 5. Check both boxes and click the on-device review button.
 6. Expected: 5.00km, 27:00; 1km splits 5:15 / 5:18 / 5:20 / 5:24 / 5:43.
 7. Press Ctrl+C in the command window to stop the temporary server.
