@@ -1,0 +1,25 @@
+name: Rings Now isolated end to end review
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-end-to-end-isolated.test.mjs'
+      - '.github/workflows/rings-now-end-to-end-isolated.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-isolated-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full synthetic chain and regression checks
+        run: |
+          node --test tests/rings-now-end-to-end-isolated.test.mjs
+          node --test tests/rings-now-auth-event-selection-invalidation.test.mjs
+          node --test tests/rings-now-auth-transition-epoch-gate.test.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
+          node --test tests/rings-now-calendar-source-preflight.test.mjs
