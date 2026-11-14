@@ -1,0 +1,24 @@
+name: Rings Now calendar selection adapter review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-calendar-selection-adapter.mjs'
+      - 'tests/rings-now-calendar-selection-adapter.test.mjs'
+      - '.github/workflows/rings-now-calendar-selection-adapter.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  calendar-adapter-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: New adapter and existing calendar gates
+        run: |
+          node --check src/rings-now-calendar-selection-adapter.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
+          node --test tests/rings-now-local-fit-review.test.mjs
+          node --test tests/rings-now-synthetic-calendar-flow.test.mjs
