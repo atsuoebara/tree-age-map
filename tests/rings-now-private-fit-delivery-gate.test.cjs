@@ -41,8 +41,8 @@ test('public synthetic page remains SHA-256 gated; private real FIT flow is not 
  assert.doesNotMatch(controller,/\bfetch\s*\(|\blocalStorage\b|indexedDB|navigator\.sendBeacon/);
 });
 test('old real-FIT preview exists, and document must treat it as publicly reachable risk',()=>{
- assert.match(oldPreview,/type="file"/);
- assert.match(oldPreview,/reviewSingleUserFitBuffer/);
+ assert.match(oldPreview,/script-src 'none'/);
+ assert.doesNotMatch(oldPreview,/<input\b|<script\b|reviewSingleUserFitBuffer/);
  assert.match(doc,/ima-wo-shirou-fit-local-file-draft-20261113\.html/);
  assert.match(doc,/配信され得る/);
  assert.match(doc,/アクセス制限にならない/);
