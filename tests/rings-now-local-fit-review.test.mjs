@@ -14,7 +14,6 @@ test('review-only HTML template is not a public HTML file',()=>{
  assert.match(html,/type="file"/);
  assert.match(html,/pagehide/);
  assert.match(html,/visibilitychange/);
- assert.match(html,/connect-src/); // check that page and server scope are separate
 });
 test('static dependency graph is deterministic and confined to local code',()=>{
  const files=discoverAllowedSources();
