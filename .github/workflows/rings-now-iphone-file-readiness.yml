@@ -2,6 +2,10 @@ name: Rings Now iPhone FIT browser readiness
 on:
   pull_request:
     paths:
+      # Re-run if the audited implementation changes, not only this gate itself.
+      - 'previews/ima-wo-shirou-fit-local-file-draft-20261113.html'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'index.html'
       - 'tests/rings-now-iphone-file-readiness.test.cjs'
       - 'docs/rings-now-iphone-readiness-20261114.md'
       - '.github/workflows/rings-now-iphone-file-readiness.yml'
