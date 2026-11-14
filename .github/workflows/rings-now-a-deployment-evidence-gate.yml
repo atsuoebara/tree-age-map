@@ -1,0 +1,27 @@
+name: Rings Now A deployment evidence review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-a-deployment-evidence-gate.mjs'
+      - 'tests/rings-now-a-deployment-evidence-gate.test.mjs'
+      - 'docs/rings-now-a-deployment-evidence-gate-20261114.md'
+      - '.github/workflows/rings-now-a-deployment-evidence-gate.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  a-evidence-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Evidence gating synthetic tests
+        run: node --test tests/rings-now-a-deployment-evidence-gate.test.mjs
+      - name: Prior synthetic contract and old-tab regressions
+        run: |
+          node --test tests/rings-now-a-network-contract-review.test.mjs
+          node --test tests/rings-now-retirement-options-review.test.mjs
+          node --test tests/rings-now-open-tab-rollout-simulation.test.mjs
