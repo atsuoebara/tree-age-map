@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; object-src 'none'; base-uri 'none'">
+<title>Rings Now — 合成カレンダー画面</title>
+<style>:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101927;color:#eef4ff}*{box-sizing:border-box}body{margin:0}.wrap{max-width:460px;margin:auto;padding:18px 16px 55px}h1{font-size:1.6rem}.note{background:#4a3521;padding:12px;border-left:4px solid #ffce80;line-height:1.7}.panel{padding:16px;background:#203249;border-radius:12px;margin:14px 0}button{font:inherit;width:100%;min-height:48px;color:white;border:1px solid #86b0cc;background:#285779;border-radius:9px;margin:6px 0;padding:10px;text-align:left}button:focus-visible{outline:3px solid #ffde91}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #587089;text-align:left}label{display:block;line-height:1.8;margin:14px 0}input{width:23px;height:23px;vertical-align:middle}.status{min-height:28px}</style></head>
+<body><main class="wrap">
+<p>RUNNER'S RINGS · 合成データのみ</p><h1>Rings Now <small>NOW × KNOW</small></h1>
+<p class="note">これは本番カレンダーと無関係な操作デモです。架空の同日2件を表示します。実FIT・実GPS・心拍・ユーザー情報は扱いません。正式な1km解析結果ではありません。</p>
+<section class="panel"><h2>① 日付からランを選ぶ</h2><div id="runs"></div></section>
+<section class="panel"><h2>② 本人がガチランを選択</h2><label><input id="gachi" type="checkbox"> 選択中の架空ランをガチランとして確認</label><button id="show" type="button">Rings Nowを表示（合成）</button><button id="clear" type="button">選択と結果を消す</button><p id="status" role="status" aria-live="polite" class="status">ランを選択してください</p><div id="results"></div></section>
+<p>信号待ち・トイレ休憩・自動ポーズにより、実際の分析では正しく評価できない場合があります。停止を勝手に補正・除外しません。</p>
+</main><script type="module">
+import {makeSyntheticCalendarFlow} from '../src/rings-now-synthetic-calendar-flow.mjs';
+const $=id=>document.getElementById(id);
+const now=Date.now();
+const date=new Date(now).toISOString().slice(0,10);
+const make=(id,distanceKm,splits,offsetMs)=>({id,date,distanceKm,startedAt:new Date(now-offsetMs).toISOString(),splits});
+const flow=makeSyntheticCalendarFlow([
+ make('demo-morning',5,[300,310,320,330,340],3600000),
+ make('demo-evening',8,[345,346,347,348,349,350,351,352],1800000)
+],{nowMs:()=>Date.now()});
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const resetUI=()=>{$('gachi').checked=false;$('results').replaceChildren()};
+for(const r of flow.rows()){
+ const b=document.createElement('button');b.type='button';
+ b.textContent=r.date+'  /  '+r.distanceKm+'km  /  '+(r.id==='demo-morning'?'ランA':'ランB');
+ b.addEventListener('click',()=>{resetUI();const state=flow.select(r.id);$('status').textContent='選択中：'+r.distanceKm+'km。ガチランの確認が必要です';if(state.status!=='gachi_confirmation_required')$('status').textContent=state.status});
+ $('runs').append(b);
+}
+$('gachi').addEventListener('change',()=>{flow.confirmGachi($('gachi').checked);$('results').replaceChildren()});
+$('clear').addEventListener('click',()=>{flow.clear();resetUI();$('status').textContent='選択を消しました'});
+$('show').addEventListener('click',()=>{
+ const state=flow.snapshot();$('results').replaceChildren();
+ if(state.status!=='synthetic_preview_only'){$('status').textContent=state.status==='expired'?'8日を超えたため失効':state.status==='not_selected'?'ランを選択してください':'ガチランの確認が必要です';return;}
+ const t=document.createElement('table'),header=document.createElement('tr');
+ for(const name of ['区間','時計経過時間']){const th=document.createElement('th');th.textContent=name;header.append(th)}t.append(header);
+ for(const seg of state.splits){const tr=document.createElement('tr');for(const value of [seg.km+'km',fmt(seg.clockElapsedSeconds)]){const td=document.createElement('td');td.textContent=value;tr.append(td)}t.append(tr)}
+ $('status').textContent='合成データ表示：'+state.row.distanceKm+'km（参考・未認証）';$('results').append(t);
+});
+for(const event of ['pagehide','pageshow'])window.addEventListener(event,()=>{flow.clear();resetUI();$('status').textContent='画面復帰・離脱で選択を消去しました'});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flow.clear();resetUI();$('status').textContent='画面離脱で選択を消去しました'}});
+</script></body></html>
