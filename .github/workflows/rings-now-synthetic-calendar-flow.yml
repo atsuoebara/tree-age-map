@@ -23,4 +23,4 @@ jobs:
       - name: Regression synthetic iPhone tests
         run: |
           node --test tests/rings-now-iphone-isolated-handoff.test.mjs
-          node --test tests/rings-now-iphone-synthetic-inspector.test.mjs
+          node --test tests/rings-now-iphone-synthetic-handoff-page.test.mjs
