@@ -1,0 +1,26 @@
+name: Rings Now synthetic calendar flow review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-synthetic-calendar-flow.mjs'
+      - 'tests/rings-now-synthetic-calendar-flow.test.mjs'
+      - 'previews/rings-now-synthetic-calendar-flow-20261114.html'
+      - '.github/workflows/rings-now-synthetic-calendar-flow.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-calendar-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic calendar selection tests
+        run: node --test tests/rings-now-synthetic-calendar-flow.test.mjs
+      - name: Regression synthetic iPhone tests
+        run: |
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
+          node --test tests/rings-now-iphone-synthetic-inspector.test.mjs
