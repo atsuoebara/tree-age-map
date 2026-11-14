@@ -1,0 +1,28 @@
+name: Rings Now retirement options synthetic review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-retirement-options-review.mjs'
+      - 'tests/rings-now-retirement-options-review.test.mjs'
+      - 'docs/rings-now-retirement-options-review-20261114.md'
+      - '.github/workflows/rings-now-retirement-options-review.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare-options:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compare three synthetic retirement strategies
+        run: node --test tests/rings-now-retirement-options-review.test.mjs
+      - name: Regression on stale open tabs and evidence gate
+        run: |
+          node --test tests/rings-now-open-tab-rollout-simulation.test.mjs
+          node --test tests/rings-now-stale-tab-retirement-policy.test.mjs
+          node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
