@@ -63,7 +63,7 @@ def build_zip():
 7. Press Ctrl+C in the command window to stop the temporary server.
 
 Only 127.0.0.1 (this PC) is used; no LAN or public server.
-This is an unreleased prototype. Do NOT use your real FIT yet.
+This is an unreleased prototype. Real FIT reading is permitted ONLY after the dedicated independent audit passes and the owner explicitly approves that use. Until then use only the synthetic sample.\nFor approved private local verification: keep the original FIT on this PC only, pick it via the browser file chooser, and do not upload it to GitHub, chat, cloud storage or a public website.\nReal FIT results are unverified reference candidates, never a production diagnosis; old races (including 2026-11-03) remain ineligible for the 8-day production window.\nDo not send screenshots showing GPS tracks, personal timestamps or heart-rate details.\nNever bind to LAN or run the --allow-insecure-lan option. If Python is unavailable, stop; no installer/download is required.
 Keep all files together. Do not run scripts directly from inside the ZIP.
 """
     buf=io.BytesIO()
