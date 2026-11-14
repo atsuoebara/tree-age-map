@@ -1,0 +1,25 @@
+name: Rings Now auth snapshot boundary review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-auth-snapshot-boundary.mjs'
+      - 'tests/rings-now-auth-snapshot-boundary.test.mjs'
+      - '.github/workflows/rings-now-auth-snapshot-boundary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-auth-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: New boundary and existing review gates
+        run: |
+          node --check src/rings-now-auth-snapshot-boundary.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-calendar-owner-input-contract.test.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
+          node --test tests/rings-now-uuid-owner-compat.test.mjs
