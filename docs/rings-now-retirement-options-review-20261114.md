@@ -1,4 +1,4 @@
-# PR #129 Rings Now — 旧タブ安全停止方式の比較（採用未決定）
+# PR #130 Rings Now — 旧タブ安全停止方式の比較（採用未決定）
 2026-11-14 / isolated synthetic review
 
 ## 基準
