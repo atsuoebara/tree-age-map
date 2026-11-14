@@ -1,0 +1,25 @@
+name: Rings Now auth event selection invalidation
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-auth-transition-epoch-gate.mjs'
+      - 'tests/rings-now-auth-event-selection-invalidation.test.mjs'
+      - '.github/workflows/rings-now-auth-event-selection-invalidation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  auth-event-gachi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Review auth transitions and gachi state
+        run: |
+          node --check src/rings-now-auth-transition-epoch-gate.mjs
+          node --test tests/rings-now-auth-event-selection-invalidation.test.mjs
+          node --test tests/rings-now-auth-transition-epoch-gate.test.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
