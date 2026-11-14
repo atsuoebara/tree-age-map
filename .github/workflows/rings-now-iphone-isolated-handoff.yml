@@ -1,0 +1,31 @@
+name: Rings Now iPhone isolated FIT UI/session handoff
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-iphone-isolated-handoff.mjs'
+      - 'tests/rings-now-iphone-isolated-handoff.test.mjs'
+      - 'docs/rings-now-iphone-isolated-handoff-20261114.md'
+      - '.github/workflows/rings-now-iphone-isolated-handoff.yml'
+      - 'src/rings-now-iphone-session-boundary.mjs'
+      - 'src/rings-now-private-fit-ui-controller.mjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic selected-run and iPhone background handoff
+        run: node --test tests/rings-now-iphone-isolated-handoff.test.mjs
+      - name: Existing isolated safety regressions
+        run: |
+          node --test tests/rings-now-iphone-session-boundary.test.mjs
+          node --test tests/rings-now-private-fit-ui-controller.test.mjs
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-private-fit-delivery-gate.test.cjs
+          node --test tests/rings-now-iphone-file-readiness.test.cjs
