@@ -1,0 +1,23 @@
+name: Rings Now calendar source preflight
+on:
+  pull_request:
+    paths:
+      - 'docs/rings-now-calendar-source-preflight-20261114.md'
+      - 'tests/rings-now-calendar-source-preflight.test.mjs'
+      - '.github/workflows/rings-now-calendar-source-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-source-preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify OFF and cache separation
+        run: |
+          node --test tests/rings-now-calendar-source-preflight.test.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-calendar-owner-input-contract.test.mjs
