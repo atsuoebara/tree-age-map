@@ -39,6 +39,14 @@ ALLOWED={
  "tests/test_fit_windows_local_launcher.py",
  "tests/test_private_fit_pc_bundle.py",
  "tests/test_fit_local_pr_scope.py",
+ # FIT public-preview retirement regression paths (security PR only).
+ "tests/rings-now-iphone-file-readiness.test.cjs",
+ "tests/rings-now-private-fit-delivery-gate.test.cjs",
+ "tests/rings-now-private-fit-input-gate.test.mjs",
+ "tests/rings-now-private-fit-ui-controller.test.mjs",
+ "docs/rings-now-legacy-preview-retirement-20261114.md",
+ ".github/workflows/rings-now-legacy-preview-retirement.yml",
+
 }
 def classify(files):
     return sorted(set(files)-ALLOWED)
