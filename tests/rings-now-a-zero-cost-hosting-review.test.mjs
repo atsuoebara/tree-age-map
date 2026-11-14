@@ -10,7 +10,7 @@ test('static GitHub Pages cannot stand in for fresh dynamic stop authority',()=>
 });
 test('all candidate zero-cost assertions are insufficient without external verification',()=>{
  for(const candidate of Object.keys(CANDIDATES)){
-  const result=evaluateSyntheticHosting({candidate,...verifiedClaims});
+  const result=evaluateSyntheticHosting({candidate,...verifiedClaims,...(candidate==='CLOUDFLARE_WORKERS_FREE'?{workersOverageFailClosedVerified:true}:{})});
   assert.equal(result.verifiedZeroIncrementalCost,false);
   assert.equal(result.privacyVerified,false);
   assert.equal(result.oldTabsGuaranteedStopped,false);
@@ -22,10 +22,21 @@ test('all candidate zero-cost assertions are insufficient without external verif
 });
 test('missing plan, billing cap, privacy, cache, old tabs or Safari evidence blocks',()=>{
  for(const key of Object.keys(verifiedClaims)){
-  const r=evaluateSyntheticHosting({candidate:'CLOUDFLARE_WORKERS_FREE',...verifiedClaims,[key]:false});
+  const r=evaluateSyntheticHosting({candidate:'CLOUDFLARE_WORKERS_FREE',...verifiedClaims,workersOverageFailClosedVerified:true,[key]:false});
   assert.equal(r.reviewStatus,'blocked',key);
   assert.ok(r.gaps.length>0);
  }
+});
+test('Workers overage fail-open or unverified configuration blocks, and unknown/nonboolean fields block',()=>{
+ const base={candidate:'CLOUDFLARE_WORKERS_FREE',...verifiedClaims};
+ assert.ok(evaluateSyntheticHosting(base).gaps.includes('workers_overage_fail_closed_unverified'));
+ assert.ok(evaluateSyntheticHosting({...base,workersOverageFailClosedVerified:false}).gaps.includes('workers_overage_fail_closed_unverified'));
+ assert.equal(evaluateSyntheticHosting({...base,workersOverageFailClosedVerified:'true'}).reviewStatus,'blocked');
+ assert.equal(evaluateSyntheticHosting({...base,workersOverageFailClosedVerified:true}).reviewStatus,'requires_independent_external_verification');
+ assert.equal(evaluateSyntheticHosting({...base,workersOverageFailClosedVerified:true,fit:'x'}).reviewStatus,'blocked');
+ assert.equal(evaluateSyntheticHosting({...base,workersOverageFailClosedVerified:true,actualPlanVerified:'true'}).reviewStatus,'blocked');
+ assert.equal(evaluateSyntheticHosting({candidate:'SUPABASE_EDGE_EXISTING',...verifiedClaims,workersOverageFailClosedVerified:true}).reviewStatus,'blocked');
+ assert.throws(()=>evaluateSyntheticHosting(null));
 });
 test('missing evidence and unknown candidate fail closed',()=>{
  assert.equal(evaluateSyntheticHosting({candidate:'SUPABASE_EDGE_EXISTING'}).reviewStatus,'blocked');
