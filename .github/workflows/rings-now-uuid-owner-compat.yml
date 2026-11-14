@@ -1,0 +1,26 @@
+name: Rings Now UUID owner compatibility
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-calendar-owner-input-contract.mjs'
+      - 'src/rings-now-calendar-selection-adapter.mjs'
+      - 'tests/rings-now-uuid-owner-compat.test.mjs'
+      - '.github/workflows/rings-now-uuid-owner-compat.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  uuid-owner-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify UUID compatibility and preserve previous contracts
+        run: |
+          node --check src/rings-now-calendar-owner-input-contract.mjs
+          node --check src/rings-now-calendar-selection-adapter.mjs
+          node --test tests/rings-now-uuid-owner-compat.test.mjs
+          node --test tests/rings-now-calendar-owner-input-contract.test.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
