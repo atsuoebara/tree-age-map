@@ -1,0 +1,30 @@
+name: Rings Now private FIT input gate isolated
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-private-fit-input-gate.mjs'
+      - 'tests/rings-now-private-fit-input-gate.test.mjs'
+      - 'docs/rings-now-private-fit-input-gate-20261114.md'
+      - '.github/workflows/rings-now-private-fit-input-gate.yml'
+      - 'src/race-fit-local-file-review.mjs'
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'index.html'
+      - 'previews/rings-now-iphone-synthetic-only-20261114.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify privacy, race confirmation, async invalidation and synthetic parser
+        run: node --test tests/rings-now-private-fit-input-gate.test.mjs
+      - name: Preserve unchanged production calendar and iPhone contract
+        run: |
+          node --test tests/rings-now-iphone-calendar-handoff.test.cjs
+          node --test tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+          node --test tests/rings-now-iphone-file-readiness.test.cjs
