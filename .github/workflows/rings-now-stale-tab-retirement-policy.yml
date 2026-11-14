@@ -1,0 +1,27 @@
+name: Rings Now bfcache evidence and stale tab review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-stale-tab-retirement-policy.mjs'
+      - 'tests/rings-now-stale-tab-retirement-policy.test.mjs'
+      - 'docs/rings-now-bfcache-iphone-evidence-and-stale-tab-review-20261114.md'
+      - '.github/workflows/rings-now-stale-tab-retirement-policy.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify stale-tab fail-closed and iPhone evidence scope
+        run: node --test tests/rings-now-stale-tab-retirement-policy.test.mjs
+      - name: Regression for synthetic Safari lifecycle and delivery gates
+        run: |
+          node --test tests/rings-now-safari-forward-bfcache-probe.test.mjs
+          node --test tests/rings-now-safari-cache-old-tab-boundary.test.mjs
+          node --test tests/rings-now-https-delivery-evidence-gate.test.mjs
