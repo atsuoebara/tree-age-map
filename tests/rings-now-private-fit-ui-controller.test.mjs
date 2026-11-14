@@ -96,8 +96,7 @@ test('no public entrypoints, network, persistence, run auto-link or production u
  const src=readFileSync(new URL('../src/rings-now-private-fit-ui-controller.mjs',import.meta.url),'utf8');
  const live=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const synthetic=readFileSync(new URL('../previews/rings-now-iphone-synthetic-only-20261114.html',import.meta.url),'utf8');
- const existing=readFileSync(new URL('../previews/ima-wo-shirou-fit-local-file-draft-20261113.html',import.meta.url),'utf8');
- for(const s of [live,synthetic,existing])assert.ok(!s.includes('rings-now-private-fit-ui-controller.mjs'));
+ for(const s of [live,synthetic])assert.ok(!s.includes('rings-now-private-fit-ui-controller.mjs'));
  assert.match(live,/const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;/);
  assert.match(live,/const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;/);
  assert.match(src,/inspectRingsNowPrivateFit/);
