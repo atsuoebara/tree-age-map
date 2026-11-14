@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+<title>Rings Now｜iPhone合成FIT連携試験（監査待ち）</title>
+<style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#101926;color:#f4f8ff}*{box-sizing:border-box}body{margin:0}.wrap{max-width:480px;margin:auto;padding:20px 16px 60px}h1{font-size:1.5rem}p{line-height:1.8}.panel{padding:16px;margin:14px 0;border-radius:12px;background:#203249;border:1px solid #526b83}label{display:block;margin:12px 0;font-size:1rem}button,input{font:inherit}button{min-height:48px;border-radius:9px;border:1px solid #a6c2d9;color:white;background:#235b79;padding:10px 12px;margin:6px 6px 6px 0}button:disabled{opacity:.45}input[type=file]{max-width:100%;padding:14px 0}input[type=checkbox]{width:21px;height:21px;vertical-align:middle}strong{color:#eff7a2}.warning{border-left:4px solid #ffc47f;padding:12px;background:#483423}td{padding:8px;border-bottom:1px solid #687c92}table{width:100%}</style>
+</head><body><main class="wrap">
+<p>RUNNER’S RINGS · 合成データだけの独立試験</p>
+<h1>Rings Now <small>NOW × KNOW</small></h1>
+<p class="warning">このページは合成FIT専用です。<strong>実際のGarmin FITは選択しないでください。</strong> たとえ選択しても、厳密な照合に失敗したファイルは解析しません。正式なRings Now機能ではありません。</p>
+<section class="panel"><h2>① 合成FITを準備</h2><button id="download" type="button">合成5km FITを保存</button><p>GPS・心拍・実在するランナーのデータを含まない、架空の5km・27分です。</p></section>
+<section class="panel"><h2>② ファイルを選択</h2>
+<label for="fileInput">保存した <strong>rings-now-synthetic-5km.fit</strong> だけを選んでください。</label>
+<input id="fileInput" type="file" accept=".fit,application/octet-stream">
+<label><input type="checkbox" id="ownerCheckbox"> 架空のテスト記録であることを確認</label>
+<label><input type="checkbox" id="gachiCheckbox"> テスト用のガチランを自分で選んだことを確認</label>
+<button id="reviewButton" type="button">合成FITを端末内で確認</button>
+<button id="cancelButton" type="button">選択と結果を消す</button>
+<p id="statusNode" role="status" aria-live="polite">未選択</p><div id="lapsNode"></div>
+</section>
+<section class="panel"><h2>③ iPhone復帰テスト</h2><p>画面を離れる・別アプリへ移動する・Safariで戻ると、選択と結果を失効させます。再テストするときはページを読み直してください。</p><button id="simulate" type="button">画面離脱を模擬して消去</button></section>
+<p class="warning">信号待ちやトイレ休憩、自動ポーズなどの影響により、正しく分析できない場合があります。</p>
+<p>参考候補・未認証です。結果は保存しません。カレンダー・本番アカウントとは接続しません。実FIT利用や公開の承認とは別です。</p>
+</main>
+<script type="module">
+import {createRingsNowIphoneIsolatedHandoff} from '../src/rings-now-iphone-isolated-handoff.mjs';
+import {createSyntheticOnlyInspector,SYNTHETIC_NAME,SYNTHETIC_SIZE,SYNTHETIC_SHA256} from '../src/rings-now-iphone-synthetic-inspector.mjs';
+const SYNTHETIC_B64='DiBcCBYBAAAuRklUqd1AAAASAAT9BIYCBIYJBIYFAQAAVJtuOACVbjggoQcAAUEAABQAAv0EhgUEhgEAlW44AAAAAAE/lW44IE4AAAF+lW44QJwAAAG9lW44YOoAAAH8lW44gDgBAAE7lm44oIYBAAF7lm44wNQBAAG6lm444CICAAH6lm44AHECAAE5l244IL8CAAF5l244QA0DAAG5l244YFsDAAH5l244gKkDAAE5mG44oPcDAAF5mG44wEUEAAG5mG444JMEAAH6mG44AOIEAAE7mW44IDAFAAF7mW44QH4FAAG8mW44YMwFAAH9mW44gBoGAAFCmm44oGgGAAGGmm44wLYGAAHLmm444AQHAAEPm244AFMHAAFUm244IKEHAHQp';
+const $=id=>document.getElementById(id);
+const fixture=()=>Uint8Array.from(atob(SYNTHETIC_B64),c=>c.charCodeAt(0));
+const bytes=fixture();
+// Fail closed if the test payload is corrupted at build time or a copy mismatch.
+const hex=buffer=>Array.from(new Uint8Array(buffer),v=>v.toString(16).padStart(2,'0')).join('');
+const check=async()=>bytes.byteLength===SYNTHETIC_SIZE&&hex(await crypto.subtle.digest('SHA-256',bytes))===SYNTHETIC_SHA256;
+$('download').addEventListener('click',async()=>{
+ if(!await check()){$('statusNode').textContent='合成データの整合性が確認できません';return;}
+ const url=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'}));
+ const a=document.createElement('a');a.href=url;a.download=SYNTHETIC_NAME;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+});
+// No production login, calendar row or real FIT context here. Synthetic demo
+// selection is confined to the fixture and NEVER returned to the host app.
+const start=new Date(Date.now()-60000);
+const startedAt=start.toISOString(),date=startedAt.slice(0,10);
+const fakeContext=()=>({
+ currentUserId:'synthetic-demo-user',
+ row:{id:1,user_id:'synthetic-demo-user',started_at:startedAt,activity_date:date,deleted_at:null},
+ selectedAsGachiRun:true,selectionDate:date,selectionToken:'synthetic-only-tap'
+});
+const inspector=createSyntheticOnlyInspector({digest:(...args)=>crypto.subtle.digest(...args)});
+const elements=Object.fromEntries(['fileInput','ownerCheckbox','gachiCheckbox','reviewButton','cancelButton','statusNode','lapsNode'].map(id=>[id,$(id)]));
+const handoff=createRingsNowIphoneIsolatedHandoff({
+ elements,document,readContext:fakeContext,nowMs:()=>Date.now(),
+ // Synthetic fixture only: never read or change production feature flags.
+ featureStartedAtMs:start.getTime()-1000,
+ pageEvents:window,visibilityEvents:document,inspect:inspector
+});
+$('simulate').addEventListener('click',()=>handoff.invalidate());
+</script>
+</body></html>

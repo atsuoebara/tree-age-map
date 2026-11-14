@@ -1,0 +1,32 @@
+name: Rings Now iPhone synthetic-only handoff page
+on:
+  pull_request:
+    paths:
+      - 'previews/rings-now-iphone-synthetic-handoff-20261114.html'
+      - 'src/rings-now-iphone-synthetic-inspector.mjs'
+      - 'tests/rings-now-iphone-synthetic-handoff-page.test.mjs'
+      - 'docs/rings-now-iphone-synthetic-handoff-page-20261114.md'
+      - '.github/workflows/rings-now-iphone-synthetic-handoff-page.yml'
+      - 'src/rings-now-iphone-isolated-handoff.mjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  iPhone-synthetic-handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject real FIT before parser, verify fixture and public HTML scope
+        run: node --test tests/rings-now-iphone-synthetic-handoff-page.test.mjs
+      - name: Existing synthetic UI and privacy regression
+        run: |
+          node --test tests/rings-now-iphone-isolated-handoff.test.mjs
+          node --test tests/rings-now-iphone-session-boundary.test.mjs
+          node --test tests/rings-now-private-fit-ui-controller.test.mjs
+          node --test tests/rings-now-private-fit-input-gate.test.mjs
+          node --test tests/rings-now-iphone-file-readiness.test.cjs
+          python3 -m unittest discover -s tests -p test_rings_now_iphone_synthetic_page.py -v
