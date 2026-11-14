@@ -1,0 +1,26 @@
+name: Rings Now paginated snapshot source review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-paginated-snapshot-source.mjs'
+      - 'tests/rings-now-paginated-snapshot-source.test.mjs'
+      - '.github/workflows/rings-now-paginated-snapshot-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paginated-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic pagination and existing gates
+        run: |
+          node --check src/rings-now-paginated-snapshot-source.mjs
+          node --test tests/rings-now-paginated-snapshot-source.test.mjs
+          node --test tests/rings-now-auth-snapshot-boundary.test.mjs
+          node --test tests/rings-now-calendar-owner-input-contract.test.mjs
+          node --test tests/rings-now-calendar-selection-adapter.test.mjs
+          node --test tests/rings-now-uuid-owner-compat.test.mjs
