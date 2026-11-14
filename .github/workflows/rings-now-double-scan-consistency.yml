@@ -1,0 +1,25 @@
+name: Rings Now double scan consistency review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-double-scan-source.mjs'
+      - 'tests/rings-now-double-scan-consistency.test.mjs'
+      - '.github/workflows/rings-now-double-scan-consistency.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  consistency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic concurrent mutations and prior chain regressions
+        run: |
+          node --check src/rings-now-double-scan-source.mjs
+          node --test tests/rings-now-double-scan-consistency.test.mjs
+          node --test tests/rings-now-pagination-order-integrity.test.mjs
+          node --test tests/rings-now-paginated-full-chain.test.mjs
+          node --test tests/rings-now-auth-event-selection-invalidation.test.mjs
