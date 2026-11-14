@@ -1,7 +1,7 @@
 // Source template only, NOT a public HTML entrypoint. Served exclusively from 127.0.0.1
 // by scripts/serve-rings-now-local-review.mjs after future explicit owner authorization.
 export function localReviewHtml() {
- return \`<!doctype html>
+ return `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>Rings Now | localhost FIT review</title>
@@ -51,5 +51,5 @@ $('selectDemo').addEventListener('click',()=>{
 window.addEventListener('pagehide',reset);
 window.addEventListener('pageshow',event=>{if(event.persisted)reset()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)reset()});
-</script></body></html>\`;
+</script></body></html>`;
 }
