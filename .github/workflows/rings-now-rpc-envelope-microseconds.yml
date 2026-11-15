@@ -1,0 +1,23 @@
+name: Rings Now isolated RPC envelope microseconds review
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-rpc-envelope-review.mjs'
+      - 'src/rings-now-calendar-owner-input-contract.mjs'
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'tests/rings-now-rpc-envelope-review.test.mjs'
+      - 'docs/rings-now-rpc-envelope-microseconds-review-20261115.md'
+      - '.github/workflows/rings-now-rpc-envelope-microseconds.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated envelope, owner and time-gate tests
+        run: node --test tests/rings-now-rpc-envelope-review.test.mjs tests/rings-now-calendar-owner-input-contract.test.mjs tests/rings-now-auth-snapshot-boundary.test.mjs
