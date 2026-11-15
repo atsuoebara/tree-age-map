@@ -9,12 +9,12 @@ const keysExactly=(o,names)=>Object.keys(o).length===names.length&&
  names.every(k=>Object.prototype.hasOwnProperty.call(o,k));
 const rowShape=r=>r!==null&&typeof r==='object'&&!Array.isArray(r)&&keysExactly(r,fields);
 const isId=x=>(typeof x==='number'||typeof x==='string')&&
- /^[1-9]\\d*$/.test(String(x))&&Number.isSafeInteger(Number(x));
+ /^[1-9]\d*$/.test(String(x))&&Number.isSafeInteger(Number(x));
 const uuid=x=>typeof x==='string'&&
  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(x);
-const date=x=>typeof x==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(x);
+const date=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x);
 const timestamp=x=>typeof x==='string'&&
- /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$/.test(x);
+ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(x);
 export function reviewRingsNowRpcEnvelope(payload,{expectedOwnerId}={}){
  if(!payload||typeof payload!=='object'||Array.isArray(payload))
   return deny('rpc_envelope_invalid');
