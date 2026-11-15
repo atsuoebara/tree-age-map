@@ -3,7 +3,7 @@
 import {assessImaWoShirouEligibility, EIGHT_DAYS_SECONDS} from './ima-wo-shirou-eight-day-eligibility.mjs';
 const blocked = reason => ({status:'blocked',reason,eligible:false,analysisAllowed:false});
 const preciseTimestamp = s => typeof s==='string' &&
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(s);
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(s);
 function utcStart(s){
   if(!preciseTimestamp(s))return null;
   const parsed=Date.parse(s);
