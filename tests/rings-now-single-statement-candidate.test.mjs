@@ -37,6 +37,20 @@ test('reviewed SQL narrows default PUBLIC function EXECUTE in one transaction',(
  assert.match(note,/PostgreSQL の新規関数は原則/);
  assert.match(note,/実際の権限の証明ではない/);
 });
+test('required NULL values block the entire candidate snapshot before JSON rows are returned',()=>{
+ const count=sql.indexOf('required_null_check AS MATERIALIZED');
+ const nulls=sql.indexOf('activity_date IS NULL',count);
+ const nullDistance=sql.indexOf('distance_km IS NULL',count);
+ const nullStarted=sql.indexOf('started_at IS NULL',count);
+ const guardedRows=sql.indexOf('AND (SELECT invalid_total FROM required_null_check) = 0');
+ const tooMany=sql.indexOf("THEN jsonb_build_object('status','blocked','reason','too_many_rows')");
+ const nullBlocked=sql.indexOf("THEN jsonb_build_object('status','blocked','reason','missing_required_fields')");
+ const success=sql.indexOf("ELSE jsonb_build_object('status','candidate_snapshot','rows'");
+ assert.ok(count>=0 && count<nulls && nulls<nullDistance && nullDistance<nullStarted);
+ assert.ok(nullStarted<guardedRows && guardedRows<tooMany && tooMany<nullBlocked && nullBlocked<success);
+ assert.match(note,/started_at.*NULL 1件/);
+ assert.match(note,/個別行・所有者は確認していない/);
+});
 test('result includes exactly the six permitted column keys',()=>{
  const keys=Array.from(sql.matchAll(/^\s*'(id|user_id|activity_date|distance_km|started_at|deleted_at)',\s*(?:id|user_id|activity_date|distance_km|started_at|deleted_at),?\s*$/gm),m=>m[1]);
  assert.deepEqual(keys,['id','user_id','activity_date','distance_km','started_at','deleted_at']);
