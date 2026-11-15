@@ -14,7 +14,7 @@ const validOwnerId = x => (typeof x==='string' &&
 const date = x => typeof x==='string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
 const distance = x => typeof x==='number' && Number.isFinite(x) && x>0 && x<1000;
 const timestamp = x => typeof x==='string' &&
-  /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?(?:Z|[+-]\d\d:\d\d)$/.test(x);
+  /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$/.test(x);
 export function prepareRingsNowOwnerCalendarRows({
   ownerId,sourceRows,ownerScoped=false,unmodifiedSnapshot=false
 }={}){
