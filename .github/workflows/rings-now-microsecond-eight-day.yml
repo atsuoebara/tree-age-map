@@ -1,0 +1,22 @@
+name: Rings Now microsecond 8-day isolated review
+on:
+  pull_request:
+    paths:
+      - 'src/ima-wo-shirou-calendar-selection-review.mjs'
+      - 'src/ima-wo-shirou-eight-day-eligibility.mjs'
+      - 'tests/rings-now-microsecond-eight-day-gate.test.mjs'
+      - 'docs/rings-now-microsecond-eight-day-gate-20261115.md'
+      - '.github/workflows/rings-now-microsecond-eight-day.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run 8-day boundary and selection suites
+        run: node --test tests/rings-now-microsecond-eight-day-gate.test.mjs tests/ima-wo-shirou-eight-day-eligibility.test.mjs tests/ima-wo-shirou-calendar-selection-review.test.mjs tests/rings-now-rpc-envelope-review.test.mjs
