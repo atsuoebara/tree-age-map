@@ -18,6 +18,25 @@ test('one nondeploying SELECT statement is proposed with invoker and owner guard
  assert.match(sql,/too_many_rows/);
  assert.doesNotMatch(sql,/\bSECURITY DEFINER\b(?!.*avoid)/); // Checked separately below.
 });
+test('reviewed SQL narrows default PUBLIC function EXECUTE in one transaction',()=>{
+ const tokens=[
+  'BEGIN;',
+  'CREATE OR REPLACE FUNCTION public.rings_now_snapshot_candidate_v01()',
+  'REVOKE ALL ON FUNCTION public.rings_now_snapshot_candidate_v01() FROM PUBLIC;',
+  'REVOKE ALL ON FUNCTION public.rings_now_snapshot_candidate_v01() FROM anon;',
+  'REVOKE ALL ON FUNCTION public.rings_now_snapshot_candidate_v01() FROM service_role;',
+  'GRANT EXECUTE ON FUNCTION public.rings_now_snapshot_candidate_v01() TO authenticated;',
+  'COMMIT;'
+ ];
+ let last=-1;
+ for(const token of tokens){
+  const at=sql.indexOf(token,last+1);
+  assert.ok(at>last,'missing or wrong order: '+token);
+  last=at;
+ }
+ assert.match(note,/PostgreSQL の新規関数は原則/);
+ assert.match(note,/実際の権限の証明ではない/);
+});
 test('result includes exactly the six permitted column keys',()=>{
  const keys=Array.from(sql.matchAll(/^\s*'(id|user_id|activity_date|distance_km|started_at|deleted_at)',\s*(?:id|user_id|activity_date|distance_km|started_at|deleted_at),?\s*$/gm),m=>m[1]);
  assert.deepEqual(keys,['id','user_id','activity_date','distance_km','started_at','deleted_at']);
