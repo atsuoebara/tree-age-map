@@ -17,7 +17,11 @@ function utcStart(s){
      hour>23 || minute>59 || second>59)return null;
   const zone=s.match(/[+-]([0-9]{2}):([0-9]{2})$/);
   if(zone && (Number(zone[1])>23 || Number(zone[2])>59))return null;
-  return parsed;
+  // Preserve the exact six-digit fractional start; Date.parse only retains ms.
+  // Keep the public clock in integer milliseconds and compare via BigInt µs.
+  const fraction=(s.match(/\\.(\\d{1,6})(?=Z|[+-]\\d{2}:\\d{2}$)/)?.[1]||'').padEnd(6,'0');
+  const subMillisecond=Number(fraction.slice(3) || '0');
+  return {startedAtMs:parsed,startedAtMicros:BigInt(parsed)*1000n+BigInt(subMillisecond)};
 }
 export function reviewSelectedCalendarRun({
   row, currentUserId, selectedAsGachiRun=false, nowMs, featureStartedAtMs,
@@ -28,10 +32,11 @@ export function reviewSelectedCalendarRun({
   if(row.deleted_at != null)return blocked('deleted_run');
   if(row.id==null || !/^[1-9]\d*$/.test(String(row.id)))return blocked('run_id_missing_or_invalid');
   // activity_date remains solely the calendar display key; never a start-time fallback.
-  const startedAtMs=utcStart(row.started_at);
-  if(startedAtMs===null)return blocked('run_start_missing_or_invalid');
+  const start=utcStart(row.started_at);
+  if(start===null)return blocked('run_start_missing_or_invalid');
   const gate=assessImaWoShirouEligibility({
-    selectedAsGachiRun,startedAtMs,nowMs,featureStartedAtMs,
+    selectedAsGachiRun,startedAtMs:start.startedAtMs,
+    startedAtMicros:start.startedAtMicros,nowMs,featureStartedAtMs,
     maxAgeSeconds:EIGHT_DAYS_SECONDS // Explicitly passes the 2026-11-13 policy.
   });
   if(!gate.eligible)return {status:'blocked',...gate};
