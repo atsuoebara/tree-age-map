@@ -11,6 +11,21 @@ DO $a$ BEGIN
  OR has_function_privilege('service_role','public.rings_now_snapshot_candidate_v01()','EXECUTE')
  OR NOT has_function_privilege('authenticated','public.rings_now_snapshot_candidate_v01()','EXECUTE')
  THEN RAISE EXCEPTION 'effective ACL differs from expected'; END IF;
+ -- Confirm named-role grants (not only PUBLIC) were removed in raw proacl.
+ IF EXISTS (
+   SELECT 1
+   FROM aclexplode((SELECT proacl FROM pg_proc
+     WHERE oid='public.rings_now_snapshot_candidate_v01()'::regprocedure)) a
+   LEFT JOIN pg_roles r ON r.oid=a.grantee
+   WHERE a.privilege_type='EXECUTE' AND
+         (a.grantee=0 OR r.rolname IN ('anon','service_role'))
+ ) THEN RAISE EXCEPTION 'PUBLIC, anon or service_role explicit EXECUTE leaked in proacl'; END IF;
+ IF NOT EXISTS (
+   SELECT 1 FROM aclexplode((SELECT proacl FROM pg_proc
+     WHERE oid='public.rings_now_snapshot_candidate_v01()'::regprocedure)) a
+   JOIN pg_roles r ON r.oid=a.grantee
+   WHERE r.rolname='authenticated' AND a.privilege_type='EXECUTE'
+ ) THEN RAISE EXCEPTION 'authenticated explicit EXECUTE absent in proacl'; END IF;
  IF (SELECT NOT relrowsecurity FROM pg_class WHERE oid='public.runs'::regclass)
  THEN RAISE EXCEPTION 'RLS disabled'; END IF;
 END $a$;
