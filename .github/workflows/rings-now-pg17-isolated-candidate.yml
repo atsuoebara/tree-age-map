@@ -1,0 +1,57 @@
+name: Rings Now PostgreSQL 17 synthetic SQL candidate
+on:
+  pull_request:
+    paths:
+      - 'tests/rings-now-pg17-isolated-setup.sql'
+      - 'tests/rings-now-pg17-isolated-candidate.test.sql'
+      - 'docs/rings-now-single-statement-snapshot-CANDIDATE.sql'
+      - 'docs/rings-now-pg17-isolated-test-20261115.md'
+      - '.github/workflows/rings-now-pg17-isolated-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: rings_fixture
+          POSTGRES_PASSWORD: synthetic-only
+          POSTGRES_DB: rings_now_synthetic
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rings_fixture -d rings_now_synthetic"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: rings_fixture
+      PGPASSWORD: synthetic-only
+      PGDATABASE: rings_now_synthetic
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm synthetic-only target (fail closed)
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "localhost"
+          test "$PGDATABASE" = "rings_now_synthetic"
+          test "$PGUSER" = "rings_fixture"
+          test "$PGPASSWORD" = "synthetic-only"
+          test -z "${SUPABASE_URL:-}"
+          test -z "${DATABASE_URL:-}"
+          psql -X -v ON_ERROR_STOP=1 -Atqc 'SHOW server_version_num' | awk '{if ($1 < 170000 || $1 >= 180000) exit 1}'
+      - name: Construct synthetic RLS/roles and function
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/rings-now-pg17-isolated-setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f docs/rings-now-single-statement-snapshot-CANDIDATE.sql
+      - name: Verify candidate runtime and privilege boundaries
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f tests/rings-now-pg17-isolated-candidate.test.sql
