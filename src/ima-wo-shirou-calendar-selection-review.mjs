@@ -19,7 +19,7 @@ function utcStart(s){
   if(zone && (Number(zone[1])>23 || Number(zone[2])>59))return null;
   // Preserve the exact six-digit fractional start; Date.parse only retains ms.
   // Keep the public clock in integer milliseconds and compare via BigInt µs.
-  const fraction=(s.match(/\\.(\\d{1,6})(?=Z|[+-]\\d{2}:\\d{2}$)/)?.[1]||'').padEnd(6,'0');
+  const fraction=(s.match(/\.(\d{1,6})(?=Z|[+-]\d{2}:\d{2}$)/)?.[1]||'').padEnd(6,'0');
   const subMillisecond=Number(fraction.slice(3) || '0');
   return {startedAtMs:parsed,startedAtMicros:BigInt(parsed)*1000n+BigInt(subMillisecond)};
 }
