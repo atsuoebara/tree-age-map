@@ -9,6 +9,8 @@
 - `public.runs` に対する一つのSQL文を候補にする。PostgreSQLの文レベルMVCC読取一貫性を前提に、分割したOFFSET取得や2回走査の間で別時点の集合を混ぜない。
 - `auth.uid()` による本人限定、`deleted_at IS NULL`、`ORDER BY id ASC`。返却するJSONに `id,user_id,activity_date,distance_km,started_at,deleted_at` の6列だけ含め、GPS・route・心拍・FITを返さない。
 - 1,001件までを最大取得候補にし、**1,001件なら `too_many_rows` の遮断応答で一切の部分ランを返さない**。ゼロ件は空配列。
+- **追補（2026-11-15の読み取り専用COUNT集計）**：未削除25,942件、`activity_date` NULL 0件、`distance_km` NULL 0件、`started_at` NULL 1件。個別行・所有者は確認していない。SQL候補では、取得した同一のsampled集合に必要3項目のNULLが一つでもあれば `{status: 'blocked', reason: 'missing_required_fields'}` とし、`rows`を一切返さない。欠損記録の黙示的除外や補完はしない。1,001件超過時は従来どおり `too_many_rows` を優先する。
+- **制約**：NULLがある本人は今の全体遮断方式では利用できない。NULL理由を示しても利用可能にはならない。将来の対処は個別承認が必要。SQL候補の実構文・動作・実JWTは未検証。
 - `SECURITY INVOKER` により呼出者のDB権限/RLSを使う想定。DB実行者に管理者権限を与えない。ただし実JWT・権限・RLSを別途確認しない限り採用しない。
 - **追補（#150独立監査指摘）**：PostgreSQL の新規関数は原則 `PUBLIC` に `EXECUTE` が付く。候補SQLに `BEGIN` → 関数作成 → `REVOKE ... FROM PUBLIC/anon/service_role` → `GRANT EXECUTE ... TO authenticated` → `COMMIT` を一組で明記し、**作成と権限制限の間にPUBLIC公開の隙間を作らない**設計に変更した。既存関数への `CREATE OR REPLACE` は権限を保持し得るため、明示的 `REVOKE` は必須。
 - このACL案は**実際の権限の証明ではない**。`service_role` や特権ロールのRLS迂回、role membership、関数所有者、スキーマUSAGE、対象テーブルへのSELECTとRLS、PostgREST公開範囲は実DBで別途確認する。リポジトリでSQL文を追加してもDB権限は変わらない。
@@ -20,12 +22,13 @@
 |---|---|
 | 既存リポジトリの`public.runs`とRLSの監査記録 | 存在を確認 |
 | SQL案の作成・構文の静的検査 | SQL案作成、実DBでの構文/型検証は未実施 |
-| `id/user_id/activity_date/distance_km/started_at/deleted_at`の現行実型 | 未確認 |
+| `id/user_id/activity_date/distance_km/started_at/deleted_at`の現行実型 | 読み取り専用で確認済み：bigint / uuid / date / double precision / timestamptz / timestamptz |
 | `auth.uid()` の実JWTによる本人限定結果 | 未確認 |
 | 実効RLS・EXECUTE ACL・anon/service_role遮断 | 未確認（SQL内に明示的な制限案を追加したのみ） |
 | 同時更新・削除・ABA・1000/1001件境界の実DB検証 | 未実施 |
-| `user_id,id` 索引と速度・タイムアウト | 未確認 |
-| Supabaseの実契約・料金・追加費用0円 | 未確認 |
+| `user_id,id` 索引と速度・タイムアウト | 専用複合索引なしを確認・実行計画と速度は未確認 |
+| Supabaseの実契約・料金・追加費用0円 | Pro契約確認済み・追加費用0円は未証明 |
+| 必要3項目のNULL件数 | 読み取り専用COUNTのみ実施：started_atの1件。行データ・個人IDは未取得 |
 | 既存の公開index・SW・カレンダーと結線 | 禁止・未実施 |
 
 ## 将来の実DB検証が別途承認された場合の受入条件

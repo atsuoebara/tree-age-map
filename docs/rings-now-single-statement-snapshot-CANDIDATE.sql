@@ -1,7 +1,9 @@
 -- Rings Now REVIEW CANDIDATE ONLY. DO NOT EXECUTE OR DEPLOY.
 -- This file includes an UNEXECUTED transactional ACL proposal; no DB changes occur.
 -- Applying this SQL requires separate explicit owner approval and staging proof.
--- Existing public.runs schema, types, indexes, actual JWT/RLS and fees are UNVERIFIED.
+-- Column types and RLS predicates checked read-only 2026-11-15; actual JWT/ACL, costs and performance remain UNVERIFIED.
+-- A read-only COUNT found one undeleted started_at NULL in 25,942 rows;
+-- no identity, row values, or per-user ownership were obtained.
 --
 -- One PostgreSQL statement uses one MVCC statement snapshot, in contrast to
 -- multiple OFFSET calls or two independent reads. This is a design hypothesis
@@ -35,6 +37,14 @@ AS $rings_now_candidate$
   count_check AS MATERIALIZED (
     SELECT count(*) AS total FROM sampled
   ),
+  required_null_check AS MATERIALIZED (
+    SELECT count(*) FILTER (
+      WHERE activity_date IS NULL
+         OR distance_km IS NULL
+         OR started_at IS NULL
+    ) AS invalid_total
+    FROM sampled
+  ),
   safe_rows AS (
     SELECT coalesce(
       jsonb_agg(
@@ -51,12 +61,15 @@ AS $rings_now_candidate$
     ) AS rows
     FROM sampled
     WHERE (SELECT total FROM count_check) <= 1000
+      AND (SELECT invalid_total FROM required_null_check) = 0
   )
   SELECT CASE
     WHEN (SELECT uid FROM owner) IS NULL
       THEN jsonb_build_object('status','blocked','reason','unauthenticated')
     WHEN (SELECT total FROM count_check) > 1000
       THEN jsonb_build_object('status','blocked','reason','too_many_rows')
+    WHEN (SELECT invalid_total FROM required_null_check) > 0
+      THEN jsonb_build_object('status','blocked','reason','missing_required_fields')
     ELSE jsonb_build_object('status','candidate_snapshot','rows',
                            (SELECT rows FROM safe_rows))
   END;
