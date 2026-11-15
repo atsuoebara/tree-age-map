@@ -3,6 +3,7 @@
  * Run by .github/workflows/journal-generate.yml.
  * DRY_RUN=true (the workflow default) checks output without writing any files.
  * Only explicitly published rows are included.
+ * Journal content regeneration requested 2026-11-15 for article 80 metadata repair.
  */
 import { mkdir, writeFile, readdir, readFile, rm } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
