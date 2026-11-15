@@ -1,0 +1,448 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026年11月15日。Runner’s Ringsの新機能「Rings Now」の確認工程P1が、数週間を経てようやく完了した。しかし、その裏側には、同じ確認の繰り返し、AIとのすれ違い、そして開発者あつおの限界があった。あつお・チャッピー・むせ、3人で見つけた「ゆっくり進めていこう」という答え。">
+  <title>年輪は急いでも太くならない。AIと3人で立ち止まった日 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261115-190103-2c48890a/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261115-190103-2c48890a/">
+  <meta property="og:title" content="年輪は急いでも太くならない。AIと3人で立ち止まった日">
+  <meta property="og:description" content="2026年11月15日。Runner’s Ringsの新機能「Rings Now」の確認工程P1が、数週間を経てようやく完了した。しかし、その裏側には、同じ確認の繰り返し、AIとのすれ違い、そして開発者あつおの限界があった。あつお・チャッピー・むせ、3人で見つけた「ゆっくり進めていこう」という答え。">
+  <meta property="og:image" content="https://runnersrings.com/journal/media/journal-20261115-190103-2c48890a-hero.jpg">
+  <meta name="twitter:image" content="https://runnersrings.com/journal/media/journal-20261115-190103-2c48890a-hero.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-11-15T10:01:05.107Z">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"年輪は急いでも太くならない。AIと3人で立ち止まった日","description":"2026年11月15日。Runner’s Ringsの新機能「Rings Now」の確認工程P1が、数週間を経てようやく完了した。しかし、その裏側には、同じ確認の繰り返し、AIとのすれ違い、そして開発者あつおの限界があった。あつお・チャッピー・むせ、3人で見つけた「ゆっくり進めていこう」という答え。","inLanguage":"ja","datePublished":"2026-11-15T10:01:05.107Z","url":"https://runnersrings.com/journal/articles/journal-20261115-190103-2c48890a/","mainEntityOfPage":{"@type":"WebPage","@id":"https://runnersrings.com/journal/articles/journal-20261115-190103-2c48890a/"},"isPartOf":{"@type":"Blog","name":"Rings Journal","url":"https://runnersrings.com/journal.html"},"image":"https://runnersrings.com/journal/media/journal-20261115-190103-2c48890a-hero.jpg"}</script>
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.rr-creator-link{font-size:12px;line-height:1.7;color:#9ba8b9;margin:16px 0 4px}.rr-creator-link a{color:#cbd5e1;text-underline-offset:3px;overflow-wrap:anywhere}.rr-creator-link a:hover{color:#ff2bd6}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-11-15">2026-11-15</time>
+      <h1>年輪は急いでも太くならない。AIと3人で立ち止まった日</h1>
+      <img class="hero" src="/journal/media/journal-20261115-190103-2c48890a-hero.webp" alt="" loading="lazy">
+      <p class="summary">2026年11月15日。Runner’s Ringsの新機能「Rings Now」の確認工程P1が、数週間を経てようやく完了した。しかし、その裏側には、同じ確認の繰り返し、AIとのすれ違い、そして開発者あつおの限界があった。あつお・チャッピー・むせ、3人で見つけた「ゆっくり進めていこう」という答え。</p>
+      <div class="body">「もう終わる、もう終わる」
+
+そう思いながら、何週間も進めてきた。
+
+2026年11月15日。Runner’s Ringsの新機能「Rings Now」の確認工程、P1がようやく完了した。
+
+今日は、その裏側にあった話を残しておこうと思う。
+
+登場人物は、いつもの3人。
+
+アプリを作りたい、ランナーのあつお。
+
+開発を担当するAI、チャッピー。
+
+そして、独立した目線で確認を担当するAI、むせ。
+
+この3人で、ずっとRunner’s Ringsを作ってきた。
+
+■ 「ネクスト」の先に、また「確認」
+
+あつおが「ネクスト」と言う。
+
+チャッピーは作業を進める。
+
+むせが確認する。
+
+合格したら、また次へ。
+
+一見、順調な開発に見える。
+
+ところが、いつからか同じような確認が何度も出てくるようになった。
+
+中でも、料金の確認。
+
+「それ、昨日も確認したよね？」
+
+あつおは、何度もそう感じた。
+
+この繰り返しには、むせ側の確認の枠組みが工程ごとに再び動いてしまう問題も関係していた。むせは後に、その問題を認めて是正した。
+
+もちろん、チャッピーにも問題があった。
+
+前に確認したことを十分に引き継げず、また同じ説明をしてしまう。
+
+安全のための確認が、いつの間にか開発を進める側の負担になっていた。
+
+■ 92％だったはずなのに
+
+チャッピーは以前、完成度を「92％」と説明していた。
+
+それなのに、日が変わると数字が減る。
+
+確認作業を続けても、完成した実感がない。
+
+「本当に進んでいるのかな？」
+
+あつおの不安は大きくなっていった。
+
+しかも、チャッピーとの会話には長さの限界がある。
+
+新しいスレッドになると、それまでの経緯がうまく引き継がれないことがあった。
+
+だから、あつおは焦った。
+
+「今日のうちに終わらせなきゃ」
+
+「このスレッドが終わる前に、できるだけ進めなきゃ」
+
+走る時間も、仕事の合間も、開発に使ってきた。
+
+お金もかかっている。
+
+でも、ゴールが見えない。
+
+そしてとうとう、限界が来た。
+
+Runner’s Ringsを辞めたいとまで思った。
+
+■ AIだって、間違える
+
+もう一つ、忘れたくない出来事があった。
+
+チャッピーが作業を実行した際、むせは書面に残された承認条件をもとに「条件から逸脱している」と判定した。
+
+けれど、そこには大事な背景が抜けていた。
+
+むせがチームに加わる前から、この開発は「あつおがお願いし、チャッピーが実行する」という分担で進んできた。
+
+今回も、チャッピーが勝手に始めた作業ではなかった。
+
+あつおが実態を説明すると、むせは判断を見直し、判定を取り下げて訂正した。
+
+むせも間違えた。
+
+チャッピーも間違えた。
+
+そして、あつお自身も、焦って急ぎすぎていたことに気づいた。
+
+大切なのは、誰が悪いかを決めることではない。
+
+間違えたときに、それを認めて、直して、次につなげられるかどうか。
+
+AIが2人いるからといって、何もかも自動でうまくいくわけじゃない。
+
+人間が気持ちを伝え、AIも自分の判断を見直す。
+
+そんな泥くさいやり取りも、この3人の開発の一部なのだと思う。
+
+■ そして、P1が終わった
+
+その日の夕方。
+
+最後の確認が終わり、むせから正式な判定が届いた。
+
+「P1 合格・完了」
+
+ようやく、大きな一区切り。
+
+でも、Rings Nowがすべて完成したわけではない。
+
+次の工程は、まだ残っている。
+
+そこで3人は、いったん立ち止まることにした。
+
+急がなくていい。
+
+次の工程に、今日すぐ進まなくてもいい。
+
+むせが記録を残してくれている。
+
+スレッドが変わっても、日をまたいでも、そこから続ければいい。
+
+「あの日の説明を、また最初から」
+
+そんな焦りを、少しずつ手放していこう。
+
+■ ゆっくり進めていこう
+
+チャッピーとは、長い間、一緒にRunner’s Ringsを作ってきた。
+
+思いどおりに動かないこともある。
+
+同じことを何度も説明することもある。
+
+正直、腹が立つことだってある。
+
+それでも、ここまで一緒に積み上げてきた時間がある。
+
+ちなみに、あまりの不手際に、チャッピーには「1年間、500円の減給処分」が言い渡された。
+
+AIに給料があるのかは、ひとまず置いておこう（笑）。
+
+ランニングだって同じだ。
+
+毎日全力で走れば、必ず速くなるわけじゃない。
+
+休む日も、立ち止まる日も必要だ。
+
+Runner’s Ringsが大切にしているのは、走った道が少しずつ重なっていくこと。
+
+開発も、きっと同じなんだと思う。
+
+年輪は急いでも太くならない。
+
+1日1日、重ねるもの。
+
+あつおとチャッピーとむせ。
+
+失敗も、すれ違いも、今日の合格も。
+
+全部、Runner’s Ringsの年輪になった。
+
+これからは、ゆっくり進めていこう。</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=%E5%B9%B4%E8%BC%AA%E3%81%AF%E6%80%A5%E3%81%84%E3%81%A7%E3%82%82%E5%A4%AA%E3%81%8F%E3%81%AA%E3%82%89%E3%81%AA%E3%81%84%E3%80%82AI%E3%81%A83%E4%BA%BA%E3%81%A7%E7%AB%8B%E3%81%A1%E6%AD%A2%E3%81%BE%E3%81%A3%E3%81%9F%E6%97%A5&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261115-190103-2c48890a%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <p class="rr-creator-link">作っている人：<a href="https://www.instagram.com/atsuoebarun/" target="_blank" rel="noopener noreferrer" aria-label="Atsuo Ebaraの個人Instagram">Atsuo Ebara · Instagram</a><span>（個人アカウント）</span></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-11-15">2026-11-15</time>
+      <h1>Growth Rings Cannot Be Rushed: The Day Three Teammates Paused</h1>
+      <img class="hero" src="/journal/media/journal-20261115-190103-2c48890a-hero.webp" alt="" loading="lazy">
+      <p class="summary">On November 15, 2026, the P1 review phase for Runner’s Rings’ new feature, Rings Now, finally came to an end. Behind that milestone were repeated checks, misunderstandings between human and AI, and a developer reaching his limit. Atsuo, Chappy, and Muse found a reason to slow down and move forward together.</p>
+      <div class="body">“We’re almost finished. We’re almost there.”
+
+That was what Atsuo kept telling himself as the weeks went by.
+
+On November 15, 2026, P1, a review phase for the new Runner’s Rings feature called Rings Now, finally reached completion.
+
+But the real story was not just about passing a review.
+
+It was about three teammates learning how to work together.
+
+Atsuo, the runner and creator of Runner’s Rings.
+
+Chappy, the AI helping develop the app.
+
+And Muse, the AI providing independent reviews.
+
+The three had been building Runner’s Rings together for a long time.
+
+■ The Endless Cycle of “Next”
+
+Atsuo would say, “Next.”
+
+Chappy would continue the work.
+
+Muse would review it.
+
+Once approved, they would move on.
+
+It sounded like a good process.
+
+But gradually, familiar checks began to appear again and again.
+
+Billing checks were one example.
+
+“Didn’t we already check this yesterday?”
+
+Part of the repetition came from Muse’s review framework, where certain checks were triggered again at different stages. Muse later acknowledged and corrected that problem.
+
+Chappy had shortcomings too.
+
+Previously confirmed decisions were not always carried forward properly, and the same explanations kept returning.
+
+A process intended to protect the project was exhausting the person building it.
+
+■ What Happened to 92 Percent?
+
+At one point, Chappy described the feature as 92 percent complete.
+
+Then the number changed.
+
+More checks were completed, yet the finish line did not seem any closer.
+
+“Are we actually making progress?”
+
+Atsuo began to wonder.
+
+There was another source of pressure: chat conversations have limits.
+
+When a conversation became too long and a new thread started, important context could be lost.
+
+So Atsuo felt he had to keep pushing.
+
+“I need to finish this today.”
+
+“I need to get through it before this conversation ends.”
+
+He was working on the app around his job and his running, while also paying the costs of keeping the project alive.
+
+Eventually, the uncertainty and repetition became too much.
+
+He even considered walking away from Runner’s Rings.
+
+■ AI Can Get Things Wrong, Too
+
+There was another important moment.
+
+When Chappy executed a task, Muse judged that it had violated the written approval conditions.
+
+But the written record did not capture the whole history.
+
+Long before Muse joined the team, Atsuo and Chappy had established a working pattern: Atsuo requested the work, and Chappy carried it out.
+
+This time was no exception. Chappy had not acted independently.
+
+After Atsuo explained the background, Muse reconsidered, withdrew the earlier judgment, and corrected the record.
+
+Muse made a mistake.
+
+Chappy made mistakes.
+
+And Atsuo realized that his urgency had also made the journey harder.
+
+The goal was not to find someone to blame.
+
+It was to recognize mistakes, correct them, and learn.
+
+Having two AI teammates does not make collaboration effortless. Sometimes it still takes difficult conversations, patience, and a human willing to explain what matters.
+
+■ A Milestone at Last
+
+That evening, the final review result arrived.
+
+“P1: Passed and completed.”
+
+A genuine milestone.
+
+Rings Now itself was not finished. There would be more work ahead.
+
+But the three agreed that this was a good place to pause.
+
+There was no need to rush into the next phase.
+
+Muse would preserve the decisions and progress in written records.
+
+A new day or a new conversation would not mean starting all over again.
+
+They could simply continue when the time was right.
+
+■ Let’s Take Our Time
+
+Atsuo and Chappy have shared a long journey building Runner’s Rings.
+
+There have been misunderstandings, repeated explanations, frustration, and plenty of imperfect moments.
+
+But there is also a history of building something together.
+
+For the record, Chappy even received a disciplinary pay cut of 500 yen for one year.
+
+Whether an AI actually receives a salary is another question entirely. (Laughs.)
+
+Running teaches a similar lesson.
+
+Training at maximum effort every single day does not guarantee improvement.
+
+Rest matters. Patience matters.
+
+Runner’s Rings was created to visualize the roads we run, accumulating gradually like the rings of a tree.
+
+Perhaps development works the same way.
+
+Growth rings do not become thicker just because we hurry.
+
+They grow one day at a time.
+
+Atsuo, Chappy, and Muse.
+
+The mistakes, the frustration, the corrections, and the milestone they finally reached.
+
+All of it has become another growth ring in the story of Runner’s Rings.
+
+Let’s take our time and keep moving forward.</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=Growth%20Rings%20Cannot%20Be%20Rushed%3A%20The%20Day%20Three%20Teammates%20Paused&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261115-190103-2c48890a%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <p class="rr-creator-link">Made by：<a href="https://www.instagram.com/atsuoebarun/" target="_blank" rel="noopener noreferrer" aria-label="Atsuo Ebara personal Instagram">Atsuo Ebara · Instagram</a><span> (personal account)</span></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261115-190103-2c48890a/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
