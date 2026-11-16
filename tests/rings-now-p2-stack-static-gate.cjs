@@ -53,8 +53,12 @@ function inspectDisabledWorkflow(source) {
   if (/^\s+(?:push|pull_request|schedule|workflow_call|repository_dispatch):/m.test(source))
     failures.push('automatic_trigger');
   // A disabled job is insufficient when a second executable job can be added.
-  const jobNames = [...source.matchAll(/^  ([A-Za-z][\w-]*):\s*$/gm)]
-    .map(m => m[1]).filter(name => name !== 'workflow_dispatch');
+  // Restrict detection to the jobs mapping. Top-level permissions and
+  // concurrency also have two-space keys and must not be counted as jobs.
+  const jobsSection = source.match(/^jobs:\s*\n([\s\S]*)$/m);
+  const jobNames = jobsSection
+    ? [...jobsSection[1].matchAll(/^  ([A-Za-z][\w-]*):\s*$/gm)].map(m => m[1])
+    : [];
   if (jobNames.length !== 1 || jobNames[0] !== 'isolated-p2')
     failures.push('unexpected_job_topology');
   if (!/^  isolated-p2:\s*\n    if:\s*\$\{\{ false \}\}/m.test(source))
