@@ -17,7 +17,12 @@ const requiredSchema = [
   /ALTER TABLE public\.runs FORCE ROW LEVEL SECURITY;/,
   /USING \(user_id = \(SELECT auth\.uid\(\)\)\)/,
   /GRANT SELECT ON public\.runs TO authenticated;/,
-  /REVOKE ALL ON TABLE public\.runs FROM PUBLIC, anon, service_role;/
+  /REVOKE ALL ON TABLE public\.runs FROM PUBLIC, anon, service_role;/,
+  /REVOKE ALL ON SCHEMA auth FROM PUBLIC;/,
+  /REVOKE ALL ON SCHEMA public FROM PUBLIC;/,
+  /GRANT USAGE ON SCHEMA auth, public TO authenticated;/,
+  /REVOKE ALL ON FUNCTION auth\.uid\(\) FROM PUBLIC, anon, service_role;/,
+  /GRANT EXECUTE ON FUNCTION auth\.uid\(\) TO authenticated;/
 ];
 for(const rule of requiredSchema) assert.match(schema,rule);
 assert.match(candidate,/SECURITY INVOKER/);
