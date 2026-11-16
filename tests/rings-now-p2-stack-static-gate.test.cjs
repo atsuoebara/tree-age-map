@@ -4,7 +4,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {inspectIsolatedManifest, inspectDisabledWorkflow} =
+const {inspectIsolatedManifest, inspectP2Preflight, inspectP2Postflight, inspectDisabledWorkflow} =
   require('./rings-now-p2-stack-static-gate.cjs');
 const root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(
@@ -42,9 +42,32 @@ test('valid-looking pins cannot override other missing approvals', () => {
     checkoutCommit:'b'.repeat(40)};
   const result=inspectIsolatedManifest(next,{});
   assert.equal(result.pass,false);
-  assert.ok(result.failures.includes('auth_http_not_proven'));
+  assert.equal(result.phase, 'preflight');
+  assert.ok(!result.failures.includes('auth_http_not_proven'));
+  assert.ok(inspectP2Postflight(next, {}).failures.includes('auth_http_not_proven'));
 });
 test('production credential variables are always rejected', () => {
   const result=inspectIsolatedManifest(manifest,{SUPABASE_URL:''});
   assert.ok(result.failures.includes('forbidden_env_supabase_url'));
+});
+
+test('preflight and postflight explicitly separate HTTP evidence', () => {
+  const digest = 'sha256:' + 'a'.repeat(64);
+  const ready = {...manifest,
+    images:Object.fromEntries(['postgres','gotrue','postgrest'].map(k =>
+      [k,{reference:'example/'+k+'@'+digest,digest}])),
+    checkoutCommit:'b'.repeat(40),
+    billingZeroAdditionalCost:'VERIFIED_FOR_THIS_RUN',
+    independentAudit:'APPROVED_FOR_EXACT_HEAD',
+    explicitExecutionApproval:true,
+    authJwtCompatibility:'NOT_PROVEN'};
+  // Syntactic preflight is not a runtime authorization. Actual workflow stays disabled.
+  assert.deepEqual(inspectP2Preflight(ready, {}), {pass:true,phase:'preflight',failures:[]});
+  assert.ok(inspectP2Postflight(ready, {}).failures.includes('auth_http_not_proven'));
+  assert.ok(inspectIsolatedManifest(ready, {}, 'unknown').failures.includes('invalid_phase'));
+  assert.ok(inspectP2Preflight({...ready, explicitExecutionApproval:false}, {})
+    .failures.includes('execution_approval_missing'));
+  const claimed = {...ready,authJwtCompatibility:'PROVEN_BY_ISOLATED_HTTP'};
+  // Even postflight static PASS is just a declared marker, not witnessed evidence.
+  assert.deepEqual(inspectP2Postflight(claimed, {}), {pass:true,phase:'postflight',failures:[]});
 });
