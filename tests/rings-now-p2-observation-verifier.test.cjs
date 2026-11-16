@@ -53,3 +53,16 @@ test('anonymous HTTP denial accepted, but body must not expose rows',()=>{
   assert.throws(()=>verifyScenarioObservation(get('no_auth'),{httpStatus:403,
     body:{rows:[]}}));
 });
+
+test('reject incorrect values even with matching owner and IDs',()=>{
+  const scenario=get('six_digit_timestamp');
+  const date=success(scenario.id);
+  date.body.rows[0].activity_date='2026-11-09';
+  assert.throws(()=>verifyScenarioObservation(scenario,date),/date mismatch/);
+  const distance=success(scenario.id);
+  distance.body.rows[0].distance_km=4.5;
+  assert.throws(()=>verifyScenarioObservation(scenario,distance),/distance mismatch/);
+  const timestamp=success(scenario.id);
+  timestamp.body.rows[0].started_at='2026-11-10T00:00:00.123457+00:00';
+  assert.throws(()=>verifyScenarioObservation(scenario,timestamp),/timestamp mismatch/);
+});
