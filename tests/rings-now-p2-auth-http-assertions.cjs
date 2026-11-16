@@ -50,7 +50,22 @@ function assertExpired(claims, nowSeconds) {
   assert.ok(claims.exp <= nowSeconds, 'JWT is not expired');
   // This alone cannot prove the server rejected the token: assertHttpRejected must also pass.
 }
+// Atomic assertion for the future runner: neither expiry nor server rejection alone passes.
+// Runner must supply the exact token used for the HTTP request and the real response;
+// this pure helper cannot itself prove that provenance or cryptographic signature.
+function assertExpiredTokenRejected(observation) {
+  assert.ok(observation && typeof observation === 'object' && !Array.isArray(observation),
+    'expiry observation missing');
+  assert.ok(Object.hasOwn(observation, 'token'), 'request token missing');
+  assert.ok(Object.hasOwn(observation, 'response'), 'server response missing');
+  assert.ok(Object.hasOwn(observation, 'nowSeconds'), 'observation time missing');
+  const claims = parseJwtPayload(observation.token);
+  assert.ok(Number.isInteger(claims.exp) && claims.exp > 0, 'JWT exp invalid');
+  assertExpired(claims, observation.nowSeconds);
+  assertHttpRejected(observation.response);
+  return true;
+}
 module.exports = {
   parseJwtPayload, assertJwtClaims, assertNoOtherOwnerRows,
-  assertBlocked, assertHttpRejected, assertExpired
+  assertBlocked, assertHttpRejected, assertExpired, assertExpiredTokenRejected
 };
