@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED_NOT_RUN",
+  "images": {
+    "postgres": {
+      "reference": null,
+      "digest": null
+    },
+    "gotrue": {
+      "reference": null,
+      "digest": null
+    },
+    "postgrest": {
+      "reference": null,
+      "digest": null
+    }
+  },
+  "checkoutCommit": null,
+  "authJwtCompatibility": "NOT_PROVEN",
+  "billingZeroAdditionalCost": "NOT_VERIFIED",
+  "independentAudit": "PENDING",
+  "explicitExecutionApproval": false,
+  "productionAccess": false
+}
