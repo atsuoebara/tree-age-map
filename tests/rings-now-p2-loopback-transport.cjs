@@ -5,6 +5,7 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 const MAX_RESPONSE_BYTES = 65536;
 const TIMEOUT_MS = 3000;
+const ABSOLUTE_DEADLINE_MS = 5000;
 function createLoopbackTransport() {
   return async function request({ endpoint, method, authorization, body }) {
     assert.equal(method, 'POST');
@@ -24,6 +25,7 @@ function createLoopbackTransport() {
     // Force direct loopback socket; URL hostname is never resolved.
     const host = url.hostname === '[::1]' ? '::1' : '127.0.0.1';
     return await new Promise((resolve, reject) => {
+      let deadline;
       const req = http.request({
         hostname: host, port: Number(url.port), path: url.pathname,
         method: 'POST', agent: false, timeout: TIMEOUT_MS,
@@ -44,6 +46,10 @@ function createLoopbackTransport() {
         res.on('end', () => resolve({status: res.statusCode}));
         res.on('error', reject);
       });
+      // Absolute wall-clock deadline, independent of socket activity or trickle responses.
+      deadline = setTimeout(() => req.destroy(new Error('HTTP absolute deadline exceeded')), ABSOLUTE_DEADLINE_MS);
+      deadline.unref?.();
+      req.on('close', () => clearTimeout(deadline));
       req.on('timeout', () => req.destroy(new Error('HTTP timeout')));
       req.on('error', reject);
       req.end('{}');
