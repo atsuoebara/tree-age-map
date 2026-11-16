@@ -1,0 +1,18 @@
+# P2 isolated stack scaffold — DISABLED. Do not dispatch.
+# No images, DB, Auth, HTTP or secrets are used by this workflow.
+name: Rings Now P2 isolated stack (DISABLED)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rings-now-p2-isolated-manual
+  cancel-in-progress: false
+jobs:
+  isolated-p2:
+    if: ${{ false }} # hard stop: must not be lifted without independent audit + explicit approval
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Disabled until digest, billing and approval gates pass
+        run: exit 1
