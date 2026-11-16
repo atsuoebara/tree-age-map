@@ -28,6 +28,7 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON TABLE public.runs FROM PUBLIC, anon, service_role;
 GRANT USAGE ON SCHEMA auth, public TO authenticated;
 GRANT SELECT ON public.runs TO authenticated;
+REVOKE ALL ON FUNCTION auth.uid() FROM PUBLIC, anon, service_role;
 GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;
 COMMIT;
 -- Runner must create login authenticator role with NOINHERIT and grant membership,
