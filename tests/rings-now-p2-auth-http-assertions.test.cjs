@@ -27,3 +27,17 @@ test('expired claims and HTTP rejection must both be observed separately',()=>{
   assert.throws(()=>p.assertExpired(claims,99));
   assert.throws(()=>p.assertHttpRejected({status:200}));
 });
+
+test('atomic expiry-and-rejection assertion rejects incomplete observations',()=>{
+  const observation = {token:token(claims),nowSeconds:100,response:{status:401}};
+  assert.equal(p.assertExpiredTokenRejected(observation),true);
+  for (const key of ['token','nowSeconds','response']) {
+    const missing = {...observation};
+    delete missing[key];
+    assert.throws(()=>p.assertExpiredTokenRejected(missing),key+' omitted');
+  }
+  assert.throws(()=>p.assertExpiredTokenRejected({...observation,nowSeconds:99}));
+  assert.throws(()=>p.assertExpiredTokenRejected({...observation,response:{status:200}}));
+  assert.throws(()=>p.assertExpiredTokenRejected({...observation,response:{status:'401'}}));
+  assert.throws(()=>p.assertExpiredTokenRejected({...observation,token:token({...claims,exp:101})}));
+});
