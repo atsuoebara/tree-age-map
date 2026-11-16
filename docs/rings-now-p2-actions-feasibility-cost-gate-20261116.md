@@ -47,3 +47,11 @@
 
 ## 6. むせへの文書監査依頼
 既存PG17 CIの証明範囲、実Auth/PostgREST未証明、E1〜E7、A1〜A6、追加費用0円の未確定表示、PC非依存、本番非接続・本番OFF・PR #109 HOLDの整合を確認。**文書だけを監査し、workflowを実行しないこと。**
+
+## 7. 2026-11-16 読み取り調査追補（追補79の文書監査後）
+- GitHub repository metadata API の `visibility` は **public**、既定ブランチ `main`。これはリポジトリ公開設定の直接確認であり、請求画面の確認ではない。
+- 現行の `rings-now-pg17-isolated-candidate.yml` は `runs-on: ubuntu-latest`（GitHub-hosted standard runner）、`timeout-minutes: 10`、PostgreSQL 17サービスを使用。
+- GitHub公式ドキュメントは、公開リポジトリの標準GitHub-hosted runnerのActions利用を無料と案内している。ただし、この原則を**将来のP2追加ワークフロー全体の無条件0円保証と取り違えない**。GitHub-hosted larger runner、外部サービス、アーティファクト保存・保持、依存イメージ等の利用条件は個別確認する。
+- 現在のGitHub請求画面、Actions使用状況、保存容量、課金設定はこのコネクタでは**未確認**。実行時の料金設定を確認するゲート E3 は **TBDのまま**。
+- **今回の調査ではActions実行・workflow追加・SQL適用・DB変更・本番ONは一切していない**。今後のActions版チェックシートは#162のPC版を無断置換せず別PRで設計する。
+- 参照: https://docs.github.com/en/actions/concepts/billing-and-usage 、https://docs.github.com/en/billing/concepts/product-billing/github-actions 。
