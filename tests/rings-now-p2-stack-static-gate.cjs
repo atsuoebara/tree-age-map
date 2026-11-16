@@ -23,6 +23,10 @@ function inspectIsolatedManifest(manifest, env = {}, phase = 'preflight') {
   if (phase !== 'preflight' && phase !== 'postflight')
     fail('invalid_phase');
   if (manifest.schemaVersion !== 1) fail('unknown_manifest_schema');
+  const expectedStatus = phase === 'postflight'
+    ? 'EVIDENCE_RECORDED' : 'READY_FOR_REVIEW';
+  if (manifest.status !== expectedStatus)
+    fail('manifest_not_in_phase');
   for (const key of IMAGE_KEYS) {
     const image = manifest.images?.[key];
     if (!image || typeof image.reference !== 'string' ||
