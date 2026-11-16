@@ -74,7 +74,7 @@ test('FAIL observation persists even if cleanup succeeds', async () => {
   assert.equal(result.status,'FAIL');
 });
 test('all three callbacks are mandatory before any work', async () => {
-  assert.throws(()=>runWithVerifiedCleanup({execute:()=>{},cleanup:()=>{}}));
-  assert.throws(()=>runWithVerifiedCleanup({execute:()=>{},verifyCleanup:()=>{}}));
-  assert.throws(()=>runWithVerifiedCleanup({cleanup:()=>{},verifyCleanup:()=>{}}));
+  await assert.rejects(()=>runWithVerifiedCleanup({execute:()=>{},cleanup:()=>{}}));
+  await assert.rejects(()=>runWithVerifiedCleanup({execute:()=>{},verifyCleanup:()=>{}}));
+  await assert.rejects(()=>runWithVerifiedCleanup({cleanup:()=>{},verifyCleanup:()=>{}}));
 });
