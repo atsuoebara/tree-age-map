@@ -15,6 +15,7 @@ test('real checked-in manifest remains BLOCKED', () => {
   const result = inspectIsolatedManifest(manifest, {});
   assert.equal(result.pass, false);
   assert.ok(result.failures.includes('billing_not_verified'));
+  assert.ok(result.failures.includes('manifest_not_in_phase'));
   assert.ok(result.failures.includes('execution_approval_missing'));
   for (const key of ['postgres','gotrue','postgrest'])
     assert.ok(result.failures.includes('image_unpinned_' + key));
@@ -57,6 +58,7 @@ test('preflight and postflight explicitly separate HTTP evidence', () => {
     images:Object.fromEntries(['postgres','gotrue','postgrest'].map(k =>
       [k,{reference:'example/'+k+'@'+digest,digest}])),
     checkoutCommit:'b'.repeat(40),
+    status:'READY_FOR_REVIEW',
     billingZeroAdditionalCost:'VERIFIED_FOR_THIS_RUN',
     independentAudit:'APPROVED_FOR_EXACT_HEAD',
     explicitExecutionApproval:true,
@@ -67,7 +69,8 @@ test('preflight and postflight explicitly separate HTTP evidence', () => {
   assert.ok(inspectIsolatedManifest(ready, {}, 'unknown').failures.includes('invalid_phase'));
   assert.ok(inspectP2Preflight({...ready, explicitExecutionApproval:false}, {})
     .failures.includes('execution_approval_missing'));
-  const claimed = {...ready,authJwtCompatibility:'PROVEN_BY_ISOLATED_HTTP'};
+  assert.ok(inspectP2Preflight({...ready,status:'BLOCKED_NOT_RUN'}, {}).failures.includes('manifest_not_in_phase'));
+  const claimed = {...ready,status:'EVIDENCE_RECORDED',authJwtCompatibility:'PROVEN_BY_ISOLATED_HTTP'};
   // Even postflight static PASS is just a declared marker, not witnessed evidence.
   assert.deepEqual(inspectP2Postflight(claimed, {}), {pass:true,phase:'postflight',failures:[]});
 });
