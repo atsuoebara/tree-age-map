@@ -12,14 +12,15 @@ const sql = sqlBytes.toString('utf8');
 const ci = read('.github/workflows/rings-now-pg17-isolated-candidate.yml').toString('utf8');
 const contract = read('docs/rings-now-p2-actions-implementation-contract-20261116.md').toString('utf8');
 const hash = b => crypto.createHash('sha256').update(b).digest('hex');
-const EXPECTED_SQL_SHA256 = 'c8bb8bfdeb1e2e88bea422aa76c27d094127bdea';
+const EXPECTED_SQL_GIT_BLOB_SHA1 = 'c8bb8bfdeb1e2e88bea422aa76c27d094127bdea';
+const gitBlobSha1 = b => crypto.createHash('sha1').update(Buffer.from('blob ' + b.length + '\\0')).update(b).digest('hex');
 const results = [];
 const check = (name, condition) => results.push([name, Boolean(condition)]);
 // Remove line comments before structural checks; not a full SQL parser.
 // SHA256 exact-byte equality is the primary SQL drift gate.
 const sqlBody = sql.replace(/^\s*--.*$/gm, '');
 check('candidate SQL byte length 4033', sqlBytes.length === 4033);
-check('candidate SQL expected SHA256', hash(sqlBytes) === EXPECTED_SQL_SHA256);
+check('candidate SQL expected Git blob SHA1', gitBlobSha1(sqlBytes) === EXPECTED_SQL_GIT_BLOB_SHA1);
 check('SQL function declaration', /CREATE\s+OR\s+REPLACE\s+FUNCTION\s+public\.rings_now_snapshot_candidate_v01\s*\(\s*\)/i.test(sqlBody));
 check('SQL SECURITY INVOKER outside comments', /\bSECURITY\s+INVOKER\b/i.test(sqlBody) && !/\bSECURITY\s+DEFINER\b/i.test(sqlBody));
 check('SQL 1001 cap outside comments', /\bLIMIT\s+1001\b/i.test(sqlBody));
