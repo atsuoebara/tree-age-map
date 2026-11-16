@@ -28,8 +28,10 @@ test('workflow remains manual and hard stopped', () => {
   const extraJob = workflow + '\n  bypass-job:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo bypass\n';
   assert.ok(inspectDisabledWorkflow(extraJob).failures.includes('unexpected_job_topology'));
   // Top-level permissions/concurrency are not extra jobs; removing jobs must fail.
-  const missingJobs = workflow.replace(/^jobs:\\s*$/m, 'disabled_jobs:');
+  const missingJobs = workflow.replace(/^jobs:\s*$/m, 'disabled_jobs:');
   assert.ok(inspectDisabledWorkflow(missingJobs).failures.includes('unexpected_job_topology'));
+  const extraTopLevel = workflow.replace('jobs:', 'permissions:');
+  assert.ok(inspectDisabledWorkflow(extraTopLevel).failures.includes('unexpected_job_topology'));
   const changedStep = workflow.replace('run: exit 1', 'uses: actions/checkout@v4');
   assert.ok(inspectDisabledWorkflow(changedStep).failures.includes('active_dependency_not_allowed'));
 });
