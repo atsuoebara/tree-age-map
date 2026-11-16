@@ -10,12 +10,18 @@ const FORBIDDEN_ENV = [
   'DATABASE_URL', 'PGHOST', 'PGPASSWORD', 'GOTRUE_JWT_SECRET',
   'POSTGREST_JWT_SECRET'
 ];
-function inspectIsolatedManifest(manifest, env = {}) {
+// These are static declaration checks, NOT execution permission or evidence of
+// actual Auth, billing, registry integrity or runtime isolation.
+// Phase 1: before a separately approved isolated run, real HTTP proof is
+// necessarily unavailable. Phase 2: after a run, require its evidence marker.
+function inspectIsolatedManifest(manifest, env = {}, phase = 'preflight') {
   const failures = [];
   const fail = (code) => failures.push(code);
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
     return {pass:false, failures:['invalid_manifest']};
   }
+  if (phase !== 'preflight' && phase !== 'postflight')
+    fail('invalid_phase');
   if (manifest.schemaVersion !== 1) fail('unknown_manifest_schema');
   for (const key of IMAGE_KEYS) {
     const image = manifest.images?.[key];
@@ -29,8 +35,12 @@ function inspectIsolatedManifest(manifest, env = {}) {
   }
   if (!/^[a-f0-9]{40}$/.test(manifest.checkoutCommit || ''))
     fail('checkout_commit_unpinned');
-  if (manifest.authJwtCompatibility !== 'PROVEN_BY_ISOLATED_HTTP')
+  if (phase === 'postflight' &&
+      manifest.authJwtCompatibility !== 'PROVEN_BY_ISOLATED_HTTP')
     fail('auth_http_not_proven');
+  if (phase === 'preflight' &&
+      !['NOT_PROVEN', 'PROVEN_BY_ISOLATED_HTTP'].includes(manifest.authJwtCompatibility))
+    fail('auth_http_status_invalid');
   if (manifest.billingZeroAdditionalCost !== 'VERIFIED_FOR_THIS_RUN')
     fail('billing_not_verified');
   if (manifest.independentAudit !== 'APPROVED_FOR_EXACT_HEAD')
@@ -43,7 +53,13 @@ function inspectIsolatedManifest(manifest, env = {}) {
     if (Object.prototype.hasOwnProperty.call(env, key))
       fail('forbidden_env_' + key.toLowerCase());
   }
-  return {pass:failures.length === 0, failures};
+  return {pass:failures.length === 0, phase, failures};
+}
+function inspectP2Preflight(manifest, env = {}) {
+  return inspectIsolatedManifest(manifest, env, 'preflight');
+}
+function inspectP2Postflight(manifest, env = {}) {
+  return inspectIsolatedManifest(manifest, env, 'postflight');
 }
 function inspectDisabledWorkflow(source) {
   assert.equal(typeof source, 'string');
@@ -71,4 +87,4 @@ function inspectDisabledWorkflow(source) {
     failures.push('permissions_mismatch');
   return {pass:failures.length === 0, failures};
 }
-module.exports = {inspectIsolatedManifest, inspectDisabledWorkflow};
+module.exports = {inspectIsolatedManifest, inspectP2Preflight, inspectP2Postflight, inspectDisabledWorkflow};
