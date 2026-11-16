@@ -25,7 +25,7 @@ test('workflow remains manual and hard stopped', () => {
     'if: ${{ false }}', 'if: ${{ true }}')).failures.includes('hard_stop_missing'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     '  workflow_dispatch:', '  push:')).failures.includes('not_exact_manual_trigger'));
-  const extraJob = workflow + '\\n  bypass-job:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - run: echo bypass\\n';
+  const extraJob = workflow + '\n  bypass-job:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo bypass\n';
   assert.ok(inspectDisabledWorkflow(extraJob).failures.includes('unexpected_job_topology'));
   const changedStep = workflow.replace('run: exit 1', 'uses: actions/checkout@v4');
   assert.ok(inspectDisabledWorkflow(changedStep).failures.includes('active_dependency_not_allowed'));
