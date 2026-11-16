@@ -16,3 +16,9 @@ Review focus: no network/process effects on import, immutable references require
 2. **Postflight declaration check:** `inspectP2Postflight()` additionally requires `authJwtCompatibility: PROVEN_BY_ISOLATED_HTTP`. That text value alone is **not evidence**. Independent reviewers must examine redacted original HTTP/JWT logs, timestamps and provenance before assigning A1–A6 PASS.
 
 Neither function is connected to Actions; neither is authority to remove `if: ${{ false }}`, dispatch a run, or change SQL/DB. A static PASS only establishes syntactic declarations. Actual billing evidence and owner approval are external, separately recorded gates; placeholders may not be self-certified. P2 run approval remains NO.
+
+## Manifest phase consistency (2026-11-17)
+
+`BLOCKED_NOT_RUN` cannot pass either static phase inspection even when other fields are syntactically populated. The preflight declaration requires `status: READY_FOR_REVIEW` and postflight requires `status: EVIDENCE_RECORDED`. These status values are **not proofs of actual approval, execution or evidence**; the runtime workflow remains disabled and a separate independent check of original records is mandatory. No status has been changed in the checked-in manifest.
+
+A local Node 22 reconstruction of the five unit tests passed (5/5); the reconstructed copy is **not byte-verified against the GitHub files**. A GitHub Actions/P2 execution has not been performed.
