@@ -13,11 +13,11 @@ const ci = read('.github/workflows/rings-now-pg17-isolated-candidate.yml').toStr
 const contract = read('docs/rings-now-p2-actions-implementation-contract-20261116.md').toString('utf8');
 const hash = b => crypto.createHash('sha256').update(b).digest('hex');
 const EXPECTED_SQL_GIT_BLOB_SHA1 = 'c8bb8bfdeb1e2e88bea422aa76c27d094127bdea';
-const gitBlobSha1 = b => crypto.createHash('sha1').update(Buffer.from('blob ' + b.length + '\\0')).update(b).digest('hex');
+const gitBlobSha1 = b => crypto.createHash('sha1').update(Buffer.from('blob ' + b.length + String.fromCharCode(0))).update(b).digest('hex');
 const results = [];
 const check = (name, condition) => results.push([name, Boolean(condition)]);
 // Remove line comments before structural checks; not a full SQL parser.
-// SHA256 exact-byte equality is the primary SQL drift gate.
+// Verified Git blob SHA1 equality is the primary SQL byte-drift gate.
 const sqlBody = sql.replace(/^\s*--.*$/gm, '');
 check('candidate SQL byte length 4033', sqlBytes.length === 4033);
 check('candidate SQL expected Git blob SHA1', gitBlobSha1(sqlBytes) === EXPECTED_SQL_GIT_BLOB_SHA1);
