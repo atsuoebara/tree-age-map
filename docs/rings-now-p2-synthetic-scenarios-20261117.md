@@ -11,3 +11,10 @@ The pure Node module defines 10 deterministic **synthetic scenario inputs and ex
 - Future implementation must derive rows from actual PostgREST RPC, not copy the expected result from this fixture.
 
 No workflow/manifest/candidate SQL/production file changes. Hard stop remains `if: ${{ false }}`; P2 approval, billing evidence and immutable image digests remain unavailable.
+
+## Observation comparison helper (added on the same PR)
+
+- `tests/rings-now-p2-observation-verifier.cjs` compares **caller-supplied** HTTP status and parsed RPC JSON to each synthetic case. It requires exactly six fields, correct owner/undeleted rows, expected sorted IDs and exact block reason with no rows, detecting leakage even when a caller claims success.
+- `tests/rings-now-p2-observation-verifier.test.cjs` defines six pure, adversarial Node tests. These are not substitutes for real GoTrue/PostgREST, RLS, signed JWT validation, authenticated transport, or an independently witnessed run.
+- The helper does **not** establish HTTP origin, real signed JWT verification, microsecond expiry semantics, or SQL snapshot consistency. In particular, the eight-day boundary case always refuses to PASS through this generic RPC comparator.
+- No test has been run for these newly added helper files at this point. Independent audit must reproduce tests from the exact GitHub HEAD and confirm expected/actual evidence is not self-generated in a future P2 runner.
