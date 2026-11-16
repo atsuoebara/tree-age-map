@@ -35,6 +35,7 @@ function verifyScenarioObservation(scenario, observation) {
   assert.equal(expected.length,scenario.expect.rowCount,'fixture inconsistent');
   const expectedIds=expected.map(row=>row.id).sort((a,b)=>a-b);
   const seenIds=[];
+  const expectedById=new Map(expected.map(row=>[row.id,row]));
   for (const row of result.rows) {
     assert.ok(row && typeof row==='object' && !Array.isArray(row),'row must be object');
     assert.deepEqual(Object.keys(row).sort(),REQUIRED);
@@ -44,6 +45,12 @@ function verifyScenarioObservation(scenario, observation) {
     assert.ok(Number.isFinite(row.distance_km),'finite distance required');
     assert.equal(typeof row.activity_date,'string');
     assert.equal(typeof row.started_at,'string');
+    const expectedRow=expectedById.get(row.id);
+    assert.ok(expectedRow, 'unrecognized row ID');
+    assert.equal(row.activity_date,expectedRow.activity_date,'date mismatch');
+    assert.equal(row.distance_km,expectedRow.distance_km,'distance mismatch');
+    // Precision loss is not permitted; do not parse microseconds via JS Date.
+    assert.equal(row.started_at,expectedRow.started_at,'timestamp mismatch');
     seenIds.push(row.id);
   }
   assert.deepEqual(seenIds,expectedIds,'unexpected IDs or ordering');
