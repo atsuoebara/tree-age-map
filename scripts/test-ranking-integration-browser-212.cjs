@@ -35,7 +35,12 @@ const html=fs.readFileSync('ranking.html','utf8');
    return route.fulfill({status:200,contentType:'text/plain',body:''});
  });
  // file URL avoids any external HTTP use. The Supabase JS SDK itself is replaced by a fixture.
+ // Seed a previous release's sensitive nation-month cache before page startup.
+ await page.addInitScript(()=>{
+   localStorage.setItem('rr-public-ranking-v1:nations:2026:11',JSON.stringify({savedAt:Date.now(),data:[{country:'JP',month_km:98765.4}]}));
+ });
  await page.goto('file://'+path.resolve('ranking.html'),{waitUntil:'domcontentloaded'});
+ assert.equal(await page.evaluate(()=>localStorage.getItem('rr-public-ranking-v1:nations:2026:11')),null,'Old nation cache should be purged on startup');
  await page.waitForSelector('#distanceRanking .row');
  assert.equal(await page.locator('#rankingModeMonth').isDisabled(),true);
  assert.equal(await page.locator('#rankingModeMonth').getAttribute('aria-pressed'),'false');
@@ -48,6 +53,15 @@ const html=fs.readFileSync('ranking.html','utf8');
  const stored=await page.evaluate(()=>Object.keys(localStorage).filter(x=>x.includes('nations:')).map(x=>JSON.parse(localStorage.getItem(x)).data));
  assert.ok(stored.length>0,'NATIONS cached data missing');
  assert.ok(stored.every(a=>a.every(r=>r.month_km===null)),'NATIONS cache leaked month_km');
+ // Search must not expose private totals and must filter the current visible tab.
+ await page.locator('[data-panel="distance"]').click();
+ await page.locator('#rankingSearch').fill('Runner A');
+ assert.equal(await page.locator('#distanceRanking .row:visible').count(),1);
+ await page.locator('#rankingSearch').fill('nobody-in-this-fixture');
+ assert.equal(await page.locator('#distanceRanking .row:visible').count(),0);
+ await page.locator('#rankingSearch').fill('');
+ await page.locator('[data-panel="nations"]').click();
+ assert.equal(await page.locator('#nationsRanking .monthlyScore').count(),0);
  await page.locator('[data-language="en"]').click();
  await page.waitForTimeout(100);
  assert.equal(await page.locator('#nationsRanking .monthlyScore').count(),0);
@@ -63,6 +77,13 @@ const html=fs.readFileSync('ranking.html','utf8');
  assert.ok(calls.some(x=>x.name==='ranking_explore_monthly'&&x.args.p_year===2025&&x.args.p_month===12));
  assert.ok(calls.some(x=>x.name==='ranking_nations_monthly'&&x.args.p_year===2025&&x.args.p_month===12));
  assert.ok(!calls.some(x=>x.name.includes('_month_places')),'OFF mode called a monthly ranking RPC');
+ // Existing image-share entry points must stay wired. Test canvas creation without opening native share UI.
+ assert.equal(await page.locator('#rankingStorySave').count(),1);
+ assert.equal(await page.locator('#rankingStoryShare').count(),1);
+ assert.equal(await page.locator('#shareRanking').count(),1);
+ assert.equal(await page.evaluate(()=>typeof rankingStoryCanvas),'function');
+ const canvas=await page.evaluate(()=>{const c=rankingStoryCanvas();return {width:c.width,height:c.height}});
+ assert.ok(canvas.width>0&&canvas.height>0,'Story image canvas dimensions should be valid');
  assert.deepEqual(errors,[]);
  await browser.close();
  console.log('PASS synthetic browser: 375px/no overflow, annual RPC, month OFF, NATIONS no delta/cached null, language, year/month, EXPLORE');
