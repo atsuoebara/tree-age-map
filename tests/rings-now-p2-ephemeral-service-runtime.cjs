@@ -62,7 +62,7 @@ function createEphemeralP2Runtime(){
   }
   // Hex-only per-run password; never embed production data or arbitrary SQL.
   const sql='BEGIN;\n'+
-   'CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD \'\''+authPw+'\'\';\n'+
+   "CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '"+authPw+"';\n"+
    'GRANT anon TO authenticator;\n'+
    'GRANT authenticated TO authenticator;\nCOMMIT;\n';
   const fd=fs.openSync(bootstrapSqlFile,'wx',0o600);
