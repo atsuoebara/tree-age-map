@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "AUDITOR_REPORTED_REGISTRY_OBSERVATION",
+  "status": "EVIDENCE_HANDOFF_NOT_G1_APPROVAL",
+  "observedAtApprox": "2026-11-17T14:47:00+09:00",
+  "precision": "approximate_minute_from_Muse_addendum_108",
+  "registry": "registry-1.docker.io",
+  "platform": "linux/amd64",
+  "sourceRecords": [
+    {
+      "component": "postgres",
+      "tag": "17.12-trixie",
+      "repository": "docker.io/library/postgres",
+      "platformManifestDigest": "sha256:6f7593c161689b6b02c78668b314af7da8811b592c5519108c57a49d0b6ad788",
+      "indexDigestAtAudit": "sha256:0d938e975177bef9f1f61f3f9dbcf2e0aa0a139568f66d3415ed8892eb97f6ac",
+      "previousPageIndexDigest": "sha256:dbb9623d5121b5d2c2c9e2fba56e40193cbb3510d4af7f035b1ab1823aff3205"
+    },
+    {
+      "component": "gotrue",
+      "tag": "v2.197.0",
+      "repository": "docker.io/supabase/gotrue",
+      "platformManifestDigest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+      "indexDigestAtAudit": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b"
+    },
+    {
+      "component": "postgrest",
+      "tag": "v14.18",
+      "repository": "docker.io/postgrest/postgrest",
+      "platformManifestDigest": "sha256:c847127074bd26e1b8d3f7c0e6e01e5346f4b85dd34f5d699fd230af960827c0",
+      "indexDigestAtAudit": "sha256:c7cd7e265a85b05248abf53f4473fcec7e327c282d0bd0cf60f1551996d09fcf"
+    }
+  ],
+  "auditorReport": "Muse addendum 108, confirmed against addendum 109",
+  "registryProofSummary": "Auditor reported raw index response SHA-256 equal to returned digest headers, and child manifest bytes fetched by digest with matching SHA-256 for all three components.",
+  "originalRawRegistryResponseIncluded": false,
+  "rawHeaderDumpIncluded": false,
+  "exactRequestAcceptHeadersIncluded": false,
+  "registryClientVersionIncluded": false,
+  "independentlyRecheckedForThisPR": false,
+  "notes": [
+    "Do not convert this file into manifest values without a separately approved audited change.",
+    "PostgreSQL tag index drift is distinct from unchanged linux/amd64 child digest.",
+    "Subsequent auditor retry timed out on Docker Hub authentication; evidence refers to the recorded earlier observation."
+  ],
+  "g1Verified": false,
+  "p2ExecutionAuthorized": false
+}
