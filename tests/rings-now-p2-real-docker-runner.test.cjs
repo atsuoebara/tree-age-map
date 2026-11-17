@@ -175,3 +175,45 @@ test('failure before trusted empty baseline cannot delete unknown resources',asy
  assert.equal(d.argvs.length,0);
  assert.equal(result.g3Verified,false);
 });
+
+test('integrated runner passes ephemeral files to real adapter code and disposes',async()=>{
+ const d=fakeDocker(),tracked={disposed:0};
+ const runtimeFactory=()=>({
+  envFiles:{postgres:'/tmp/rn-p2-abcdefghi/postgres.env',
+   gotrue:'/tmp/rn-p2-abcdefghi/gotrue.env',
+   postgrest:'/tmp/rn-p2-abcdefghi/postgrest.env'},
+  dispose(){tracked.disposed++;}
+ });
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory});
+ assert.equal(r.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
+ assert.equal(tracked.disposed,1);
+ const creates=d.argvs.filter(x=>x[1]==='container'&&x[2]==='create');
+ assert.equal(creates.length,3);
+ assert.ok(creates.every(x=>x.includes('--env-file')&&x.includes('--tmpfs')));
+ assert.ok(creates.every(x=>!x.includes('--env')));
+ assert.equal(d.owned.size,0);
+ assert.equal(r.g3Verified,false);
+});
+test('emergency exception path always disposes ephemeral runtime',async()=>{
+ const d=fakeDocker();let calls=0,disposed=0;
+ const r=await runRealP2DockerLifecycle({...base,
+  manifest:approvedFixture(),commandFactory:d.commandFactory,
+  runtimeFactory:()=>({
+   envFiles:{postgres:'/tmp/rn-p2-abcdefghi/postgres.env',
+    gotrue:'/tmp/rn-p2-abcdefghi/gotrue.env',
+    postgrest:'/tmp/rn-p2-abcdefghi/postgrest.env'},
+   dispose(){disposed++;}
+  }),
+  nowMs:()=>{calls++;if(calls===5)throw Error('clock');return calls;}
+ });
+ assert.equal(r.status,'FAIL');assert.equal(disposed,1);
+ assert.equal(d.owned.size,0);
+});
+test('blocked active manifest does not create an ephemeral runtime',async()=>{
+ let created=0;
+ const r=await runRealP2DockerLifecycle({...base,
+  runtimeFactory:()=>{created++;throw Error('not allowed');}});
+ assert.equal(r.status,'BLOCKED_NOT_RUN');
+ assert.equal(created,0);
+});

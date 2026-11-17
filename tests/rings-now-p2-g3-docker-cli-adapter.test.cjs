@@ -112,3 +112,34 @@ test('empty-list vs missing-container behavior is never inferred as verified rea
  assert.deepEqual(await d.adapter.listOwned(R),[]);
  assert.equal(d.adapter.evidenceKind,'DOCKER_CLI_ADAPTER_NOT_ADMITTED');
 });
+
+test('ephemeral service config uses env-file and tmpfs without argv credentials',async()=>{
+ const d=fake();await d.adapter.createNetwork(spec);
+ for(const service of ['postgres','gotrue','postgrest']){
+  await d.adapter.createContainer({...c(service),
+   environment:'EPHEMERAL_SERVICE_ENV_FILE',
+   runtime:{envFile:'/tmp/rn-p2-abcdefghi/'+service+'.env',networkOnly:true}});
+ }
+ const created=d.calls.filter(x=>x[0]==='container'&&x[1]==='create');
+ assert.equal(created.length,3);
+ for(const args of created){
+  assert.ok(args.includes('--env-file'));
+  assert.ok(args.includes('--tmpfs'));
+  assert.ok(!args.includes('--env'));
+  assert.ok(!args.includes('--publish'));
+  assert.ok(!args.some(x=>x.includes('JWT_SECRET=')||x.includes('POSTGRES_PASSWORD=')));
+ }
+ const pg=created.find(x=>x.includes(R+'_postgres'));
+ assert.ok(pg.includes('/var/lib/postgresql/data:rw,nosuid,nodev,size=128m'));
+});
+test('reject invalid env-file location and wrong service file before Docker',async()=>{
+ const invalid=['/etc/passwd','/tmp/rn-p2-abcdefghi/gotrue.env',
+  '/tmp/rn-p2-abcdefghi/postgres.env;rm','/tmp/rn-p2-abc/postgres.env'];
+ for(const file of invalid){
+  const d=fake();
+  await assert.rejects(()=>d.adapter.createContainer({...c('postgres'),
+   environment:'EPHEMERAL_SERVICE_ENV_FILE',
+   runtime:{envFile:file,networkOnly:true}}));
+  assert.equal(d.calls.length,0);
+ }
+});

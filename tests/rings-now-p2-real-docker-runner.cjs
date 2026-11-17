@@ -9,6 +9,7 @@ const {inspectP2Preflight}=require('./rings-now-p2-stack-static-gate.cjs');
 const {runWithSharedTimeBudget}=require('./rings-now-p2-shared-time-budget.cjs');
 const {createDockerCliAdapter}=require('./rings-now-p2-g3-docker-cli-adapter.cjs');
 const {createBoundedDockerCommand}=require('./rings-now-p2-g3-bounded-docker-command.cjs');
+const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
 const activeManifest=require('./rings-now-p2-isolated-manifest.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
@@ -41,7 +42,8 @@ async function runRealP2DockerLifecycle({
  runId,manifest=activeManifest,nowMs=()=>performance.now(),
  totalMs=540000,reserveMs=120000,verifyReserveMs=30000,
  commandFactory=createBoundedDockerCommand,
- adapterFactory=createDockerCliAdapter
+ adapterFactory=createDockerCliAdapter,
+ runtimeFactory=createEphemeralP2Runtime
 }={}){
  assert.match(runId||'',RUN);
  // No Docker execFile, daemon query, process spawn or network before gates.
@@ -50,7 +52,7 @@ async function runRealP2DockerLifecycle({
  // nondefault command factory. The real executable backend must consume the
  // actual imported manifest, never a caller-supplied forged approval object.
  const realBackendManifestMismatch=commandFactory===createBoundedDockerCommand&&
-  manifest!==activeManifest;
+  (manifest!==activeManifest||runtimeFactory!==createEphemeralP2Runtime);
  if(!gate.pass||realBackendManifestMismatch)return Object.freeze({
   status:'BLOCKED_NOT_RUN',preflightIssues:Object.freeze([
    ...gate.failures,...(realBackendManifestMismatch?['noncanonical_real_backend_manifest']:[])]),
@@ -62,6 +64,11 @@ async function runRealP2DockerLifecycle({
  assert.equal(typeof nowMs,'function');
  const command=commandFactory(),driver=adapterFactory({command});
  assert.equal(driver.evidenceKind,'DOCKER_CLI_ADAPTER_NOT_ADMITTED');
+ // Create real runtime files only after manifest authorization and solely
+ // with the canonical backend. Tests may inject a fake runtime with fake CLI.
+ const runtime=commandFactory===createBoundedDockerCommand||
+  runtimeFactory!==createEphemeralP2Runtime?runtimeFactory():null;
+ try{
  const ops=[],knownContainers=new Set(),knownNetworks=new Set();
  let baseline=false,executionFailed=false,cleanupFailed=false,verificationFailed=false;
  let finalInventory=null;
@@ -83,7 +90,9 @@ async function runRealP2DockerLifecycle({
       name,owner:runId,network:runId,service,
       image:manifest.images[service].reference,
       platform:'linux/amd64',publishPorts:false,privileged:false,
-      readOnlyRootfs:true,persistentVolumes:false,environment:'SYNTHETIC_EMPTY'
+      readOnlyRootfs:true,persistentVolumes:false,
+      environment:runtime?'EPHEMERAL_SERVICE_ENV_FILE':'SYNTHETIC_EMPTY',
+      runtime:runtime?{envFile:runtime.envFiles[service],networkOnly:true}:undefined
      });
      if(created!==name)throw Error('container_identity_invalid');
      knownContainers.add(name);
@@ -175,5 +184,6 @@ async function runRealP2DockerLifecycle({
   resourceTerminationProven:false,serviceStartupVerified:false,
   g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
  });
+ }finally{runtime?.dispose();}
 }
 module.exports={runRealP2DockerLifecycle,validateLiveManifest};
