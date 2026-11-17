@@ -98,6 +98,26 @@ async function runRealP2DockerLifecycle({
      knownContainers.add(name);
      await driver.startContainer(name);
      ops.push('started:'+service);
+     if(runtime?.bootstrapSqlFile&&service==='postgres'){
+      // Fail closed until postgres accepts connections. Only retry a
+      // bounded number of times; never proceed to PostgREST before SQL.
+      let ready=false;
+      for(let attempt=0;attempt<8&&!ready;attempt++){
+       try{await driver.postgresReady(runId);ready=true;}
+       catch{
+        if(attempt<7)await new Promise(resolve=>setTimeout(resolve,250));
+       }
+      }
+      if(!ready)throw Error('postgres_not_ready');
+      await driver.bootstrapPostgres({
+       runId,authenticatorSqlFile:runtime.bootstrapSqlFile
+      });
+      ops.push('postgres_candidate_sql_and_authenticator_cli_reported');
+     }
+     if(runtime?.bootstrapSqlFile&&service==='gotrue'){
+      await driver.initializeGoTrue(runId);
+      ops.push('gotrue_migration_cli_reported');
+     }
     }
     return {status:'PASS'};
    }catch{executionFailed=true;return {status:'FAIL'};}
