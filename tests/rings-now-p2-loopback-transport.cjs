@@ -50,7 +50,7 @@ function createLoopbackTransport() {
           // diagnostic text. No redirect handling; the caller rejects 3xx.
           if (status !== 200) return resolve({status});
           const contentType = res.headers['content-type'] || '';
-          if (!/^application\\/json(?:;|$)/i.test(contentType))
+          if (!/^application\/json(?:;|$)/i.test(contentType))
             return reject(new Error('unexpected HTTP success content type'));
           try {
             const parsed = JSON.parse(Buffer.concat(chunks).toString('utf8'));
