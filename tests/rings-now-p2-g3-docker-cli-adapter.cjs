@@ -159,6 +159,25 @@ function createDockerCliAdapter({command}={}){
    // Database initialization command completion is not RLS proof.
    return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';
   },
+  async applySnapshotCandidate(runId){
+   safeRun(runId);
+   const name=runId+'_postgres';
+   const snapshot=path.resolve(__dirname,'../docs/rings-now-single-statement-snapshot-CANDIDATE.sql');
+   const bytes=fs.readFileSync(snapshot);
+   const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+   assert.equal(sha,'c8bb8bfdeb1e2e88bea422aa76c27d094127bdea',
+    'snapshot candidate SQL bytes changed');
+   await inspect('container',name,runId);
+   // Only the audited SQL is copied. No arbitrary runtime SQL paths or
+   // production URLs, and the PostgreSQL target is already owner-checked.
+   const target=name+':/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql';
+   await invoke(['container','cp',snapshot,target]);
+   await inspect('container',name,runId);
+   await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
+    '-v','ON_ERROR_STOP=1','-f',
+    '/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql']);
+   return 'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF';
+  },
   async initializeGoTrue(runId){
    safeRun(runId);
    const name=runId+'_gotrue';
