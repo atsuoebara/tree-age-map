@@ -5,6 +5,8 @@
 // The only permitted current caller is a synthetic injected driver.
 // This is NOT an executable P2 runner and is never imported by Actions.
 const assert=require('node:assert/strict');
+const {inspectCandidate}=require('./rings-now-p2-g1-candidate-admission.cjs');
+const ledger=require('../docs/rings-now-p2-g1-auditor-registry-evidence-20261117.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
 const DIGEST=/^sha256:[a-f0-9]{64}$/;
@@ -30,6 +32,8 @@ function validate({driver,runId,candidate,liveManifest}) {
  assert.equal(candidate.g1Verified,false);
  assert.equal(candidate.productionAccess,false);
  assert.equal(candidate.platform,'linux/amd64');
+ assert.equal(inspectCandidate({candidate,ledger,activeManifest:liveManifest}).status,
+  'CANDIDATE_MATCHES_REPORTED_LEDGER_ONLY','candidate must match fixed prior audit ledger');
  assert.ok(liveManifest&&liveManifest.status==='BLOCKED_NOT_RUN');
  assert.equal(liveManifest.explicitExecutionApproval,false);
  assert.equal(liveManifest.productionAccess,false);
