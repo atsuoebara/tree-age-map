@@ -130,16 +130,16 @@ function createDockerCliAdapter({command}={}){
     [fixture,'25a2c3371767be832ec1358a6db39eaa5aac074e'],
     [uid,'7518222c475a2b5b7ef68b2d6776d5e0e6823ae5']
    ];
-   const gitBlobSha=content=>createHash('sha1').update('blob '+content.length+'\\0').update(content).digest('hex');
+   const gitBlobSha=content=>createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
    for(const [file,sha] of digests){
     assert.equal(gitBlobSha(fs.readFileSync(file)),sha,'candidate SQL bytes changed');
    }
    assert.equal(typeof authenticatorSqlFile,'string');
-   assert.match(authenticatorSqlFile,/^\\/tmp\\/rn-p2-[a-zA-Z0-9_-]{6,64}\\/authenticator\\.sql$/);
+   assert.match(authenticatorSqlFile,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}\/authenticator\.sql$/);
    const stat=fs.statSync(authenticatorSqlFile);
    assert.ok(stat.isFile()&&stat.mode%512===0o600,'private role SQL file required');
    const roleSql=fs.readFileSync(authenticatorSqlFile,'utf8');
-   assert.match(roleSql,/^BEGIN;\\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\\nGRANT anon TO authenticator;\\nGRANT authenticated TO authenticator;\\nCOMMIT;\\n$/);
+   assert.match(roleSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
    await inspect('container',name,runId);
    await invoke(['container','exec',name,'mkdir','-p','/tmp/rn-p2/fixtures']);
    const copies=[
