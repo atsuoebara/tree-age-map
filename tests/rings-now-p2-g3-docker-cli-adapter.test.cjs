@@ -183,3 +183,28 @@ test('bootstrap rejects a non-run-owned SQL path before any Docker bootstrap com
   runId:R,authenticatorSqlFile:'/etc/postgres.conf'}));
  assert.equal(d.calls.length,before);
 });
+
+test('snapshot candidate uses exact audited SQL and owner-checked disposable PostgreSQL',async()=>{
+ const d=fake();await d.adapter.createNetwork(spec);
+ await d.adapter.createContainer(c('postgres'));
+ const out=await d.adapter.applySnapshotCandidate(R);
+ assert.equal(out,'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF');
+ const cp=d.calls.filter(a=>a[0]==='container'&&a[1]==='cp');
+ assert.equal(cp.length,1);
+ assert.ok(cp[0][2].endsWith('/docs/rings-now-single-statement-snapshot-CANDIDATE.sql'));
+ assert.equal(cp[0][3],R+'_postgres:/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql');
+ const apply=d.calls.filter(a=>a[0]==='container'&&a[1]==='exec'&&a.includes('psql'));
+ assert.equal(apply.length,1);
+ assert.ok(apply[0].includes('ON_ERROR_STOP=1'));
+ assert.ok(apply[0].includes('/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql'));
+});
+test('snapshot SQL owner spoof forbids candidate cp and psql',async()=>{
+ const d=fake({forgeOwner:true});
+ await assert.rejects(()=>d.adapter.applySnapshotCandidate(R));
+ assert.ok(!d.calls.some(a=>a.includes('cp')||a.includes('psql')));
+});
+test('snapshot SQL cannot target a foreign run identifier',async()=>{
+ const d=fake();
+ await assert.rejects(()=>d.adapter.applySnapshotCandidate('production'));
+ assert.equal(d.calls.length,0);
+});
