@@ -122,3 +122,10 @@ test('a command executor exception fails without authorizing P2',async()=>{
  assert.equal(r.status,'FAIL_OR_NOT_PROVEN');
  assert.equal(r.actualP2Proven,false);
 });
+
+test('forged approved fixture never selects default REAL execFile backend',async()=>{
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),manifest:approvedFixture()});
+ assert.equal(r.status,'BLOCKED_NOT_RUN');
+ assert.equal(r.realDockerInvoked,false);
+ assert.ok(r.preflightIssues.includes('noncanonical_real_backend_manifest'));
+});
