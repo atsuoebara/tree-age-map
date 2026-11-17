@@ -55,7 +55,7 @@ const fixture=original.replace('const RANKING_MONTH_PLACES_ENABLED=false;','cons
  await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
  await page.evaluate(()=>{window.__delayYear=false;window.__releaseYear()});
  await page.waitForTimeout(100);
- assert.match(await page.locator('#distanceRanking .score').first().innerText(),/41\\.2/);
+ assert.ok((await page.locator('#distanceRanking .score').first().innerText()).includes('41.2'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  assert.deepEqual(errors,[]);
  await browser.close();
