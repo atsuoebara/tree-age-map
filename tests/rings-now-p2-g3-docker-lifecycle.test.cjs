@@ -113,9 +113,9 @@ test('forged real runtime driver rejected before any operation',async()=>{
 });
 test('active manifest approval or candidate pin mismatch rejected',async()=>{
  const d=mock();
- const live=structuredClone(liveManifest);live.explicitExecutionApproval=true;
+ const live=JSON.parse(JSON.stringify(liveManifest));live.explicitExecutionApproval=true;
  await assert.rejects(()=>run(d,{liveManifest:live}));
- const c=structuredClone(candidate);c.images.postgres.reference='postgres:latest';
+ const c=JSON.parse(JSON.stringify(candidate));c.images.postgres.reference='postgres:latest';
  await assert.rejects(()=>run(d,{candidate:c}));
  assert.equal(d.events.length,0);
 });
