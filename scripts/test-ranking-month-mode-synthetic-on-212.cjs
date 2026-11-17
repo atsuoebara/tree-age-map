@@ -14,7 +14,7 @@ const fixture=original;
    if(url==='https://offline-ranking.invalid/ranking.html')
      return route.fulfill({contentType:'text/html',body:fixture});
    if(url.includes('/@supabase/supabase-js@2'))
-     return route.fulfill({contentType:'application/javascript',body:"window.__calls=[];window.__delayYear=false;window.__releaseYear=null;\nwindow.supabase={createClient:()=>({\nrpc:async(name,args)=>{window.__calls.push({name,args});\nif(name==='ranking_years')return {data:[{year:2026},{year:2025}],error:null};\nif(window.__delayYear&&name==='ranking_distance_monthly')await new Promise(resolve=>{window.__releaseYear=resolve});\nconst mock={\nranking_distance_monthly:[{place:1,km:1120.5,month_km:88.2,ranking_display_name:'Annual',badge_codes:[]}],\nranking_explore_monthly:[{place:1,regions:8,month_regions:2,show_regions:false,badge_codes:[]}],\nranking_nations_monthly:[{place:1,country:'JP',participants:1,km:400.5,month_km:999.9}],\nranking_distance_month_places:[{place:1,km:41.2,month_km:41.2,ranking_display_name:'Monthly',badge_codes:[]}],\nranking_explore_month_places:[{place:1,regions:3,month_regions:3,show_regions:false,badge_codes:[]}]\n};if(!Object.hasOwn(mock,name))throw Error('Unexpected RPC '+name);return {data:mock[name],error:null};\n},auth:{getUser:async()=>({data:{user:null}})},from:()=>{throw Error('Unexpected table access')}})};"});
+     return route.fulfill({contentType:'application/javascript',body:"window.__calls=[];window.__delayYear=false;window.__releaseYear=null;window.__delayMonth=false;window.__releaseMonth=null;\nwindow.supabase={createClient:()=>({\nrpc:async(name,args)=>{window.__calls.push({name,args});\nif(name==='ranking_years')return {data:[{year:2026},{year:2025}],error:null};\nif(window.__delayYear&&name==='ranking_distance_monthly')await new Promise(resolve=>{window.__releaseYear=resolve});\nif(window.__delayMonth&&name==='ranking_distance_month_places')await new Promise(resolve=>{window.__releaseMonth=resolve});\nconst mock={\nranking_distance_monthly:[{place:1,km:1120.5,month_km:88.2,ranking_display_name:'Annual',badge_codes:[]}],\nranking_explore_monthly:[{place:1,regions:8,month_regions:2,show_regions:false,badge_codes:[]}],\nranking_nations_monthly:[{place:1,country:'JP',participants:1,km:400.5,month_km:999.9}],\nranking_distance_month_places:[{place:1,km:41.2,month_km:41.2,ranking_display_name:'Monthly',badge_codes:['first','steady'],show_flag:false},{place:2,km:null,month_km:null,ranking_display_name:null,badge_codes:['first'],show_flag:false}],\nranking_explore_month_places:[{place:1,regions:3,month_regions:3,show_regions:false,badge_codes:[]}]\n};if(!Object.hasOwn(mock,name))throw Error('Unexpected RPC '+name);return {data:mock[name],error:null};\n},auth:{getUser:async()=>({data:{user:null}})},from:()=>{throw Error('Unexpected table access')}})};"});
    return route.fulfill({status:200,contentType:'text/plain',body:''});
  });
  await page.goto('https://offline-ranking.invalid/ranking.html',{waitUntil:'domcontentloaded'});
@@ -38,7 +38,23 @@ const fixture=original;
  assert.match(await page.locator('#nationsRanking').innerText(),/プライバシー監査/);
  await page.locator('#rankingMonth').selectOption('12');
  await page.getByRole('button',{name:'2025',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .runnerBadge')?.textContent.includes('はじめの輪'));
+ assert.equal((await page.locator('#distanceRanking .runnerName').nth(1).textContent()).trim(),'ランナー');
+ assert.equal((await page.locator('#distanceRanking .runnerMeta').nth(1).textContent()).trim(),'個人距離は非公開');
+ // Remove cached DISTANCE response and hold the next HTTP RPC. The old behavior
+ // kept Japanese rows visible while waiting; now localization must be synchronous.
+ await page.evaluate(()=>{
+   for(const key of Object.keys(localStorage))if(key.startsWith('rr-public-ranking-v1:distance:'))localStorage.removeItem(key);
+   window.__delayMonth=true;
+ });
  await page.locator('[data-language="en"]').click();
+ await page.waitForFunction(()=>window.__releaseMonth!==null);
+ assert.equal((await page.locator('#distanceRanking .runnerName').nth(1).textContent()).trim(),'Runner');
+ assert.equal((await page.locator('#distanceRanking .runnerMeta').nth(1).textContent()).trim(),'Personal distance hidden');
+ assert.ok((await page.locator('#distanceRanking .runnerBadge').first().textContent()).includes('First Loop'));
+ assert.ok((await page.locator('#distanceRanking .runnerBadge').nth(1).textContent()).includes('Steady Runner'));
+ assert.equal((await page.locator('#distanceRanking .runnerName').first().textContent()).trim(),'Monthly','Custom public name is not translated');
+ await page.evaluate(()=>{window.__delayMonth=false;window.__releaseMonth()});
  assert.equal((await page.locator('#distanceTabSubtitleEn').textContent()).trim(),'Monthly distance / rank');
  assert.match(await page.locator('#rankingMonthDescription [data-lang="en"]').textContent(),/Monthly ranks use distance/);
  await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
@@ -70,5 +86,5 @@ const fixture=original;
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  assert.deepEqual(errors,[]);
  await browser.close();
- console.log('PASS synthetic ON-only browser: year/month JA+EN labels and description, month/year RPC, NATIONS private, late response, 375px');
+ console.log('PASS synthetic ON-only browser: instant JA-to-EN rows during held HTTP, fallback/private/badges, year/month labels, NATIONS privacy, late response, 375px');
 })().catch(e=>{console.error(e);process.exitCode=1});
