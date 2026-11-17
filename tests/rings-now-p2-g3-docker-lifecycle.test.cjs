@@ -127,3 +127,13 @@ test('pre-existing run-owned resource is refused and not deleted',async()=>{
  assert.equal(d.items.size,1);
  assert.ok(!d.events.some(s=>s.startsWith('removeNetwork:')));
 });
+
+test('changing both candidate digest and image reference is caught by audit ledger',async()=>{
+ const d=mock();
+ const c=JSON.parse(JSON.stringify(candidate));
+ const other='sha256:'+'f'.repeat(64);
+ c.images.gotrue.digest=other;
+ c.images.gotrue.reference='docker.io/supabase/gotrue@'+other;
+ await assert.rejects(()=>run(d,{candidate:c}));
+ assert.equal(d.events.length,0);
+});
