@@ -99,7 +99,7 @@ function fakeChildRunner(failure){
   assert.deepEqual(env,{});
   assert.ok(timeoutMs>0);
   const mode=args[0];
-  if(failure===mode)return {status:'FAIL',timedOut:true,
+  if(failure===mode||mode==='failure'||mode==='hang'||mode==='ignore-term')return {status:'FAIL',timedOut:true,
    childClosed:true,spawnError:null,termSent:true,killSent:true};
   return {status:'PASS',timedOut:false,childClosed:true,spawnError:null};
  };
