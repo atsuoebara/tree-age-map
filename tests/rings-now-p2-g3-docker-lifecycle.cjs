@@ -60,7 +60,7 @@ function validResources(items,runId) {
 async function runG3SyntheticDockerLifecycle({driver,runId,candidate,liveManifest}={}){
  validate({driver,runId,candidate,liveManifest});
  const record={started:[],cleanup:[],verification:'NOT_PROVEN'};
- let failed=false,createdNetwork=null;
+ let failed=false,createdNetwork=null,baselineAccepted=false;
  const createdContainers=[];
  // Only the synthetic driver is allowed; do not dynamically load a real
  // runtime from these inputs. No caller-supplied scripts, ports, volumes, env.
@@ -68,6 +68,7 @@ async function runG3SyntheticDockerLifecycle({driver,runId,candidate,liveManifes
   const before=await driver.listOwned(runId);
   if(!validResources(before,runId)||before.length!==0)
    throw Error('baseline_not_empty_or_untrusted');
+  baselineAccepted=true;
   // A network create may succeed but then throw before returning its ID.
   // Synthetic drivers must be independently audited to expose such partial
   // resources through listOwned; we must not claim verified cleanup otherwise.
@@ -96,13 +97,18 @@ async function runG3SyntheticDockerLifecycle({driver,runId,candidate,liveManifes
   // Discover run-scoped resources again to address partial create errors.
   // Never delete resources without exact run owner attestation.
   let found=[];
-  try{
+  if(!baselineAccepted){
+   // Never delete resources that existed before this attempt. A runId
+   // collision is a hard failure, not an authorization to clean it up.
+   record.verification='BLOCKED';
+   failed=true;
+  } else try{
    found=await driver.listOwned(runId);
    if(!validResources(found,runId)){failed=true;found=[];}
   }catch{failed=true;}
   // Also attempt removal of the known created resources even when inventory
   // is incomplete; failure to validate the inventory keeps final FAIL.
-  const containers=new Set(createdContainers);
+  const containers=new Set(baselineAccepted?createdContainers:[]);
   for(const item of found)if(item.type==='container')containers.add(item.id);
   // Stop/remove all run-owned containers; do not touch other runs.
   for(const id of [...containers].reverse()){
@@ -111,7 +117,7 @@ async function runG3SyntheticDockerLifecycle({driver,runId,candidate,liveManifes
    try{await driver.removeContainer(id);record.cleanup.push('remove:'+id);}
    catch{failed=true;}
   }
-  const networks=new Set(createdNetwork?[createdNetwork]:[]);
+  const networks=new Set(baselineAccepted&&createdNetwork?[createdNetwork]:[]);
   for(const item of found)if(item.type==='network')networks.add(item.id);
   for(const id of networks){
    try{await driver.removeNetwork(id);record.cleanup.push('network:'+id);}
@@ -119,7 +125,7 @@ async function runG3SyntheticDockerLifecycle({driver,runId,candidate,liveManifes
   }
   try{
    const after=await driver.listOwned(runId);
-   if(validResources(after,runId)&&after.length===0&&found!==null)
+   if(baselineAccepted&&validResources(after,runId)&&after.length===0)
     record.verification='SYNTHETIC_EMPTY_INVENTORY';
    else{failed=true;record.verification='BLOCKED';}
   }catch{failed=true;record.verification='NOT_PROVEN';}
