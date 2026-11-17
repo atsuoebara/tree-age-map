@@ -1,0 +1,25 @@
+name: Ranking integrated synthetic browser (OFF only)
+on:
+  pull_request:
+    paths:
+      - 'ranking.html'
+      - 'scripts/test-ranking-integration-browser-212.cjs'
+      - '.github/workflows/ranking-integration-browser-212.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install pinned test runner and local browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test synthetic privacy-integrated Ranking UI
+        run: node scripts/test-ranking-integration-browser-212.cjs
