@@ -217,3 +217,53 @@ test('blocked active manifest does not create an ephemeral runtime',async()=>{
  assert.equal(r.status,'BLOCKED_NOT_RUN');
  assert.equal(created,0);
 });
+
+test('service startup orders PG readiness and SQL bootstrap before Auth/PostgREST',async()=>{
+ const d=fakeDocker(),steps=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(x=>
+   [x,'/tmp/rn-p2-abcdefghi/'+x+'.env'])),
+  bootstrapSqlFile:'/tmp/rn-p2-abcdefghi/authenticator.sql',
+  dispose(){steps.push('dispose');}
+ });
+ const adapterFactory=({command})=>{
+  const base=createDockerCliAdapter({command});
+  return {...base,
+   postgresReady:async()=>{steps.push('pgReady');return true;},
+   bootstrapPostgres:async()=>{steps.push('sql');return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';},
+   initializeGoTrue:async()=>{steps.push('authMigrate');return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';}
+  };
+ };
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
+ assert.equal(r.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
+ assert.deepEqual(steps,['pgReady','sql','authMigrate','dispose']);
+ const creates=d.argvs.filter(x=>x[1]==='container'&&x[2]==='create');
+ assert.equal(creates.length,3);
+ assert.equal(d.owned.size,0);
+ assert.equal(r.g3Verified,false);
+});
+test('failed PG candidate bootstrap stops GoTrue/PostgREST creation and reconciles resources',async()=>{
+ const d=fakeDocker(),steps=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(x=>
+   [x,'/tmp/rn-p2-abcdefghi/'+x+'.env'])),
+  bootstrapSqlFile:'/tmp/rn-p2-abcdefghi/authenticator.sql',
+  dispose(){steps.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const base=createDockerCliAdapter({command});
+  return {...base,
+   postgresReady:async()=>true,
+   bootstrapPostgres:async()=>{steps.push('sql');throw Error('SQL failed');},
+   initializeGoTrue:async()=>{throw Error('must not migrate');}
+  };
+ };
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
+ assert.equal(r.status,'FAIL_OR_NOT_PROVEN');
+ assert.deepEqual(steps,['sql','disposed']);
+ assert.equal(d.argvs.filter(x=>x[1]==='container'&&x[2]==='create').length,1);
+ assert.equal(d.owned.size,0);
+ assert.equal(r.actualP2Proven,false);
+});

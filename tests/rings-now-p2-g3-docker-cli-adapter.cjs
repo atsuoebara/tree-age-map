@@ -4,6 +4,9 @@
 // is mandatory: there is deliberately NO default Docker execution path.
 // This is NOT admissible as G3 proof and must not be passed as synthetic driver.
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {createHash}=require('node:crypto');
 const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
 const IMAGE=/^docker\.io\/(?:library\/postgres|supabase\/gotrue|postgrest\/postgrest)@sha256:[a-f0-9]{64}$/;
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
@@ -109,6 +112,59 @@ function createDockerCliAdapter({command}={}){
     ...runtimeArgs,spec.image]);
    await inspect('container',spec.name,spec.owner);
    return spec.name;
+  },
+  async postgresReady(runId){
+   safeRun(runId);
+   const name=runId+'_postgres';
+   await inspect('container',name,runId);
+   // The readiness probe proves a server socket is listening, not SQL/RLS.
+   await invoke(['container','exec',name,'pg_isready','-U','postgres','-d','rings_now_p2']);
+   return true;
+  },
+  async bootstrapPostgres({runId,authenticatorSqlFile}={}){
+   safeRun(runId);
+   const name=runId+'_postgres';
+   const fixture=path.resolve(__dirname,'fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql');
+   const uid=path.resolve(__dirname,'rings-now-p2-auth-uid-guc-CANDIDATE.sql');
+   const digests=[
+    [fixture,'25a2c3371767be832ec1358a6db39eaa5aac074e'],
+    [uid,'7518222c475a2b5b7ef68b2d6776d5e0e6823ae5']
+   ];
+   const gitBlobSha=content=>createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
+   for(const [file,sha] of digests){
+    assert.equal(gitBlobSha(fs.readFileSync(file)),sha,'candidate SQL bytes changed');
+   }
+   assert.equal(typeof authenticatorSqlFile,'string');
+   assert.match(authenticatorSqlFile,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}\/authenticator\.sql$/);
+   const stat=fs.statSync(authenticatorSqlFile);
+   assert.ok(stat.isFile()&&stat.mode%512===0o600,'private role SQL file required');
+   const roleSql=fs.readFileSync(authenticatorSqlFile,'utf8');
+   assert.match(roleSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
+   await inspect('container',name,runId);
+   await invoke(['container','exec',name,'mkdir','-p','/tmp/rn-p2/fixtures']);
+   const copies=[
+    [uid,name+':/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql'],
+    [fixture,name+':/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql'],
+    [authenticatorSqlFile,name+':/tmp/rn-p2/authenticator.sql']
+   ];
+   for(const [from,to] of copies)await invoke(['container','cp',from,to]);
+   for(const sql of [
+    '/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql',
+    '/tmp/rn-p2/authenticator.sql'
+   ]){
+    await inspect('container',name,runId);
+    await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
+     '-v','ON_ERROR_STOP=1','-f',sql]);
+   }
+   // Database initialization command completion is not RLS proof.
+   return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';
+  },
+  async initializeGoTrue(runId){
+   safeRun(runId);
+   const name=runId+'_gotrue';
+   await inspect('container',name,runId);
+   await invoke(['container','exec',name,'gotrue','migrate']);
+   return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';
   },
   async startContainer(name){
    safeId(name);
