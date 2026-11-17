@@ -8,6 +8,7 @@ const os=require('node:os');
 const path=require('node:path');
 const {randomBytes,createHmac}=require('node:crypto');
 const assert=require('node:assert/strict');
+const {buildProbeRequest}=require('./rings-now-p2-docker-internal-http.cjs');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 function createEphemeralP2Runtime(){
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rn-p2-'));
@@ -69,7 +70,7 @@ function createEphemeralP2Runtime(){
   try{fs.writeFileSync(fd,sql,{encoding:'utf8'});}
   finally{fs.closeSync(fd);}
  }catch(e){fs.rmSync(dir,{recursive:true,force:true});throw e;}
- let disposed=false;
+ let disposed=false,requestCreated=false;
  return Object.freeze({
   envFiles:Object.freeze(paths),
   bootstrapSqlFile,
@@ -88,6 +89,20 @@ function createEphemeralP2Runtime(){
     iat:nowSeconds,exp:nowSeconds+60
    });
    return input+'.'+createHmac('sha256',jwt).update(input).digest('base64url');
+  },
+  prepareHttpProbe({nowSeconds=Math.floor(Date.now()/1000)}={}){
+   assert.equal(disposed,false);
+   assert.equal(requestCreated,false,'a probe request must be prepared once');
+   const token=this.issueSyntheticJwt({
+    subject:'00000000-0000-4000-8000-000000000001',nowSeconds
+   });
+   const request=buildProbeRequest(token);
+   const filename=path.join(dir,'http-probe.req');
+   const fd=fs.openSync(filename,'wx',0o600);
+   try{fs.writeFileSync(fd,request,{encoding:'utf8'});}
+   finally{fs.closeSync(fd);}
+   requestCreated=true;
+   return filename;
   },
   dispose(){
    if(disposed)return;

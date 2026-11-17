@@ -63,3 +63,30 @@ test('synthetic JWT uses run-specific HS256 secret, fixed subjects and 60-second
   assert.throws(()=>a.issueSyntheticJwt({subject:'00000000-0000-4000-8000-000000000003'}));
  }finally{a.dispose();b.dispose();}
 });
+
+test('private signed RPC request is prepared once with fresh JWT and deleted',()=>{
+ const {createHmac}=require('node:crypto');
+ const r=createEphemeralP2Runtime();
+ let file;
+ try{
+  file=r.prepareHttpProbe({nowSeconds:1700000000});
+  assert.match(file,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}\/http-probe\.req$/);
+  assert.equal(fs.statSync(file).mode&0o777,0o600);
+  const req=fs.readFileSync(file,'utf8');
+  assert.ok(req.startsWith('POST /rpc/rings_now_snapshot_candidate_v01 HTTP/1.1\r\n'));
+  assert.ok(req.includes('\r\nHost: postgrest:3000\r\n'));
+  assert.ok(req.endsWith('\r\n\r\n{}'));
+  const token=req.match(/Authorization: Bearer ([A-Za-z0-9_.-]+)/)[1];
+  const parts=token.split('.');
+  const claims=JSON.parse(Buffer.from(parts[1],'base64url'));
+  assert.equal(claims.sub,'00000000-0000-4000-8000-000000000001');
+  assert.equal(claims.exp,1700000060);
+  const secret=fs.readFileSync(r.envFiles.postgrest,'utf8')
+   .match(/^PGRST_JWT_SECRET=(.*)$/m)[1];
+  assert.equal(parts[2],createHmac('sha256',secret)
+   .update(parts[0]+'.'+parts[1]).digest('base64url'));
+  assert.throws(()=>r.prepareHttpProbe({nowSeconds:1700000001}));
+ }finally{r.dispose();}
+ assert.equal(fs.existsSync(file),false);
+ assert.throws(()=>r.prepareHttpProbe());
+});
