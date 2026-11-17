@@ -108,7 +108,8 @@ function createDockerCliAdapter({command}={}){
    }
    // No -p, --volume, --privileged, --env KEY=secret, host network.
    await invoke(['container','create','--name',spec.name,'--label',
-    LABEL+'='+spec.owner,'--network',spec.network,'--platform',spec.platform,
+    LABEL+'='+spec.owner,'--network',spec.network,
+    '--network-alias',spec.service,'--platform',spec.platform,
     '--read-only','--cap-drop','ALL','--security-opt','no-new-privileges',
     ...runtimeArgs,spec.image]);
    await inspect('container',spec.name,spec.owner);
