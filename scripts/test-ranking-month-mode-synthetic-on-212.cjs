@@ -1,0 +1,63 @@
+'use strict';
+// In-memory synthetic fixture ONLY; ranking.html stays hard OFF on disk.
+const {chromium}=require('playwright');
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const original=fs.readFileSync('ranking.html','utf8');
+assert.match(original,/const RANKING_MONTH_PLACES_ENABLED=false;/);
+const fixture=original.replace('const RANKING_MONTH_PLACES_ENABLED=false;','const RANKING_MONTH_PLACES_ENABLED=true;');
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:375,height:812},locale:'ja-JP'});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/*',route=>{
+   const url=route.request().url();
+   if(url==='https://offline-ranking.invalid/ranking.html')
+     return route.fulfill({contentType:'text/html',body:fixture});
+   if(url.includes('/@supabase/supabase-js@2'))
+     return route.fulfill({contentType:'application/javascript',body:"window.__calls=[];window.__delayYear=false;window.__releaseYear=null;\nwindow.supabase={createClient:()=>({\nrpc:async(name,args)=>{window.__calls.push({name,args});\nif(name==='ranking_years')return {data:[{year:2026},{year:2025}],error:null};\nif(window.__delayYear&&name==='ranking_distance_monthly')await new Promise(resolve=>{window.__releaseYear=resolve});\nconst mock={\nranking_distance_monthly:[{place:1,km:1120.5,month_km:88.2,ranking_display_name:'Annual',badge_codes:[]}],\nranking_explore_monthly:[{place:1,regions:8,month_regions:2,show_regions:false,badge_codes:[]}],\nranking_nations_monthly:[{place:1,country:'JP',participants:1,km:400.5,month_km:999.9}],\nranking_distance_month_places:[{place:1,km:41.2,month_km:41.2,ranking_display_name:'Monthly',badge_codes:[]}],\nranking_explore_month_places:[{place:1,regions:3,month_regions:3,show_regions:false,badge_codes:[]}]\n};if(!Object.hasOwn(mock,name))throw Error('Unexpected RPC '+name);return {data:mock[name],error:null};\n},auth:{getUser:async()=>({data:{user:null}})},from:()=>{throw Error('Unexpected table access')}})};"});
+   return route.fulfill({status:200,contentType:'text/plain',body:''});
+ });
+ await page.goto('https://offline-ranking.invalid/ranking.html',{waitUntil:'domcontentloaded'});
+ await page.waitForSelector('#distanceRanking .row');
+ assert.equal(await page.locator('#rankingModeMonth').isEnabled(),true);
+ await page.locator('#rankingModeMonth').click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
+ assert.equal(await page.locator('#distanceRanking .monthlyScore').count(),0);
+ assert.equal(await page.locator('#rankingModeMonth').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-panel="explore"]').click();
+ await page.waitForFunction(()=>document.querySelector('#exploreRanking .score')?.textContent.includes('3'));
+ assert.equal(await page.locator('#exploreRanking .monthlyScore').count(),0);
+ await page.locator('[data-panel="nations"]').click();
+ assert.equal(await page.locator('#nationsRanking .row').count(),0);
+ assert.match(await page.locator('#nationsRanking').innerText(),/プライバシー監査/);
+ await page.locator('#rankingMonth').selectOption('12');
+ await page.getByRole('button',{name:'2025',exact:true}).click();
+ await page.locator('[data-language="en"]').click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
+ const calls=await page.evaluate(()=>window.__calls);
+ for(const name of ['ranking_distance_month_places','ranking_explore_month_places'])
+   assert.ok(calls.some(c=>c.name===name&&c.args.p_year===2025&&c.args.p_month===12),name);
+ assert.ok(!calls.some(c=>c.name==='ranking_nations_month_places'));
+ assert.ok(!calls.some(c=>c.name==='ranking_nations_monthly'&&c.args.p_year===2025&&c.args.p_month===12));
+ await page.locator('#rankingModeYear').click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('1,120.5'));
+ await page.locator('[data-panel="nations"]').click();
+ await page.waitForSelector('#nationsRanking .row');
+ assert.equal(await page.locator('#nationsRanking .monthlyScore').count(),0);
+ const nCache=await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.includes('nations:')).map(k=>JSON.parse(localStorage.getItem(k)).data));
+ assert.ok(nCache.every(rows=>rows.every(r=>r.month_km===null)));
+ await page.evaluate(()=>{window.__delayYear=true});
+ await page.locator('#rankingModeMonth').click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
+ await page.locator('#rankingModeYear').click();
+ await page.waitForFunction(()=>window.__releaseYear!==null);
+ await page.locator('#rankingModeMonth').click();
+ await page.waitForFunction(()=>document.querySelector('#distanceRanking .score')?.textContent.includes('41.2'));
+ await page.evaluate(()=>{window.__delayYear=false;window.__releaseYear()});
+ await page.waitForTimeout(100);
+ assert.match(await page.locator('#distanceRanking .score').first().innerText(),/41\\.2/);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ assert.deepEqual(errors,[]);
+ await browser.close();
+ console.log('PASS synthetic ON-only browser: month/year RPC, year/month/language, NATIONS private, late response, 375px');
+})().catch(e=>{console.error(e);process.exitCode=1});
