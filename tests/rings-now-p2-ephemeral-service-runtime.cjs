@@ -6,7 +6,7 @@
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {randomBytes}=require('node:crypto');
+const {randomBytes,createHmac}=require('node:crypto');
 const assert=require('node:assert/strict');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 function createEphemeralP2Runtime(){
@@ -73,6 +73,22 @@ function createEphemeralP2Runtime(){
  return Object.freeze({
   envFiles:Object.freeze(paths),
   bootstrapSqlFile,
+  // Synthetic-only JWT accepted by the isolated PostgREST's random
+  // GOTRUE_JWT_SECRET/PGRST_JWT_SECRET; NOT a GoTrue-issued real login.
+  issueSyntheticJwt({subject,nowSeconds=Math.floor(Date.now()/1000)}={}){
+   const allowed=[
+    '00000000-0000-4000-8000-000000000001',
+    '00000000-0000-4000-8000-000000000002'
+   ];
+   assert.ok(allowed.includes(subject),'synthetic subject only');
+   assert.ok(Number.isSafeInteger(nowSeconds)&&nowSeconds>0);
+   const encode=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+   const input=encode({alg:'HS256',typ:'JWT'})+'.'+encode({
+    sub:subject,role:'authenticated',aud:'authenticated',
+    iat:nowSeconds,exp:nowSeconds+60
+   });
+   return input+'.'+createHmac('sha256',jwt).update(input).digest('base64url');
+  },
   dispose(){
    if(disposed)return;
    fs.rmSync(dir,{recursive:true,force:true,maxRetries:1});
