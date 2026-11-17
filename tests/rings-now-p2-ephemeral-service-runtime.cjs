@@ -15,6 +15,7 @@ function createEphemeralP2Runtime(){
  fs.chmodSync(dir,0o700);
  const pw=randomBytes(32).toString('hex');
  const jwt=randomBytes(48).toString('hex');
+ const authPw=randomBytes(32).toString('hex');
  const env={
   postgres:{
    POSTGRES_USER:'postgres',POSTGRES_DB:'rings_now_p2',
@@ -34,7 +35,7 @@ function createEphemeralP2Runtime(){
    GOTRUE_DISABLE_SIGNUP:'true'
   },
   postgrest:{
-   PGRST_DB_URI:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable',
+   PGRST_DB_URI:'postgres://authenticator:'+authPw+'@postgres:5432/rings_now_p2?sslmode=disable',
    PGRST_DB_SCHEMAS:'public',
    PGRST_DB_ANON_ROLE:'anon',
    PGRST_JWT_SECRET:jwt,
@@ -44,6 +45,7 @@ function createEphemeralP2Runtime(){
   }
  };
  const paths={};
+ const bootstrapSqlFile=path.join(dir,'authenticator.sql');
  try{
   for(const name of SERVICES){
    const filename=path.join(dir,name+'.env');
@@ -58,10 +60,19 @@ function createEphemeralP2Runtime(){
    finally{fs.closeSync(fd);}
    paths[name]=filename;
   }
+  // Hex-only per-run password; never embed production data or arbitrary SQL.
+  const sql='BEGIN;\n'+
+   'CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD \'\''+authPw+'\'\';\n'+
+   'GRANT anon TO authenticator;\n'+
+   'GRANT authenticated TO authenticator;\nCOMMIT;\n';
+  const fd=fs.openSync(bootstrapSqlFile,'wx',0o600);
+  try{fs.writeFileSync(fd,sql,{encoding:'utf8'});}
+  finally{fs.closeSync(fd);}
  }catch(e){fs.rmSync(dir,{recursive:true,force:true});throw e;}
  let disposed=false;
  return Object.freeze({
   envFiles:Object.freeze(paths),
+  bootstrapSqlFile,
   dispose(){
    if(disposed)return;
    fs.rmSync(dir,{recursive:true,force:true,maxRetries:1});
