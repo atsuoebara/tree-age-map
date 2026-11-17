@@ -129,3 +129,49 @@ test('forged approved fixture never selects default REAL execFile backend',async
  assert.equal(r.realDockerInvoked,false);
  assert.ok(r.preflightIssues.includes('noncanonical_real_backend_manifest'));
 });
+
+test('coordinator clock failure after network and containers triggers emergency owned cleanup',async()=>{
+ const d=fakeDocker();
+ let n=0;
+ const result=await runRealP2DockerLifecycle({
+  ...base,manifest:approvedFixture(),commandFactory:d.commandFactory,
+  nowMs:()=>{n++;if(n===5)throw Error('monotonic clock failed');return n;}
+ });
+ assert.equal(result.status,'FAIL');
+ assert.equal(result.coordinatorFailed,true);
+ assert.equal(result.emergencyCleanupAttempted,true);
+ assert.equal(result.emergencyCleanupStatus,'CLI_CLEAN_REPORTED');
+ assert.equal(result.emergencyVerifyStatus,'CLI_EMPTY_REPORTED');
+ assert.equal(d.owned.size,0);
+ assert.ok(d.argvs.some(x=>x[1]==='container'&&x[2]==='rm'));
+ assert.ok(d.argvs.some(x=>x[1]==='network'&&x[2]==='rm'));
+ assert.equal(result.resourceTerminationProven,false);
+ assert.equal(result.g3Verified,false);
+});
+
+test('coordinator failure with leaked container never promotes cleanup proof',async()=>{
+ const d=fakeDocker({leaveContainer:true});
+ let n=0;
+ const result=await runRealP2DockerLifecycle({
+  ...base,manifest:approvedFixture(),commandFactory:d.commandFactory,
+  nowMs:()=>{n++;if(n===5)throw Error('clock failure');return n;}
+ });
+ assert.equal(result.status,'FAIL');
+ assert.equal(result.emergencyCleanupAttempted,true);
+ assert.equal(result.emergencyVerifyStatus,'FAIL');
+ assert.ok(d.owned.size>0);
+ assert.equal(result.p2ExecutionAuthorized,false);
+});
+
+test('failure before trusted empty baseline cannot delete unknown resources',async()=>{
+ const d=fakeDocker();
+ const result=await runRealP2DockerLifecycle({
+  ...base,manifest:approvedFixture(),commandFactory:d.commandFactory,
+  nowMs:()=>{throw Error('clock preflight failure');}
+ });
+ assert.equal(result.status,'FAIL');
+ assert.equal(result.emergencyCleanupAttempted,false);
+ assert.equal(result.emergencyCleanupStatus,'BASELINE_UNTRUSTED');
+ assert.equal(d.argvs.length,0);
+ assert.equal(result.g3Verified,false);
+});
