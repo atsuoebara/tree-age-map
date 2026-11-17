@@ -1,0 +1,119 @@
+{
+  "purpose": "OFFLINE_SERVICE_BOOT_SHAPE_REVIEW_ONLY",
+  "executionApproval": false,
+  "dockerExecutionAllowed": false,
+  "credentialsIncluded": false,
+  "realResourcesObserved": false,
+  "network": {
+    "kind": "isolated-internal-run-network",
+    "internal": true,
+    "attachable": false,
+    "hostPortsPublished": false,
+    "hostNetworkAllowed": false,
+    "externalApplicationEgressAllowed": false
+  },
+  "runner": {
+    "kind": "github-hosted-standard",
+    "jobs": 1,
+    "manualOnly": true,
+    "maximumMinutes": 10,
+    "workflowEnabled": false
+  },
+  "secrets": {
+    "source": "GENERATE_AT_RUNTIME_INSIDE_DISPOSABLE_RUNNER",
+    "logged": false,
+    "storedInRepo": false,
+    "fromProduction": false,
+    "providedNow": false
+  },
+  "cleanup": {
+    "runScopedLabels": true,
+    "reconcileAfterTimeout": true,
+    "verifyDaemonResourcesEmpty": true,
+    "cannotClaimProvenNow": true
+  },
+  "auth": {
+    "jwtAlgorithm": "HS256_PROPOSED_NOT_TESTED",
+    "sharedSigningKeyReference": "EPHEMERAL_REFERENCE_ONLY",
+    "expiryTestMethod": "NATURAL_EXPIRATION_PROPOSED_NOT_TESTED",
+    "realJWTVerificationCompleted": false,
+    "postgrestClaimsGucObserved": false
+  },
+  "services": {
+    "postgres": {
+      "imageReference": "docker.io/library/postgres@sha256:6f7593c161689b6b02c78668b314af7da8811b592c5519108c57a49d0b6ad788",
+      "platform": "linux/amd64",
+      "portsPublished": false,
+      "privileged": false,
+      "persistentVolumes": false,
+      "healthcheckVerified": false,
+      "startupVerified": false,
+      "requiredEnvironmentKeys": [
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "PGDATA"
+      ],
+      "environmentValuesIncluded": false,
+      "credentialsLogged": false,
+      "ephemeralWritePaths": [
+        "/var/lib/postgresql/data",
+        "/tmp"
+      ],
+      "dataDurable": false,
+      "writableMountsCompatibilityVerified": false
+    },
+    "gotrue": {
+      "imageReference": "docker.io/supabase/gotrue@sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+      "platform": "linux/amd64",
+      "portsPublished": false,
+      "privileged": false,
+      "persistentVolumes": false,
+      "healthcheckVerified": false,
+      "startupVerified": false,
+      "requiredEnvironmentKeys": [
+        "GOTRUE_SITE_URL",
+        "API_EXTERNAL_URL",
+        "GOTRUE_DB_DRIVER",
+        "GOTRUE_DB_DATABASE_URL",
+        "GOTRUE_JWT_SECRET",
+        "GOTRUE_JWT_AUD",
+        "GOTRUE_JWT_DEFAULT_GROUP_NAME"
+      ],
+      "environmentValuesIncluded": false,
+      "credentialsLogged": false,
+      "emailDeliveryEnabled": false,
+      "phoneDeliveryEnabled": false,
+      "externalOAuthEnabled": false,
+      "authSchemaMigrationVerified": false
+    },
+    "postgrest": {
+      "imageReference": "docker.io/postgrest/postgrest@sha256:c847127074bd26e1b8d3f7c0e6e01e5346f4b85dd34f5d699fd230af960827c0",
+      "platform": "linux/amd64",
+      "portsPublished": false,
+      "privileged": false,
+      "persistentVolumes": false,
+      "healthcheckVerified": false,
+      "startupVerified": false,
+      "requiredEnvironmentKeys": [
+        "PGRST_DB_URI",
+        "PGRST_DB_SCHEMAS",
+        "PGRST_DB_ANON_ROLE",
+        "PGRST_JWT_SECRET",
+        "PGRST_JWT_ROLE_CLAIM_KEY"
+      ],
+      "environmentValuesIncluded": false,
+      "credentialsLogged": false,
+      "roleConfigVerified": false,
+      "claimsGucVerified": false,
+      "externalHostnameAllowed": false
+    }
+  },
+  "billing": {
+    "futureRunIncrementalCostProven": false,
+    "accountUiEvidenceVerified": false
+  },
+  "serviceBootProven": false,
+  "g3Verified": false,
+  "p2ExecutionAuthorized": false
+}
