@@ -29,6 +29,7 @@ function fake(overrides={}){
   else if(k==='container'&&verb==='create'){
    const id=argv[argv.indexOf('--name')+1];items.set(id,{id,kind:'container'});out=id;
   }
+  else if(k==='container'&&verb==='exec'&&argv.includes('/tmp/rn-p2/http-probe.bash')){out=overrides.httpWire||'';}
   else if(k==='container'&&verb==='rm'){items.delete(argv.at(-1));}
   else if(k==='network'&&verb==='rm'){items.delete(argv.at(-1));}
   return Promise.resolve({exitCode:overrides.failCode||0,stdout:out});
@@ -207,4 +208,52 @@ test('snapshot SQL cannot target a foreign run identifier',async()=>{
  const d=fake();
  await assert.rejects(()=>d.adapter.applySnapshotCandidate('production'));
  assert.equal(d.calls.length,0);
+});
+
+test('run-owned Docker-internal HTTP probe copies private token and uses no ports',async()=>{
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const json='{"status":"candidate_snapshot","rows":[]}';
+ const wire='HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: '+
+  Buffer.byteLength(json)+'\r\nConnection: close\r\n\r\n'+json;
+ const runtime=createEphemeralP2Runtime(),d=fake({httpWire:wire});
+ try{
+  await d.adapter.createNetwork(spec);
+  await d.adapter.createContainer(c('postgres'));
+  const req=runtime.prepareHttpProbe();
+  const result=await d.adapter.probeInternalPostgrest({runId:R,requestFile:req});
+  assert.deepEqual(result,{status:200,body:{status:'candidate_snapshot',rows:[]}});
+  const cps=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+  assert.equal(cps.length,2);
+  assert.ok(cps.some(x=>x[2]===req&&x[3]===R+'_postgres:/tmp/rn-p2/http-probe.req'));
+  assert.ok(cps.some(x=>x[3]===R+'_postgres:/tmp/rn-p2/http-probe.bash'));
+  const exec=d.calls.find(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('/tmp/rn-p2/http-probe.bash'));
+  assert.deepEqual(exec,['container','exec',R+'_postgres','/bin/bash','/tmp/rn-p2/http-probe.bash']);
+  const tok=require('node:fs').readFileSync(req,'utf8')
+   .match(/Authorization: Bearer ([A-Za-z0-9_.-]+)/)[1];
+  assert.ok(!d.calls.flat().join(' ').includes(tok),'JWT must never appear in argv');
+  assert.ok(!d.calls.flat().some(x=>x==='--publish'||x==='--env'));
+ }finally{runtime.dispose();}
+});
+test('Docker-internal HTTP rejects invalid request path and forged run owner',async()=>{
+ const fakeOwner=fake({forgeOwner:true});
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const r=createEphemeralP2Runtime();
+ try{
+  const req=r.prepareHttpProbe();
+  await assert.rejects(()=>fakeOwner.adapter.probeInternalPostgrest({runId:R,requestFile:req}));
+  assert.ok(!fakeOwner.calls.some(x=>x[0]==='container'&&x[1]==='cp'));
+  const other=fake();
+  await assert.rejects(()=>other.adapter.probeInternalPostgrest({runId:R,requestFile:'/etc/passwd'}));
+  assert.equal(other.calls.length,0);
+ }finally{r.dispose();}
+});
+test('Docker-internal HTTP returns non-200 without body and never claims JWT proof',async()=>{
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const r=createEphemeralP2Runtime();
+ const d=fake({httpWire:'HTTP/1.1 401 Unauthorized\r\nContent-Length: 6\r\n\r\nsecret'});
+ try{
+  await d.adapter.createNetwork(spec);await d.adapter.createContainer(c('postgres'));
+  const res=await d.adapter.probeInternalPostgrest({runId:R,requestFile:r.prepareHttpProbe()});
+  assert.deepEqual(res,{status:401});assert.equal('body' in res,false);
+ }finally{r.dispose();}
 });
