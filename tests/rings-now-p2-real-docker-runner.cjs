@@ -10,6 +10,7 @@ const {runWithSharedTimeBudget}=require('./rings-now-p2-shared-time-budget.cjs')
 const {createDockerCliAdapter}=require('./rings-now-p2-g3-docker-cli-adapter.cjs');
 const {createBoundedDockerCommand}=require('./rings-now-p2-g3-bounded-docker-command.cjs');
 const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+const {assertSnapshotRpcResult}=require('./rings-now-p2-loopback-transport.cjs');
 const activeManifest=require('./rings-now-p2-isolated-manifest.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
@@ -122,6 +123,16 @@ async function runRealP2DockerLifecycle({
       await driver.initializeGoTrue(runId);
       ops.push('gotrue_migration_cli_reported');
      }
+    }
+    if(runtime?.prepareHttpProbe){
+     // This is a real Docker-network HTTP attempt, NOT a completed G4
+     // owner-isolation or 1000/1001 signed-JWT proof.
+     const requestFile=runtime.prepareHttpProbe();
+     const response=await driver.probeInternalPostgrest({runId,requestFile});
+     assertSnapshotRpcResult(response,{
+      subject:'00000000-0000-4000-8000-000000000001',expectedCount:0
+     });
+     ops.push('internal_postgrest_http_empty_owner_cli_reported_not_g4');
     }
     return {status:'PASS'};
    }catch{executionFailed=true;return {status:'FAIL'};}
