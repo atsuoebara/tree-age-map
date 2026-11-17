@@ -106,3 +106,31 @@ test('exhausted shared budget never promotes proof flags',async()=>{
  assert.equal(result.actualResourcesVerified,false);
  assert.equal(result.g3Verified,false);
 });
+
+test('Linux native Node fixed child: normal stages complete without P2 access',
+ {skip:process.platform!=='linux'},async()=>{
+ const {performance}=require('node:perf_hooks');
+ const result=await runG3WatchdogSyntheticIntegration({
+  inventory:inventory(),nowMs:()=>performance.now(),
+  totalMs:5000,reserveMs:2500,verifyReserveMs:1000,graceMs:30
+ });
+ assert.equal(result.status,'SYNTHETIC_PIPELINE_CONSISTENT_NOT_REAL_PROOF');
+ assert.equal(result.childRecords.length,3);
+ assert.ok(result.childRecords.every(x=>x.childClosed&&!x.timedOut));
+ assert.equal(result.actualResourcesVerified,false);
+ assert.equal(result.p2ExecutionAuthorized,false);
+});
+test('Linux native Node fixed child: hung execute is killed; cleanup is attempted',
+ {skip:process.platform!=='linux'},async()=>{
+ const {performance}=require('node:perf_hooks');
+ const result=await runG3WatchdogSyntheticIntegration({
+  modes:{execute:'ignore-term',cleanup:'success',verify:'success'},
+  inventory:inventory(),nowMs:()=>performance.now(),
+  totalMs:5000,reserveMs:2300,verifyReserveMs:950,graceMs:30
+ });
+ assert.equal(result.status,'FAIL');
+ assert.ok(result.childRecords.length>=2);
+ assert.equal(result.childRecords[0].timedOut,true);
+ assert.equal(result.childRecords[0].groupTerminationVerified,false);
+ assert.equal(result.g3Verified,false);
+});
