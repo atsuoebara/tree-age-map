@@ -28,7 +28,8 @@ check('cache separates annual and monthly distance/explore results',()=>{
  assert.match(html,/const cacheKey='explore:'\+selectedRankingMode/);
 });
 check('month mode suppresses annual plus monthly increment double count',()=>{
- assert.match(html,/if\(selectedRankingMode==='month'/);
+ assert.match(html,/if\(kind==='nations'\|\|selectedRankingMode==='month'\)\{/);
+ assert.match(html,/const delta=kind==='nations'\?null:/);
 });
 check('annual rows and disclosure controls remain',()=>{
  assert.match(html,/function renderRanking\(/);
