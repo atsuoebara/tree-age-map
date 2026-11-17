@@ -87,13 +87,26 @@ function createDockerCliAdapter({command}={}){
    assert.equal(spec.platform,'linux/amd64');
    assert.equal(spec.publishPorts,false);assert.equal(spec.privileged,false);
    assert.equal(spec.readOnlyRootfs,true);assert.equal(spec.persistentVolumes,false);
-   assert.equal(spec.environment,'SYNTHETIC_EMPTY');
-   // No -p, --volume, --privileged, --env-file, secret, env inheritance.
-   // Empty GoTrue/PostgREST/PG config is NOT a bootable real P2 stack.
+   // Concrete service environment is supplied only by a run-scoped,
+   // restrictive temporary file, never as literal secret-bearing argv.
+   let runtimeArgs=[];
+   if(spec.environment!=='SYNTHETIC_EMPTY'){
+    assert.equal(spec.environment,'EPHEMERAL_SERVICE_ENV_FILE');
+    const file=spec.runtime?.envFile;
+    assert.equal(typeof file,'string');
+    assert.match(file,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}\/(?:postgres|gotrue|postgrest)\.env$/);
+    assert.ok(file.endsWith('/'+spec.service+'.env'));
+    assert.equal(spec.runtime?.networkOnly,true);
+    const tmpfs=spec.service==='postgres'
+     ? ['/var/lib/postgresql/data:rw,nosuid,nodev,size=128m','/var/run/postgresql:rw,nosuid,nodev,size=8m','/tmp:rw,nosuid,nodev,size=16m']
+     : ['/tmp:rw,nosuid,nodev,size=16m'];
+    runtimeArgs=['--env-file',file,...tmpfs.flatMap(x=>['--tmpfs',x])];
+   }
+   // No -p, --volume, --privileged, --env KEY=secret, host network.
    await invoke(['container','create','--name',spec.name,'--label',
     LABEL+'='+spec.owner,'--network',spec.network,'--platform',spec.platform,
     '--read-only','--cap-drop','ALL','--security-opt','no-new-privileges',
-    spec.image]);
+    ...runtimeArgs,spec.image]);
    await inspect('container',spec.name,spec.owner);
    return spec.name;
   },
