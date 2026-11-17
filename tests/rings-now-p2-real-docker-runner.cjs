@@ -113,6 +113,10 @@ async function runRealP2DockerLifecycle({
        runId,authenticatorSqlFile:runtime.bootstrapSqlFile
       });
       ops.push('postgres_candidate_sql_and_authenticator_cli_reported');
+      // The original immutable snapshot RPC candidate is installed only
+      // after fixture + authenticator succeeded, before Auth/PostgREST.
+      await driver.applySnapshotCandidate(runId);
+      ops.push('snapshot_candidate_cli_reported_not_rls_proof');
      }
      if(runtime?.bootstrapSqlFile&&service==='gotrue'){
       await driver.initializeGoTrue(runId);
