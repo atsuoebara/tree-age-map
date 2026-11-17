@@ -76,11 +76,11 @@ html[lang="ja"] .featureNavCard.isCurrent .featureNavName:after{content:" · 現
 <div id="rankingModeSwitch" class="rankingYearFilter" role="group" aria-label="Ranking period"><button id="rankingModeYear" type="button" aria-pressed="true"><span data-lang="ja">年間順位</span><span data-lang="en">Annual ranking</span></button><button id="rankingModeMonth" type="button" aria-pressed="false" disabled title="Monthly ranking / 月間順位"><span data-lang="ja">月間順位</span><span data-lang="en">Monthly ranking</span></button></div>
 <div id="rankingMonthlyGateNotice" class="sample" role="status"><span data-lang="ja">月間順位は監査・DB適用後に公開予定です。現在は年間順位です。</span><span data-lang="en">Monthly ranking is pending audit and database rollout. Annual ranking remains active.</span></div>
 <div id="rankingYearFilter" class="rankingYearFilter" aria-label="Ranking year"><span class="rankingYearLabel"><span data-lang="ja">年</span><span data-lang="en">YEAR</span></span></div>
-<label for="rankingMonth"><span data-lang="ja">増加分の対象月（DISTANCE / EXPLORE）</span><span data-lang="en">Monthly additions (DISTANCE / EXPLORE)</span></label> <select id="rankingMonth" class="countryPick"></select><p class="sample"><span data-lang="ja">年間順位はそのまま、DISTANCE / EXPLORE の右端に選択月の増加分を表示。累計非公開の場合は月間値も非公開です。NATIONS の月間増加分はプライバシー保護のため一時非表示です。</span><span data-lang="en">Annual ranks stay unchanged. The right column shows selected-month additions for DISTANCE / EXPLORE only. Private annual totals also keep monthly values private. NATIONS monthly additions are temporarily hidden for privacy.</span></p>
+<label id="rankingMonthLabel" for="rankingMonth"><span data-lang="ja">増加分の対象月（DISTANCE / EXPLORE）</span><span data-lang="en">Monthly additions (DISTANCE / EXPLORE)</span></label> <select id="rankingMonth" class="countryPick"></select><p id="rankingMonthDescription" class="sample"><span data-lang="ja">年間順位はそのまま、DISTANCE / EXPLORE の右端に選択月の増加分を表示。累計非公開の場合は月間値も非公開です。NATIONS の月間増加分はプライバシー保護のため一時非表示です。</span><span data-lang="en">Annual ranks stay unchanged. The right column shows selected-month additions for DISTANCE / EXPLORE only. Private annual totals also keep monthly values private. NATIONS monthly additions are temporarily hidden for privacy.</span></p>
 <label for="rankingSearch" class="settingsLead"><span data-lang="ja">公開名・順位・公開地域名で検索（表示中の各ランキング上位100件）</span><span data-lang="en">Search public names, ranks, and public regions (top 100 per displayed ranking)</span></label>
 <input id="rankingSearch" class="countryPick" type="search" placeholder="公開名・順位" autocomplete="off" aria-label="ランキング検索">
 <p id="rankingSearchStatus" class="sample" role="status"></p>
-<div class="tabs" role="tablist"><button class="tab active" data-panel="distance"><b>🏃 DISTANCE</b><span data-lang="ja">年間距離・順位</span><span data-lang="en">Annual distance / rank</span></button><button class="tab" data-panel="explore"><b>🗺️ EXPLORE</b><span data-lang="ja">国別走破</span><span data-lang="en">Explore by country</span></button><button class="tab" data-panel="nations"><b>🌎 NATIONS</b><span data-lang="ja">国対抗</span><span data-lang="en">Nation vs Nation</span></button></div>
+<div class="tabs" role="tablist"><button class="tab active" data-panel="distance"><b>🏃 DISTANCE</b><span id="distanceTabSubtitleJa" data-lang="ja">年間距離・順位</span><span id="distanceTabSubtitleEn" data-lang="en">Annual distance / rank</span></button><button class="tab" data-panel="explore"><b>🗺️ EXPLORE</b><span data-lang="ja">国別走破</span><span data-lang="en">Explore by country</span></button><button class="tab" data-panel="nations"><b>🌎 NATIONS</b><span data-lang="ja">国対抗</span><span data-lang="en">Nation vs Nation</span></button></div>
 <section id="distance" class="panel active"><div class="toolbar"><span id="distanceYearLabel" class="year">WORLD</span></div><div id="distanceRanking" class="ranking"><p class="notice">走った年輪から計算した順位を表示します。公開を許可した情報だけが表示されます。 / Rankings use saved runs and respect each runner’s sharing settings. Loading results…</p></div></section>
 <section id="explore" class="panel"><div class="toolbar"><span id="exploreYearLabel" class="year">EXPLORE</span><select id="exploreCountry" aria-label="Country where runs occurred"></select></div><div id="exploreRanking" class="ranking"><p class="notice">走った年輪から計算した順位を表示します。公開を許可した情報だけが表示されます。 / Rankings use saved runs and respect each runner’s sharing settings. Loading results…</p></div><p class="sample" data-lang="ja">走った国ごとの順位を表示します。地域数と地域名は、それぞれ本人が公開を許可した場合だけ表示します。新しい記録は通常1日2回の検証処理後に反映されます。検証済みの記録のみ対象です。</p><p class="sample" data-lang="en">Rank by country actually visited. Region totals and names follow separate disclosure settings. New records normally appear after twice-daily verification runs. Only verified records are included.</p></section>
 <section id="nations" class="panel"><div class="toolbar"><span id="nationsYearLabel" class="year">NATIONS</span></div><div id="nationsRanking" class="ranking"><p class="notice">走った年輪から計算した順位を表示します。公開を許可した情報だけが表示されます。 / Rankings use saved runs and respect each runner’s sharing settings. Loading results…</p></div></section>
@@ -164,7 +164,24 @@ const monthModeButton=$('rankingModeMonth'),yearModeButton=$('rankingModeYear');
 monthModeButton.disabled=!RANKING_MONTH_PLACES_ENABLED;
 monthModeButton.onclick=()=>{if(!RANKING_MONTH_PLACES_ENABLED)return;selectedRankingMode='month';syncRankingMode();loadBoards();loadExplore()};
 yearModeButton.onclick=()=>{selectedRankingMode='year';syncRankingMode();loadBoards();loadExplore()};
-function syncRankingMode(){yearModeButton.setAttribute('aria-pressed',String(selectedRankingMode==='year'));monthModeButton.setAttribute('aria-pressed',String(selectedRankingMode==='month'));$('rankingMonthlyGateNotice').hidden=RANKING_MONTH_PLACES_ENABLED;updateRankingYearLabels()}
+function syncRankingMode(){
+  yearModeButton.setAttribute('aria-pressed',String(selectedRankingMode==='year'));
+  monthModeButton.setAttribute('aria-pressed',String(selectedRankingMode==='month'));
+  $('rankingMonthlyGateNotice').hidden=RANKING_MONTH_PLACES_ENABLED;
+  // Only the presentation copy changes: rankings, RPCs and privacy remain untouched.
+  const monthly=selectedRankingMode==='month';
+  $('distanceTabSubtitleJa').textContent=monthly?'月間距離・順位':'年間距離・順位';
+  $('distanceTabSubtitleEn').textContent=monthly?'Monthly distance / rank':'Annual distance / rank';
+  $('rankingMonthLabel').querySelector('[data-lang="ja"]').textContent=monthly?'月間順位の対象月（DISTANCE / EXPLORE）':'増加分の対象月（DISTANCE / EXPLORE）';
+  $('rankingMonthLabel').querySelector('[data-lang="en"]').textContent=monthly?'Monthly ranking period (DISTANCE / EXPLORE)':'Monthly additions (DISTANCE / EXPLORE)';
+  $('rankingMonthDescription').querySelector('[data-lang="ja"]').textContent=monthly
+    ?'選択月の走行距離と、その月に初めて確認された地域数で月間順位を表示します。本人が非公開にした距離・地域数は表示しません。NATIONS の月間順位はプライバシー保護のため非公開です。'
+    :'年間順位はそのまま、DISTANCE / EXPLORE の右端に選択月の増加分を表示。累計非公開の場合は月間値も非公開です。NATIONS の月間増加分はプライバシー保護のため一時非表示です。';
+  $('rankingMonthDescription').querySelector('[data-lang="en"]').textContent=monthly
+    ?'Monthly ranks use distance run and newly verified regions for the selected month. Private distance and region totals remain hidden. NATIONS monthly ranking remains private.'
+    :'Annual ranks stay unchanged. The right column shows selected-month additions for DISTANCE / EXPLORE only. Private annual totals also keep monthly values private. NATIONS monthly additions are temporarily hidden for privacy.';
+  updateRankingYearLabels();
+}
 
 const monthSelect=$("rankingMonth");
 function renderMonthFilter(){monthSelect.replaceChildren();for(let m=1;m<=12;m++){const o=document.createElement("option");o.value=m;o.textContent=selectedRankingYear+"-"+String(m).padStart(2,"0");o.selected=m===selectedRankingMonth;monthSelect.append(o)}}
