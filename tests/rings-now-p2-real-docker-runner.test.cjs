@@ -294,3 +294,52 @@ test('snapshot SQL failure prevents GoTrue/PostgREST and cleans owned containers
  assert.equal(d.owned.size,0);
  assert.equal(r.g3Verified,false);assert.equal(r.actualP2Proven,false);
 });
+
+test('real runner directly requests signed isolated HTTP after all services start',async()=>{
+ const d=fakeDocker(),steps=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(x=>
+   [x,'/tmp/rn-p2-abcdefghi/'+x+'.env'])),
+  prepareHttpProbe(){steps.push('prepared');return '/tmp/rn-p2-abcdefghi/http-probe.req';},
+  dispose(){steps.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const driver=createDockerCliAdapter({command});
+  return {...driver,probeInternalPostgrest:async({runId,requestFile})=>{
+   assert.equal(runId,'rn_p2_abcdefgh');
+   assert.ok(requestFile.endsWith('/http-probe.req'));
+   steps.push('http');
+   return {status:200,body:{status:'candidate_snapshot',rows:[]}};
+  }};
+ };
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,
+  runtimeFactory,adapterFactory});
+ assert.equal(r.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
+ assert.deepEqual(steps,['prepared','http','disposed']);
+ assert.equal(d.argvs.filter(x=>x[1]==='container'&&x[2]==='create').length,3);
+ assert.equal(d.owned.size,0);
+ assert.equal(r.g3Verified,false);assert.equal(r.actualP2Proven,false);
+});
+test('failed isolated HTTP authentication blocks PASS and cleans owned daemon resources',async()=>{
+ const d=fakeDocker(),steps=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(x=>
+   [x,'/tmp/rn-p2-abcdefghi/'+x+'.env'])),
+  prepareHttpProbe(){steps.push('prepared');return '/tmp/rn-p2-abcdefghi/http-probe.req';},
+  dispose(){steps.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const driver=createDockerCliAdapter({command});
+  return {...driver,probeInternalPostgrest:async()=>{
+   steps.push('401');return {status:401};
+  }};
+ };
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,
+  runtimeFactory,adapterFactory});
+ assert.equal(r.status,'FAIL_OR_NOT_PROVEN');
+ assert.deepEqual(steps,['prepared','401','disposed']);
+ assert.equal(d.owned.size,0);
+ assert.equal(r.g3Verified,false);assert.equal(r.actualP2Proven,false);
+});
