@@ -232,13 +232,14 @@ test('service startup orders PG readiness and SQL bootstrap before Auth/PostgRES
    postgresReady:async()=>{steps.push('pgReady');return true;},
    bootstrapPostgres:async()=>{steps.push('sql');return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';},
    applySnapshotCandidate:async()=>{steps.push('snapshot');return 'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF';},
+   probeSqlRlsBoundary:async()=>{steps.push('sqlRls');return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';},
    initializeGoTrue:async()=>{steps.push('authMigrate');return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';}
   };
  };
  const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
   manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
  assert.equal(r.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
- assert.deepEqual(steps,['pgReady','sql','snapshot','authMigrate','dispose']);
+ assert.deepEqual(steps,['pgReady','sql','snapshot','sqlRls','authMigrate','dispose']);
  const creates=d.argvs.filter(x=>x[1]==='container'&&x[2]==='create');
  assert.equal(creates.length,3);
  assert.equal(d.owned.size,0);
@@ -293,4 +294,32 @@ test('snapshot SQL failure prevents GoTrue/PostgREST and cleans owned containers
  assert.equal(d.argvs.filter(x=>x[1]==='container'&&x[2]==='create').length,1);
  assert.equal(d.owned.size,0);
  assert.equal(r.g3Verified,false);assert.equal(r.actualP2Proven,false);
+});
+
+test('SQL RLS assertion failure prevents GoTrue/PostgREST startup and reconciles',async()=>{
+ const d=fakeDocker(),steps=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(x=>
+   [x,'/tmp/rn-p2-abcdefghi/'+x+'.env'])),
+  bootstrapSqlFile:'/tmp/rn-p2-abcdefghi/authenticator.sql',
+  dispose(){steps.push('dispose');}
+ });
+ const adapterFactory=({command})=>{
+  const driver=createDockerCliAdapter({command});
+  return {...driver,
+   postgresReady:async()=>true,
+   bootstrapPostgres:async()=>{steps.push('bootstrap');},
+   applySnapshotCandidate:async()=>{steps.push('snapshot');},
+   probeSqlRlsBoundary:async()=>{steps.push('sqlRls');throw Error('1001 assertion failed');},
+   initializeGoTrue:async()=>{throw Error('must not run migration');}
+  };
+ };
+ const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
+ assert.equal(r.status,'FAIL_OR_NOT_PROVEN');
+ assert.deepEqual(steps,['bootstrap','snapshot','sqlRls','dispose']);
+ assert.equal(d.argvs.filter(x=>x[1]==='container'&&x[2]==='create').length,1);
+ assert.equal(d.owned.size,0);
+ assert.equal(r.g3Verified,false);
+ assert.equal(r.actualP2Proven,false);
 });
