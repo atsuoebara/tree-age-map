@@ -96,4 +96,6 @@ AS $function$
   FROM per_country p ORDER BY place;
 $function$;
 REVOKE ALL ON FUNCTION public.ranking_nations_month_places(integer,integer) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.ranking_nations_month_places(integer,integer) TO anon,authenticated;
+-- PRIVACY HOLD (Issue #205): never grant this granular country/month numeric RPC to public roles.
+-- Re-evaluation requires separate B-1-compatible privacy policy and explicit approval.
+REVOKE ALL ON FUNCTION public.ranking_nations_month_places(integer,integer) FROM anon,authenticated;
