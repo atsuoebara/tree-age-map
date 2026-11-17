@@ -221,6 +221,8 @@ exploreSelect.onchange=()=>{
 };
 function exploreRows(data){renderRanking('exploreRanking',data,'explore')}
 const rankingCachePrefix='rr-public-ranking-v1:';
+// Invalidate previously stored NATIONS monthly numbers on upgrade (old API responses cannot be revoked).
+try{for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);if(key&&key.startsWith(rankingCachePrefix+'nations:'))localStorage.removeItem(key)}}catch(_){}
 function rankingCacheGet(key,ttl){try{const v=JSON.parse(localStorage.getItem(rankingCachePrefix+key)||'null');return v&&Date.now()-v.savedAt<ttl&&Array.isArray(v.data)?v.data:null}catch(_){return null}}
 function rankingCachePut(key,data){if(!Array.isArray(data))return;try{localStorage.setItem(rankingCachePrefix+key,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
 function rankingCacheTTL(year,month){return year===new Date().getFullYear()&&month===new Date().getMonth()+1?30*60*1000:6*60*60*1000}
