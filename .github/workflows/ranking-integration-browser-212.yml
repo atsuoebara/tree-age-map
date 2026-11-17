@@ -1,0 +1,29 @@
+name: Ranking integrated synthetic browser (OFF only)
+on:
+  pull_request:
+    paths:
+      - 'ranking.html'
+      - 'scripts/test-ranking-integration-browser-212.cjs'
+      - 'scripts/test-ranking-month-mode-synthetic-on-212.cjs'
+      - '.github/workflows/ranking-integration-browser-212.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install pinned matching Playwright package
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Test synthetic privacy-integrated Ranking UI
+        run: node scripts/test-ranking-integration-browser-212.cjs
+
+      - name: Test synthetic monthly ON fixture without changing production OFF source
+        run: node scripts/test-ranking-month-mode-synthetic-on-212.cjs
