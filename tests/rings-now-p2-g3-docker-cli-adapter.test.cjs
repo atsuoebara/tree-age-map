@@ -208,3 +208,36 @@ test('snapshot SQL cannot target a foreign run identifier',async()=>{
  await assert.rejects(()=>d.adapter.applySnapshotCandidate('production'));
  assert.equal(d.calls.length,0);
 });
+
+test('SQL RLS probe copies only checksum-pinned candidate to owned disposable postgres',async()=>{
+ const d=fake();await d.adapter.createNetwork(spec);
+ await d.adapter.createContainer(c('postgres'));
+ const r=await d.adapter.probeSqlRlsBoundary(R);
+ assert.equal(r,'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF');
+ const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+ assert.equal(copies.length,1);
+ assert.ok(copies[0][2].endsWith('/tests/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql'));
+ assert.equal(copies[0][3],R+'_postgres:/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+ const sqls=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('psql'));
+ assert.equal(sqls.length,1);assert.ok(sqls[0].includes('ON_ERROR_STOP=1'));
+ assert.ok(sqls[0].includes('/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql'));
+});
+test('SQL RLS probe owner mismatch and run mismatch cannot execute cp/psql',async()=>{
+ const bad=fake({forgeOwner:true});
+ await assert.rejects(()=>bad.adapter.probeSqlRlsBoundary(R));
+ assert.ok(!bad.calls.some(x=>x[0]==='container'&&['cp','exec'].includes(x[1])));
+ const other=fake();
+ await assert.rejects(()=>other.adapter.probeSqlRlsBoundary('production_db'));
+ assert.equal(other.calls.length,0);
+});
+test('candidate SQL RLS probe structure is rollback-only with 1000/1001 and anon checks',()=>{
+ const fs=require('node:fs');
+ const path=require('node:path');
+ const s=fs.readFileSync(path.resolve(__dirname,'fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql'),'utf8');
+ assert.ok(s.includes('BEGIN;')&&s.includes('ROLLBACK;'));
+ assert.ok(s.includes('generate_series(1,1000)'));
+ assert.ok(s.includes('P2_BOUNDARY_1001_NOT_BLOCKED'));
+ assert.ok(s.includes('P2_ANON_RPC_EXECUTE_NOT_DENIED'));
+ assert.ok(s.includes('P2_CONFLICTING_SUB_CLAIM_NOT_BLOCKED'));
+ assert.ok(!s.includes('COMMIT;'));
+});
