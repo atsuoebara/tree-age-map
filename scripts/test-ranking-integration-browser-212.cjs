@@ -37,10 +37,10 @@ const html=fs.readFileSync('ranking.html','utf8');
  // file URL avoids any external HTTP use. The Supabase JS SDK itself is replaced by a fixture.
  // Seed a previous release's sensitive nation-month cache before page startup.
  await page.addInitScript(()=>{
-   localStorage.setItem('rr-public-ranking-v1:nations:2026:11',JSON.stringify({savedAt:Date.now(),data:[{country:'JP',month_km:98765.4}]}));
+   localStorage.setItem('rr-public-ranking-v1:nations:2024:04',JSON.stringify({savedAt:Date.now(),data:[{country:'JP',month_km:98765.4}]}));
  });
  await page.goto('file://'+path.resolve('ranking.html'),{waitUntil:'domcontentloaded'});
- assert.equal(await page.evaluate(()=>localStorage.getItem('rr-public-ranking-v1:nations:2026:11')),null,'Old nation cache should be purged on startup');
+ assert.equal(await page.evaluate(()=>localStorage.getItem('rr-public-ranking-v1:nations:2024:04')),null,'Old nation cache should be purged on startup');
  await page.waitForSelector('#distanceRanking .row');
  assert.equal(await page.locator('#rankingModeMonth').isDisabled(),true);
  assert.equal(await page.locator('#rankingModeMonth').getAttribute('aria-pressed'),'false');
@@ -87,4 +87,4 @@ const html=fs.readFileSync('ranking.html','utf8');
  assert.deepEqual(errors,[]);
  await browser.close();
  console.log('PASS synthetic browser: 375px/no overflow, annual RPC, month OFF, NATIONS no delta/cached null, language, year/month, EXPLORE');
-})().catch(e=>{console.error(e);process.exitCode=1});
+})().catch(e=>{console.error(e);process.exit(1)});
