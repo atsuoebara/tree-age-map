@@ -27,8 +27,11 @@ function inspectG2CostEnvelope(envelope) {
     e.billing?.currentActionsChargeUsd!==0||e.billing?.actionsBudgetUsd!==0||
     e.billing?.usageBlockedObserved!==true)
   fail('billing_observation_incomplete');
- if(!ISO.test(e.billing?.observedAt||'')||
-    Number.isNaN(Date.parse(e.billing?.observedAt||'')))
+ const observedAt=e.billing?.observedAt;
+ const parsed=typeof observedAt==='string' && ISO.test(observedAt)
+  ? Date.parse(observedAt) : NaN;
+ if(!Number.isFinite(parsed)||
+    new Date(parsed).toISOString().replace('.000','')!==observedAt)
   fail('billing_timestamp_invalid');
  if(e.billing?.observationEvidenceId===null||
     typeof e.billing?.observationEvidenceId!=='string'||
