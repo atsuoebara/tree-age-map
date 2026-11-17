@@ -9,7 +9,8 @@ WITH req(tbl,col) AS (
  ('ranking_explore_verified','activity_year'),('ranking_explore_verified','run_country'),
  ('ranking_settings','user_id'),('ranking_settings','ranking_display_name'),
  ('ranking_settings','show_ranking_name'),('ranking_settings','show_flag'),
- ('ranking_settings','join_distance'),('ranking_settings','join_explore'),('ranking_settings','show_regions')
+ ('ranking_settings','join_distance'),('ranking_settings','join_explore'),('ranking_settings','show_regions'),
+ ('ranking_settings','country'),('ranking_settings','join_nations')
 ), schema_check AS (
  SELECT count(*) AS expected_columns,
  count(*) FILTER (WHERE c.column_name IS NULL) AS missing_schema_columns
