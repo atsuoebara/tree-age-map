@@ -1,0 +1,25 @@
+name: Ranking NATIONS privacy-only browser smoke (#216)
+on:
+  pull_request:
+    paths:
+      - 'ranking.html'
+      - 'scripts/test-ranking-nations-ui-browser-216.cjs'
+      - '.github/workflows/ranking-nations-ui-browser-216.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install pinned matching Playwright package
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Verify isolated NATIONS privacy UI with synthetic data
+        run: node scripts/test-ranking-nations-ui-browser-216.cjs
