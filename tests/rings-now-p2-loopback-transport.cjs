@@ -73,4 +73,38 @@ function createLoopbackTransport() {
     });
   };
 }
-module.exports = { createLoopbackTransport };
+// Strict, pure result validation, not evidence that HTTP or JWT was run.
+// The caller must supply independently authenticated transport results.
+function assertSnapshotRpcResult(response,{subject,expectedCount,blockedReason}={}) {
+  assert.ok(response && response.status === 200,'RPC did not return HTTP 200');
+  const payload=response.body;
+  assert.ok(payload && typeof payload==='object' && !Array.isArray(payload),
+    'RPC body missing');
+  if(blockedReason){
+    assert.ok(['too_many_rows','unauthenticated','missing_required_fields']
+      .includes(blockedReason),'unsupported blocked reason');
+    assert.equal(payload.status,'blocked');
+    assert.equal(payload.reason,blockedReason);
+    assert.ok(!Object.hasOwn(payload,'rows'),'blocked response leaked rows');
+    return 'RPC_BLOCKED_RESULT_SHAPE_ONLY';
+  }
+  assert.match(subject||'',/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/);
+  assert.ok(Number.isInteger(expectedCount)&&expectedCount>=0&&expectedCount<=1000);
+  assert.equal(payload.status,'candidate_snapshot');
+  assert.ok(Array.isArray(payload.rows),'rows must be an array');
+  assert.equal(payload.rows.length,expectedCount,'wrong owner row count');
+  const ids=new Set();
+  for(const row of payload.rows){
+    assert.ok(row && typeof row==='object' && !Array.isArray(row));
+    assert.equal(row.user_id,subject,'foreign user row present');
+    assert.ok(row.id!==null && (typeof row.id==='number'||typeof row.id==='string'));
+    assert.ok(!ids.has(String(row.id)),'duplicate row id');
+    ids.add(String(row.id));
+    assert.ok(row.activity_date && row.started_at);
+    assert.equal(typeof row.distance_km,'number');
+    assert.ok(Number.isFinite(row.distance_km));
+    assert.equal(row.deleted_at,null);
+  }
+  return 'RPC_RESPONSE_SHAPE_ONLY_NOT_JWT_PROOF';
+}
+module.exports = { createLoopbackTransport, assertSnapshotRpcResult };
