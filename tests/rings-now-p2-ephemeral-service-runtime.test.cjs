@@ -42,3 +42,24 @@ test('separate runtime creations produce different credentials',()=>{
   assert.notEqual(pa,pb);
  }finally{a.dispose();b.dispose();}
 });
+
+test('synthetic JWT uses run-specific HS256 secret, fixed subjects and 60-second expiry',()=>{
+ const {createHmac}=require('node:crypto');
+ const a=createEphemeralP2Runtime(),b=createEphemeralP2Runtime();
+ const sub='00000000-0000-4000-8000-000000000001';
+ try{
+  const tok=a.issueSyntheticJwt({subject:sub,nowSeconds:1700000000});
+  const parts=tok.split('.');
+  assert.equal(parts.length,3);
+  const header=JSON.parse(Buffer.from(parts[0],'base64url'));
+  const claims=JSON.parse(Buffer.from(parts[1],'base64url'));
+  assert.equal(header.alg,'HS256');assert.equal(header.typ,'JWT');
+  assert.equal(claims.sub,sub);assert.equal(claims.role,'authenticated');
+  assert.equal(claims.exp-claims.iat,60);
+  const env=fs.readFileSync(a.envFiles.postgrest,'utf8');
+  const secret=env.match(/^PGRST_JWT_SECRET=(.*)$/m)[1];
+  assert.equal(parts[2],createHmac('sha256',secret).update(parts[0]+'.'+parts[1]).digest('base64url'));
+  assert.notEqual(tok,b.issueSyntheticJwt({subject:sub,nowSeconds:1700000000}));
+  assert.throws(()=>a.issueSyntheticJwt({subject:'00000000-0000-4000-8000-000000000003'}));
+ }finally{a.dispose();b.dispose();}
+});
