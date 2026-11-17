@@ -1,10 +1,10 @@
 'use strict';
-// In-memory synthetic fixture ONLY; ranking.html stays hard OFF on disk.
+// Synthetic offline browser test of the ON release candidate. No live Supabase or user data.
 const {chromium}=require('playwright');
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const original=fs.readFileSync('ranking.html','utf8');
-assert.match(original,/const RANKING_MONTH_PLACES_ENABLED=false;/);
-const fixture=original.replace('const RANKING_MONTH_PLACES_ENABLED=false;','const RANKING_MONTH_PLACES_ENABLED=true;');
+assert.match(original,/const RANKING_MONTH_PLACES_ENABLED=true;/);
+const fixture=original;
 (async()=>{
  const browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:375,height:812},locale:'ja-JP'});
