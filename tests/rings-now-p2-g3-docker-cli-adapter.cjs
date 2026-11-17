@@ -178,6 +178,25 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql']);
    return 'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF';
   },
+  async probeSqlRlsBoundary(runId){
+   safeRun(runId);
+   const name=runId+'_postgres';
+   const probe=path.resolve(__dirname,'fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+   const bytes=fs.readFileSync(probe);
+   const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+   assert.equal(sha,'b0f323d8c5b17a50f23b41e199f456bbc8caa8aa',
+    'RLS probe fixture bytes changed');
+   await inspect('container',name,runId);
+   await invoke(['container','cp',probe,
+    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+   await inspect('container',name,runId);
+   // ON_ERROR_STOP makes ANY SQL assertion failure a nonzero CLI result.
+   // DO NOT interpret success as actual signed JWT or HTTP evidence.
+   await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
+    '-v','ON_ERROR_STOP=1','-f',
+    '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+   return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
+  },
   async initializeGoTrue(runId){
    safeRun(runId);
    const name=runId+'_gotrue';
