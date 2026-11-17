@@ -46,8 +46,14 @@ async function runRealP2DockerLifecycle({
  assert.match(runId||'',RUN);
  // No Docker execFile, daemon query, process spawn or network before gates.
  const gate=validateLiveManifest(manifest);
- if(!gate.pass)return Object.freeze({
-  status:'BLOCKED_NOT_RUN',preflightIssues:gate.failures,
+ // Test fixtures may inject a fake manifest only when they also inject a
+ // nondefault command factory. The real executable backend must consume the
+ // actual imported manifest, never a caller-supplied forged approval object.
+ const realBackendManifestMismatch=commandFactory===createBoundedDockerCommand&&
+  manifest!==activeManifest;
+ if(!gate.pass||realBackendManifestMismatch)return Object.freeze({
+  status:'BLOCKED_NOT_RUN',preflightIssues:Object.freeze([
+   ...gate.failures,...(realBackendManifestMismatch?['noncanonical_real_backend_manifest']:[])]),
   attempted:false,realDockerInvoked:false,g3Verified:false,
   actualP2Proven:false,p2ExecutionAuthorized:false
  });
