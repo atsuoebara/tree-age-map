@@ -117,6 +117,10 @@ async function runRealP2DockerLifecycle({
       // after fixture + authenticator succeeded, before Auth/PostgREST.
       await driver.applySnapshotCandidate(runId);
       ops.push('snapshot_candidate_cli_reported_not_rls_proof');
+      // Prove isolated DB role/row behavior with transactional synthetic
+      // fixtures (ROLLBACK); this is still not HTTP or signed-JWT proof.
+      await driver.probeSqlRlsBoundary(runId);
+      ops.push('sql_rls_boundary_cli_reported_not_http_jwt_proof');
      }
      if(runtime?.bootstrapSqlFile&&service==='gotrue'){
       await driver.initializeGoTrue(runId);
