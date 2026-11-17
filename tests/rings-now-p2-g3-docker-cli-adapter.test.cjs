@@ -143,3 +143,43 @@ test('reject invalid env-file location and wrong service file before Docker',asy
   assert.equal(d.calls.length,0);
  }
 });
+
+test('bootstrap applies exact candidate SQL before authenticator and GoTrue migration',async()=>{
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const runtime=createEphemeralP2Runtime(),d=fake();
+ try{
+  await d.adapter.createNetwork(spec);
+  await d.adapter.createContainer({...c('postgres'),
+   environment:'EPHEMERAL_SERVICE_ENV_FILE',
+   runtime:{envFile:runtime.envFiles.postgres,networkOnly:true}});
+  assert.equal(await d.adapter.postgresReady(R),true);
+  const outcome=await d.adapter.bootstrapPostgres({
+   runId:R,authenticatorSqlFile:runtime.bootstrapSqlFile});
+  assert.equal(outcome,'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF');
+  const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+  assert.equal(copies.length,3);
+  const scripts=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('psql'));
+  assert.equal(scripts.length,2);
+  assert.ok(scripts[0].includes('/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql'));
+  assert.ok(scripts[1].includes('/tmp/rn-p2/authenticator.sql'));
+  assert.ok(scripts.every(x=>x.includes('ON_ERROR_STOP=1')));
+  const all=d.calls.flat().join(' ');
+  const sql=require('node:fs').readFileSync(runtime.bootstrapSqlFile,'utf8');
+  const secret=sql.match(/PASSWORD '([a-f0-9]{64})'/)[1];
+  assert.ok(!all.includes(secret));
+  assert.ok(!d.calls.some(x=>x.some(z=>z==='--env'||z==='--publish')));
+  await d.adapter.createContainer({...c('gotrue'),
+   environment:'EPHEMERAL_SERVICE_ENV_FILE',
+   runtime:{envFile:runtime.envFiles.gotrue,networkOnly:true}});
+  assert.equal(await d.adapter.initializeGoTrue(R),
+   'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF');
+  assert.ok(d.calls.some(x=>x.includes('migrate')));
+ }finally{runtime.dispose();}
+});
+test('bootstrap rejects a non-run-owned SQL path before any Docker bootstrap command',async()=>{
+ const d=fake();await d.adapter.createNetwork(spec);
+ const before=d.calls.length;
+ await assert.rejects(()=>d.adapter.bootstrapPostgres({
+  runId:R,authenticatorSqlFile:'/etc/postgres.conf'}));
+ assert.equal(d.calls.length,before);
+});
