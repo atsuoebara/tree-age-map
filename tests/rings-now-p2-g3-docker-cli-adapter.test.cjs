@@ -257,3 +257,17 @@ test('Docker-internal HTTP returns non-200 without body and never claims JWT pro
   assert.deepEqual(res,{status:401});assert.equal('body' in res,false);
  }finally{r.dispose();}
 });
+
+test('Docker-internal service DNS aliases match private runtime environment hostnames',async()=>{
+ const d=fake();await d.adapter.createNetwork(spec);
+ for(const service of ['postgres','gotrue','postgrest'])
+  await d.adapter.createContainer(c(service));
+ const cs=d.calls.filter(x=>x[0]==='container'&&x[1]==='create');
+ assert.equal(cs.length,3);
+ for(const service of ['postgres','gotrue','postgrest']){
+  const x=cs.find(x=>x.includes(R+'_'+service));
+  assert.equal(x[x.indexOf('--network-alias')+1],service);
+  assert.equal(x[x.indexOf('--network')+1],R);
+  assert.ok(!x.includes('--publish')&&!x.includes('-p'));
+ }
+});
