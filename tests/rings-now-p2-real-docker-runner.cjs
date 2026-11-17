@@ -128,16 +128,39 @@ async function runRealP2DockerLifecycle({
   }
   throw Error('unexpected stage');
  };
- let budget;
+ let budget,coordinatorFailed=false,emergencyCleanupAttempted=false;
+ let emergencyCleanupStatus='NOT_NEEDED',emergencyVerifyStatus='NOT_NEEDED';
  try{budget=await runWithSharedTimeBudget({runStage,nowMs,totalMs,
   reserveMs,verifyReserveMs});}
  catch{
-  // A failure of the shared deadline coordinator is never positive G3
-  // evidence. The caller cannot infer successful absence of resources.
-  return Object.freeze({status:'FAIL',attempted:true,
-   realDockerInvoked:true,verification:'NOT_PROVEN',
-   g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false});
+  coordinatorFailed=true;
+  // This covers coordinator clock/validation exceptions AFTER resource
+  // creation. Never return before a best-effort owned-resource reconciliation.
+  // Do not clean a runId whose empty baseline was not established: collision.
+  if(baseline){
+   emergencyCleanupAttempted=true;
+   try{
+    const cleaned=await runStage('cleanup',{timeoutMs:15000});
+    emergencyCleanupStatus=cleaned?.status==='CLEAN'?'CLI_CLEAN_REPORTED':'FAIL';
+   }catch{emergencyCleanupStatus='FAIL';}
+   try{
+    const check=await runStage('verify',{timeoutMs:15000});
+    emergencyVerifyStatus=check?.verified===true?'CLI_EMPTY_REPORTED':'FAIL';
+   }catch{emergencyVerifyStatus='FAIL';}
+  }else{
+   emergencyCleanupStatus='BASELINE_UNTRUSTED';
+   emergencyVerifyStatus='NOT_PROVEN';
+  }
  }
+ if(coordinatorFailed)return Object.freeze({
+  status:'FAIL',attempted:true,realDockerInvoked:true,
+  verification:'NOT_PROVEN',coordinatorFailed:true,
+  emergencyCleanupAttempted,emergencyCleanupStatus,emergencyVerifyStatus,
+  cleanupActions:Object.freeze(ops),
+  remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
+  resourceTerminationProven:false,serviceStartupVerified:false,
+  g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
+ });
  // Even if all CLI operations reported success, daemon-side resource
  // termination and service startup/HTTP/JWT/SQL remain unverified.
  const consistent=budget.status==='PASS'&&!executionFailed&&!cleanupFailed&&
