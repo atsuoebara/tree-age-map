@@ -13,7 +13,7 @@
 | ID | 実行前に必要なもの | 今の事実 | 実証方法・受け入れ記録 |
 |---|---|---|---|
 | G1 | PostgreSQL / GoTrue / PostgRESTの公式参照とlinux/amd64不変digest | タグ候補のみ。digest null | 公式配布元、実タグ、digest、確認日・出典を台帳に記録。タグのみでPASS不可 |
-| G2 | GitHub Actions費用が追加0円である根拠 | NOT VERIFIED | 対象アカウントの請求画面・利用枠・公開repoの実条件・保存量・支払い上限等を本人確認。未確認ならSTOP |
+| G2 | GitHub Actions費用が追加0円である根拠 | **一部確認済み・実行費用は未証明**：2026-11-17本人提示のBilling画面で当月Actions請求額$0、Actions予算$0、予算一覧に`Usage blocked`を確認 | 現在の請求・予算表示は証拠として記録済み。ただし実行時のstandard runner固定、artifact/ストレージ課金、実行前後の請求・停止条件は未検証。将来費用0円の保証として扱わず、残る確認が取れなければSTOP |
 | G3 | 一時実行環境の固定と外部接続制限 | NOT RUN | 単一standard runner、checkout SHA、タイムアウト、ログ/保持日数、cleanup、認証/RPC接続先loopback検査を静的監査。外向きimage pullとAPI通信を区別 |
 | G4 | 実行対象HEADの独立監査 | P2実行対象は未監査 | Workflow/manifest/fixture/runner/依存参照をむせが**実行対象の正確なHEAD**で監査。PR #177/#178の監査で代替不可 |
 | G5 | AtsuoによるP2実行の個別承認 | NOT APPROVED | 範囲・費用・回数・実行者・安全停止/cleanupを提示して明示承認。単なる「ネクスト」「おけ」やPRマージでは代替不可 |
