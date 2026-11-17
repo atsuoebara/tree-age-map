@@ -7,6 +7,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {createHash}=require('node:crypto');
+const {parseInternalHttpResponse}=require('./rings-now-p2-docker-internal-http.cjs');
 const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
 const IMAGE=/^docker\.io\/(?:library\/postgres|supabase\/gotrue|postgrest\/postgrest)@sha256:[a-f0-9]{64}$/;
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
@@ -177,6 +178,31 @@ function createDockerCliAdapter({command}={}){
     '-v','ON_ERROR_STOP=1','-f',
     '/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql']);
    return 'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF';
+  },
+  async probeInternalPostgrest({runId,requestFile}={}){
+   safeRun(runId);
+   assert.equal(typeof requestFile,'string');
+   assert.match(requestFile,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}\/http-probe\.req$/);
+   const stat=fs.statSync(requestFile);
+   assert.ok(stat.isFile()&&(stat.mode&0o777)===0o600,'private probe file required');
+   const bytes=fs.readFileSync(requestFile,'utf8');
+   assert.match(bytes,/^POST \/rpc\/rings_now_snapshot_candidate_v01 HTTP\/1\.1\r\nHost: postgrest:3000\r\nAuthorization: Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\r\nAccept: application\/json\r\nContent-Type: application\/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n\{\}$/);
+   const name=runId+'_postgres';
+   const bash=path.resolve(__dirname,'fixtures/rings-now-p2-internal-http-probe.bash');
+   const content=fs.readFileSync(bash);
+   const sha=createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
+   assert.equal(sha,'0b1ab1d389dad3abe52f1b8e710e694c7032d684',
+    'Docker-internal HTTP Bash probe changed');
+   await inspect('container',name,runId);
+   // Raw JWT is copied inside the owned container's ephemeral /tmp.
+   // No credentials or JWTs appear in docker argv, shell args or logs.
+   await invoke(['container','cp',bash,name+':/tmp/rn-p2/http-probe.bash']);
+   await inspect('container',name,runId);
+   await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/http-probe.req']);
+   await inspect('container',name,runId);
+   const wire=await invoke(['container','exec',name,'/bin/bash',
+    '/tmp/rn-p2/http-probe.bash']);
+   return parseInternalHttpResponse(wire);
   },
   async initializeGoTrue(runId){
    safeRun(runId);
