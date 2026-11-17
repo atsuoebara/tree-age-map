@@ -1,0 +1,20 @@
+name: Ranking NATIONS anonymous live HTTP redaction (read-only)
+on:
+  pull_request:
+    paths:
+      - 'scripts/test-ranking-nations-anon-http-208.cjs'
+      - '.github/workflows/ranking-nations-anon-http-208.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  anon-rpc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify existing public NATIONS RPC via anonymous HTTP POST (no writes)
+        run: node scripts/test-ranking-nations-anon-http-208.cjs

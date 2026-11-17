@@ -1,0 +1,30 @@
+name: Ranking NATIONS month exposure guard (candidate only)
+on:
+  pull_request:
+    paths:
+      - 'ranking.html'
+      - 'supabase/ranking-monthly.sql'
+      - 'supabase/ranking-nations-month-suppress-candidate.sql'
+      - 'scripts/test-ranking-nations-month-suppress-207.cjs'
+      - 'scripts/test-ranking-nations-reapply-guard-208.cjs'
+      - 'scripts/ranking-nations-preapply-readonly-208.sql'
+      - '.github/workflows/ranking-nations-month-exposure-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-privacy-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static NATIONS annual-contract and month-redaction guard
+        run: |
+          node scripts/test-ranking-nations-month-suppress-207.cjs
+          node scripts/test-ranking-nations-reapply-guard-208.cjs
+      - name: Explicit limit of this check
+        run: |
+          echo "STATIC ONLY: this job does not apply SQL, block external/manual Supabase operations, or confirm real HTTP."
