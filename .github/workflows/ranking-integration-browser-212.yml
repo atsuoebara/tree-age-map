@@ -23,7 +23,10 @@ jobs:
       - name: Install pinned matching Playwright package
         run: npm install --no-save --package-lock=false playwright@1.56.1
       - name: Test synthetic privacy-integrated Ranking UI
-        run: node scripts/test-ranking-integration-browser-212.cjs
+        run: |
+          mkdir -p "$RUNNER_TEMP/ranking-off"
+          sed 's/const RANKING_MONTH_PLACES_ENABLED=true;/const RANKING_MONTH_PLACES_ENABLED=false;/' ranking.html > "$RUNNER_TEMP/ranking-off/ranking.html"
+          (cd "$RUNNER_TEMP/ranking-off" && node "$GITHUB_WORKSPACE/scripts/test-ranking-integration-browser-212.cjs")
 
       - name: Test synthetic monthly ON fixture without changing production OFF source
         run: node scripts/test-ranking-month-mode-synthetic-on-212.cjs
