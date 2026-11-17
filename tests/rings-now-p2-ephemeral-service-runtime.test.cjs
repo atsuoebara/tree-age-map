@@ -19,7 +19,11 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.match(auth.GOTRUE_JWT_SECRET,/^[0-9a-f]{96}$/);
   assert.equal(auth.GOTRUE_JWT_SECRET,rest.PGRST_JWT_SECRET);
   assert.ok(auth.GOTRUE_DB_DATABASE_URL.includes(pg.POSTGRES_PASSWORD));
-  assert.ok(rest.PGRST_DB_URI.includes(pg.POSTGRES_PASSWORD));
+  assert.match(rest.PGRST_DB_URI,/^postgres:\/\/authenticator:[a-f0-9]{64}@postgres:5432\/rings_now_p2\?sslmode=disable$/);
+  assert.ok(!rest.PGRST_DB_URI.includes(pg.POSTGRES_PASSWORD));
+  assert.equal(fs.statSync(runtime.bootstrapSqlFile).mode&0o777,0o600);
+  const authSql=fs.readFileSync(runtime.bootstrapSqlFile,'utf8');
+  assert.match(authSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
   assert.equal(auth.GOTRUE_EXTERNAL_EMAIL_ENABLED,'false');
   assert.equal(auth.GOTRUE_EXTERNAL_PHONE_ENABLED,'false');
   assert.equal(auth.GOTRUE_DISABLE_SIGNUP,'true');
@@ -27,7 +31,7 @@ test('files contain three isolated service configs, shared JWT and random DB sec
  }finally{
   runtime.dispose();runtime.dispose();
  }
- for(const file of Object.values(ps))assert.equal(fs.existsSync(file),false);
+ for(const file of [...Object.values(ps),runtime.bootstrapSqlFile])assert.equal(fs.existsSync(file),false);
 });
 test('separate runtime creations produce different credentials',()=>{
  const a=createEphemeralP2Runtime(),b=createEphemeralP2Runtime();
