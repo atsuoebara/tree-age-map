@@ -136,10 +136,12 @@ async function runComposedP2Simulation({
   verifyReserveMs:150,graceMs:25,childRunner:fakeChildRunner(childFailure)
  };
  // #188 and #198: two existing synthetic stage coordinators, both wired.
- const stage188=await runSyntheticP2Integration({...stageOptions,nowMs:clock()});
- const stage198=await runG3WatchdogSyntheticIntegration({
+ let stage188={status:'BLOCKED'},stage198={status:'BLOCKED',inventoryStatus:'NOT_PROVEN'};
+ try{stage188=await runSyntheticP2Integration({...stageOptions,nowMs:clock()});}
+ catch{/* Preserve fail-closed and still attempt isolated lifecycle cleanup. */}
+ try{stage198=await runG3WatchdogSyntheticIntegration({
   ...stageOptions,nowMs:clock(),inventory:inventoryOverride||inventory()
- });
+ });}catch{/* Invalid synthetic inventory never authorizes P2. */}
  // #199 lifecycle with #200 actual adapter code, but mock execFile only.
  // Try lifecycle and cleanup even when a synthetic stage has failed.
  const lifecycle=await runG3SyntheticDockerLifecycle({
