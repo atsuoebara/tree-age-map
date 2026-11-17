@@ -53,3 +53,28 @@ test('forged approval and malformed timestamp are rejected',()=>{
   assert.equal(check(Object.assign(sample(),patch)).status,'BLOCKED');
  const x=sample();x.billing.observedAt='not-a-date';assert.equal(check(x).status,'BLOCKED');
 });
+
+test('impossible Gregorian dates fail; real leap day and canonical UTC pass',()=>{
+ const invalid=[
+  '2026-02-30T05:00:00Z',
+  '2025-02-29T05:00:00Z',
+  '2026-04-31T05:00:00Z',
+  '2026-13-01T05:00:00Z',
+  '2026-11-17T24:00:00Z',
+  '2026-11-17T05:00:00.000Z',
+  '2026-11-17T05:00:00+00:00'
+ ];
+ for(const date of invalid){
+  const x=sample();x.billing.observedAt=date;
+  const r=check(x);
+  assert.equal(r.status,'BLOCKED',date);
+  assert.ok(r.issues.includes('billing_timestamp_invalid'),date);
+ }
+ for(const date of ['2024-02-29T05:00:00Z','2026-11-17T05:00:00Z']){
+  const x=sample();x.billing.observedAt=date;
+  const r=check(x);
+  assert.equal(r.status,'DOCUMENTARY_ENVELOPE_COMPLETE_COST_NOT_PROVEN',date);
+  assert.equal(r.g2Verified,false);
+  assert.equal(r.p2ExecutionAuthorized,false);
+ }
+});
