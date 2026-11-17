@@ -3,7 +3,7 @@
 // Node HTTP only: no redirects, proxies, DNS lookup or TLS. No request on import.
 const http = require('node:http');
 const assert = require('node:assert/strict');
-const MAX_RESPONSE_BYTES = 65536;
+const MAX_RESPONSE_BYTES = 1048576; // 1000 synthetic rows may exceed 64KiB.
 const TIMEOUT_MS = 3000;
 const ABSOLUTE_DEADLINE_MS = 5000;
 function createLoopbackTransport() {
@@ -35,15 +35,32 @@ function createLoopbackTransport() {
         }
       }, res => {
         let bytes = 0;
+        const chunks = [];
         res.on('data', chunk => {
           bytes += chunk.length;
           if (bytes > MAX_RESPONSE_BYTES) {
             req.destroy(new Error('response too large'));
             return;
           }
-          // No redirect handling. 3xx status is passed through and rejected by caller.
+          chunks.push(chunk);
         });
-        res.on('end', () => resolve({status: res.statusCode}));
+        res.on('end', () => {
+          const status = res.statusCode;
+          // Never return the body for failures: PostgREST may include
+          // diagnostic text. No redirect handling; the caller rejects 3xx.
+          if (status !== 200) return resolve({status});
+          const contentType = res.headers['content-type'] || '';
+          if (!/^application\\/json(?:;|$)/i.test(contentType))
+            return reject(new Error('unexpected HTTP success content type'));
+          try {
+            const parsed = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+              throw Error('unexpected RPC payload shape');
+            resolve({status, body: parsed});
+          } catch {
+            reject(new Error('malformed JSON RPC response'));
+          }
+        });
         res.on('error', reject);
       });
       // Absolute wall-clock deadline, independent of socket activity or trickle responses.
