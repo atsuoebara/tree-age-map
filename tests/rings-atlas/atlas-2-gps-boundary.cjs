@@ -85,7 +85,7 @@ function verify(name,longitudes,groups,targetDistance=null,admin2Unavailable=fal
 const checks=[
  verify('CITY_BORDER',[-2.6,-1.8,-1.0,-0.2],{
   country:{JPN:[0,1,2]},city:{'City A':[0],'City B':[1,2]}}),
- verify('COUNTRY_AND_ADM2',[-0.9,-0.3,0.2,1.0,2.0,2.6],{
+ verify('COUNTRY_AND_ADM2',[-0.9,-0.3,0.2,1.0,2.2,2.6],{
   country:{JPN:[0,1],USA:[2,3,4]},city:{'City B':[0,1]},
   adm2:{D1:[2],D2:[3,4]}}),
  verify('TARGET_SCALING',[-2.6,-1.8,-1.0,-0.2],{
