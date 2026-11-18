@@ -1,0 +1,117 @@
+name: Garmin Stage A rollback isolated PostgreSQL (review only)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/garmin-race-analysis-stage-a-apply-candidate.sql"
+      - "supabase/garmin-race-analysis-stage-a-rollback-candidate.sql"
+      - "supabase/tests/garmin_race_stage_a_rollback_setup.sql"
+      - ".github/workflows/garmin-race-stage-a-rollback.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rollback-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stage_a_rollback_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d stage_a_rollback_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGDATABASE: stage_a_rollback_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check strict CI-only target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = "stage_a_rollback_ci"
+          test "$PGUSER" = "postgres"
+      - name: Apply Stage A to disposable synthetic local DB
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/garmin_race_stage_a_rollback_setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-stage-a-apply-candidate.sql
+          test "$(psql -XAtqc "SELECT count(*) FROM public.runs WHERE id=900")" = "1"
+          test "$(psql -XAtqc "SELECT count(*) FROM public.run_race_analysis")" = "0"
+      - name: Confirm rollback rejects nonempty table and leaves schema intact
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO public.run_race_analysis(
+            user_id, run_id, analysis_version, source_kind, source_connection_version,
+            distance_basis, time_basis, sample_count, total_distance_m,
+            total_clock_elapsed_s, segments
+          ) VALUES (
+            '00000000-0000-4000-8000-000000000900',900,
+            'garmin-activity-details-v1','garmin_activity_details',
+            '00000000-0000-4000-8000-000000000901',
+            'device_cumulative_m','clock_elapsed_seconds',2,1000,300,'[{}]'::jsonb
+          );
+          SQL
+          if psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-stage-a-rollback-candidate.sql > /tmp/nonempty.log 2>&1; then
+            echo "FAIL: rollback succeeded with live analysis fixture" >&2; exit 1
+          fi
+          grep -q 'STOP: analysis table contains data' /tmp/nonempty.log
+          test "$(psql -XAtqc "SELECT count(*) FROM public.run_race_analysis")" = "1"
+          test "$(psql -XAtqc "SELECT count(*) FROM public.runs WHERE id=900")" = "1"
+          echo "PASS: nonempty rollback blocked without partial destruction"
+      - name: Confirm Stage B overload blocks rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          DELETE FROM public.run_race_analysis;
+          CREATE FUNCTION public.garmin_commit_activity(bigint,integer,jsonb,jsonb)
+            RETURNS boolean LANGUAGE sql AS $$ SELECT true $$;
+          SQL
+          if psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-stage-a-rollback-candidate.sql > /tmp/stage-b.log 2>&1; then
+            echo "FAIL: rollback allowed Stage B overload" >&2; exit 1
+          fi
+          grep -q 'STOP: Stage B four-argument RPC exists' /tmp/stage-b.log
+          test "$(psql -XAtqc "SELECT to_regclass('public.run_race_analysis') IS NOT NULL")" = "t"
+          psql -X -v ON_ERROR_STOP=1 -c "DROP FUNCTION public.garmin_commit_activity(bigint,integer,jsonb,jsonb)"
+          echo "PASS: rollback refused later-stage dependencies"
+      - name: Roll back empty Stage A and preserve baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/garmin-race-analysis-stage-a-rollback-candidate.sql
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF to_regclass('public.run_race_analysis') IS NOT NULL
+               OR to_regclass('public.runs_id_user_id_race_analysis_uq') IS NOT NULL
+               OR to_regprocedure('public.purge_race_analysis_on_soft_delete()') IS NOT NULL
+               OR to_regprocedure('public.purge_race_analysis_on_garmin_change()') IS NOT NULL THEN
+              RAISE EXCEPTION 'Stage A artifacts remain after rollback';
+            END IF;
+            IF (SELECT count(*) FROM public.runs WHERE id=900) <> 1 THEN
+              RAISE EXCEPTION 'Existing run was lost';
+            END IF;
+            IF to_regclass('public.garmin_api_connections') IS NULL THEN
+              RAISE EXCEPTION 'Existing connection table was lost';
+            END IF;
+            RAISE NOTICE 'PASS: Stage A artifacts gone; original run and Garmin tables preserved';
+          END $$;
+          SQL
