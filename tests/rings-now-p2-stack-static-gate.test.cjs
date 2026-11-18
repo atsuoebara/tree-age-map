@@ -45,6 +45,11 @@ test('workflow remains manual and hard stopped', () => {
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     'ref: ${{ github.sha }}','ref: main')).failures.includes('checkout_sha_binding_missing'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'fetch-depth: 2','fetch-depth: 1')).failures.includes('checkout_sha_binding_missing'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'node tests/rings-now-p2-g4-approval-child-cli.cjs',
+    'echo skip-parent-check')).failures.includes('checkout_sha_binding_missing'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
     'persist-credentials: false','persist-credentials: true')).failures.includes('checkout_sha_binding_missing'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     'timeout-minutes: 12','timeout-minutes: 60')).failures.includes('runner_budget_not_bounded'));
