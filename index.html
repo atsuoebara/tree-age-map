@@ -4552,7 +4552,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.18.03'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -6286,6 +6286,35 @@ async function importFromCoros() {
   }
 }
 
+// Read-only, owner-scoped preflight before Intervals saves a second copy of a
+// Strava activity. Match the exact start instant plus the established distance
+// tolerance; never compare a different user's records or infer from date alone.
+// This is a client guard, not an atomic database uniqueness constraint.
+async function isPreviouslySavedCloudRun(activity) {
+  const start = activity?.startedAt ? new Date(activity.startedAt) : null;
+  const distance = Number(activity?.distance);
+  if (!start || !Number.isFinite(start.getTime()) || !Number.isFinite(distance) || distance <= 0) {
+    return false; // Existing activity duplicate checks still apply.
+  }
+  if (!currentUser?.id || !cloudEnabled()) throw new Error('Cloud owner unavailable for duplicate preflight');
+  const url = SUPABASE_RUNS_URL +
+    '?select=id,source,distance_km,started_at' +
+    '&user_id=eq.' + encodeURIComponent(currentUser.id) +
+    '&deleted_at=is.null' +
+    '&started_at=eq.' + encodeURIComponent(start.toISOString()) +
+    '&limit=100';
+  const response = await fetch(url, {headers: await getCloudHeaders()});
+  // Fail closed: a network/authorization error must not turn into a duplicate insert.
+  if (!response.ok) throw new Error('Cross-source duplicate preflight failed HTTP ' + response.status);
+  const existing = await response.json();
+  if (!Array.isArray(existing)) throw new Error('Cross-source duplicate preflight returned invalid data');
+  return existing.some(row => {
+    const previous = Number(row.distance_km);
+    return Number.isFinite(previous) && previous > 0 &&
+      Math.abs(previous - distance) <= Math.max(0.5, Math.min(previous, distance) * 0.08);
+  });
+}
+
 async function importFromIntervals() {
   const {
     data: { session }
@@ -6414,7 +6443,7 @@ async function importFromIntervals() {
             activity
           );
 
-        if (duplicate) {
+        if (duplicate || await isPreviouslySavedCloudRun(activity)) {
           duplicates++;
           continue;
         }
