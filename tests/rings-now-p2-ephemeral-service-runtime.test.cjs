@@ -24,9 +24,16 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.equal(fs.statSync(runtime.bootstrapSqlFile).mode&0o777,0o600);
   const authSql=fs.readFileSync(runtime.bootstrapSqlFile,'utf8');
   assert.match(authSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
-  assert.equal(auth.GOTRUE_EXTERNAL_EMAIL_ENABLED,'false');
+  assert.equal(auth.GOTRUE_EXTERNAL_EMAIL_ENABLED,'true');
+  assert.equal(auth.GOTRUE_MAILER_AUTOCONFIRM,'true');
   assert.equal(auth.GOTRUE_EXTERNAL_PHONE_ENABLED,'false');
-  assert.equal(auth.GOTRUE_DISABLE_SIGNUP,'true');
+  assert.equal(auth.GOTRUE_DISABLE_SIGNUP,'false');
+  assert.equal(r.h1EphemeralDir,require('node:path').dirname(ps.gotrue));
+  for(const [who,identity] of Object.entries(r.h1Users)){
+   assert.match(identity.email,new RegExp('^rn-p2-[a-f0-9]{24}-'+who+'@example\\.invalid$'));
+   assert.match(identity.password,/^[a-f0-9]{64}$/);
+  }
+  assert.notEqual(r.h1Users.a.email,r.h1Users.b.email);
   assert.equal(pg.PGDATA,'/var/lib/postgresql/data/pgdata');
  }finally{
   runtime.dispose();runtime.dispose();
@@ -40,6 +47,8 @@ test('separate runtime creations produce different credentials',()=>{
   const pa=fs.readFileSync(a.envFiles.postgres,'utf8');
   const pb=fs.readFileSync(b.envFiles.postgres,'utf8');
   assert.notEqual(pa,pb);
+  assert.notEqual(a.h1Users.a.email,b.h1Users.a.email);
+  assert.notEqual(a.h1Users.a.password,b.h1Users.a.password);
  }finally{a.dispose();b.dispose();}
 });
 
