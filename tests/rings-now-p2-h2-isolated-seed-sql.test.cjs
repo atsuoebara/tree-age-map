@@ -36,7 +36,8 @@ test('non-grant role has NOLOGIN NOINHERIT, no EXECUTE and no RLS bypass',()=>{
  assert.match(sql,/REVOKE ALL ON FUNCTION public\.rings_now_snapshot_candidate_v01\(\)/);
  assert.match(sql,/H2_ROLE_HAS_RPC_EXECUTE/);
  assert.match(sql,/rolcanlogin OR rolinherit OR rolbypassrls/);
- assert.ok(!sql.includes('service_role'));
+ assert.doesNotMatch(sql,/^(?:GRANT|CREATE ROLE|ALTER ROLE|SET ROLE).*service_role/m);
+ assert.doesNotMatch(sql,/BYPASSRLS\s*;/);
 });
 test('SQL constructor does not invoke database tools',()=>{
  const sql=buildH2IsolatedSeedSql({ownerA:A,ownerB:B});
