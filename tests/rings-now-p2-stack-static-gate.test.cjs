@@ -58,11 +58,8 @@ test('workflow remains manual and hard stopped', () => {
   // Even changing only the CLI step must be detected; retaining strict mode
   // in preflight must not create a false PASS.
   const cliOnlyMutation=workflow.replace(
-    '          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.',
-    '          set +e\\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.'
-  ).replace(
-    '          set -euo pipefail\\n          set +e',
-    '          set +e'
+    '          set -euo pipefail\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.',
+    '          set +e\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.'
   );
   assert.ok(inspectDisabledWorkflow(cliOnlyMutation).failures.includes('cli_or_preflight_missing'));
   assert.ok(inspectDisabledWorkflow(workflow + '\\n# upload-artifact@v4').failures.includes('unsafe_workflow_escape'));
