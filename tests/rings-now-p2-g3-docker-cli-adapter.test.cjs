@@ -30,6 +30,7 @@ function fake(overrides={}){
    const id=argv[argv.indexOf('--name')+1];items.set(id,{id,kind:'container'});out=id;
   }
   else if(k==='container'&&verb==='exec'&&argv.includes('/tmp/rn-p2/http-probe.bash')){out=overrides.httpWire||'';}
+  else if(k==='container'&&verb==='exec'&&argv.includes('/tmp/rn-p2/gotrue-h1.bash')){out=overrides.gotrueWire||'';}
   else if(k==='container'&&verb==='rm'){items.delete(argv.at(-1));}
   else if(k==='network'&&verb==='rm'){items.delete(argv.at(-1));}
   return Promise.resolve({exitCode:overrides.failCode||0,stdout:out});
@@ -303,4 +304,53 @@ test('candidate SQL RLS probe structure is rollback-only with 1000/1001 and anon
  assert.ok(s.includes('P2_ANON_RPC_EXECUTE_NOT_DENIED'));
  assert.ok(s.includes('P2_CONFLICTING_SUB_CLAIM_NOT_BLOCKED'));
  assert.ok(!s.includes('COMMIT;'));
+});
+
+test('isolated H1 private HTTP uses pinned Bash, run label and file-only secrets',async()=>{
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const {buildGoTrueRequest}=require('./rings-now-p2-h1-gotrue-http.cjs');
+ const runtime=createEphemeralP2Runtime();
+ const {randomBytes}=require('node:crypto');
+ const users={
+  a:{email:'rn-p2-'+randomBytes(12).toString('hex')+'-a@example.invalid',password:randomBytes(32).toString('hex')},
+  b:{email:'rn-p2-'+randomBytes(12).toString('hex')+'-b@example.invalid',password:randomBytes(32).toString('hex')}
+ };
+ const body=JSON.stringify({access_token:'mock.only.not-a-real-token',user:{id:'00000000-0000-4000-8000-000000000001'}});
+ const wire='HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: '+Buffer.byteLength(body)+'\r\n\r\n'+body;
+ const d=fake({gotrueWire:wire});
+ try{
+  await d.adapter.createNetwork(spec);
+  await d.adapter.createContainer(c('postgres'));
+  const req=buildGoTrueRequest('h1_signin_a',users);
+  const result=await d.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signin_a',request:req,
+   ephemeralDir:require('node:path').dirname(runtime.envFiles.gotrue)});
+  assert.equal(result.status,200);
+  assert.equal(result.body.user.id,'00000000-0000-4000-8000-000000000001');
+  const calls=d.calls.flat().join(' ');
+  assert.ok(!calls.includes(users.a.email));
+  assert.ok(!calls.includes(users.a.password));
+  assert.ok(!calls.includes(req));
+  assert.ok(!calls.includes('--publish')&&!calls.includes('--env'));
+  assert.ok(d.calls.some(x=>x.includes('/tmp/rn-p2/gotrue-h1.bash')));
+  assert.equal(require('node:fs').existsSync(require('node:path').join(
+   require('node:path').dirname(runtime.envFiles.gotrue),'gotrue-h1.req')),false);
+ }finally{runtime.dispose();}
+});
+test('isolated H1 transport rejects foreign run owner and invalid request before secret copy',async()=>{
+ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
+ const {buildGoTrueRequest}=require('./rings-now-p2-h1-gotrue-http.cjs');
+ const runtime=createEphemeralP2Runtime();
+ const dir=require('node:path').dirname(runtime.envFiles.gotrue);
+ const users={a:{email:'rn-p2-'+'a'.repeat(24)+'-a@example.invalid',password:'b'.repeat(64)}};
+ const req=buildGoTrueRequest('h1_signup_a',users);
+ try{
+  const d=fake();
+  await assert.rejects(()=>d.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signup_a',request:req,ephemeralDir:'/etc'}));
+  assert.equal(d.calls.length,0);
+  await assert.rejects(()=>d.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signup_a',request:req.replace('gotrue:9999','attacker:9999'),ephemeralDir:dir}));
+  assert.equal(d.calls.length,0);
+  const bad=fake({forgeOwner:true});
+  await assert.rejects(()=>bad.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signup_a',request:req,ephemeralDir:dir}));
+  assert.ok(!bad.calls.some(a=>a[0]==='container'&&a[1]==='cp'));
+ }finally{runtime.dispose();}
 });
