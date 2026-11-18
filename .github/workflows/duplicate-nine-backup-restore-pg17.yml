@@ -1,0 +1,68 @@
+name: Duplicate-nine synthetic backup restore PG17 (no production)
+on:
+  pull_request:
+    paths:
+      - 'tests/duplicate-nine-backup-restore-*.sql'
+      - '.github/workflows/duplicate-nine-backup-restore-pg17.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: synthetic
+          POSTGRES_PASSWORD: synthetic-only-local
+          POSTGRES_DB: synthetic
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U synthetic -d synthetic"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL 17 client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+      - name: Synthetic source and actual pg_dump / pg_restore / digest comparison
+        env:
+          PGPASSWORD: synthetic-only-local
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          trap 'rm -f "${RUNNER_TEMP}/duplicate-nine-synthetic.dump" "${RUNNER_TEMP}/duplicate-nine-source-hashes.txt" "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt"' EXIT
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U synthetic -d synthetic -f tests/duplicate-nine-backup-restore-fixture-pg17.sql
+          # Same PG17.6 client version as server. Source and destination are both sandbox DBs.
+          docker run --rm --network host -e PGPASSWORD=synthetic-only-local postgres:17.6 \
+            pg_dump -h 127.0.0.1 -U synthetic -d synthetic --format=custom --schema=fixture --no-owner --no-acl \
+            > "${RUNNER_TEMP}/duplicate-nine-synthetic.dump"
+          test -s "${RUNNER_TEMP}/duplicate-nine-synthetic.dump"
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U synthetic -d synthetic -c 'CREATE DATABASE synthetic_restore'
+          docker run --rm --network host -e PGPASSWORD=synthetic-only-local -i postgres:17.6 \
+            pg_restore -h 127.0.0.1 -U synthetic -d synthetic_restore --no-owner --no-acl --exit-on-error \
+            < "${RUNNER_TEMP}/duplicate-nine-synthetic.dump"
+          psql -X -A -t -v ON_ERROR_STOP=1 -h 127.0.0.1 -U synthetic -d synthetic \
+            -f tests/duplicate-nine-backup-restore-digests.sql \
+            > "${RUNNER_TEMP}/duplicate-nine-source-hashes.txt"
+          psql -X -A -t -v ON_ERROR_STOP=1 -h 127.0.0.1 -U synthetic -d synthetic_restore \
+            -f tests/duplicate-nine-backup-restore-digests.sql \
+            > "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt"
+          cmp -s "${RUNNER_TEMP}/duplicate-nine-source-hashes.txt" "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt"
+          test "$(grep -c '^runs|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt")" -eq 18
+          test "$(grep -c '^today|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt")" -eq 18
+          test "$(grep -c '^municipality|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt")" -eq 18
+          test "$(grep -c '^explore|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt")" -eq 18
+          test "$(grep -c '^region_cache|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt")" -eq 1
+          ! grep -q '^world|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt"
+          ! grep -q '^fake_pgnet|' "${RUNNER_TEMP}/duplicate-nine-restore-hashes.txt"
+          echo 'PASS: PG17.6 synthetic pg_dump/pg_restore all source + child + cache SHA256 100%'
