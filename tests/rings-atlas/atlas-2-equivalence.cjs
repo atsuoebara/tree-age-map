@@ -75,7 +75,7 @@ const fixtureCases = [
     admin1Distance:{'USA|ADM1|CA':4,'USA|ADM1|WA':1},
     admin2Distance:{'USA|ADM2|SF':4}}},
   {name:'YEAR_2026',year:'2026',month:'ALL',expected:{
-    km:8,runs:3,regions:'—',
+    km:8,runs:3,regions:2,
     countryDistance:{JPN:7,USA:1},countryRunCount:{JPN:2,USA:1},
     municipalityDistance:{'P1|C1':5,'P1|C2':2},
     municipalityRunCount:{'P1|C1':2,'P1|C2':1},
