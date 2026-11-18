@@ -205,6 +205,120 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/http-probe.bash']);
    return parseInternalHttpResponse(wire);
   },
+  async probeInternalGoTrue({runId,caseId,request,ephemeralDir}={}){
+   // Dormant H1 transport: a caller must first pass the canonical run gates.
+   // Never expose email/password/request in argv, env, error text or logs.
+   safeRun(runId);
+   assert.ok(['h1_signup_a','h1_signin_a','h1_signup_b','h1_signin_b','h1_bad_password'].includes(caseId));
+   assert.equal(typeof ephemeralDir,'string');
+   assert.match(ephemeralDir,/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}$/);
+   const dstat=fs.statSync(ephemeralDir);
+   assert.ok(dstat.isDirectory()&&(dstat.mode&0o777)===0o700,'private temporary directory required');
+   assert.equal(typeof request,'string');
+   assert.ok(Buffer.byteLength(request)<=2048,'request too large');
+   const split=request.indexOf('\r\n\r\n');
+   assert.ok(split>0,'bad request framing');
+   const headers=request.slice(0,split);
+   const body=request.slice(split+4);
+   const expectedPath=caseId.startsWith('h1_signup_')?'/signup':'/token?grant_type=password';
+   const expectedHeaders=[
+    'POST '+expectedPath+' HTTP/1.1','Host: gotrue:9999',
+    'Content-Type: application/json','Accept: application/json',
+    'Content-Length: '+Buffer.byteLength(body),'Connection: close'
+   ].join('\r\n');
+   assert.equal(headers,expectedHeaders,'unapproved GoTrue request envelope');
+   const json=JSON.parse(body);
+   assert.ok(json&&typeof json==='object'&&!Array.isArray(json));
+   assert.deepEqual(Object.keys(json).sort(),['email','password']);
+   const who=caseId.endsWith('_b')?'b':'a';
+   assert.match(json.email||'',new RegExp('^rn-p2-[a-f0-9]{24}-'+who+'@example\\.invalid
+   safeRun(runId);
+   const name=runId+'_postgres';
+   const probe=path.resolve(__dirname,'fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+   const bytes=fs.readFileSync(probe);
+   const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+   assert.equal(sha,'b0f323d8c5b17a50f23b41e199f456bbc8caa8aa',
+    'RLS probe fixture bytes changed');
+   await inspect('container',name,runId);
+   await invoke(['container','cp',probe,
+    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+   await inspect('container',name,runId);
+   // ON_ERROR_STOP makes ANY SQL assertion failure a nonzero CLI result.
+   // DO NOT interpret success as actual signed JWT or HTTP evidence.
+   await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
+    '-v','ON_ERROR_STOP=1','-f',
+    '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+   return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
+  },
+  async initializeGoTrue(runId){
+   safeRun(runId);
+   const name=runId+'_gotrue';
+   await inspect('container',name,runId);
+   await invoke(['container','exec',name,'gotrue','migrate']);
+   return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';
+  },
+  async startContainer(name){
+   safeId(name);
+   // Never start based on user-provided name alone; enforce run-owner label.
+   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
+   safeRun(owner);
+   await inspect('container',name,owner);
+   await invoke(['container','start',name]);
+  },
+  async stopContainer(name){
+   safeId(name);
+   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
+   safeRun(owner);
+   await inspect('container',name,owner);
+   await invoke(['container','stop','--time','1',name]);
+  },
+  async removeContainer(name){
+   safeId(name);
+   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
+   safeRun(owner);
+   await inspect('container',name,owner);
+   await invoke(['container','rm','--force',name]);
+  },
+  async removeNetwork(name){
+   safeRun(name);
+   await inspect('network',name,name);
+   await invoke(['network','rm',name]);
+  }
+ });
+}
+module.exports={createDockerCliAdapter,LABEL,TIMEOUT_MS};
+));
+   assert.match(json.password||'',/^[a-f0-9]{64}$/);
+   if(caseId==='h1_bad_password')assert.equal(json.password,'0'.repeat(64));
+   const script=path.resolve(__dirname,'fixtures/rings-now-p2-internal-gotrue-h1.bash');
+   const content=fs.readFileSync(script);
+   const sha=createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
+   assert.equal(sha,'2c243ee5be8f165f57c2bb6704f6bbae41fd6e76',
+    'pinned H1 internal probe changed');
+   const name=runId+'_postgres';
+   // Inspect run ownership BEFORE making any secret-bearing copy/exec.
+   await inspect('container',name,runId);
+   const requestFile=path.join(ephemeralDir,'gotrue-h1.req');
+   const fd=fs.openSync(requestFile,'wx',0o600);
+   try{
+    fs.writeFileSync(fd,request,{encoding:'utf8'});
+   }finally{fs.closeSync(fd);}
+   try{
+    assert.equal(fs.statSync(requestFile).mode&0o777,0o600);
+    await invoke(['container','cp',script,name+':/tmp/rn-p2/gotrue-h1.bash']);
+    await inspect('container',name,runId);
+    await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/gotrue-h1.req']);
+    await inspect('container',name,runId);
+    // stdout contains private GoTrue body; consume only inside this module.
+    const wire=await invoke(['container','exec',name,'/bin/bash',
+     '/tmp/rn-p2/gotrue-h1.bash']);
+    return parseInternalHttpResponse(wire);
+   }finally{
+    fs.rmSync(requestFile,{force:true});
+    // Container-side request is tmpfs and is deleted with run-owned container
+    // teardown. No claim of runtime secret erasure or independent proof here.
+   }
+  },
   async probeSqlRlsBoundary(runId){
    safeRun(runId);
    const name=runId+'_postgres';
