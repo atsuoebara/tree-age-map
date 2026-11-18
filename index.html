@@ -5549,7 +5549,11 @@ async function signup() {
 
     // A pending registration is not yet authenticated. Save only its returned
     // user ID for same-browser, same-user completion feedback after confirmation.
-    rrP0QueuePendingSignup(data.user);
+    // Supabase may return an obfuscated existing user with no identities.
+    // Never mark that response as a newly completed registration.
+    if (!Array.isArray(data.user?.identities) || data.user.identities.length > 0) {
+      rrP0QueuePendingSignup(data.user);
+    }
     setAuthMessage(
       '登録を受け付けました。確認メールが届いた場合は、リンクを開いて登録を完了してください。'
     );
