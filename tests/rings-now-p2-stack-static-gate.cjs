@@ -99,9 +99,16 @@ function inspectDisabledWorkflow(source) {
      !/^\s+timeout-minutes:\s*10\s*$/m.test(source)||
      !/^concurrency:\s*\n  group:\s*rings-now-p2-isolated-manual\s*\n  cancel-in-progress:\s*false\s*$/m.test(source))
     failures.push('runner_budget_not_bounded');
-  if(!source.includes('node tests/rings-now-p2-cli.cjs --isolated-once')||
-     !source.includes('g.inspectP2Preflight(m,process.env)')||
-     !source.includes('set -euo pipefail'))
+  // The fail-fast shell option must belong to the ACTUAL CLI step,
+  // not merely to an earlier validation step. Preserve the exact step name
+  // and require strict mode immediately after the CLI step's run block.
+  const cliMarker='      - name: Run one isolated probe; keep non-proven outcome red (dormant)';
+  const cliSections=source.split(cliMarker);
+  const cliStep=cliSections.length===2 ? cliSections[1] : '';
+  if(cliSections.length!==2||
+     !/^\s*shell: bash\s*\n\s*run: \|\s*\n\s*set -euo pipefail\s*\n/.test(cliStep)||
+     !cliStep.includes('node tests/rings-now-p2-cli.cjs --isolated-once')||
+     !source.includes('g.inspectP2Preflight(m,process.env)'))
     failures.push('cli_or_preflight_missing');
   if(/(?:upload-artifact|cache@|larger-runner|self-hosted|continue-on-error|\|\|\s*true|\$\{\{\s*secrets\.)/i.test(source))
     failures.push('unsafe_workflow_escape');
