@@ -4497,7 +4497,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.13.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.18.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -5234,11 +5234,44 @@ const accountEmail =
 
 
 const RR_P0_NOTICE='rr-auth-feedback-p0';
+// Only show the signup-complete message after a verified session for the same user.
+// Stored on this browser while an email-confirmation flow is pending.
+const RR_P0_PENDING='rr-auth-confirm-pending-p0:';
+const RR_P0_SHOWN='rr-auth-confirm-shown-p0:';
+const RR_P0_MAX_AGE_MS=14*24*60*60*1000;
+function rrP0QueuePendingSignup(user){
+ if(!user?.id)return;
+ try{
+  localStorage.setItem(RR_P0_PENDING+user.id,String(Date.now()));
+ }catch(error){console.warn('Signup completion notice cannot be persisted',error);}
+}
+function rrP0ConsumePendingSignup(user){
+ if(!user?.id)return false;
+ try{
+  const key=RR_P0_PENDING+user.id,raw=localStorage.getItem(key);
+  if(raw===null)return false;
+  const created=Number(raw);
+  localStorage.removeItem(key);
+  if(!Number.isFinite(created)||created>Date.now()||Date.now()-created>RR_P0_MAX_AGE_MS)return false;
+  const shownKey=RR_P0_SHOWN+user.id;
+  if(localStorage.getItem(shownKey)==='1')return false;
+  localStorage.setItem(shownKey,'1');
+  return true;
+ }catch(error){console.warn('Signup completion notice unavailable',error);return false;}
+}
+
 function rrP0Queue(kind,user){if(user?.id)try{sessionStorage.setItem(RR_P0_NOTICE,JSON.stringify({kind,id:user.id}));}catch(e){}}
 function rrP0Render(user){
  const name=String(user?.user_metadata?.display_name||'').trim(),notice=document.getElementById('rrP0Notice'),prompt=document.getElementById('rrP0Prompt');
  let mark=null;try{mark=JSON.parse(sessionStorage.getItem(RR_P0_NOTICE)||'null');sessionStorage.removeItem(RR_P0_NOTICE);}catch(e){}
- if(user?.id&&mark?.id===user.id&&['login','signup'].includes(mark.kind)){notice.textContent=mark.kind==='signup'?'登録が完了しました。ログイン中です。':(name?'ようこそ、'+name+'さん！ログイン中です。':'ようこそ！ログイン中です。');notice.hidden=false;}else notice.hidden=true;
+ const pendingSignup=rrP0ConsumePendingSignup(user);
+ if(pendingSignup || (user?.id&&mark?.id===user.id&&mark.kind==='signup')){
+  notice.textContent='登録が完了しました。ログイン中です。';
+  notice.hidden=false;
+ } else if(user?.id&&mark?.id===user.id&&mark.kind==='login'){
+  notice.textContent=name?'ようこそ、'+name+'さん！ログイン中です。':'ようこそ！ログイン中です。';
+  notice.hidden=false;
+ } else notice.hidden=true;
  let dismissed=false;try{dismissed=localStorage.getItem('rr-p0-dismiss:'+user.id)==='1';}catch(e){}
  prompt.hidden=!!name||dismissed;
 }
@@ -5514,6 +5547,9 @@ async function signup() {
     }
 
 
+    // A pending registration is not yet authenticated. Save only its returned
+    // user ID for same-browser, same-user completion feedback after confirmation.
+    rrP0QueuePendingSignup(data.user);
     setAuthMessage(
       '登録を受け付けました。確認メールが届いた場合は、リンクを開いて登録を完了してください。'
     );
@@ -29398,6 +29434,8 @@ const RR_ENGLISH_REPLACEMENTS = [
  ['登録を受け付けました。確認メールが届いた場合は、リンクを開いて登録を完了してください。','Registration received. If a confirmation email arrives, open its link.'],
  ['登録が完了しました。ログイン中です。','Registration complete. You are signed in.'],
  ['ようこそ！ログイン中です。','Welcome! You are signed in.'],
+ ['ようこそ、','Welcome, '],
+ ['さん！ログイン中です。','! You are signed in.'],
  ['ログイン中です。','You are signed in.'],
  ['● ログイン中','● Signed in'],
  ['マイアカウント','My account'],
