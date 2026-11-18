@@ -83,8 +83,28 @@ function inspectDisabledWorkflow(source) {
     failures.push('unexpected_job_topology');
   if (!/^  isolated-p2:\s*\n    if:\s*\$\{\{ false \}\}/m.test(source))
     failures.push('hard_stop_missing');
-  if (/^\s*(?:uses|services|container):/m.test(source))
+  // The only dormant dependency allowed is this exact immutable checkout action.
+  // Forbid all other actions, services, containers and dynamic ref selectors.
+  const uses=[...source.matchAll(/^\s+uses:\s*([^\s#]+).*$/gm)].map(m=>m[1]);
+  if(uses.length!==1||
+     uses[0]!=='actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683'||
+     /^\s*(?:services|container):/m.test(source))
     failures.push('active_dependency_not_allowed');
+  if(!/^\s+ref:\s*\$\{\{ github\.sha \}\}\s*$/m.test(source)||
+     !/^\s+persist-credentials:\s*false\s*$/m.test(source)||
+     !/^\s+fetch-depth:\s*1\s*$/m.test(source)||
+     !source.includes('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"'))
+    failures.push('checkout_sha_binding_missing');
+  if(!/^\s+runs-on:\s*ubuntu-latest\s*$/m.test(source)||
+     !/^\s+timeout-minutes:\s*10\s*$/m.test(source)||
+     !/^concurrency:\s*\n  group:\s*rings-now-p2-isolated-manual\s*\n  cancel-in-progress:\s*false\s*$/m.test(source))
+    failures.push('runner_budget_not_bounded');
+  if(!source.includes('node tests/rings-now-p2-cli.cjs --isolated-once')||
+     !source.includes('g.inspectP2Preflight(m,process.env)')||
+     !source.includes('set -euo pipefail'))
+    failures.push('cli_or_preflight_missing');
+  if(/(?:upload-artifact|cache@|larger-runner|self-hosted|continue-on-error|\|\|\s*true|\$\{\{\s*secrets\.)/i.test(source))
+    failures.push('unsafe_workflow_escape');
   if (/\$\{\{\s*secrets\./i.test(source))
     failures.push('secret_reference');
   if (!/^permissions:\s*\n  contents:\s*read\s*$/m.test(source))
