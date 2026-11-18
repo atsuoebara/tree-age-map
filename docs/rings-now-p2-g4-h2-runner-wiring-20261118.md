@@ -26,3 +26,30 @@ node --test tests/rings-now-p2-h2-runner-bridge.test.cjs tests/rings-now-p2-h2-s
 Reviewer must check: execute stage deadline is not reset after service startup; 300+1 seconds plus 60 seconds reserve can be budgeted; failure path still cleans only run-owned resources; GoTrue password-grant never signs up/rekeys users; no hidden JWT in JSON/argv; per-case expiry checks; misleading synthetic success labels; and confirm `BLOCKED_NOT_RUN`, `explicitExecutionApproval:false`, `productionAccess:false`, `checkoutCommit:null`, Actions `if:false` and #109/#201 HOLD unchanged.
 
 This is a Draft only. No merge or execution without separate Atsuo approval.
+
+
+## Budget revision after independent audit of HEAD 75415235
+
+The audit found **one outstanding condition**: before any real-backend guard change, provide measurements that the original 300-second JWT expiry can complete within the actual bounded runtime, including startup and image availability. 49/49 Node tests passed for the previous HEAD, but this is **not** a runtime measurement.
+
+This same Draft PR raises only the runner's default total budget from 540,000ms to the existing shared coordinator hard limit of 600,000ms. It **retains** cleanup/verify reserve 120,000ms (verify subreserve 30,000ms), keeps H2 post-wait reserve 60,000ms and exact GoTrue TTL 300 seconds. No policy or real-Docker safety gate is relaxed.
+
+| Budget item | Previous | Proposed |
+| --- | ---: | ---: |
+| Shared runner total | 540,000ms | 600,000ms |
+| Cleanup incl. verify reserve | 120,000ms | 120,000ms |
+| Nominal maximum execute | 420,000ms | 480,000ms |
+| Strict TTL+1 requirement | 301,000ms | 301,000ms |
+| Refresh+seed+7 HTTP reserved | 60,000ms | 60,000ms |
+| **Nominal maximum before H2 bridge** | **59,000ms** | **119,000ms** |
+
+The 119s number is **only algebra at a zero-overhead boundary**, not proof that Docker startup, migration, SQL, H1, image pulls or the remaining HTTP calls fit. The coordinator deducts elapsed overhead, and the TTL gate still blocks immediately if fewer than 361,000ms remain when H2 starts. Moreover, this does not establish that 60s post-wait reservation suffices for all HTTP calls. Do not set condition **resolved** until independent **actual measurements** confirm the full critical path, or an alternate bounded strategy is audited. Image pulls must not silently be excluded from a claimed full-path measurement.
+
+Additional offline regression (developer did not execute):
+```sh
+node --check tests/rings-now-p2-real-docker-runner.cjs
+node --check tests/rings-now-p2-g4-h2-budget-envelope.test.cjs
+node --test tests/rings-now-p2-g4-h2-budget-envelope.test.cjs tests/rings-now-p2-real-docker-runner.test.cjs tests/rings-now-p2-h2-original-jwt-stage.test.cjs tests/rings-now-p2-h2-runner-bridge.test.cjs
+```
+
+Keep PR Draft, runtime execution forbidden, `BLOCKED_NOT_RUN`, `explicitExecutionApproval:false`, `productionAccess:false`, `checkoutCommit:null`, `h2_original_gotrue_expiry_not_wired`, Actions `if:false`, #109/#201 HOLD, and production OFF. Independent audit must review the changed HEAD. Actual Docker, SQL, Actions and production activation require **separate owner authorization**.
