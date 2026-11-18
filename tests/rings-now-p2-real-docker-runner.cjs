@@ -19,6 +19,9 @@ const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
  gotrue:'docker.io/supabase/gotrue',postgrest:'docker.io/postgrest/postgrest'});
 const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
+const P2_TOTAL_MS=600000;
+const P2_CLEANUP_RESERVE_MS=120000;
+const P2_VERIFY_RESERVE_MS=30000;
 function validateLiveManifest(manifest){
  const failures=[];
  const result=inspectP2Preflight(manifest,{});
@@ -47,7 +50,8 @@ async function runRealP2DockerLifecycle({
  // Use the shared coordinator's existing 600s hard ceiling, retaining the
  // complete 120s cleanup/verify reserve. H2 still blocks unless >=361s
  // remain after startup/H1; elapsed Docker time is NOT proven by this change.
- totalMs=600000,reserveMs=120000,verifyReserveMs=30000,
+ totalMs=P2_TOTAL_MS,reserveMs=P2_CLEANUP_RESERVE_MS,
+ verifyReserveMs=P2_VERIFY_RESERVE_MS,
  commandFactory=createBoundedDockerCommand,
  adapterFactory=createDockerCliAdapter,
  runtimeFactory=createEphemeralP2Runtime
@@ -308,4 +312,5 @@ async function runRealP2DockerLifecycle({
  });
  }finally{runtime?.dispose();}
 }
-module.exports={runRealP2DockerLifecycle,validateLiveManifest};
+module.exports={runRealP2DockerLifecycle,validateLiveManifest,
+ P2_TOTAL_MS,P2_CLEANUP_RESERVE_MS,P2_VERIFY_RESERVE_MS};
