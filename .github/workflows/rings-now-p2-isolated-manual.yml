@@ -20,12 +20,13 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 2 # B: one parent is required to verify source binding
       - name: Verify exact checkout and canonical manifest before CLI (dormant)
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node tests/rings-now-p2-g4-approval-child-cli.cjs
           node -e '
             const m=require("./tests/rings-now-p2-isolated-manifest.json");
             const g=require("./tests/rings-now-p2-stack-static-gate.cjs");
