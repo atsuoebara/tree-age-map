@@ -36,7 +36,10 @@ function createEphemeralP2Runtime(){
    GOTRUE_API_HOST:'0.0.0.0',GOTRUE_API_PORT:'9999',
    GOTRUE_DB_DRIVER:'postgres',
    GOTRUE_DB_DATABASE_URL:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable',
+   // Five minutes, only for the disposable per-run GoTrue container.
+   // Never shorten JWT lifetime in production or claim expiration proof.
    GOTRUE_JWT_SECRET:jwt,GOTRUE_JWT_AUD:'authenticated',
+   GOTRUE_JWT_EXP:'300',
    GOTRUE_JWT_DEFAULT_GROUP_NAME:'authenticated',
    // These settings exist ONLY inside the freshly created --internal
    // disposable Docker network. Confirmation requires no SMTP service.
