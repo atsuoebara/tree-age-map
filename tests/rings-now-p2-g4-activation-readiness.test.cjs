@@ -80,3 +80,22 @@ test('hypothetical complete metadata remains unverified and cannot enable',()=>{
  assert.equal(r.sourceProvenanceVerified,false);
  assert.equal(r.billingVerified,false);
 });
+
+test('checked-in dormant workflow has 12m ceiling but still BLOCKS activation',()=>{
+ const fs=require('node:fs');
+ const path=require('node:path');
+ const root=path.join(__dirname,'..');
+ const source=fs.readFileSync(path.join(root,
+  '.github/workflows/rings-now-p2-isolated-manual.yml'),'utf8');
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,
+  'tests/rings-now-p2-isolated-manifest.json'),'utf8'));
+ const {inspectDisabledWorkflow}=require('./rings-now-p2-stack-static-gate.cjs');
+ assert.equal(inspectDisabledWorkflow(source).pass,true);
+ assert.match(source,/^    timeout-minutes: 12(?:\s*#.*)?$/m);
+ const candidate=check({manifest,workflow:source});
+ assert.equal(candidate.status,'BLOCKED_ACTIVATION_NOT_READY');
+ assert.equal(candidate.workflowJobMs,720000);
+ assert.ok(candidate.issues.includes('actual_runtime_measurement_missing'));
+ assert.equal(candidate.safeToEnable,false);
+ assert.equal(candidate.executionAuthorized,false);
+});
