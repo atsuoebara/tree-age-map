@@ -205,6 +205,58 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/http-probe.bash']);
    return parseInternalHttpResponse(wire);
   },
+  async probeInternalH2({runId,caseId,request,ephemeralDir}={}){
+   // Staging-only H2 wire adapter: invoked only by an explicitly gated
+   // runner in a FUTURE PR. Reuse SHA-pinned PostgREST internal probe.
+   safeRun(runId);
+   const allowed=['h2_anonymous','h2_owner_a','h2_foreign_a','h2_owner_b',
+    'h2_bad_signature','h2_expired_token','h2_no_rpc_grant'];
+   assert.ok(allowed.includes(caseId),'unknown H2 case');
+   assert.match(ephemeralDir||'',/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}$/);
+   const dirStat=fs.lstatSync(ephemeralDir);
+   assert.ok(dirStat.isDirectory()&&(dirStat.mode&0o777)===0o700,
+    'H2 private 0700 directory required');
+   assert.equal(typeof request,'string');
+   assert.ok(Buffer.byteLength(request,'utf8')<4096,'H2 request oversized');
+   const prefix='POST /rpc/rings_now_snapshot_candidate_v01 HTTP/1.1\r\n'+
+    'Host: postgrest:3000\r\n';
+   const suffix='Accept: application/json\r\n'+
+    'Content-Type: application/json\r\n'+
+    'Content-Length: 2\r\nConnection: close\r\n\r\n{}';
+   let authorization='';
+   if(caseId!=='h2_anonymous'){
+    const line=request.slice(prefix.length).split('\r\n')[0];
+    assert.match(line,/^Authorization: Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+    authorization=line+'\r\n';
+   }
+   assert.equal(request,prefix+authorization+suffix,'unapproved H2 Host/path/headers');
+   const name=runId+'_postgres';
+   const bash=path.resolve(__dirname,'fixtures/rings-now-p2-internal-http-probe.bash');
+   const content=fs.readFileSync(bash);
+   const sha=createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
+   assert.equal(sha,'0b1ab1d389dad3abe52f1b8e710e694c7032d684',
+    'pinned PostgREST internal Bash changed');
+   // MUST authenticate ownership before copying sensitive JWT.
+   await inspect('container',name,runId);
+   const requestFile=path.join(ephemeralDir,'h2-probe.req');
+   const fd=fs.openSync(requestFile,'wx',0o600);
+   try{
+    try{fs.writeFileSync(fd,request,{encoding:'utf8'});}
+    finally{fs.closeSync(fd);}
+    assert.equal(fs.lstatSync(requestFile).mode&0o777,0o600);
+    await invoke(['container','cp',bash,name+':/tmp/rn-p2/http-probe.bash']);
+    await inspect('container',name,runId);
+    // Existing pinned Bash reads this fixed container target.
+    await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/http-probe.req']);
+    await inspect('container',name,runId);
+    const wire=await invoke(['container','exec',name,'/bin/bash',
+     '/tmp/rn-p2/http-probe.bash']);
+    return parseInternalHttpResponse(wire);
+   }finally{
+    fs.rmSync(requestFile,{force:true});
+    // Container tmpfs deleted only upon owned container teardown.
+   }
+  },
   async probeInternalGoTrue({runId,caseId,request,ephemeralDir}={}){
    // Dormant H1 transport: a caller must first pass the canonical run gates.
    // Never expose email/password/request in argv, env, error text or logs.
