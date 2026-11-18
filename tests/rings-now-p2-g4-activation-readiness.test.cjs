@@ -95,7 +95,31 @@ test('checked-in dormant workflow has 12m ceiling but still BLOCKS activation',(
  const candidate=check({manifest,workflow:source});
  assert.equal(candidate.status,'BLOCKED_ACTIVATION_NOT_READY');
  assert.equal(candidate.workflowJobMs,720000);
+ assert.equal(candidate.issues.includes('job_limit_does_not_allow_checkout_or_setup_overhead'),false);
+ assert.ok(candidate.issues.includes('approval_only_child_checkout_binding_not_demonstrated'));
  assert.ok(candidate.issues.includes('actual_runtime_measurement_missing'));
  assert.equal(candidate.safeToEnable,false);
  assert.equal(candidate.executionAuthorized,false);
+});
+
+test('inline timeout comment is accepted but malformed or stale limits still block',()=>{
+ const base=fixture();
+ for(const [line,expectedMs] of [
+  ['timeout-minutes: 12 # staged only',720000],
+  ['timeout-minutes: 12',720000]
+ ]){
+  const x=fixture();
+  x.workflow=x.workflow.replace('timeout-minutes: 12',line);
+  const r=check(x);
+  assert.equal(r.workflowJobMs,expectedMs);
+  assert.equal(r.issues.includes('job_limit_does_not_allow_checkout_or_setup_overhead'),false);
+  assert.equal(r.safeToEnable,false);
+ }
+ for(const line of ['timeout-minutes: 10 # stale',
+                    'timeout-minutes: twelve # invalid']){
+  const x=fixture();x.workflow=x.workflow.replace('timeout-minutes: 12',line);
+  const r=check(x);
+  assert.ok(r.issues.includes('job_limit_does_not_allow_checkout_or_setup_overhead'));
+  assert.equal(r.safeToEnable,false);
+ }
 });
