@@ -446,3 +446,127 @@ test('failed H1 response makes runner fail closed and still cleans all owned res
  assert.equal(d.owned.size,0);
  assert.equal(result.g3Verified,false);assert.equal(result.actualP2Proven,false);
 });
+
+test('H2 runner uses owned seed then 7 HTTP cases, with synthetic expiry never promoted to G4',async()=>{
+ const {createHmac}=require('node:crypto');
+ const d=fakeDocker(),events=[];
+ const A='12345678-1234-4234-8234-123456789abc';
+ const B='87654321-4321-4321-8321-abcdef123456';
+ const ids={a:A,b:B};
+ const n=Math.floor(Date.now()/1000);
+ const token=(sub,role='authenticated',expiry=n+3600)=>{
+  const encode=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+  const data=encode({alg:'HS256'})+'.'+encode({
+   sub,role,aud:'authenticated',iat:n-120,exp:expiry
+  });
+  return data+'.'+createHmac('sha256','OFFLINE_H2_ONLY').update(data).digest('base64url');
+ };
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(s=>
+   [s,'/tmp/rn-p2-abcdefghi/'+s+'.env'])),
+  h1Users:{
+   a:{email:'rn-p2-'+'1'.repeat(24)+'-a@example.invalid',password:'a'.repeat(64)},
+   b:{email:'rn-p2-'+'2'.repeat(24)+'-b@example.invalid',password:'b'.repeat(64)}
+  },
+  h1EphemeralDir:'/tmp/rn-p2-abcdefghi',
+  issueH2SignedTestToken({subject,role,expired}){
+   events.push('signed-'+(expired?'expired':'denied'));
+   return token(subject,role,expired?n-60:n+3600);
+  },
+  prepareHttpProbe(){throw Error('must not use synthetic empty-owner HTTP after H2 seeding');},
+  dispose(){events.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const driver=createDockerCliAdapter({command});
+  return {...driver,
+   probeInternalGoTrue:async({caseId})=>{
+    events.push(caseId);
+    if(caseId==='h1_bad_password')return {status:401};
+    const who=caseId.endsWith('_b')?'b':'a';
+    if(caseId.startsWith('h1_signup_'))return {status:201,body:{id:ids[who]}};
+    return {status:200,body:{access_token:token(ids[who]),user:{id:ids[who]}}};
+   },
+   seedH2DisposableOwners:async({runId:id,sql,ownerA,ownerB})=>{
+    assert.equal(id,runId);assert.equal(ownerA,A);assert.equal(ownerB,B);
+    assert.ok(sql.includes('H2_REQUIRES_EMPTY_DISPOSABLE_TABLE'));
+    events.push('seed');return {status:'ISOLATED_TWO_OWNERS_CLI_REPORTED'};
+   },
+   probeInternalH2:async({caseId,request,runId:id})=>{
+    assert.equal(id,runId);assert.ok(request.includes('Host: postgrest:3000'));
+    events.push(caseId);
+    if(['h2_owner_a','h2_foreign_a','h2_owner_b'].includes(caseId)){
+     const sub=caseId==='h2_owner_b'?B:A;
+     return {status:200,body:{status:'candidate_snapshot',rows:[{
+      id:caseId==='h2_owner_b'?2:1,user_id:sub,activity_date:'2026-11-18',
+      started_at:'2026-11-18T00:00:00Z',distance_km:5,deleted_at:null
+     }]}};
+    }
+    return {status:403};
+   }
+  };
+ };
+ const result=await runRealP2DockerLifecycle({
+  ...base,nowMs:clock(),manifest:approvedFixture(),
+  commandFactory:d.commandFactory,runtimeFactory,adapterFactory
+ });
+ assert.equal(result.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
+ assert.deepEqual(events.slice(0,5),['h1_signup_a','h1_signin_a',
+  'h1_signup_b','h1_signin_b','h1_bad_password']);
+ assert.deepEqual(events.slice(5,8),['seed','signed-expired','signed-denied']);
+ assert.deepEqual(events.slice(8,15),[
+  'h2_anonymous','h2_owner_a','h2_foreign_a','h2_owner_b',
+  'h2_bad_signature','h2_expired_token','h2_no_rpc_grant'
+ ]);
+ assert.equal(events[15],'disposed');
+ assert.equal(d.owned.size,0);
+ assert.equal(result.g3Verified,false);
+ assert.equal(result.actualP2Proven,false);
+ assert.equal(result.p2ExecutionAuthorized,false);
+ assert.ok(!JSON.stringify(result).includes(token(A)));
+ assert.ok(!JSON.stringify(result).includes('OFFLINE_H2_ONLY'));
+});
+test('failed H2 seed prevents any H2 HTTP and still tears down owned resources',async()=>{
+ const {createHmac}=require('node:crypto');
+ const d=fakeDocker(),steps=[];
+ const A='12345678-1234-4234-8234-123456789abc';
+ const B='87654321-4321-4321-8321-abcdef123456';
+ const n=Math.floor(Date.now()/1000);
+ const jwt=sub=>{
+  const enc=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+  const input=enc({alg:'HS256'})+'.'+enc({
+   sub,role:'authenticated',aud:'authenticated',iat:n-120,exp:n+3600
+  });
+  return input+'.'+createHmac('sha256','OFFLINE').update(input).digest('base64url');
+ };
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(s=>
+   [s,'/tmp/rn-p2-abcdefghi/'+s+'.env'])),
+  h1Users:{
+   a:{email:'rn-p2-'+'1'.repeat(24)+'-a@example.invalid',password:'a'.repeat(64)},
+   b:{email:'rn-p2-'+'2'.repeat(24)+'-b@example.invalid',password:'b'.repeat(64)}
+  },
+  h1EphemeralDir:'/tmp/rn-p2-abcdefghi',
+  issueH2SignedTestToken(){steps.push('must_not_sign');throw Error('not allowed');},
+  dispose(){steps.push('disposed');}
+ });
+ const adapterFactory=({command})=>({
+  ...createDockerCliAdapter({command}),
+  probeInternalGoTrue:async({caseId})=>{
+   if(caseId==='h1_bad_password')return {status:401};
+   const sub=caseId.endsWith('_b')?B:A;
+   if(caseId.startsWith('h1_signup_'))return {status:201,body:{id:sub}};
+   return {status:200,body:{access_token:jwt(sub),user:{id:sub}}};
+  },
+  seedH2DisposableOwners:async()=>{steps.push('seed_failed');return {status:'NOT_READY'};},
+  probeInternalH2:async()=>{steps.push('FORBIDDEN_HTTP');throw Error('unexpected H2 HTTP');}
+ });
+ const result=await runRealP2DockerLifecycle({
+  ...base,nowMs:clock(),manifest:approvedFixture(),
+  commandFactory:d.commandFactory,runtimeFactory,adapterFactory
+ });
+ assert.equal(result.status,'FAIL_OR_NOT_PROVEN');
+ assert.deepEqual(steps,['seed_failed','disposed']);
+ assert.equal(d.owned.size,0);
+ assert.equal(result.g4Verified,undefined);
+ assert.equal(result.actualP2Proven,false);
+});
