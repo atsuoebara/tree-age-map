@@ -3832,9 +3832,9 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   <section id="rrPeriodOverview" aria-label="選択期間の記録" aria-live="polite">
     <div class="rrPeriodOverviewTitle" id="rrPeriodOverviewTitle">選択期間の記録（読み込み中）</div>
     <div class="rrPeriodOverviewGrid">
-      <div class="rrPeriodOverviewItem"><small>距離</small><strong id="rrPeriodOverviewDistance">—</strong></div>
+      <div class="rrPeriodOverviewItem"><small>総距離</small><strong id="rrPeriodOverviewDistance">—</strong></div>
       <div class="rrPeriodOverviewItem"><small>ラン数</small><strong id="rrPeriodOverviewRuns">—</strong></div>
-      <div class="rrPeriodOverviewItem"><small>走破地域</small><strong id="rrPeriodOverviewRegions">—</strong></div>
+      <div class="rrPeriodOverviewItem"><small>走破地域数</small><strong id="rrPeriodOverviewRegions">—</strong></div>
     </div>
   </section>
   <div id="mapViewModeBar" aria-label="地図の表示モード">
@@ -25504,7 +25504,7 @@ function updateDashboard(
   const overview = document.getElementById('rrPeriodOverview');
   if (overview) {
     document.getElementById('rrPeriodOverviewTitle').textContent =
-      getSelectedPeriodText() + 'の記録';
+      '選択期間：' + getSelectedPeriodText();
     document.getElementById('rrPeriodOverviewDistance').textContent =
       document.getElementById('totalDistance').textContent + ' km';
     document.getElementById('rrPeriodOverviewRuns').textContent =
@@ -30124,10 +30124,7 @@ const RR_ENGLISH_REPLACEMENTS = [
   ['端末保存','Saved on device'],
   ['ランニング記録','Running activities'],
   ['選択期間の記録（読み込み中）','Selected period (loading…)'],
-  ['の記録',' records'],
-  ['走破地域','Regions visited'],
-  ['ラン数','Runs'],
-  ['距離','Distance'],
+  ['選択期間：','Selected period: '],
   ['今日のランニングを共有','Share today’s run'],
   ['🌈 Rainbowの見方（走行回数と色）','🌈 How Rainbow works (run counts and colors)'],
   ['自動','Auto'],['面','Areas'],['全画面','Fullscreen'],
