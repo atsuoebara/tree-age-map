@@ -62,6 +62,17 @@ async function runRealP2DockerLifecycle({
   attempted:false,realDockerInvoked:false,g3Verified:false,
   actualP2Proven:false,p2ExecutionAuthorized:false
  });
+ // Fail closed before any command/runtime construction: the current H2 path
+ // still injects locally signed synthetic expired JWTs. This is valid for
+ // offline fake-driver tests only, never for a future real Docker G4 run.
+ // Remove this guard ONLY after original GoTrue-issued JWT + real-clock
+ // expiry + refreshed live A/B sessions have been wired and audited.
+ if(commandFactory===createBoundedDockerCommand)return Object.freeze({
+  status:'BLOCKED_NOT_RUN',
+  preflightIssues:Object.freeze(['h2_original_gotrue_expiry_not_wired']),
+  attempted:false,realDockerInvoked:false,g3Verified:false,
+  actualP2Proven:false,p2ExecutionAuthorized:false
+ });
  assert.equal(typeof commandFactory,'function');
  assert.equal(typeof adapterFactory,'function');
  assert.equal(typeof nowMs,'function');
