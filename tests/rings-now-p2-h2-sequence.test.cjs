@@ -67,8 +67,12 @@ test('missing seed and wrong expiry or role block every PostgREST request',async
  for(const patch of [
   {seedDisposableSql:async()=>({status:'FAIL'})},
   {provideExpiredToken:async()=>jwt(A)},
+  {provideExpiredToken:async()=>jwt(A,'service_role',1999999990)},
+  {provideExpiredToken:async()=>jwt(B,'authenticated',1999999990)},
   {provideDeniedToken:async()=>jwt(A)},
-  {provideDeniedToken:async()=>jwt(A,'service_role')}
+  {provideDeniedToken:async()=>jwt(A,'service_role')},
+  {provideDeniedToken:async()=>jwt(A,'p2_h2_no_rpc',1999999990)},
+  {provideDeniedToken:async()=>jwt(B,'p2_h2_no_rpc')}
  ]){
   const x=fixture(patch);
   await assert.rejects(()=>collectH2OverTransport(x.args));
