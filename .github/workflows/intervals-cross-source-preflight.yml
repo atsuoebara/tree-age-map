@@ -1,0 +1,18 @@
+name: Intervals cross-source duplicate preflight (synthetic)
+on:
+  pull_request:
+    paths:
+      - index.html
+      - scripts/test-intervals-cross-source-preflight.cjs
+      - .github/workflows/intervals-cross-source-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  duplicate-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Intervals duplicate pre-save guard (no network or database)
+        run: node scripts/test-intervals-cross-source-preflight.cjs
