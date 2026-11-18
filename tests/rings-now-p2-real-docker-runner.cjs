@@ -92,6 +92,7 @@ async function runRealP2DockerLifecycle({
   // calls each have separate 15s bounded timeouts. This does not guarantee
   // Docker daemon teardown, and a hung injected callback remains possible.
   if(stage==='execute'){
+   const stageDeadlineMs=performance.now()+timeoutMs;
    try{
     const before=await driver.listOwned(runId);
     if(!validInventory(before,runId)||before.length)throw Error('owned_baseline_not_empty');
@@ -164,7 +165,7 @@ async function runRealP2DockerLifecycle({
      // This wiring can only become runnable after a separate audit and explicit
      // change to the h2_original_gotrue_expiry_not_wired safety gate.
      if(commandFactory===createBoundedDockerCommand){
-      const executeDeadlineMs=performance.now()+timeoutMs;
+      const executeDeadlineMs=stageDeadlineMs;
       const bridged=await runOriginalGoTrueH2Stage({
        h1,runtime,driver,runId,executeDeadlineMs,
        cleanupReserveMs:reserveMs,verifyReserveMs
