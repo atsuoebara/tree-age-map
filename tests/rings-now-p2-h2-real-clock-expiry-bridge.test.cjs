@@ -23,6 +23,7 @@ function receipt(expOffset=300){
 test('real clock reads actual monotonic/wall sources and sleeps briefly',async()=>{
  const c=createRealExpiryClock({executeDeadlineMs:performance.now()+4000});
  const a=c.readMonotonicMs(),w=c.readWallSeconds();
+ assert.ok(Number.isSafeInteger(a),'monotonic readings must be integer milliseconds');
  assert.ok(Math.abs(w-Math.floor(Date.now()/1000))<=1);
  await c.sleepMs(15);
  const b=c.readMonotonicMs();
@@ -55,4 +56,24 @@ test('real timer API denies arbitrary sleeps, or chunks beyond hard deadline',as
  for(const ms of [0,-1,30001,1.5,10000])
   await assert.rejects(()=>c.sleepMs(ms));
  assert.ok(!JSON.stringify(c).includes('privateOriginalJwt'));
+});
+
+test('real short expiry: unchanged JWT released only after wall and monotonic 3-second boundary',async()=>{
+ const rec=receipt(2); // exp in 2 seconds, strict release at exp+1
+ const original=rec.privateOriginalJwt;
+ const started=performance.now();
+ const result=await waitForOriginalGoTrueJwtInExecuteStage({
+  receipt:rec,executeDeadlineMs:performance.now()+9000,
+  cleanupReserveMs:120000,verifyReserveMs:30000
+ });
+ const elapsed=performance.now()-started;
+ assert.equal(result.status,'ORIGINAL_JWT_RELEASED_AFTER_INJECTED_CLOCKS_NOT_G4_PROOF');
+ assert.equal(result.privateExpiredJwt,original);
+ assert.ok(result.waitedMs>=3000,'strict exp+1 boundary requires 3 seconds');
+ assert.ok(result.measuredMonotonicMs>=3000);
+ assert.ok(elapsed>=2950,'real timer must not return immediately');
+ assert.ok(Math.floor(Date.now()/1000)>rec.expiresAtSeconds);
+ assert.equal(result.realElapsedTimeVerified,false);
+ assert.equal(result.g4Verified,false);
+ assert.ok(!JSON.stringify(result).includes(original));
 });
