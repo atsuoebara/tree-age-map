@@ -43,3 +43,14 @@ node --test tests/rings-now-p2-stack-static-gate.test.cjs tests/rings-now-p2-g2-
 ```
 
 失敗すべき10/13/60分改変が実際に失敗すること、請求ゲートが依然文書上の非証明であること、12分実workflowでも実測なしBLOCK、他のmanifest/runner/実行禁止ガードが無変更であることを検証。Nodeコマンドは作成者未実行。**段階PRの合格でもマージ・実行承認にならない**。
+
+## むせ条件付き合格（初回 HEAD bffdc5ff）の修正
+
+初回監査の指定3スイートは実Nodeで **22/23 PASS**。失敗原因は readiness gate が `timeout-minutes: 12 # dormant...` の末尾コメントを読めず、`workflowJobMs:null` とした点（静的ゲートはコメント対応済み）。
+
+同一PRに以下を追記：
+- `rings-now-p2-g4-activation-readiness.cjs` の時間抽出を、数字の後に任意の行末コメントがある場合も受け入れる厳密な正規表現へ修正。数字を含まない文字列は拒否。
+- 実workflowを読み込む既存のテストを補強し、`workflowJobMs===720000`、`job_limit_does_not_allow_checkout_or_setup_overhead` **不在**、ただし `actual_runtime_measurement_missing` と `approval_only_child_checkout_binding_not_demonstrated` **存在**、`safeToEnable:false` を確認。
+- コメントあり12分、コメントなし12分、コメントあり10分、数値無効の回帰を追加。
+
+**修正後のNative Nodeテストは作成者未実行。** むせに同じ3スイートの再実測を依頼する。本番、Docker、SQL、Actionsは未実行であり、G2課金・実時間・checkout承認は一切証明していない。
