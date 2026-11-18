@@ -1,5 +1,6 @@
-# P2 isolated stack scaffold — DISABLED. Do not dispatch.
-# No images, DB, Auth, HTTP or secrets are used by this workflow.
+# Rings Now P2 isolated stack: G4 STAGED ONLY. DO NOT DISPATCH.
+# This job remains hard disabled even if someone presses workflow_dispatch.
+# No checkout, Node, Docker, SQL, network, or paid resource is used while disabled.
 name: Rings Now P2 isolated stack (DISABLED)
 on:
   workflow_dispatch:
@@ -10,9 +11,34 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ false }} # hard stop: must not be lifted without independent audit + explicit approval
+    if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Disabled until digest, billing and approval gates pass
-        run: exit 1
+      - name: Checkout exact dispatch SHA (dormant)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pinned v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify exact checkout and canonical manifest before CLI (dormant)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node -e '
+            const m=require("./tests/rings-now-p2-isolated-manifest.json");
+            const g=require("./tests/rings-now-p2-stack-static-gate.cjs");
+            const r=g.inspectP2Preflight(m,process.env);
+            if(!r.pass) {
+              process.stderr.write("BLOCKED_NOT_RUN: manifest preflight failed ("+r.failures.join(",")+")\\n");
+              process.exit(2);
+            }
+          '
+      - name: Run one isolated probe; keep non-proven outcome red (dormant)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.
+          # Leave step failed; never turn CLI self-report into green PASS.
+          node tests/rings-now-p2-cli.cjs --isolated-once
