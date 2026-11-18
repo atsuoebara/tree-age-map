@@ -88,7 +88,7 @@ test('redundant H2 wiring stop is absent but canonical manifest gate remains bef
  assert.ok(gateAt>=0&&adapterAt>gateAt);
  assert.ok(src.includes('if(commandFactory===createBoundedDockerCommand){'));
  const workflow=fs.readFileSync(require('node:path').join(__dirname,'../.github/workflows/rings-now-p2-isolated-manual.yml'),'utf8');
- assert.match(workflow,/^    if: \\$\\{\\{ false \\}\\}/m);
+ assert.ok(workflow.includes('if: ${{ false }}'));
 });
 test('real active manifest gate rejects all evidence forgery shortcuts',()=>{
  const x=approvedFixture();assert.equal(validateLiveManifest(x).pass,true);
