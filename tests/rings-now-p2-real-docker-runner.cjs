@@ -44,7 +44,10 @@ function validInventory(items,id){
 // of a usable Postgres/GoTrue/PostgREST service.
 async function runRealP2DockerLifecycle({
  runId,manifest=activeManifest,nowMs=()=>performance.now(),
- totalMs=540000,reserveMs=120000,verifyReserveMs=30000,
+ // Use the shared coordinator's existing 600s hard ceiling, retaining the
+ // complete 120s cleanup/verify reserve. H2 still blocks unless >=361s
+ // remain after startup/H1; elapsed Docker time is NOT proven by this change.
+ totalMs=600000,reserveMs=120000,verifyReserveMs=30000,
  commandFactory=createBoundedDockerCommand,
  adapterFactory=createDockerCliAdapter,
  runtimeFactory=createEphemeralP2Runtime
