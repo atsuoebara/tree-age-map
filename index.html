@@ -488,6 +488,12 @@
       outline:3px solid #eaff00;
       outline-offset:2px;
     }
+    #rrDataConnectionMenu .rrStravaConnectionLabel {
+      color:#dce8f5;
+      font-size:12px;
+      font-weight:700;
+      align-self:center;
+    }
     #rrDataConnectionMenu .rrDataConnectionActions {
       display:flex;
       gap:8px;
@@ -3717,14 +3723,13 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 
 
-  <button id="stravaConnectButton" type="button" style="display:none;">
-  <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
-</button>
-
-
 <details id="rrDataConnectionMenu">
   <summary><span data-art-lang="ja">🔗 データ連携</span><span data-art-lang="en">🔗 Data connections</span><span id="rrConnectionSummary" aria-live="polite"></span></summary>
   <div class="rrDataConnectionActions">
+    <span class="rrStravaConnectionLabel" data-art-lang="ja">Strava</span><span class="rrStravaConnectionLabel" data-art-lang="en">Strava</span>
+    <button id="stravaConnectButton" type="button" style="display:none;">
+      <img src="btn_strava_connect_with_orange.svg" alt="Connect with Strava">
+    </button>
     <button id="corosConnectButton" type="button">
       COROSと連携
     </button>
@@ -4547,7 +4552,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.18.02'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.18.03'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
