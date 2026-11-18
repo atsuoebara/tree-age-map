@@ -372,3 +372,77 @@ test('SQL RLS assertion failure prevents GoTrue/PostgREST startup and reconciles
  assert.equal(r.g3Verified,false);
  assert.equal(r.actualP2Proven,false);
 });
+
+test('H1 runner wiring calls only run-owned adapter after all services, never logs JWT',async()=>{
+ const {createHmac}=require('node:crypto');
+ const d=fakeDocker(),events=[];
+ const users={
+  a:{email:'rn-p2-'+'1'.repeat(24)+'-a@example.invalid',password:'a'.repeat(64)},
+  b:{email:'rn-p2-'+'2'.repeat(24)+'-b@example.invalid',password:'b'.repeat(64)}
+ };
+ const ids={a:'00000000-0000-4000-8000-000000000001',
+  b:'00000000-0000-4000-8000-000000000002'};
+ const jwt=(id)=>{
+  const enc=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+  const input=enc({alg:'HS256'})+'.'+enc({
+   sub:id,role:'authenticated',aud:'authenticated',iat:1700000000,exp:1700000300
+  });
+  return input+'.'+createHmac('sha256','OFFLINE_ONLY').update(input).digest('base64url');
+ };
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(s=>
+   [s,'/tmp/rn-p2-abcdefghi/'+s+'.env'])),
+  h1Users:users,h1EphemeralDir:'/tmp/rn-p2-abcdefghi',
+  dispose(){events.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const a=createDockerCliAdapter({command});
+  return {...a,probeInternalGoTrue:async({runId:id,caseId,request,ephemeralDir})=>{
+   assert.equal(id,runId);
+   assert.equal(ephemeralDir,'/tmp/rn-p2-abcdefghi');
+   assert.ok(request.includes('Host: gotrue:9999'));
+   assert.equal(d.owned.has('container:'+runId+'_postgrest'),true);
+   events.push(caseId);
+   const who=caseId.endsWith('_b')?'b':'a';
+   if(caseId==='h1_bad_password')return {status:401};
+   if(caseId.startsWith('h1_signup_'))return {status:200,body:{id:ids[who]}};
+   return {status:200,body:{access_token:jwt(ids[who]),user:{id:ids[who]}}};
+  }};
+ };
+ const result=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
+ assert.equal(result.status,'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF');
+ assert.deepEqual(events,['h1_signup_a','h1_signin_a','h1_signup_b','h1_signin_b',
+  'h1_bad_password','disposed']);
+ const text=JSON.stringify(result);
+ for(const secret of [users.a.email,users.a.password,jwt(ids.a)])
+  assert.ok(!text.includes(secret),'no H1 secrets in result');
+ assert.equal(result.g3Verified,false);assert.equal(result.actualP2Proven,false);
+ assert.equal(d.owned.size,0);
+});
+test('failed H1 response makes runner fail closed and still cleans all owned resources',async()=>{
+ const d=fakeDocker(),events=[];
+ const runtimeFactory=()=>({
+  envFiles:Object.fromEntries(['postgres','gotrue','postgrest'].map(s=>
+   [s,'/tmp/rn-p2-abcdefghi/'+s+'.env'])),
+  h1Users:{
+   a:{email:'rn-p2-'+'1'.repeat(24)+'-a@example.invalid',password:'a'.repeat(64)},
+   b:{email:'rn-p2-'+'2'.repeat(24)+'-b@example.invalid',password:'b'.repeat(64)}
+  },
+  h1EphemeralDir:'/tmp/rn-p2-abcdefghi',
+  dispose(){events.push('disposed');}
+ });
+ const adapterFactory=({command})=>{
+  const a=createDockerCliAdapter({command});
+  return {...a,probeInternalGoTrue:async({caseId})=>{
+   events.push(caseId);
+   return {status:500};
+  }};
+ };
+ const result=await runRealP2DockerLifecycle({...base,nowMs:clock(),
+  manifest:approvedFixture(),commandFactory:d.commandFactory,runtimeFactory,adapterFactory});
+ assert.equal(result.status,'FAIL_OR_NOT_PROVEN');
+ assert.deepEqual(events,['h1_signup_a','disposed']);
+ assert.equal(d.owned.size,0);
+ assert.equal(result.g3Verified,false);assert.equal(result.actualP2Proven,false);
+});

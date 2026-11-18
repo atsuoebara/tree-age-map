@@ -11,6 +11,7 @@ const {createDockerCliAdapter}=require('./rings-now-p2-g3-docker-cli-adapter.cjs
 const {createBoundedDockerCommand}=require('./rings-now-p2-g3-bounded-docker-command.cjs');
 const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
 const {assertSnapshotRpcResult}=require('./rings-now-p2-loopback-transport.cjs');
+const {collectH1OverTransport}=require('./rings-now-p2-h1-gotrue-http.cjs');
 const activeManifest=require('./rings-now-p2-isolated-manifest.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
@@ -127,6 +128,24 @@ async function runRealP2DockerLifecycle({
       await driver.initializeGoTrue(runId);
       ops.push('gotrue_migration_cli_reported');
      }
+    }
+    if(runtime?.h1Users||runtime?.h1EphemeralDir){
+     // H1 is invoked ONLY after the three run-owned containers exist and
+     // after GoTrue migration. The adapter validates the fixed request, owner
+     // label and private files before any secret-bearing Docker copy.
+     assert.ok(runtime.h1Users&&runtime.h1EphemeralDir,'partial H1 runtime');
+     assert.equal(typeof driver.probeInternalGoTrue,'function','H1 adapter missing');
+     const h1=await collectH1OverTransport({
+      users:runtime.h1Users,
+      transport:({caseId,request})=>driver.probeInternalGoTrue({
+       runId,caseId,request,ephemeralDir:runtime.h1EphemeralDir
+      })
+     });
+     assert.equal(h1.evidence.observations.length,5);
+     assert.equal(h1.h1Verified,false);
+     // Keep raw tokens only within collector scope. No result, op, stage
+     // record, logs or final evidence object may include them.
+     ops.push('h1_gotrue_http_five_cases_cli_reported_not_g4_proof');
     }
     if(runtime?.prepareHttpProbe){
      // This is a real Docker-network HTTP attempt, NOT a completed G4

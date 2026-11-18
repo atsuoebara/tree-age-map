@@ -17,6 +17,14 @@ function createEphemeralP2Runtime(){
  const pw=randomBytes(32).toString('hex');
  const jwt=randomBytes(48).toString('hex');
  const authPw=randomBytes(32).toString('hex');
+ const h1SuffixA=randomBytes(12).toString('hex');
+ const h1SuffixB=randomBytes(12).toString('hex');
+ const h1Users=Object.freeze({
+  a:Object.freeze({email:'rn-p2-'+h1SuffixA+'-a@example.invalid',
+   password:randomBytes(32).toString('hex')}),
+  b:Object.freeze({email:'rn-p2-'+h1SuffixB+'-b@example.invalid',
+   password:randomBytes(32).toString('hex')})
+ });
  const env={
   postgres:{
    POSTGRES_USER:'postgres',POSTGRES_DB:'rings_now_p2',
@@ -30,10 +38,13 @@ function createEphemeralP2Runtime(){
    GOTRUE_DB_DATABASE_URL:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable',
    GOTRUE_JWT_SECRET:jwt,GOTRUE_JWT_AUD:'authenticated',
    GOTRUE_JWT_DEFAULT_GROUP_NAME:'authenticated',
-   GOTRUE_EXTERNAL_EMAIL_ENABLED:'false',
+   // These settings exist ONLY inside the freshly created --internal
+   // disposable Docker network. Confirmation requires no SMTP service.
+   GOTRUE_EXTERNAL_EMAIL_ENABLED:'true',
+   GOTRUE_MAILER_AUTOCONFIRM:'true',
    GOTRUE_EXTERNAL_PHONE_ENABLED:'false',
    GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED:'false',
-   GOTRUE_DISABLE_SIGNUP:'true'
+   GOTRUE_DISABLE_SIGNUP:'false'
   },
   postgrest:{
    PGRST_DB_URI:'postgres://authenticator:'+authPw+'@postgres:5432/rings_now_p2?sslmode=disable',
@@ -71,7 +82,7 @@ function createEphemeralP2Runtime(){
   finally{fs.closeSync(fd);}
  }catch(e){fs.rmSync(dir,{recursive:true,force:true});throw e;}
  let disposed=false,requestCreated=false;
- return Object.freeze({
+ const runtime={
   envFiles:Object.freeze(paths),
   bootstrapSqlFile,
   // Synthetic-only JWT accepted by the isolated PostgREST's random
@@ -109,6 +120,13 @@ function createEphemeralP2Runtime(){
    fs.rmSync(dir,{recursive:true,force:true,maxRetries:1});
    disposed=true;
   }
+ };
+ // Keep private H1 credentials out of JSON.stringify(runtime) and generic
+ // enumerable object logging, while retaining in-memory runner access.
+ Object.defineProperties(runtime,{
+  h1Users:{value:h1Users,enumerable:false},
+  h1EphemeralDir:{value:dir,enumerable:false}
  });
+ return Object.freeze(runtime);
 }
 module.exports={createEphemeralP2Runtime};
