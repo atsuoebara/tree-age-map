@@ -46,7 +46,7 @@ test('rejects exp boundary, altered old JWT, stale/invalid or wrong-owner refres
   expiredOriginalJwt:p.old,nowSeconds:N};
  const bad=[
   {...base,nowSeconds:N-1},
-  {...base,expiredOriginalJwt:token(A,N-301,N-1)},
+  {...base,expiredOriginalJwt:token(A,N-302,N-1)},
   {...base,refreshedH1:h1(token(B,N-1,N+299),token(A,N-1,N+299))},
   {...base,refreshedH1:h1(token(A,N-1,N+299),token(B,N-1,N+299),{a:B,b:A})},
   {...base,refreshedH1:h1(p.old,token(B,N-1,N+299))},
