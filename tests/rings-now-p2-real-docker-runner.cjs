@@ -12,6 +12,7 @@ const {createBoundedDockerCommand}=require('./rings-now-p2-g3-bounded-docker-com
 const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runtime.cjs');
 const {assertSnapshotRpcResult}=require('./rings-now-p2-loopback-transport.cjs');
 const {collectH1OverTransport}=require('./rings-now-p2-h1-gotrue-http.cjs');
+const {collectH2OverTransport}=require('./rings-now-p2-h2-sequence.cjs');
 const activeManifest=require('./rings-now-p2-isolated-manifest.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
@@ -129,6 +130,7 @@ async function runRealP2DockerLifecycle({
       ops.push('gotrue_migration_cli_reported');
      }
     }
+    let h2Completed=false;
     if(runtime?.h1Users||runtime?.h1EphemeralDir){
      // H1 is invoked ONLY after the three run-owned containers exist and
      // after GoTrue migration. The adapter validates the fixed request, owner
@@ -146,8 +148,38 @@ async function runRealP2DockerLifecycle({
      // Keep raw tokens only within collector scope. No result, op, stage
      // record, logs or final evidence object may include them.
      ops.push('h1_gotrue_http_five_cases_cli_reported_not_g4_proof');
+     // H2 uses the H1 result *in memory*; do not log JWT or SQL.
+     // Only canonical runtime with synthetic per-run JWT signing is accepted.
+     // Signed synthetic tokens are NOT GoTrue-issued expiry evidence.
+     if(runtime.issueH2SignedTestToken){
+      assert.equal(typeof runtime.issueH2SignedTestToken,'function');
+      assert.equal(typeof driver.seedH2DisposableOwners,'function');
+      assert.equal(typeof driver.probeInternalH2,'function');
+      const nowSeconds=Math.floor(Date.now()/1000);
+      const h2=await collectH2OverTransport({
+       h1,nowSeconds,
+       seedDisposableSql:({sql,ownerA,ownerB})=>
+        driver.seedH2DisposableOwners({
+         runId,ownerA,ownerB,sql,ephemeralDir:runtime.h1EphemeralDir
+        }),
+       provideExpiredToken:({ownerA})=>runtime.issueH2SignedTestToken({
+        subject:ownerA,role:'authenticated',nowSeconds,expired:true
+       }),
+       provideDeniedToken:({ownerA})=>runtime.issueH2SignedTestToken({
+        subject:ownerA,role:'p2_h2_no_rpc',nowSeconds,expired:false
+       }),
+       transport:({caseId,request})=>driver.probeInternalH2({
+        runId,caseId,request,ephemeralDir:runtime.h1EphemeralDir
+       })
+      });
+      assert.equal(h2.h2Verified,false);
+      assert.equal(h2.g4Verified,false);
+      assert.equal(h2.summary.observations.length,7);
+      h2Completed=true;
+      ops.push('h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof');
+     }
     }
-    if(runtime?.prepareHttpProbe){
+    if(runtime?.prepareHttpProbe&&!h2Completed){
      // This is a real Docker-network HTTP attempt, NOT a completed G4
      // owner-isolation or 1000/1001 signed-JWT proof.
      const requestFile=runtime.prepareHttpProbe();
