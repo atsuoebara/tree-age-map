@@ -64,6 +64,32 @@ test('current BLOCKED manifest refuses before commandFactory, adapter or Docker'
  assert.equal(res.attempted,false);assert.equal(res.realDockerInvoked,false);
  assert.equal(res.p2ExecutionAuthorized,false);
 });
+test('canonical real backend remains blocked by checked-in manifest after retiring H2 wiring stop',async()=>{
+ const result=await runRealP2DockerLifecycle({runId});
+ assert.equal(current.status,'BLOCKED_NOT_RUN');
+ assert.equal(current.explicitExecutionApproval,false);
+ assert.equal(current.productionAccess,false);
+ assert.equal(current.checkoutCommit,null);
+ assert.equal(result.status,'BLOCKED_NOT_RUN');
+ assert.equal(result.attempted,false);
+ assert.equal(result.realDockerInvoked,false);
+ assert.equal(result.p2ExecutionAuthorized,false);
+ assert.ok(result.preflightIssues.includes('manifest_not_in_phase'));
+ assert.ok(result.preflightIssues.includes('execution_approval_missing'));
+ assert.ok(result.preflightIssues.includes('billing_not_verified'));
+ assert.ok(result.preflightIssues.includes('checkout_commit_unpinned'));
+});
+test('redundant H2 wiring stop is absent but canonical manifest gate remains before runtime construction',()=>{
+ const fs=require('node:fs');
+ const src=fs.readFileSync(require.resolve('./rings-now-p2-real-docker-runner.cjs'),'utf8');
+ assert.equal(src.includes('h2_original_gotrue_expiry_not_wired'),false);
+ const gateAt=src.indexOf('if(!gate.pass||realBackendManifestMismatch)');
+ const adapterAt=src.indexOf('const command=commandFactory()');
+ assert.ok(gateAt>=0&&adapterAt>gateAt);
+ assert.ok(src.includes('if(commandFactory===createBoundedDockerCommand){'));
+ const workflow=fs.readFileSync(require('node:path').join(__dirname,'../.github/workflows/rings-now-p2-isolated-manual.yml'),'utf8');
+ assert.match(workflow,/^    if: \\$\\{\\{ false \\}\\}/m);
+});
 test('real active manifest gate rejects all evidence forgery shortcuts',()=>{
  const x=approvedFixture();assert.equal(validateLiveManifest(x).pass,true);
  for(const patch of [{billingZeroAdditionalCost:'NOT_VERIFIED'},
