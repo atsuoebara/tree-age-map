@@ -51,8 +51,20 @@ test('workflow remains manual and hard stopped', () => {
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     'node tests/rings-now-p2-cli.cjs --isolated-once',
     'echo bypass')).failures.includes('cli_or_preflight_missing'));
-  assert.ok(inspectDisabledWorkflow(workflow.replace(
+  // Both strict-mode occurrences must be changed in the mutation test,
+  // otherwise an earlier step can hide a broken CLI step.
+  assert.ok(inspectDisabledWorkflow(workflow.replaceAll(
     'set -euo pipefail','set +e')).failures.includes('cli_or_preflight_missing'));
+  // Even changing only the CLI step must be detected; retaining strict mode
+  // in preflight must not create a false PASS.
+  const cliOnlyMutation=workflow.replace(
+    '          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.',
+    '          set +e\\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.'
+  ).replace(
+    '          set -euo pipefail\\n          set +e',
+    '          set +e'
+  );
+  assert.ok(inspectDisabledWorkflow(cliOnlyMutation).failures.includes('cli_or_preflight_missing'));
   assert.ok(inspectDisabledWorkflow(workflow + '\\n# upload-artifact@v4').failures.includes('unsafe_workflow_escape'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     '    steps:', '    steps:\\n      - name: bypass\\n        uses: actions/upload-artifact@v4'))
