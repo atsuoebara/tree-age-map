@@ -58,8 +58,12 @@ function inspectGoTrueResponse(caseId,response){
  const observation=recordIsolatedHttpObservation({
   caseId,service:'GOTRUE',httpStatus:status,token
  });
- return Object.freeze({observation,token:token||null,userId:userId||null,
-  provenance:'GOTRUE_HTTP_RESPONSE_CLAIM_NOT_SIGNATURE_PROVEN'});
+ const safe={observation,provenance:'GOTRUE_HTTP_RESPONSE_CLAIM_NOT_SIGNATURE_PROVEN'};
+ Object.defineProperties(safe,{
+  token:{value:token||null,enumerable:false},
+  userId:{value:userId||null,enumerable:false}
+ });
+ return Object.freeze(safe);
 }
 async function collectH1OverTransport({transport,users}={}){
  assert.equal(typeof transport,'function');
@@ -78,13 +82,13 @@ async function collectH1OverTransport({transport,users}={}){
   }
  }
  assert.ok(tokens.a&&tokens.b&&ids.a&&ids.b&&ids.a!==ids.b,'independent users required');
- return Object.freeze({
-  evidence:summarizeIsolatedHttpEvidence(observations),
-  // SECRET: never JSON stringify or log this return object. Use only to
-  // prepare private PostgREST requests, then release.
-  privateTokens:Object.freeze(tokens),
-  privateIds:Object.freeze(ids),
-  h1Verified:false
+ const report={evidence:summarizeIsolatedHttpEvidence(observations),h1Verified:false};
+ // Sensitive details remain available for future H2 in memory, but are NOT
+ // enumerable, so JSON/string logging of the report cannot expose tokens.
+ Object.defineProperties(report,{
+  privateTokens:{value:Object.freeze(tokens),enumerable:false},
+  privateIds:{value:Object.freeze(ids),enumerable:false}
  });
+ return Object.freeze(report);
 }
 module.exports={ORDER,buildGoTrueRequest,inspectGoTrueResponse,collectH1OverTransport};
