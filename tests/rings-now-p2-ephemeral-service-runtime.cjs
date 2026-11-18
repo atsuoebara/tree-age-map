@@ -82,13 +82,9 @@ function createEphemeralP2Runtime(){
   finally{fs.closeSync(fd);}
  }catch(e){fs.rmSync(dir,{recursive:true,force:true});throw e;}
  let disposed=false,requestCreated=false;
- return Object.freeze({
+ const runtime={
   envFiles:Object.freeze(paths),
   bootstrapSqlFile,
-  // Private H1 materials: never serialize or log the runtime object.
-  // The same temp directory is reserved for the adapter's 0600 request.
-  h1Users,
-  h1EphemeralDir:dir,
   // Synthetic-only JWT accepted by the isolated PostgREST's random
   // GOTRUE_JWT_SECRET/PGRST_JWT_SECRET; NOT a GoTrue-issued real login.
   issueSyntheticJwt({subject,nowSeconds=Math.floor(Date.now()/1000)}={}){
@@ -124,6 +120,13 @@ function createEphemeralP2Runtime(){
    fs.rmSync(dir,{recursive:true,force:true,maxRetries:1});
    disposed=true;
   }
+ };
+ // Keep private H1 credentials out of JSON.stringify(runtime) and generic
+ // enumerable object logging, while retaining in-memory runner access.
+ Object.defineProperties(runtime,{
+  h1Users:{value:h1Users,enumerable:false},
+  h1EphemeralDir:{value:dir,enumerable:false}
  });
+ return Object.freeze(runtime);
 }
 module.exports={createEphemeralP2Runtime};
