@@ -17,7 +17,7 @@ function inspectG2CostEnvelope(envelope) {
  if(!SHA.test(e.checkoutCommit||''))fail('checkout_not_pinned');
  if(e.runner?.kind!=='github-hosted-standard'||e.runner?.os!=='ubuntu-latest'||
     e.runner?.largerRunner!==false||e.runner?.jobs!==1||
-    e.runner?.concurrency!==1||e.runner?.maxJobMinutes!==10||
+    e.runner?.concurrency!==1||e.runner?.maxJobMinutes!==12||
     e.runner?.retries!==0)fail('runner_envelope_not_fixed');
  if(e.costControls?.artifactUpload!==false||e.costControls?.cacheWrites!==false||
     e.costControls?.externalPaidServices!==false||
