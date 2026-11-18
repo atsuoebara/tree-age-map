@@ -13,11 +13,15 @@ const {createEphemeralP2Runtime}=require('./rings-now-p2-ephemeral-service-runti
 const {assertSnapshotRpcResult}=require('./rings-now-p2-loopback-transport.cjs');
 const {collectH1OverTransport}=require('./rings-now-p2-h1-gotrue-http.cjs');
 const {collectH2OverTransport}=require('./rings-now-p2-h2-sequence.cjs');
+const {runOriginalGoTrueH2Stage}=require('./rings-now-p2-h2-runner-bridge.cjs');
 const activeManifest=require('./rings-now-p2-isolated-manifest.json');
 const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
 const REPO=Object.freeze({postgres:'docker.io/library/postgres',
  gotrue:'docker.io/supabase/gotrue',postgrest:'docker.io/postgrest/postgrest'});
 const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
+const P2_TOTAL_MS=600000;
+const P2_CLEANUP_RESERVE_MS=120000;
+const P2_VERIFY_RESERVE_MS=30000;
 function validateLiveManifest(manifest){
  const failures=[];
  const result=inspectP2Preflight(manifest,{});
@@ -43,7 +47,11 @@ function validInventory(items,id){
 // of a usable Postgres/GoTrue/PostgREST service.
 async function runRealP2DockerLifecycle({
  runId,manifest=activeManifest,nowMs=()=>performance.now(),
- totalMs=540000,reserveMs=120000,verifyReserveMs=30000,
+ // Use the shared coordinator's existing 600s hard ceiling, retaining the
+ // complete 120s cleanup/verify reserve. H2 still blocks unless >=361s
+ // remain after startup/H1; elapsed Docker time is NOT proven by this change.
+ totalMs=P2_TOTAL_MS,reserveMs=P2_CLEANUP_RESERVE_MS,
+ verifyReserveMs=P2_VERIFY_RESERVE_MS,
  commandFactory=createBoundedDockerCommand,
  adapterFactory=createDockerCliAdapter,
  runtimeFactory=createEphemeralP2Runtime
@@ -91,6 +99,7 @@ async function runRealP2DockerLifecycle({
   // calls each have separate 15s bounded timeouts. This does not guarantee
   // Docker daemon teardown, and a hung injected callback remains possible.
   if(stage==='execute'){
+   const stageDeadlineMs=performance.now()+timeoutMs;
    try{
     const before=await driver.listOwned(runId);
     if(!validInventory(before,runId)||before.length)throw Error('owned_baseline_not_empty');
@@ -159,10 +168,26 @@ async function runRealP2DockerLifecycle({
      // Keep raw tokens only within collector scope. No result, op, stage
      // record, logs or final evidence object may include them.
      ops.push('h1_gotrue_http_five_cases_cli_reported_not_g4_proof');
-     // H2 uses the H1 result *in memory*; do not log JWT or SQL.
-     // Only canonical runtime with synthetic per-run JWT signing is accepted.
+     // Canonical real backend is STILL blocked before command construction.
+     // This wiring can only become runnable after a separate audit and explicit
+     // change to the h2_original_gotrue_expiry_not_wired safety gate.
+     if(commandFactory===createBoundedDockerCommand){
+      const executeDeadlineMs=stageDeadlineMs;
+      const bridged=await runOriginalGoTrueH2Stage({
+       h1,runtime,driver,runId,executeDeadlineMs,
+       cleanupReserveMs:reserveMs,verifyReserveMs
+      });
+      if(bridged.blocked)throw Error('original_gotrue_expiry_budget_blocked');
+      assert.equal(bridged.status,
+       'ORIGINAL_GOTRUE_H2_SEVEN_CLI_REPORTED_NOT_G4_PROOF');
+      assert.equal(bridged.count,7);
+      h2Completed=true;
+      ops.push('h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof');
+     }
+     // Fake driver regression only: synthetic expiry remains non-G4 evidence.
+     // Never use the synthetic expired JWT for the canonical backend.
      // Signed synthetic tokens are NOT GoTrue-issued expiry evidence.
-     if(runtime.issueH2SignedTestToken){
+     if(commandFactory!==createBoundedDockerCommand&&runtime.issueH2SignedTestToken){
       assert.equal(typeof runtime.issueH2SignedTestToken,'function');
       assert.equal(typeof driver.seedH2DisposableOwners,'function');
       assert.equal(typeof driver.probeInternalH2,'function');
@@ -287,4 +312,5 @@ async function runRealP2DockerLifecycle({
  });
  }finally{runtime?.dispose();}
 }
-module.exports={runRealP2DockerLifecycle,validateLiveManifest};
+module.exports={runRealP2DockerLifecycle,validateLiveManifest,
+ P2_TOTAL_MS,P2_CLEANUP_RESERVE_MS,P2_VERIFY_RESERVE_MS};
