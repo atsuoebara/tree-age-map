@@ -21,3 +21,17 @@ node --test tests/rings-now-p2-real-docker-runner.test.cjs tests/rings-now-p2-h2
 Review synthetic signer provenance, preflight order and separate genuine expiration requirement, H1 response confidentiality, exact SQL and owner-label checks, 0600 file teardown, no H2 after failed seed, full 7-case checks, zero empty-owner probe after seeding, all cleanup paths and existing fake runtime backwards compatibility.
 
 No workflow/manifest/SQL candidate/production HTML changes; BLOCKED_NOT_RUN, checkoutCommit:null, productionAccess:false, explicitExecutionApproval:false, workflow if:false and holds #109/#201 stay. No merge without Atsuo independent approval.
+
+
+## 2026-11-18 integration hold after #236–#239
+
+This branch predates the mainline genuine-expiry modules (19 main-side commits at comparison). The synthetic expired-JWT path remains suitable only for fake-driver/offline coverage. A **second, explicit real-backend gate** now returns BLOCKED_NOT_RUN before command/runtime creation even if future manifest approvals are supplied; it prevents mistaken promotion of synthetic JWTs to G4 evidence. Fake-driver regression behavior is intentionally unchanged.
+
+Required before removing that guard (separate independent audit and owner approval):
+1. Bring the #236–#239 original-token receipt, real monotonic sleep, and 300-second disposable GoTrue TTL modules onto the PR branch without losing the seven-file H2 changes.
+2. Capture A's original JWT from H1, check its GoTrue TTL and remaining execute budget (including setup), preserve raw bytes, wait strictly beyond exp with real clocks, and reject any incomplete/budget-exceeding wait. The shared coordinator already reserves cleanup and verification.
+3. Obtain fresh live A/B sessions after the wait, keeping the same owner identities; do not mutate or re-sign the original expired JWT. Retain a separately scoped denied-role test token.
+4. Revalidate the wall-clock time and live token claims immediately before each of the seven fixed H2 requests, and ensure clock/time-budget expiry stops subsequent transport and still cleans up run-owned resources.
+5. Add offline fake-driver tests for inadequate budget, expiration at exp vs exp+1, re-login identity mismatch/failure, stale active JWT, absence of secret in evidence, and cleanup on failures. Real Docker/SQL/Actions execution remains separately prohibited.
+
+Current status: **not G4 proof; PR remains Draft and unmerged**. This documented gate is not an execution approval.
