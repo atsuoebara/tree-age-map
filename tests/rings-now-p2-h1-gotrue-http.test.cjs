@@ -59,6 +59,14 @@ test('collects observations from transport responses in fixed case order',async(
  assert.equal(r.evidence.observations.length,5);
  assert.equal(r.evidence.h1Verified,false);assert.equal(r.h1Verified,false);
  assert.equal(r.privateIds.a,ids.a);assert.equal(r.privateIds.b,ids.b);
+ // Even careless serialization of the entire internal return object or
+ // individual successful response must not expose the private bearer token.
+ assert.ok(!JSON.stringify(r).includes(token(ids.a)));
+ assert.ok(!JSON.stringify(r).includes(users.a.email));
+ const checked=inspectGoTrueResponse('h1_signin_a',{
+  status:200,body:{access_token:token(ids.a),user:{id:ids.a}}
+ });
+ assert.ok(!JSON.stringify(checked).includes(token(ids.a)));
  const serialized=JSON.stringify(r.evidence);
  for(const secret of [users.a.email,users.a.password,token(ids.a)])assert.ok(!serialized.includes(secret));
 });
