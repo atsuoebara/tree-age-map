@@ -442,6 +442,7 @@
   line-height: 1.6;
   color: #9cabbd;
 }
+.rrP0Label{display:block;color:#dce8f5;font-size:12px;margin:8px 0 4px}.rrP0Help{font-size:11px;color:#b9c6d6;line-height:1.5}#rrSignedIn{font-size:11px;color:#b6f3ce;font-weight:700}#rrP0Notice,#rrP0Prompt{font-size:12px;background:#132b40;border:1px solid #497894;border-radius:8px;padding:6px;margin-top:4px;color:#dce8f5}#rrP0Notice[hidden],#rrP0Prompt[hidden]{display:none!important}#rrP0Prompt button{border:0;background:transparent;color:#b5eaff;text-decoration:underline;cursor:pointer}#authMessage[data-status="error"]{color:#ffb7bf}#authMessage[data-status="success"]{color:#b6f3ce}
     #authMessage{
       min-height:20px;
       margin-top:13px;
@@ -3353,7 +3354,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         autocomplete="current-password"
         placeholder="パスワード"
       >
-<div class="signupHelp">
+<label for="signupNickname" class="rrP0Label">ニックネーム（任意）</label><input id="signupNickname" class="authInput" type="text" maxlength="60" autocomplete="nickname" placeholder="あとから変更できます"><p class="rrP0Help">アプリ内の名前です。ランキング・写真の公開名とは別です。</p><div class="signupHelp">
   <div>パスワードは6文字以上で設定してください。</div>
   <div>新規登録後、Supabase Authから確認メールが届きます。</div>
   <div>メール内の「Confirm email address」をタップすると登録が完了します。</div>
@@ -3383,7 +3384,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         パスワードを忘れた方
       </button>
 
-      <div id="authMessage"></div>
+      <div id="authMessage" role="status" aria-live="polite"></div>
 
     </div>
 
@@ -3654,8 +3655,8 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   >
 
   <div id="accountProfileText">
-    <div id="accountDisplayName">アカウント</div>
-    <div id="accountEmail"></div>
+    <div id="accountDisplayName">マイアカウント</div><div id="rrSignedIn">● ログイン中</div>
+    <div id="accountEmail"></div><div id="rrP0Notice" role="status" aria-live="polite" hidden></div><div id="rrP0Prompt" hidden>ニックネームは後から設定できます。 <button id="rrP0Setup" type="button">設定する</button><button id="rrP0Dismiss" type="button" aria-label="案内を閉じる">×</button></div>
   </div>
 </div>
 
@@ -3890,14 +3891,14 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     >
   </div>
 
-  <label for="accountDisplayNameInput">表示名</label>
+  <label for="accountDisplayNameInput">表示名（アプリ内のみ）</label>
   <input
     id="accountDisplayNameInput"
     type="text"
     maxlength="60"
     placeholder="表示名"
   >
-  <label for="photoPublicNameInput"><span data-photo-lang="ja">写真の公開名</span><span data-photo-lang="en">Public name for photos</span></label>
+  <p class="rrP0Help">この名前はアプリ内だけの表示名です。写真・ランキングの公開名とは別です。</p><label for="photoPublicNameInput"><span data-photo-lang="ja">写真の公開名</span><span data-photo-lang="en">Public name for photos</span></label>
   <input id="photoPublicNameInput" type="text" maxlength="60" autocomplete="nickname" placeholder="写真の公開名 / Public name for photos">
   <p class="photoPublicNameNote"><span data-photo-lang="ja">写真の投稿者名として使う名前です。名前を公開したくなければ空欄でOK。空欄なら「ランナー」と表示されます。保存後もいつでも変更できます。</span><span data-photo-lang="en">This name is shown as the photo contributor. Leave it blank if you do not want to publish a name; blank names appear as “ランナー”. You can change it any time.</span></p>
 
@@ -5168,7 +5169,8 @@ const {
   document.getElementById(
     'accountDisplayName'
   ).textContent =
-    displayName || 'アカウント';
+    displayName || 'マイアカウント';
+  document.getElementById('rrP0Prompt').hidden=!!displayName;
 
   let saveMessage =
   'アカウント情報を保存しました。';
@@ -5231,10 +5233,22 @@ const accountEmail =
   );
 
 
+const RR_P0_NOTICE='rr-auth-feedback-p0';
+function rrP0Queue(kind,user){if(user?.id)try{sessionStorage.setItem(RR_P0_NOTICE,JSON.stringify({kind,id:user.id}));}catch(e){}}
+function rrP0Render(user){
+ const name=String(user?.user_metadata?.display_name||'').trim(),notice=document.getElementById('rrP0Notice'),prompt=document.getElementById('rrP0Prompt');
+ let mark=null;try{mark=JSON.parse(sessionStorage.getItem(RR_P0_NOTICE)||'null');sessionStorage.removeItem(RR_P0_NOTICE);}catch(e){}
+ if(user?.id&&mark?.id===user.id&&['login','signup'].includes(mark.kind)){notice.textContent=mark.kind==='signup'?'登録が完了しました。ログイン中です。':(name?'ようこそ、'+name+'さん！ログイン中です。':'ようこそ！ログイン中です。');notice.hidden=false;}else notice.hidden=true;
+ let dismissed=false;try{dismissed=localStorage.getItem('rr-p0-dismiss:'+user.id)==='1';}catch(e){}
+ prompt.hidden=!!name||dismissed;
+}
+document.getElementById('rrP0Setup').addEventListener('click',openAccountPanel);
+document.getElementById('rrP0Dismiss').addEventListener('click',()=>{document.getElementById('rrP0Prompt').hidden=true;if(currentUser?.id)try{localStorage.setItem('rr-p0-dismiss:'+currentUser.id,'1');}catch(e){}});
 function setAuthMessage(
   text
 ) {
 
+  authMessage.dataset.status = /できません/.test(text) ? 'error' : /登録を受け付け/.test(text) ? 'success' : 'info';
   authMessage.textContent =
     text;
 
@@ -5326,8 +5340,7 @@ async function login() {
 
     currentUser =
       data.user;
-
-
+    rrP0Queue('login',data.user);
     location.reload();
 
   }
@@ -5470,10 +5483,7 @@ async function signup() {
           {
             email,
             password,
-            options:{
-              emailRedirectTo:
-                redirectTo
-            }
+            options:{emailRedirectTo:redirectTo,...(document.getElementById('signupNickname').value.trim()?{data:{display_name:document.getElementById('signupNickname').value.trim()}}:{})}
           }
         );
 
@@ -5496,8 +5506,7 @@ async function signup() {
 
       currentUser =
         data.user;
-
-
+      rrP0Queue('signup',data.user);
       location.reload();
 
       return;
@@ -5506,7 +5515,7 @@ async function signup() {
 
 
     setAuthMessage(
-      '登録メールを送信しました。メール内の確認リンクを開いてからログインしてください。'
+      '登録を受け付けました。確認メールが届いた場合は、リンクを開いて登録を完了してください。'
     );
 
   }
@@ -29164,7 +29173,8 @@ const savedDisplayName =
 document.getElementById(
   'accountDisplayName'
 ).textContent =
-  savedDisplayName || 'アカウント';
+  savedDisplayName || 'マイアカウント';
+rrP0Render(currentUser);
 
 accountDisplayNameInput.value =
   savedDisplayName;
@@ -29380,6 +29390,20 @@ let rrUiLanguage =
   })();
 
 const RR_ENGLISH_REPLACEMENTS = [
+ ['ニックネーム（任意）','Nickname (optional)'],
+ ['あとから変更できます','You can change this later'],
+ ['アプリ内の名前です。ランキング・写真の公開名とは別です。','App-only name, separate from ranking and photo public names.'],
+ ['この名前はアプリ内だけの表示名です。写真・ランキングの公開名とは別です。','App-only name, separate from public photo and ranking names.'],
+ ['表示名（アプリ内のみ）','Display name (in-app only)'],
+ ['登録を受け付けました。確認メールが届いた場合は、リンクを開いて登録を完了してください。','Registration received. If a confirmation email arrives, open its link.'],
+ ['登録が完了しました。ログイン中です。','Registration complete. You are signed in.'],
+ ['ようこそ！ログイン中です。','Welcome! You are signed in.'],
+ ['ログイン中です。','You are signed in.'],
+ ['● ログイン中','● Signed in'],
+ ['マイアカウント','My account'],
+ ['ニックネームは後から設定できます。','You can set a nickname later.'],
+ ['設定する','Set nickname'],
+ ['案内を閉じる','Dismiss notice'],
   ["Runner's Rings（ランナーズリングス）は、","Runner's Rings is an app that"],
   ["あなたが走った道や街を地図に積み重ねていく","maps the roads and places you have run into"],
   ["ランニング記録アプリです。","a growing visual record of your running journey."],
