@@ -92,8 +92,9 @@ function inspectDisabledWorkflow(source) {
     failures.push('active_dependency_not_allowed');
   if(!/^\s+ref:\s*\$\{\{ github\.sha \}\}\s*$/m.test(source)||
      !/^\s+persist-credentials:\s*false\s*$/m.test(source)||
-     !/^\s+fetch-depth:\s*1\s*$/m.test(source)||
-     !source.includes('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"'))
+     !/^\s+fetch-depth:\s*2(?:\s*#.*)?$/m.test(source)||
+     !source.includes('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"')||
+     !source.includes('node tests/rings-now-p2-g4-approval-child-cli.cjs'))
     failures.push('checkout_sha_binding_missing');
   if(!/^\s+runs-on:\s*ubuntu-latest\s*$/m.test(source)||
      !/^\s+timeout-minutes:\s*12(?:\s*#.*)?$/m.test(source)||
