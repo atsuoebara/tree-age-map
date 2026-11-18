@@ -26,7 +26,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         for name, value in [
             ("Content-Type", mime), ("Content-Length", str(len(data))),
-            ("Cache-Control", "no-store"), ("X-Content-Type-Options", "nosniff"),
+            ("Cache-Control", "max-age=0"), ("X-Content-Type-Options", "nosniff"),
             ("X-Robots-Tag", "noindex,nofollow,noarchive"), ("Referrer-Policy", "no-referrer"),
             ("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; base-uri 'none'")
         ]:
