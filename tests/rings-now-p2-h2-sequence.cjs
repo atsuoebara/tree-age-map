@@ -15,7 +15,7 @@ function validateH1(h1,nowSeconds){
  const seedSql=buildH2IsolatedSeedSql({ownerA:idA,ownerB:idB});
  return {ownerA,ownerB,idA,idB,seedSql};
 }
-async function collectH2OverTransport({h1,nowSeconds,seedDisposableSql,provideExpiredToken,provideDeniedToken,transport}={}){
+async function collectH2OverTransport({h1,nowSeconds,readNowSeconds,seedDisposableSql,provideExpiredToken,provideDeniedToken,transport}={}){
  for(const fn of [seedDisposableSql,provideExpiredToken,provideDeniedToken,transport])
   assert.equal(typeof fn,'function','missing H2 prerequisite callback');
  const h=validateH1(h1,nowSeconds);
@@ -38,8 +38,22 @@ async function collectH2OverTransport({h1,nowSeconds,seedDisposableSql,provideEx
   'dedicated no-grant JWT must remain valid');
  const options={ownerA:h.ownerA,ownerB:h.ownerB,expired,denied,nowSeconds};
  const observations=[];
+ let lastNow=nowSeconds;
  for(const caseId of CASES){
-  const request=buildH2Request({caseId,...options});
+  // Real runner supplies a fresh wall-clock value before every request.
+  // Older offline contracts may omit the callback; they retain fixed-time
+  // semantics and cannot be promoted to genuine expiry evidence.
+  const current=readNowSeconds===undefined?nowSeconds:readNowSeconds();
+  assert.ok(Number.isSafeInteger(current)&&current>=lastNow,
+   'H2 clock regressed or became invalid');
+  lastNow=current;
+  if(readNowSeconds!==undefined){
+   const ac=claimsOf(h.ownerA),bc=claimsOf(h.ownerB),dc=claimsOf(denied);
+   assert.ok(ac.exp>current&&bc.exp>current&&dc.exp>current,
+    'owner or negative-role token expired during H2');
+   assert.ok(ec.exp<current,'original token is not expired');
+  }
+  const request=buildH2Request({caseId,...options,nowSeconds:current});
   const response=await transport({caseId,request});
   const subject=caseId==='h2_owner_b'?h.idB:h.idA;
   observations.push(checkH2Response(caseId,response,{subject,expectedRows:1}));
