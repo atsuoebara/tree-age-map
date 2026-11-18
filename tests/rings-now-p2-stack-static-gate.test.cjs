@@ -47,7 +47,11 @@ test('workflow remains manual and hard stopped', () => {
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     'persist-credentials: false','persist-credentials: true')).failures.includes('checkout_sha_binding_missing'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
-    'timeout-minutes: 10','timeout-minutes: 60')).failures.includes('runner_budget_not_bounded'));
+    'timeout-minutes: 12','timeout-minutes: 60')).failures.includes('runner_budget_not_bounded'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'timeout-minutes: 12','timeout-minutes: 10')).failures.includes('runner_budget_not_bounded'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'timeout-minutes: 12','timeout-minutes: 13')).failures.includes('runner_budget_not_bounded'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
     'node tests/rings-now-p2-cli.cjs --isolated-once',
     'echo bypass')).failures.includes('cli_or_preflight_missing'));
