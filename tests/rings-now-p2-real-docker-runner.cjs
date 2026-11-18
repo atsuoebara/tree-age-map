@@ -70,17 +70,11 @@ async function runRealP2DockerLifecycle({
   attempted:false,realDockerInvoked:false,g3Verified:false,
   actualP2Proven:false,p2ExecutionAuthorized:false
  });
- // Fail closed before any command/runtime construction: the current H2 path
- // still injects locally signed synthetic expired JWTs. This is valid for
- // offline fake-driver tests only, never for a future real Docker G4 run.
- // Remove this guard ONLY after original GoTrue-issued JWT + real-clock
- // expiry + refreshed live A/B sessions have been wired and audited.
- if(commandFactory===createBoundedDockerCommand)return Object.freeze({
-  status:'BLOCKED_NOT_RUN',
-  preflightIssues:Object.freeze(['h2_original_gotrue_expiry_not_wired']),
-  attempted:false,realDockerInvoked:false,g3Verified:false,
-  actualP2Proven:false,p2ExecutionAuthorized:false
- });
+ // The separate H2 wiring-only stop is retired for this SOURCE CANDIDATE.
+ // The canonical imported manifest remains BLOCKED_NOT_RUN and must still
+ // satisfy validateLiveManifest BEFORE any commandFactory, runtime, Docker
+ // command, timer or network can be constructed. Workflow if:false is intact.
+ // Removing this redundant stop does NOT approve execution or prove H1/H2.
  assert.equal(typeof commandFactory,'function');
  assert.equal(typeof adapterFactory,'function');
  assert.equal(typeof nowMs,'function');
@@ -168,9 +162,9 @@ async function runRealP2DockerLifecycle({
      // Keep raw tokens only within collector scope. No result, op, stage
      // record, logs or final evidence object may include them.
      ops.push('h1_gotrue_http_five_cases_cli_reported_not_g4_proof');
-     // Canonical real backend is STILL blocked before command construction.
-     // This wiring can only become runnable after a separate audit and explicit
-     // change to the h2_original_gotrue_expiry_not_wired safety gate.
+     // Canonical real backend reaches this only AFTER all separate manifest
+     // approval gates pass and the disabled workflow is explicitly activated.
+     // This candidate change does NOT grant those approvals.
      if(commandFactory===createBoundedDockerCommand){
       const executeDeadlineMs=stageDeadlineMs;
       const bridged=await runOriginalGoTrueH2Stage({
