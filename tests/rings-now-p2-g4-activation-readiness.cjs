@@ -26,7 +26,7 @@ function inspectG4ActivationCandidate({
  if(typeof workflow==='string'&&!/^  workflow_dispatch:\s*$/m.test(workflow))
   fail('workflow_not_manual_only');
  const timeout=typeof workflow==='string'?
-  workflow.match(/^    timeout-minutes:\s*(\d+)\s*$/m):null;
+  workflow.match(/^    timeout-minutes:[ \t]*(\d+)(?:[ \t]*#.*)?[ \t]*$/m):null;
  const jobMs=timeout?Number(timeout[1])*60000:NaN;
  if(!integerMs(jobMs)||jobMs<=RUNNER_MAX_MS)
   fail('job_limit_does_not_allow_checkout_or_setup_overhead');
