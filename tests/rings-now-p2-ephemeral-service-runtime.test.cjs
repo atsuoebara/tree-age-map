@@ -34,6 +34,11 @@ test('files contain three isolated service configs, shared JWT and random DB sec
    assert.match(identity.password,/^[a-f0-9]{64}$/);
   }
   assert.notEqual(runtime.h1Users.a.email,runtime.h1Users.b.email);
+  const runtimeJson=JSON.stringify(runtime);
+  for(const u of Object.values(runtime.h1Users)){
+   assert.ok(!runtimeJson.includes(u.email));
+   assert.ok(!runtimeJson.includes(u.password));
+  }
   assert.equal(pg.PGDATA,'/var/lib/postgresql/data/pgdata');
  }finally{
   runtime.dispose();runtime.dispose();
