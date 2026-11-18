@@ -11,7 +11,9 @@ function createRealExpiryClock({executeDeadlineMs}={}){
  assert.ok(validFiniteMs(executeDeadlineMs),'explicit monotonic execution deadline required');
  const start=performance.now();
  assert.ok(executeDeadlineMs>start,'execution deadline already passed');
- const readMonotonicMs=()=>performance.now();
+ // The downstream monotonic coordinator requires safe integer milliseconds.
+ // Floor, rather than round, so elapsed time can never be overstated.
+ const readMonotonicMs=()=>Math.floor(performance.now());
  const readWallSeconds=()=>Math.floor(Date.now()/1000);
  async function sleepMs(ms){
   assert.ok(Number.isSafeInteger(ms)&&ms>0&&ms<=CHUNK_MS,'bounded sleep only');
