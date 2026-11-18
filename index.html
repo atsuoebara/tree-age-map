@@ -4134,7 +4134,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </button>
 
     <button id="cloudRunsButton">
-      🏃 ランニング記録 0
+      🏃 ランニング記録 読み込み中…
     </button>
     <button id="runCalendarQuickButton" type="button" style="min-height:44px;padding:10px 14px;background:#194638;color:#e5ffed;border:2px solid #77e5a8;border-radius:12px;font-weight:800;cursor:pointer"><span data-art-lang="ja">📅 カレンダーで探す</span><span data-art-lang="en">📅 Find by calendar</span></button>
     <a href="./my-today.html" id="myTodayShareLink" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;border:2px solid #78eaff;border-radius:12px;background:#122e42;color:#aaf2ff;text-decoration:none;font-size:14px;font-weight:900">
@@ -4552,7 +4552,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.18.03'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.01'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -28854,24 +28854,32 @@ if (
     await claimLegacyLocalGPX();
 
 
-    // 起動時はまず日本の行政境界と世界の国境だけを読む。
-    // ADM1 / ADM2は、実際にユーザーが走った国だけ後から読む。
-    await Promise.all(
-      [
-        loadMunicipalities(),
-        loadWorldCountries()
-      ]
-    );
+    // The account-owned cache is safe to show before slow map-boundary data.
+    // A pending cloud read must never be presented as a verified zero runs.
+    let preloadedCloudRows = [];
+    let cachedCloudRows = [];
+    let cloudStartupLoadFailed = false;
+    if (cloudEnabled()) {
+      cachedCloudRows = await loadCloudRowsCache();
+      if (cachedCloudRows.length) {
+        document.getElementById('cloudRunsButton').textContent =
+          '🏃 ランニング記録 ' + cachedCloudRows.length + '（前回）';
+      }
+    }
 
-    let preloadedCloudRows =
-      [];
-
-    let cachedCloudRows =
-      [];
+    // Geography is optional for run-history availability. A failed GeoJSON
+    // request must not abort the entire startup before cloud runs are loaded.
+    let municipalityLoadFailed = false;
+    await Promise.all([
+      loadMunicipalities().catch(error => {
+        municipalityLoadFailed = true;
+        console.warn('Municipality boundaries unavailable; continuing run load:', error);
+        return false;
+      }),
+      loadWorldCountries()
+    ]);
 
     if (cloudEnabled()) {
-      cachedCloudRows =
-        await loadCloudRowsCache();
 
       if (
         cachedCloudRows.length
@@ -28907,6 +28915,7 @@ if (
 
           preloadedCloudRows =
             [];
+          cloudStartupLoadFailed = true;
 
           setStatus(
             '⚠️ 最新データを取得できません'
@@ -28988,6 +28997,16 @@ if (
 
     await updateStorageInfo();
 
+    // A failed first fetch does not prove the owner has no runs.
+    if (cloudStartupLoadFailed && !cachedCloudRows.length) {
+      document.getElementById('cloudRunsButton').textContent =
+        '🏃 ランニング記録 取得失敗';
+      document.getElementById('syncInfo').textContent =
+        '⚠️ クラウドのランを確認できませんでした';
+    }
+    if (municipalityLoadFailed) {
+      setStatus('⚠️ 行政境界を読み込めませんでした。ランの読み込みは続行しました');
+    }
 
     await renderSavedRuns();
 
