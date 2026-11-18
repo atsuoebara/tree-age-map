@@ -62,12 +62,12 @@ test('workflow remains manual and hard stopped', () => {
     '          set +e\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.'
   );
   assert.ok(inspectDisabledWorkflow(cliOnlyMutation).failures.includes('cli_or_preflight_missing'));
-  assert.ok(inspectDisabledWorkflow(workflow + '\\n# upload-artifact@v4').failures.includes('unsafe_workflow_escape'));
+  assert.ok(inspectDisabledWorkflow(workflow + '\n# upload-artifact@v4').failures.includes('unsafe_workflow_escape'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
-    '    steps:', '    steps:\\n      - name: bypass\\n        uses: actions/upload-artifact@v4'))
+    '    steps:', '    steps:\n      - name: bypass\n        uses: actions/upload-artifact@v4'))
       .failures.includes('active_dependency_not_allowed'));
   assert.ok(inspectDisabledWorkflow(workflow.replace(
-    '    steps:', '    continue-on-error: true\\n    steps:')).failures.includes('unsafe_workflow_escape'));
+    '    steps:', '    continue-on-error: true\n    steps:')).failures.includes('unsafe_workflow_escape'));
 });
 test('valid-looking pins cannot override other missing approvals', () => {
   const sha='a'.repeat(64);
