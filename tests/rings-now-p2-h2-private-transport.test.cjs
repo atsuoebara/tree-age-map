@@ -104,3 +104,43 @@ test('private directory, unknown H2 case and non-0600 symlink cannot pass',async
   assert.equal(d.calls.length,0);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('H2 seed adapter copies only exact generated SQL to owned disposable postgres',async()=>{
+ const {buildH2IsolatedSeedSql}=require('./rings-now-p2-h2-isolated-seed-sql.cjs');
+ const a='12345678-1234-4234-8234-123456789abc';
+ const b='87654321-4321-4321-8321-abcdef123456';
+ const dir=temp(),d=fake();
+ const sql=buildH2IsolatedSeedSql({ownerA:a,ownerB:b});
+ try{
+  const report=await d.adapter.seedH2DisposableOwners({
+   runId:RUN,ownerA:a,ownerB:b,sql,ephemeralDir:dir
+  });
+  assert.equal(report.status,'ISOLATED_TWO_OWNERS_CLI_REPORTED');
+  assert.deepEqual(d.calls.map(x=>x[1]),['inspect','cp','inspect','exec']);
+  assert.ok(!JSON.stringify(d.calls).includes(sql));
+  assert.equal(fs.existsSync(path.join(dir,'h2-isolated-seed.sql')),false);
+  const count=d.calls.length;
+  await assert.rejects(()=>d.adapter.seedH2DisposableOwners({
+   runId:RUN,ownerA:a,ownerB:b,sql:sql+'SELECT 1;',ephemeralDir:dir
+  }));
+  assert.equal(d.calls.length,count);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('H2 SQL seed adapter fails closed on foreign owner and removes private file on psql failure',async()=>{
+ const {buildH2IsolatedSeedSql}=require('./rings-now-p2-h2-isolated-seed-sql.cjs');
+ const a='12345678-1234-4234-8234-123456789abc';
+ const b='87654321-4321-4321-8321-abcdef123456';
+ const dir=temp(),sql=buildH2IsolatedSeedSql({ownerA:a,ownerB:b});
+ try{
+  const foreign=fake({foreign:true});
+  await assert.rejects(()=>foreign.adapter.seedH2DisposableOwners({
+   runId:RUN,ownerA:a,ownerB:b,sql,ephemeralDir:dir
+  }));
+  assert.deepEqual(foreign.calls.map(x=>x[1]),['inspect']);
+  const broken=fake({failExec:true});
+  await assert.rejects(()=>broken.adapter.seedH2DisposableOwners({
+   runId:RUN,ownerA:a,ownerB:b,sql,ephemeralDir:dir
+  }));
+  assert.equal(fs.existsSync(path.join(dir,'h2-isolated-seed.sql')),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

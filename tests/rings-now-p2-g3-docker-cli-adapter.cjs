@@ -205,6 +205,31 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/http-probe.bash']);
    return parseInternalHttpResponse(wire);
   },
+  async seedH2DisposableOwners({runId,ownerA,ownerB,sql,ephemeralDir}={}){
+   // This adapter is dormant behind the canonical runner authorization gate.
+   // SQL is recomputed exactly from two restricted UUIDs, not trusted verbatim.
+   safeRun(runId);
+   assert.match(ephemeralDir||'',/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}$/);
+   const dstat=fs.lstatSync(ephemeralDir);
+   assert.ok(dstat.isDirectory()&&(dstat.mode&0o777)===0o700);
+   const {buildH2IsolatedSeedSql}=require('./rings-now-p2-h2-isolated-seed-sql.cjs');
+   assert.equal(sql,buildH2IsolatedSeedSql({ownerA,ownerB}),
+    'only generated A/B candidate SQL is allowed');
+   const name=runId+'_postgres';
+   await inspect('container',name,runId);
+   const filename=path.join(ephemeralDir,'h2-isolated-seed.sql');
+   const fd=fs.openSync(filename,'wx',0o600);
+   try{
+    try{fs.writeFileSync(fd,sql,{encoding:'utf8'});}
+    finally{fs.closeSync(fd);}
+    assert.equal(fs.lstatSync(filename).mode&0o777,0o600);
+    await invoke(['container','cp',filename,name+':/tmp/rn-p2/h2-isolated-seed.sql']);
+    await inspect('container',name,runId);
+    await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
+     '-v','ON_ERROR_STOP=1','-f','/tmp/rn-p2/h2-isolated-seed.sql']);
+    return Object.freeze({status:'ISOLATED_TWO_OWNERS_CLI_REPORTED'});
+   }finally{fs.rmSync(filename,{force:true});}
+  },
   async probeInternalH2({runId,caseId,request,ephemeralDir}={}){
    // Staging-only H2 wire adapter: invoked only by an explicitly gated
    // runner in a FUTURE PR. Reuse SHA-pinned PostgREST internal probe.

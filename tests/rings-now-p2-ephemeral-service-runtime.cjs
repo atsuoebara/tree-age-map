@@ -104,6 +104,25 @@ function createEphemeralP2Runtime(){
    });
    return input+'.'+createHmac('sha256',jwt).update(input).digest('base64url');
   },
+  // Synthetic H2-only tokens: signed using the isolated random per-run
+  // secret, NOT actually issued by GoTrue. Do not use as G4 proof of a
+  // GoTrue-issued token becoming expired over elapsed real time.
+  issueH2SignedTestToken({subject,role,nowSeconds,expired=false}={}){
+   assert.equal(disposed,false);
+   assert.match(subject||'',/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+   assert.ok(['authenticated','p2_h2_no_rpc'].includes(role),'approved isolated JWT roles only');
+   assert.equal(typeof expired,'boolean');
+   assert.ok(Number.isSafeInteger(nowSeconds)&&nowSeconds>120);
+   assert.equal(expired,role==='authenticated','only an authenticated expired token or valid denied role');
+   const claims={
+    sub:subject,role,aud:'authenticated',
+    iat:expired?nowSeconds-120:nowSeconds-1,
+    exp:expired?nowSeconds-60:nowSeconds+3600
+   };
+   const encode=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+   const input=encode({alg:'HS256',typ:'JWT'})+'.'+encode(claims);
+   return input+'.'+createHmac('sha256',jwt).update(input).digest('base64url');
+  },
   prepareHttpProbe({nowSeconds=Math.floor(Date.now()/1000)}={}){
    assert.equal(disposed,false);
    assert.equal(requestCreated,false,'a probe request must be prepared once');
