@@ -38,8 +38,36 @@ test('workflow remains manual and hard stopped', () => {
   assert.ok(inspectDisabledWorkflow(missingJobs).failures.includes('unexpected_job_topology'));
   const extraTopLevel = workflow.replace('jobs:', 'permissions:');
   assert.ok(inspectDisabledWorkflow(extraTopLevel).failures.includes('unexpected_job_topology'));
-  const changedStep = workflow.replace('run: exit 1', 'uses: actions/checkout@v4');
+  const changedStep = workflow.replace(
+    'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
+    'actions/checkout@v4');
   assert.ok(inspectDisabledWorkflow(changedStep).failures.includes('active_dependency_not_allowed'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'ref: ${{ github.sha }}','ref: main')).failures.includes('checkout_sha_binding_missing'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'persist-credentials: false','persist-credentials: true')).failures.includes('checkout_sha_binding_missing'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'timeout-minutes: 10','timeout-minutes: 60')).failures.includes('runner_budget_not_bounded'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    'node tests/rings-now-p2-cli.cjs --isolated-once',
+    'echo bypass')).failures.includes('cli_or_preflight_missing'));
+  // Both strict-mode occurrences must be changed in the mutation test,
+  // otherwise an earlier step can hide a broken CLI step.
+  assert.ok(inspectDisabledWorkflow(workflow.replaceAll(
+    'set -euo pipefail','set +e')).failures.includes('cli_or_preflight_missing'));
+  // Even changing only the CLI step must be detected; retaining strict mode
+  // in preflight must not create a false PASS.
+  const cliOnlyMutation=workflow.replace(
+    '          set -euo pipefail\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.',
+    '          set +e\n          # CLI emits only non-secret structured summary and ALWAYS exits 1 or 2.'
+  );
+  assert.ok(inspectDisabledWorkflow(cliOnlyMutation).failures.includes('cli_or_preflight_missing'));
+  assert.ok(inspectDisabledWorkflow(workflow + '\n# upload-artifact@v4').failures.includes('unsafe_workflow_escape'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    '    steps:', '    steps:\n      - name: bypass\n        uses: actions/upload-artifact@v4'))
+      .failures.includes('active_dependency_not_allowed'));
+  assert.ok(inspectDisabledWorkflow(workflow.replace(
+    '    steps:', '    continue-on-error: true\n    steps:')).failures.includes('unsafe_workflow_escape'));
 });
 test('valid-looking pins cannot override other missing approvals', () => {
   const sha='a'.repeat(64);

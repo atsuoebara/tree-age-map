@@ -83,8 +83,35 @@ function inspectDisabledWorkflow(source) {
     failures.push('unexpected_job_topology');
   if (!/^  isolated-p2:\s*\n    if:\s*\$\{\{ false \}\}/m.test(source))
     failures.push('hard_stop_missing');
-  if (/^\s*(?:uses|services|container):/m.test(source))
+  // The only dormant dependency allowed is this exact immutable checkout action.
+  // Forbid all other actions, services, containers and dynamic ref selectors.
+  const uses=[...source.matchAll(/^\s+uses:\s*([^\s#]+).*$/gm)].map(m=>m[1]);
+  if(uses.length!==1||
+     uses[0]!=='actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683'||
+     /^\s*(?:services|container):/m.test(source))
     failures.push('active_dependency_not_allowed');
+  if(!/^\s+ref:\s*\$\{\{ github\.sha \}\}\s*$/m.test(source)||
+     !/^\s+persist-credentials:\s*false\s*$/m.test(source)||
+     !/^\s+fetch-depth:\s*1\s*$/m.test(source)||
+     !source.includes('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"'))
+    failures.push('checkout_sha_binding_missing');
+  if(!/^\s+runs-on:\s*ubuntu-latest\s*$/m.test(source)||
+     !/^\s+timeout-minutes:\s*10\s*$/m.test(source)||
+     !/^concurrency:\s*\n  group:\s*rings-now-p2-isolated-manual\s*\n  cancel-in-progress:\s*false\s*$/m.test(source))
+    failures.push('runner_budget_not_bounded');
+  // The fail-fast shell option must belong to the ACTUAL CLI step,
+  // not merely to an earlier validation step. Preserve the exact step name
+  // and require strict mode immediately after the CLI step's run block.
+  const cliMarker='      - name: Run one isolated probe; keep non-proven outcome red (dormant)';
+  const cliSections=source.split(cliMarker);
+  const cliStep=cliSections.length===2 ? cliSections[1] : '';
+  if(cliSections.length!==2||
+     !/^\s*shell: bash\s*\n\s*run: \|\s*\n\s*set -euo pipefail\s*\n/.test(cliStep)||
+     !cliStep.includes('node tests/rings-now-p2-cli.cjs --isolated-once')||
+     !source.includes('g.inspectP2Preflight(m,process.env)'))
+    failures.push('cli_or_preflight_missing');
+  if(/(?:upload-artifact|cache@|larger-runner|self-hosted|continue-on-error|\|\|\s*true|\$\{\{\s*secrets\.)/i.test(source))
+    failures.push('unsafe_workflow_escape');
   if (/\$\{\{\s*secrets\./i.test(source))
     failures.push('secret_reference');
   if (!/^permissions:\s*\n  contents:\s*read\s*$/m.test(source))
