@@ -231,63 +231,7 @@ function createDockerCliAdapter({command}={}){
    assert.ok(json&&typeof json==='object'&&!Array.isArray(json));
    assert.deepEqual(Object.keys(json).sort(),['email','password']);
    const who=caseId.endsWith('_b')?'b':'a';
-   assert.match(json.email||'',new RegExp('^rn-p2-[a-f0-9]{24}-'+who+'@example\\.invalid
-   safeRun(runId);
-   const name=runId+'_postgres';
-   const probe=path.resolve(__dirname,'fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
-   const bytes=fs.readFileSync(probe);
-   const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
-   assert.equal(sha,'b0f323d8c5b17a50f23b41e199f456bbc8caa8aa',
-    'RLS probe fixture bytes changed');
-   await inspect('container',name,runId);
-   await invoke(['container','cp',probe,
-    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
-   await inspect('container',name,runId);
-   // ON_ERROR_STOP makes ANY SQL assertion failure a nonzero CLI result.
-   // DO NOT interpret success as actual signed JWT or HTTP evidence.
-   await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
-    '-v','ON_ERROR_STOP=1','-f',
-    '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
-   return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
-  },
-  async initializeGoTrue(runId){
-   safeRun(runId);
-   const name=runId+'_gotrue';
-   await inspect('container',name,runId);
-   await invoke(['container','exec',name,'gotrue','migrate']);
-   return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';
-  },
-  async startContainer(name){
-   safeId(name);
-   // Never start based on user-provided name alone; enforce run-owner label.
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','start',name]);
-  },
-  async stopContainer(name){
-   safeId(name);
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','stop','--time','1',name]);
-  },
-  async removeContainer(name){
-   safeId(name);
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','rm','--force',name]);
-  },
-  async removeNetwork(name){
-   safeRun(name);
-   await inspect('network',name,name);
-   await invoke(['network','rm',name]);
-  }
- });
-}
-module.exports={createDockerCliAdapter,LABEL,TIMEOUT_MS};
-));
+    assert.match(json.email||'',new RegExp('^rn-p2-[a-f0-9]{24}-'+who+'@example\\.invalid$'));
    assert.match(json.password||'',/^[a-f0-9]{64}$/);
    if(caseId==='h1_bad_password')assert.equal(json.password,'0'.repeat(64));
    const script=path.resolve(__dirname,'fixtures/rings-now-p2-internal-gotrue-h1.bash');
