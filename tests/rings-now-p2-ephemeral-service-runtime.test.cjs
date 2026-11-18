@@ -28,12 +28,12 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.equal(auth.GOTRUE_MAILER_AUTOCONFIRM,'true');
   assert.equal(auth.GOTRUE_EXTERNAL_PHONE_ENABLED,'false');
   assert.equal(auth.GOTRUE_DISABLE_SIGNUP,'false');
-  assert.equal(r.h1EphemeralDir,require('node:path').dirname(ps.gotrue));
-  for(const [who,identity] of Object.entries(r.h1Users)){
+  assert.equal(runtime.h1EphemeralDir,require('node:path').dirname(ps.gotrue));
+  for(const [who,identity] of Object.entries(runtime.h1Users)){
    assert.match(identity.email,new RegExp('^rn-p2-[a-f0-9]{24}-'+who+'@example\\.invalid$'));
    assert.match(identity.password,/^[a-f0-9]{64}$/);
   }
-  assert.notEqual(r.h1Users.a.email,r.h1Users.b.email);
+  assert.notEqual(runtime.h1Users.a.email,runtime.h1Users.b.email);
   assert.equal(pg.PGDATA,'/var/lib/postgresql/data/pgdata');
  }finally{
   runtime.dispose();runtime.dispose();
