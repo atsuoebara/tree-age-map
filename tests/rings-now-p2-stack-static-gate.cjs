@@ -96,7 +96,7 @@ function inspectDisabledWorkflow(source) {
      !source.includes('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"'))
     failures.push('checkout_sha_binding_missing');
   if(!/^\s+runs-on:\s*ubuntu-latest\s*$/m.test(source)||
-     !/^\s+timeout-minutes:\s*10\s*$/m.test(source)||
+     !/^\s+timeout-minutes:\s*12(?:\s*#.*)?$/m.test(source)||
      !/^concurrency:\s*\n  group:\s*rings-now-p2-isolated-manual\s*\n  cancel-in-progress:\s*false\s*$/m.test(source))
     failures.push('runner_budget_not_bounded');
   // The fail-fast shell option must belong to the ACTUAL CLI step,

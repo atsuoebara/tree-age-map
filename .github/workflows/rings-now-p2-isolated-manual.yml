@@ -13,7 +13,7 @@ jobs:
   isolated-p2:
     if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12 # dormant upper bound; billing and actual runtime NOT VERIFIED
     steps:
       - name: Checkout exact dispatch SHA (dormant)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pinned v4.2.2
