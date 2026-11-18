@@ -25,9 +25,17 @@ async function collectH2OverTransport({h1,nowSeconds,seedDisposableSql,provideEx
  // Tokens are provided by audited future mechanisms; never forge expiry.
  const expired=await provideExpiredToken({ownerA:h.idA});
  const denied=await provideDeniedToken({ownerA:h.idA,role:'p2_h2_no_rpc'});
- assert.equal(claimsOf(expired).sub,h.idA);
+ // Validate ALL prerequisite token claims BEFORE the first H2 transport.
+ // These checks are shape/time gates, not proof of signature or issuance.
+ const ec=claimsOf(expired);
+ assert.equal(ec.sub,h.idA);
+ assert.equal(ec.role,'authenticated');
+ assert.ok(Number.isSafeInteger(ec.exp)&&ec.exp<nowSeconds,
+  'provided expired JWT must already be past expiry');
  const dc=claimsOf(denied);
  assert.equal(dc.sub,h.idA);assert.equal(dc.role,'p2_h2_no_rpc');
+ assert.ok(Number.isSafeInteger(dc.exp)&&dc.exp>nowSeconds,
+  'dedicated no-grant JWT must remain valid');
  const options={ownerA:h.ownerA,ownerB:h.ownerB,expired,denied,nowSeconds};
  const observations=[];
  for(const caseId of CASES){
