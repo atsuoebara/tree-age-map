@@ -17,8 +17,13 @@ test('real checked-in manifest remains BLOCKED', () => {
   assert.ok(result.failures.includes('billing_not_verified'));
   assert.ok(result.failures.includes('manifest_not_in_phase'));
   assert.ok(result.failures.includes('execution_approval_missing'));
-  for (const key of ['postgres','gotrue','postgrest'])
-    assert.ok(result.failures.includes('image_unpinned_' + key));
+  for (const key of ['postgres','gotrue','postgrest']){
+    assert.ok(!result.failures.includes('image_unpinned_' + key));
+    assert.ok(manifest.images[key].reference.endsWith('@'+manifest.images[key].digest));
+  }
+  assert.equal(manifest.status,'BLOCKED_NOT_RUN');
+  assert.equal(manifest.explicitExecutionApproval,false);
+  assert.equal(manifest.checkoutCommit,null);
 });
 test('workflow remains manual and hard stopped', () => {
   assert.deepEqual(inspectDisabledWorkflow(workflow), {pass:true,failures:[]});
