@@ -1,0 +1,20 @@
+name: Ranking monthly places live anonymous HTTP (#206)
+on:
+  pull_request:
+    paths:
+      - 'scripts/test-ranking-month-places-live-anon-206.cjs'
+      - '.github/workflows/ranking-month-places-live-anon-206.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  anon-http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe approved DISTANCE and EXPLORE RPCs (read-only, public key only)
+        run: node scripts/test-ranking-month-places-live-anon-206.cjs
