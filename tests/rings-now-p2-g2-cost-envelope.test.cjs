@@ -6,7 +6,7 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 function sample() {return {
  purpose:'DOCUMENTARY_PREFLIGHT_ONLY',executionApproval:false,
  repository:'atsuoebara/tree-age-map',checkoutCommit:'a'.repeat(40),
- runner:{kind:'github-hosted-standard',os:'ubuntu-latest',largerRunner:false,jobs:1,concurrency:1,maxJobMinutes:10,retries:0},
+ runner:{kind:'github-hosted-standard',os:'ubuntu-latest',largerRunner:false,jobs:1,concurrency:1,maxJobMinutes:12,retries:0},
  costControls:{artifactUpload:false,cacheWrites:false,externalPaidServices:false,additionalRunnerTypesAllowed:false},
  billing:{source:'GITHUB_BILLING_ACCOUNT_UI',accountScope:'REPOSITORY_OWNER',
   currentActionsChargeUsd:0,actionsBudgetUsd:0,usageBlockedObserved:true,
@@ -30,8 +30,12 @@ test('wrong repository or unchecked HEAD is blocked',()=>{
  const y=sample();y.checkoutCommit=null;assert.equal(check(y).status,'BLOCKED');
 });
 test('larger runner, parallel jobs, extended time or retries blocked',()=>{
- const changes=[{largerRunner:true},{kind:'self-hosted'},{jobs:2},{maxJobMinutes:11},{concurrency:2},{retries:1}];
+ const changes=[{largerRunner:true},{kind:'self-hosted'},{jobs:2},{maxJobMinutes:13},{concurrency:2},{retries:1}];
  for(const patch of changes) {const x=sample();Object.assign(x.runner,patch);assert.equal(check(x).status,'BLOCKED');}
+});
+test('ten minute job envelope is no longer in agreement with dormant workflow',()=>{
+ const x=sample();x.runner.maxJobMinutes=10;
+ assert.equal(check(x).status,'BLOCKED');
 });
 test('artifacts, caches, other paid services cannot silently activate',()=>{
  for(const key of ['artifactUpload','cacheWrites','externalPaidServices','additionalRunnerTypesAllowed']){
