@@ -3161,6 +3161,56 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 .authJournalAction.secondary{border-color:#718096;background:#17283d;color:#fff}
 @media(max-width:620px){#authJournalFeature{padding:15px}.authJournalGrid{grid-template-columns:1fr}.authJournalCard{min-height:0}.authJournalCardFeatured{grid-column:auto;padding:16px}.authJournalCardFeatured .authJournalTitle{font-size:17px}.authJournalTitle{font-size:15px}}
 .runnerBadge{display:inline-flex;align-items:center;margin:3px 4px 3px 0;padding:3px 7px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#172337;color:#dce7f4;font-size:10px;font-weight:800}
+
+/* UX phase 1: visible open/closed boundaries, presentation only. */
+#appRoot details > summary {
+  position:relative;
+  list-style:none;
+  padding-right:34px;
+  border-radius:9px;
+  transition:background-color .15s ease,border-color .15s ease;
+}
+#appRoot details > summary::-webkit-details-marker { display:none; }
+#appRoot details > summary::marker { content:""; }
+#appRoot details > summary::after {
+  content:"▸";
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#b7c9df;
+  font-size:17px;
+  line-height:1;
+}
+#appRoot details[open] {
+  border-radius:12px;
+  box-shadow:inset 0 0 0 1px rgba(110,211,237,.48);
+}
+#appRoot details[open] > summary {
+  background:rgba(84,192,225,.18);
+  border-top:1px solid rgba(110,211,237,.62);
+  border-bottom:2px solid rgba(110,211,237,.8);
+  border-radius:9px 9px 0 0;
+}
+#appRoot details[open] > summary::after { content:"▾"; color:#91e8ff; }
+#appRoot details > summary:focus-visible {
+  outline:3px solid #eaff00;
+  outline-offset:2px;
+}
+/* Timelapse uses a JS panel, not a native details disclosure. */
+#timelapsePanel.isOpen {
+  border:1px solid rgba(110,211,237,.75);
+  border-top:2px solid #6ed3ed;
+  border-bottom:2px solid #6ed3ed;
+  box-shadow:inset 0 0 0 1px rgba(110,211,237,.18);
+}
+#timelapseLaunchArea:has(+ #timelapsePanel.isOpen) #timelapseOpenButton {
+  background:rgba(84,192,225,.2);
+  border-top:1px solid rgba(110,211,237,.75);
+  border-bottom:2px solid #6ed3ed;
+}
+#timelapseOpenButton::after { content:" ▸"; }
+#timelapseLaunchArea:has(+ #timelapsePanel.isOpen) #timelapseOpenButton::after { content:" ▾"; }
 </style>
 </head>
 
@@ -3820,7 +3870,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </details>
 
 
-<details id="rainbowLegend" open>
+<details id="rainbowLegend">
     <summary>🌈 Rainbowの見方（走行回数と色）</summary>
     <p class="rainbowLegendIntro">同じ道を走る回数が10回増えるごとに、虹の色が1本ずつ増えます。</p>
     <div class="rainbowLegendItems">
@@ -3981,7 +4031,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </button>
 
 </details>
-<details id="dataSetupGuide" class="setupGuide" open>
+<details id="dataSetupGuide" class="setupGuide">
   <summary>初期設定：データ連携・取り込み方法</summary>
   <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
   <div class="setupGuideOptions">
@@ -4497,7 +4547,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.18.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.18.02'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -29176,10 +29226,8 @@ async function init() {
         'RunnerRingsSetupGuideSeen:' +
         currentUser.id;
 
-      dataSetupGuide.open =
-        localStorage.getItem(
-          setupGuideSeenKey
-        ) !== '1';
+      // Keep this guide closed by default; the content remains available.
+      dataSetupGuide.open = false;
 
       dataSetupGuide.addEventListener(
         'toggle',
