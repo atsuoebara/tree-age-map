@@ -43,8 +43,10 @@ function validate({driver,runId,candidate,liveManifest}) {
   assert.ok(a&&b);
   assert.match(a.digest||'',DIGEST);
   assert.equal(a.reference,REPOS[service]+'@'+a.digest);
-  assert.equal(b.reference,null);
-  assert.equal(b.digest,null);
+  // Do not require the live manifest to stay unpinned forever. The blocked
+  // complete audited pin set is allowed, but never gives execution approval.
+  assert.equal(b.reference,a.reference);
+  assert.equal(b.digest,a.digest);
  }
 }
 function validResources(items,runId) {

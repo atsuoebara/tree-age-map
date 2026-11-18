@@ -19,7 +19,9 @@ function inspectCandidate({candidate,ledger,activeManifest}={}) {
     add('candidate_gate_promotion');
  if(activeManifest.status!=='BLOCKED_NOT_RUN'||activeManifest.explicitExecutionApproval!==false||
     activeManifest.productionAccess!==false||activeManifest.checkoutCommit!==null||
-    activeManifest.billingZeroAdditionalCost!=='NOT_VERIFIED')add('active_gate_changed');
+    activeManifest.billingZeroAdditionalCost!=='NOT_VERIFIED'||
+    activeManifest.independentAudit!=='PENDING'||
+    activeManifest.authJwtCompatibility!=='NOT_PROVEN')add('active_gate_changed');
  if(ledger.platform!=='linux/amd64'||ledger.kind!=='AUDITOR_REPORTED_REGISTRY_OBSERVATION'||
     ledger.status!=='EVIDENCE_HANDOFF_NOT_G1_APPROVAL'||ledger.g1Verified!==false||
     ledger.p2ExecutionAuthorized!==false||ledger.originalRawRegistryResponseIncluded!==false)
@@ -29,7 +31,12 @@ function inspectCandidate({candidate,ledger,activeManifest}={}) {
    const entries=Array.isArray(ledger.sourceRecords)?ledger.sourceRecords.filter(x=>x&&x.component===key):[];
    if(entries.length!==1){add(key+'_missing_or_duplicate_ledger');continue;}
    const record=entries[0],image=candidate.images?.[key],active=activeManifest.images?.[key];
-   if(!active||active.digest!==null||active.reference!==null)add(key+'_active_was_modified');
+   // Only two valid blocked states: ALL image fields null, or ALL three
+   // exact audited child-digest pairs. Mixed/partial pins must fail closed.
+   if(!active||!((active.digest===null&&active.reference===null)||
+     (active.digest===record.platformManifestDigest&&
+      active.reference===NAMES[key]+'@'+record.platformManifestDigest)))
+     add(key+'_active_pin_mismatch');
    if(record.repository!==NAMES[key])add(key+'_repository_mismatch');
    if(!image||!DIGEST.test(image.digest||'')||
       image.digest!==record.platformManifestDigest||
@@ -39,6 +46,11 @@ function inspectCandidate({candidate,ledger,activeManifest}={}) {
  }
  if(Object.keys(candidate.images||{}).sort().join(',')!==SERVICES.slice().sort().join(','))
    add('candidate_extra_or_missing_service');
+ if(Object.keys(activeManifest.images||{}).sort().join(',')!==SERVICES.slice().sort().join(','))
+   add('active_extra_or_missing_service');
+ const isNull=SERVICES.map(k=>activeManifest.images?.[k]?.digest===null&&
+   activeManifest.images?.[k]?.reference===null);
+ if(isNull.some(Boolean)&&!isNull.every(Boolean))add('active_partial_pin_state');
  return Object.freeze({status:issues.length?'BLOCKED':'CANDIDATE_MATCHES_REPORTED_LEDGER_ONLY',
    issues:Object.freeze(issues),g1Verified:false,p2ExecutionAuthorized:false});
 }

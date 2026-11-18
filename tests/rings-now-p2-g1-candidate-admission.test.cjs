@@ -31,9 +31,31 @@ test('reject promotion of any candidate approval flag',()=>{
    {billingZeroAdditionalCost:'VERIFIED_FOR_THIS_RUN'}])
    assert.equal(check({...candidate,...change}).status,'BLOCKED');
 });
-test('active manifest must still be all null',()=>{
- const a=copy(active);a.images.postgres.digest=ledger.sourceRecords[0].platformManifestDigest;
- assert.equal(check(candidate,ledger,a).status,'BLOCKED');
+test('blocked active manifest accepts only exact audited complete pin set',()=>{
+ assert.equal(check().status,'CANDIDATE_MATCHES_REPORTED_LEDGER_ONLY');
+ const allNull=copy(active);
+ for(const key of ['postgres','gotrue','postgrest'])
+  allNull.images[key]={reference:null,digest:null};
+ assert.equal(check(candidate,ledger,allNull).status,'CANDIDATE_MATCHES_REPORTED_LEDGER_ONLY');
+ const partial=copy(active);partial.images.postgres={reference:null,digest:null};
+ assert.equal(check(candidate,ledger,partial).status,'BLOCKED');
+ for(const key of ['postgres','gotrue','postgrest']){
+  const wrong=copy(active);wrong.images[key].digest='sha256:'+'f'.repeat(64);
+  wrong.images[key].reference=wrong.images[key].reference.replace(/@sha256:.+$/,'@'+wrong.images[key].digest);
+  assert.equal(check(candidate,ledger,wrong).status,'BLOCKED');
+ }
+ const mixed=copy(active);mixed.images.gotrue.reference=null;
+ assert.equal(check(candidate,ledger,mixed).status,'BLOCKED');
+ const extra=copy(active);extra.images.extra={reference:null,digest:null};
+ assert.equal(check(candidate,ledger,extra).status,'BLOCKED');
+});
+test('blocked manifest must keep approval, billing and audit states',()=>{
+ for(const patch of [{explicitExecutionApproval:true},{status:'READY_FOR_REVIEW'},
+   {checkoutCommit:'a'.repeat(40)},{billingZeroAdditionalCost:'VERIFIED_FOR_THIS_RUN'},
+   {independentAudit:'APPROVED_FOR_EXACT_HEAD'},{authJwtCompatibility:'PROVEN_BY_ISOLATED_HTTP'},
+   {productionAccess:true}]){
+  assert.equal(check(candidate,ledger,{...active,...patch}).status,'BLOCKED');
+ }
 });
 test('reject forged ledger approval and repository substitution',()=>{
  for(const update of [{g1Verified:true},{originalRawRegistryResponseIncluded:true},
