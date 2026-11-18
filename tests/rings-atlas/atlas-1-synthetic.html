@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Rings Atlas synthetic isolated fixture</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#0d1d30;color:#f1f8ff}
+*{box-sizing:border-box}body{max-width:760px;margin:auto;padding:14px;overflow-wrap:anywhere}
+header,section,footer{padding:14px;margin-bottom:12px;border:1px solid #47788c;border-radius:14px}h1{font-size:1.4rem}h2{font-size:1.1rem}
+.warning{color:#ffe2a7}.row{display:flex;flex-wrap:wrap;gap:8px}button,select{min-height:44px;padding:8px;border:1px solid #80d8e8;border-radius:9px;background:#17354c;color:white;font:inherit}
+button[aria-pressed=true]{background:#24687b;outline:2px solid #b4f5ee}button:focus-visible,select:focus-visible{outline:3px solid yellow}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat,.group{padding:9px;background:#15334a;border-radius:10px}.stat small,.stat strong{display:block}.stat small{font-size:11px;color:#d1dce9}.stat strong{font-size:18px}
+.groups{display:grid;gap:8px}.group h3{margin:0 0 6px;font-size:16px}.group ul{margin:0;padding-left:22px}
+[hidden]{display:none!important}@media(max-width:375px){body{padding:7px}.stat{padding:6px}.stat strong{font-size:15px}}
+</style></head><body>
+<header><h1>🗺️ Rings Atlas — Synthetic Only</h1><p class="warning">ISOLATED / MOCK DATA / NO NETWORK / NOT PRODUCTION</p>
+<button id="ja" type="button">日本語</button> <button id="en" type="button">English</button><p id="lifecycle" role="status">Safari bfcache 未確認</p></header>
+<section><h2 id="authTitle">模擬ログイン</h2><div class="row"><button id="signin">模擬ログイン</button><button id="signout">模擬ログアウト</button></div><p id="authMessage" role="status"></p></section>
+<div id="privateView" hidden>
+<section><h2 id="periodTitle">期間</h2><div class="row"><select id="period" aria-label="Synthetic period">
+<option value="all">全期間</option><option value="year">2026年</option><option value="month">2026年11月</option><option value="zero">2025年1月（0件）</option></select>
+<button id="handoff" type="button">期間のみURLに引き継ぐ</button></div></section>
+<section><h2 id="statusTitle">読込状態</h2><div class="row">
+<button data-state="checking">確認中</button><button data-state="previous">前回データ</button><button data-state="confirmed">確定</button><button data-state="failed">読込失敗</button></div>
+<p id="status" role="status" aria-live="polite"></p><div class="stats">
+<div class="stat"><small id="distanceLabel">総距離</small><strong id="distance">—</strong></div>
+<div class="stat"><small id="runsLabel">ラン数</small><strong id="runs">—</strong></div>
+<div class="stat"><small id="regionsLabel">走破地域数</small><strong id="regions">—</strong></div>
+</div></section>
+<section><h2 id="detailTitle">地域別の内訳</h2><p id="rule"></p><div class="groups" id="groups"></div></section>
+<section><h2 id="testTitle">検査</h2><button id="check" type="button">テストを実行</button><pre id="results" style="white-space:pre-wrap"></pre></section>
+</div>
+<footer><p id="footnote">戻る/進むとSafari bfcacheを実機で確認。実認証・実データ・本番URLはありません。</p><a id="awayLink" href="./away" style="color:#b5e9ff;display:inline-block;padding:12px 0">試験用の別ページへ移動（戻るで復帰）</a></footer>
+<script>
+"use strict";
+// Five categories: country, ADM1, overseas ADM2, prefecture, municipality.
+// Synthetic data only. Values are NOT copied from any runner's account.
+const fixtures={
+ all:{km:120,runs:12,regions:3,groups:[[["架空国A",120]],[["架空州A",30]],[["架空海外区A",10]],[["架空県A",90]],[["架空市A",60],["架空市B",30]]]},
+ year:{km:70,runs:7,regions:2,groups:[[["架空国A",70]],[["架空州A",30]],[["架空海外区A",10]],[["架空県A",40]],[["架空市A",40]]]},
+ month:{km:25,runs:3,regions:"—",groups:[[["架空国A",25]],[["架空州A",25]],[],[["架空県A",25]],[]]},
+ zero:{km:0,runs:0,regions:0,groups:[[],[],[],[],[]]}
+};
+const i18n={
+ ja:{auth:"模擬ログイン",signin:"模擬ログイン",signout:"模擬ログアウト",out:"未認証：模擬地域情報は非表示",in:"模擬ログイン中：架空データのみ",period:"期間",handoff:"期間のみURLに引き継ぐ",status:"読込状態",
+ states:["確認中：0件とは未確定","前回の架空データ（最新未確認）","確定（架空データ）","読込失敗：0件ではない"],buttons:["確認中","前回データ","確定","読込失敗"],
+ distance:"総距離",runs:"ラン数",regions:"走破地域数",details:"地域別の内訳",rule:"走破地域は国内市町村＋海外ADM2。不明は「—」。",
+ categories:["国別","州・地域別","海外の市・郡・区（ADM2）","都道府県別","市町村別"],
+ none:"該当なし",unknown:"未取得：0件ではない",test:"検査",check:"テストを実行",foot:"戻る/進むとSafari bfcacheを実機で確認。実認証・実データ・本番URLはありません。",away:"試験用の別ページへ移動（戻るで復帰）",
+ times:["全期間","2026年","2026年11月","2025年1月（0件）"]},
+ en:{auth:"Simulated sign-in",signin:"Simulate sign-in",signout:"Simulate sign-out",out:"Signed out: mock regional details hidden",in:"Signed in (mock): synthetic data only",period:"Period",handoff:"Carry period only in URL",status:"Loading state",
+ states:["Checking: not yet zero","Previous fictional snapshot (not verified)","Confirmed synthetic data","Load failed: not proof of zero"],buttons:["Checking","Previous","Confirmed","Failed"],
+ distance:"Distance",runs:"Runs",regions:"Regions",details:"Regional breakdown",rule:"Regions = Japanese municipalities + overseas ADM2. Unknown remains —.",
+ categories:["Countries","States / regions","Overseas districts (ADM2)","Prefectures","Municipalities"],
+ none:"None for selected period",unknown:"Not loaded; not zero",test:"Checks",check:"Run checks",foot:"Test back/forward and Safari bfcache on device. No real authentication, data or production URL.",away:"Open local test page (then go Back)",
+ times:["All time","2026","November 2026","January 2025 (zero)"]}
+};
+const $=id=>document.getElementById(id);
+const valid=Object.keys(fixtures);
+function periodFromUrl(){const p=new URLSearchParams(location.search).get("period");return valid.includes(p)?p:"all";}
+let period=periodFromUrl(),state="checking",lang="ja",signedIn=false;
+function render(){
+ const t=i18n[lang],states=["checking","previous","confirmed","failed"];
+ document.documentElement.lang=lang;$("authTitle").textContent=t.auth;$("signin").textContent=t.signin;$("signout").textContent=t.signout;
+ $("authMessage").textContent=signedIn?t.in:t.out;$("privateView").hidden=!signedIn;
+ $("periodTitle").textContent=t.period;$("handoff").textContent=t.handoff;$("period").value=period;
+ Array.from($("period").options).forEach((o,i)=>o.textContent=t.times[i]);
+ $("statusTitle").textContent=t.status;$("status").textContent=t.states[states.indexOf(state)];
+ document.querySelectorAll("[data-state]").forEach((b,i)=>{b.textContent=t.buttons[i];b.setAttribute("aria-pressed",String(b.dataset.state===state));});
+ $("distanceLabel").textContent=t.distance;$("runsLabel").textContent=t.runs;$("regionsLabel").textContent=t.regions;
+ const show=state==="previous"||state==="confirmed",f=fixtures[period];
+ $("distance").textContent=show?f.km.toFixed(1)+" km":"—";
+ $("runs").textContent=show?String(f.runs):"—";$("regions").textContent=show?String(f.regions):"—";
+ $("detailTitle").textContent=t.details;$("rule").textContent=t.rule;$("testTitle").textContent=t.test;$("check").textContent=t.check;$("footnote").textContent=t.foot;$("awayLink").textContent=t.away;
+ const root=$("groups");root.replaceChildren();
+ t.categories.forEach((title,i)=>{
+ const box=document.createElement("div");box.className="group";const h=document.createElement("h3");h.textContent=title;box.append(h);
+ const values=show?f.groups[i]:[];
+ if(!values.length){const p=document.createElement("p");p.textContent=show?t.none:t.unknown;box.append(p);}
+ else{const ul=document.createElement("ul");values.forEach(([name,km])=>{const li=document.createElement("li");li.textContent=(lang==="en"?name.replace("架空","Fictional "):name)+" · "+km.toFixed(1)+" km";ul.append(li);});box.append(ul);}
+ root.append(box);
+ });
+}
+function setPeriod(v,push){if(!valid.includes(v))return;period=v;state="checking";if(push){const u=new URL(location.href);u.search="";u.searchParams.set("period",v);u.hash="";history.pushState({syntheticPeriod:v},"",u.pathname+u.search);}render();}
+$("period").addEventListener("change",e=>setPeriod(e.target.value,true));
+$("handoff").addEventListener("click",()=>setPeriod(period,true));
+$("signin").addEventListener("click",()=>{signedIn=true;state="checking";render();});
+$("signout").addEventListener("click",()=>{signedIn=false;state="checking";render();});
+$("ja").addEventListener("click",()=>{lang="ja";render();});$("en").addEventListener("click",()=>{lang="en";render();});
+document.querySelectorAll("[data-state]").forEach(b=>b.addEventListener("click",()=>{state=b.dataset.state;render();}));
+window.addEventListener("popstate",()=>{period=periodFromUrl();state="checking";render();});
+window.addEventListener("pageshow",e=>{
+ if(e.persisted){signedIn=false;state="checking";}
+ period=periodFromUrl();render();
+ $("lifecycle").textContent="pageshow.persisted="+String(e.persisted)+"; private mock "+(signedIn?"visible":"hidden");
+});
+$("check").addEventListener("click",()=>{
+ const a=[],test=(name,pass)=>a.push((pass?"PASS ":"FAIL ")+name);
+ test("5 categories",Object.values(fixtures).every(v=>v.groups.length===5));
+ test("3 nonempty periods",["all","year","month"].every(p=>fixtures[p].runs>0));
+ test("zero fixture",fixtures.zero.runs===0&&fixtures.zero.regions===0);
+ test("unknown ADM2",fixtures.month.regions==="—"&&fixtures.month.groups[2].length===0);
+ test("4 load states",document.querySelectorAll("[data-state]").length===4);
+ test("URL allowlist",!valid.includes("../../index.html")&&valid.includes(periodFromUrl()));
+ const previous=state;state="checking";render();test("checking is not zero",$("runs").textContent==="—");
+ state="failed";render();test("failure is not zero",$("runs").textContent==="—");
+ period="zero";state="confirmed";render();test("confirmed zero is zero",$("runs").textContent==="0");
+ state=previous;period=periodFromUrl();render();$("results").textContent=a.join("\n");
+});
+render();
+</script></body></html>
