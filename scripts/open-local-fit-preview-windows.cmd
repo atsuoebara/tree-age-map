@@ -2,9 +2,9 @@
 setlocal
 cd /d "%~dp0.."
 echo.
-echo Runner's Rings - FIT local PC preview (synthetic FIT only)
+echo Runner's Rings - FIT local PC preview (start with synthetic FIT)
 echo This opens on THIS PC only. No public site or iPhone LAN.
-echo Do not select private race files before independent audit.
+echo Real FIT: only after independent audit and owner approval. Never upload a FIT.
 echo.
 where py >nul 2>nul
 if not errorlevel 1 (
