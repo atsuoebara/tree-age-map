@@ -3246,6 +3246,22 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 </script>
 <style>
   html.rrAtlasEmbedded body > header { display:none !important; }
+  /* Shared navigation/footer are injected after this stylesheet; suppress them only inside Atlas. */
+  html.rrAtlasEmbedded #rrGlobalNavigation,
+  html.rrAtlasEmbedded #rrGlobalFooter,
+  html.rrAtlasEmbedded #siteFooter,
+  html.rrAtlasEmbedded body > #scrollToTopButton { display:none !important; }
+  html.rrAtlasEmbedded body { overflow-x:hidden; }
+  html.rrAtlasEmbedded #prefectureList.rrAtlasPreviewLimited > .prefectureCard:nth-child(n+6) {
+    display:none !important;
+  }
+  html.rrAtlasEmbedded #rrAtlasShowMorePrefectures {
+    display:block; width:100%; min-height:44px; margin:12px 0 16px;
+    padding:10px 12px; border:1px solid #74d5ff; border-radius:10px;
+    background:#173e54; color:#fff; font:700 13px system-ui,sans-serif; cursor:pointer;
+  }
+  html.rrAtlasEmbedded #rrAtlasShowMorePrefectures[hidden] { display:none !important; }
+
   html.rrAtlasEmbedded #appRoot > :not(#mapPeriodControls):not(#rrMapRecordSummary):not(#mapViewModeBar):not(#map):not(#rrAtlasView):not(#mapDisplayHelp):not(.mapBoundaryNotice):not(#mapPrivacyNotice) { display:none !important; }
   html.rrAtlasEmbedded #rrAtlasView #rrAtlasClose { display:none !important; }
   html.rrAtlasEmbedded #rrAtlasView { padding:12px 10px 24px; }
@@ -4615,7 +4631,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.07'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.08'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -30991,6 +31007,7 @@ updateScrollToTopButton();
   @media(max-width:375px) { #rrAtlasView {padding:14px 9px 24px;} }
 </style>
 <script defer src="./rings-atlas-view.js?v=atlas-20261119-01"></script>
+<script defer src="./rings-atlas-prefecture-preview.js?v=20261119-01"></script>
 <style>
 /* Use the existing Runner's Rings logo and keep English/Japanese names stacked. */
 header #rrHeaderBrand { display:flex; align-items:center; gap:8px; flex:1 1 auto; min-width:0; }
