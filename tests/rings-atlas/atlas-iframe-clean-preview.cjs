@@ -21,14 +21,46 @@ assertContains(page,'child.body.scrollHeight');
 assertContains(page,'frame.scrolling = \'no\'');
 assert.doesNotMatch(page,/postMessage|createClient|fetch\s*\(/);
 assert.doesNotMatch(js,/fetch\s*\(|XMLHttpRequest|WebSocket|localStorage|sessionStorage|indexedDB|cloneNode|postMessage/);
-const sections={prefectureSection:{open:false},citySection:{open:false}};
+const observers=[], events={}, viewport={};
+const sections={
+  prefectureSection:{open:false,isConnected:true},
+  citySection:{open:false,isConnected:true},
+  rrAtlasView:{hidden:true,isConnected:true},
+  appRoot:{hidden:false,isConnected:true}
+};
+const obsolete={removed:false,remove(){this.removed=true;}};
+let hasObsolete=true;
 const document={
  documentElement:{classList:{contains(v){return v==='rrAtlasEmbedded';}}},
- getElementById(id){return sections[id]||null;}
+ getElementById(id){
+   if(id==='rrAtlasShowMorePrefectures') return hasObsolete ? obsolete : null;
+   return sections[id] || null;
+ }
 };
-vm.runInNewContext(js,{document});
+class MutationObserver {
+  constructor(callback){observers.push(callback);}
+  observe(node,opts){assert(node);assert(opts);}
+}
+const requestAnimationFrame=callback=>callback();
+const window={addEventListener(name,callback){events[name]=callback;}};
+vm.runInNewContext(js,{document,MutationObserver,requestAnimationFrame,window});
+assert.equal(sections.prefectureSection.open,false,'private sections stay closed until Atlas is visible');
+sections.rrAtlasView.hidden=false;
+observers[1]();
 assert.equal(sections.prefectureSection.open,true);
 assert.equal(sections.citySection.open,true);
+assert.equal(obsolete.removed,true,'old duplicate button removed');
+hasObsolete=false;
+// Simulate period rebuild/reparent: the same details are closed while cards change.
+sections.prefectureSection.open=false;
+sections.citySection.open=false;
+observers[0]();
+assert.equal(sections.prefectureSection.open,true,'prefecture list is reopened after redraw');
+assert.equal(sections.citySection.open,true,'municipality list is reopened after redraw');
+sections.appRoot.hidden=true;
+sections.citySection.open=false;
+observers[0]();
+assert.equal(sections.citySection.open,false,'signed-out private view remains protected');
 const nonEmbedded={
  documentElement:{classList:{contains(){return false;}}},
  getElementById(id){return sections[id]||null;}
@@ -37,4 +69,6 @@ sections.prefectureSection.open=false;sections.citySection.open=false;
 vm.runInNewContext(js,{document:nonEmbedded});
 assert.equal(sections.prefectureSection.open,false,'home must remain unchanged');
 assert.equal(sections.citySection.open,false,'home must remain unchanged');
-console.log('PASS: Atlas sticky return header + footer links, 240px map, both sections open and 5 city rows; home unchanged');
+assertContains(html,'rings-atlas-prefecture-preview.js?v=20261119-10');
+assertContains(html,'html.rrAtlasEmbedded #rrAtlasShowMorePrefectures { display:none !important; }');
+console.log('PASS: Atlas sticky header/footer, 240px map, city and prefecture reopened after redraw, no duplicate toggle; home unchanged');
