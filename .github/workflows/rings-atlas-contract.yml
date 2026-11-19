@@ -28,3 +28,5 @@ jobs:
         run: node tests/rings-atlas/atlas-leaflet-layout-contract.cjs
       - name: Exercise Atlas view lifecycle
         run: node tests/rings-atlas/atlas-view-lifecycle.cjs
+      - name: Verify account and map record layout
+        run: node tests/rings-atlas/home-account-record-layout.cjs
