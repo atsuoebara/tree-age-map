@@ -9,7 +9,7 @@ assert.match(html,/html\.rrAtlasEmbedded #rrGlobalNavigation,/);
 assert.match(html,/html\.rrAtlasEmbedded #rrGlobalFooter,/);
 assert.match(html,/html\.rrAtlasEmbedded #siteFooter,/);
 assert.match(html,/html\.rrAtlasEmbedded body > #scrollToTopButton \{ display:none !important; \}/);
-assert.match(html,/#prefectureList\.rrAtlasPreviewLimited > \.prefectureCard:nth-child\(n\+6\)/);
+assert(html.includes('#prefectureList.rrAtlasPreviewLimited > .prefectureCard:nth-child(n+6)'), 'five-card CSS rule missing');
 assert.match(page,/id="rrAtlasAppFrame"/);
 assert.match(page,/src="\.\/index\.html\?atlas=embedded"/);
 assert.match(page,/new ResizeObserver\(schedule\)\.observe\(child\.body\)/);
