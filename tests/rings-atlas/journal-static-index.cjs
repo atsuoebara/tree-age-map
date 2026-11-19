@@ -10,9 +10,20 @@ function region(doc,kind,lang){
  return doc.split(a)[1].split(b)[0];
 }
 const links=s=>[...s.matchAll(/href="\/journal\/articles\/([a-zA-Z0-9_-]+)\/"/g)].map(x=>x[1]);
+const articlePages=new Map(slugs.map(slug=>[slug,fs.readFileSync('journal/articles/'+slug+'/index.html','utf8')]));
+const actualPeople=slugs.filter(slug=>articlePages.get(slug).includes('<div class="category">rings-people</div>'));
+assert(actualPeople.length>0,'published Rings People articles exist');
 for(const lang of ['JA','EN']){
- const a=links(region(j,'JOURNAL',lang));assert.deepEqual(a,slugs);assert.equal(new Set(a).size,a.length);
- const b=links(region(p,'PEOPLE',lang));assert(b.length>0);assert(b.every(x=>a.includes(x)));
+ const src=region(j,'JOURNAL',lang);
+ const a=links(src);assert.deepEqual(a,slugs);assert.equal(new Set(a).size,a.length);
+ const b=links(region(p,'PEOPLE',lang));assert.deepEqual(b,actualPeople,'Rings People static list must contain only published interviews');
+ const code=lang.toLowerCase();
+ for(const slug of slugs){
+   const article=articlePages.get(slug);
+   const title=article.match(new RegExp('<article data-lang="'+code+'"[^>]*>[\\s\\S]*?<h1>([\\s\\S]*?)<\\/h1>'))?.[1];
+   assert(title,'article title exists: '+slug+' '+code);
+   assert(src.includes('<a href="/journal/articles/'+slug+'/">'+title+'</a>'),'static link must use actual title: '+slug+' '+code);
+ }
 }
 assert(j.includes("nav.hidden=!loading&&!failed"));
 assert(p.includes("rrStaticPeople').hidden=state==='ready'"));
