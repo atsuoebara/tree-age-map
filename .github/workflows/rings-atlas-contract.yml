@@ -25,6 +25,8 @@ jobs:
         run: node tests/rings-atlas/atlas-relocation-contract.cjs
       - name: Verify standalone Atlas route and feature tile
         run: node tests/rings-atlas/atlas-standalone-route.cjs
+      - name: Exercise embedded sign-in and bfcache lifecycle
+        run: node tests/rings-atlas/atlas-embedded-lifecycle.cjs
       - name: Verify map and filters stay accessible
         run: node tests/rings-atlas/atlas-map-visibility-contract.cjs
       - name: Verify Leaflet resize contract
