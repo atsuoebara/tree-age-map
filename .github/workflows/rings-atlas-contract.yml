@@ -52,6 +52,8 @@ jobs:
         run: node tests/rings-atlas/home-connection-menu-order.cjs
       - name: Verify connection help consolidation without hiding public guide
         run: node tests/rings-atlas/home-connection-guide-placement.cjs
+      - name: Verify Timelapse button contrast when settings open
+        run: node tests/rings-atlas/home-timelapse-open-contrast.cjs
       - name: Verify Timelapse explanation sits within the settings panel
         run: node tests/rings-atlas/home-timelapse-hint-placement.cjs
       - name: Verify monthly memory pair next to canonical summary
