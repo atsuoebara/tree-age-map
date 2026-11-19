@@ -4674,7 +4674,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.19'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.20'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -31031,7 +31031,7 @@ updateScrollToTopButton();
 <script defer src="./a4-milestones-preview.js?v=20261119-move-01"></script>
 <script defer src="/monthly-rings-core.js?v=20261028-01"></script>
 <script defer src="/monthly-rings-ui.js?v=20261029-a3-collapse-02"></script>
-<script defer src="/rr-engagement.js?v=20261119-mobile-pair-02"></script>
+<script defer src="/rr-engagement.js?v=20261119-summary-pair-01"></script>
 <script defer src="/rr-ondevice-translate.js"></script>
 <script defer src="/rr-site-nav.js?v=20261111-ofuse-support-01"></script>
 <!-- C-3: update notice module registers after load; no force activation/reload. -->
@@ -31040,6 +31040,9 @@ updateScrollToTopButton();
   #rrAtlasView[hidden], #dashboard[hidden] { display:none !important; }
   /* The feature navigation now sits before #dashboard; hide it during the Atlas detail view. */
   #appRoot:has(> #rrAtlasView:not([hidden])) > .rrFeatureTiles { display:none !important; }
+  /* Home-only private memories remain hidden during both Atlas routes. */
+  #appRoot:has(> #rrAtlasView:not([hidden])) > #rrProgressPair,
+  html.rrAtlasEmbedded #rrProgressPair { display:none !important; }
   /* Atlas owns geographic details. Keep their original DOM nodes and
      canonical render/auth state for the separate same-origin Atlas route.
      On the ordinary home page, only the feature tile is shown. */

@@ -24,7 +24,7 @@ assert(engagement.includes('progressPair.appendChild(card)'));
 assert(engagement.includes('progressPair.appendChild(anniversary)'));
 assert(engagement.includes('#rrProgressPair:has(> #rrYearAgoToday:not([hidden])) {\n    grid-template-columns:repeat(2,minmax(0,1fr));'),'side-by-side when both cards are visible, including iPhone');
 assert(engagement.includes('@media (max-width:520px)'),'compact mobile layout');
-assert(html.includes('rr-engagement.js?v=20261119-mobile-pair-02'),'mobile Safari uses current layout asset');
+assert(html.includes('rr-engagement.js?v=20261119-summary-pair-01'),'mobile Safari uses current layout asset');
 const appBuild=html.match(/const APP_BUILD = '([^']+)'/);
 const swBuild=sw.match(/const RR_BUILD = '([^']+)'/);
 assert(appBuild && swBuild,'both build labels must exist');

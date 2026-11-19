@@ -44,7 +44,9 @@ progressPairStyle.textContent=`
 `;
 document.head.appendChild(progressPairStyle);
 progressPair.appendChild(card);
-host.insertAdjacentElement('afterend',progressPair);
+// Place both private memories alongside the canonical record summary.
+const recordSummary=document.getElementById('rrMapRecordSummary');
+(recordSummary||host).insertAdjacentElement('afterend',progressPair);
 
 /* A-3: private anniversary memory; does not publish activity or auto-create video. */
 const anniversary=document.createElement('section');

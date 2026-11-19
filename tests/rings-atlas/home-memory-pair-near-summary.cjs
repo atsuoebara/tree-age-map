@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs'), assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8');
+const engagement=fs.readFileSync('rr-engagement.js','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
+const period=html.indexOf('id="mapPeriodControls"');
+const summary=html.indexOf('id="rrMapRecordSummary"');
+const mapBar=html.indexOf('id="mapViewModeBar"');
+const map=html.indexOf('id="map"');
+assert(period>=0&&period<summary&&summary<mapBar&&mapBar<map,'canonical summary remains before map');
+assert.equal((html.match(/id="rrMapRecordSummary"/g)||[]).length,1);
+assert(engagement.includes("const recordSummary=document.getElementById('rrMapRecordSummary');"),'canonical summary anchor');
+assert(engagement.includes("(recordSummary||host).insertAdjacentElement('afterend',progressPair);"),'pair follows summary while host fallback remains');
+assert(!engagement.includes("host.insertAdjacentElement('afterend',progressPair);"),'old placement removed');
+assert(engagement.includes("progressPair.appendChild(card)"),'monthly card retained');
+assert(engagement.includes("progressPair.appendChild(anniversary)"),'anniversary card retained');
+assert(engagement.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),'two-column layout remains');
+assert(engagement.includes('openAnniversaryReview()'),'anniversary movie action retained');
+assert(engagement.includes('rrMonthlyVideoEntry'),'monthly movie action retained');
+assert(html.includes('#appRoot:has(> #rrAtlasView:not([hidden])) > #rrProgressPair'),'same-document Atlas hides private pair');
+assert(html.includes('html.rrAtlasEmbedded #rrProgressPair'),'embedded Atlas hides private pair');
+assert(html.includes('rr-engagement.js?v=20261119-summary-pair-01'),'fresh Safari asset query');
+assert(html.includes('id="myTodayShareLink"'),'share action remains in import area');
+const a=html.match(/const APP_BUILD = '([^']+)'/),b=sw.match(/const RR_BUILD = '([^']+)'/);
+assert(a&&b);assert.equal(a[1],b[1]);
+console.log('PASS: memory pair follows canonical summary, Home-only with existing behaviors preserved');
