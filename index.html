@@ -3238,6 +3238,19 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 #timelapseOpenButton::after { content:" ▸"; }
 #timelapseLaunchArea:has(+ #timelapsePanel.isOpen) #timelapseOpenButton::after { content:" ▾"; }
 </style>
+<!-- The Atlas route embeds this SAME authenticated application once, not a copied data client. -->
+<script>
+  if (window.parent !== window && new URLSearchParams(location.search).get('atlas') === 'embedded') {
+    document.documentElement.classList.add('rrAtlasEmbedded');
+  }
+</script>
+<style>
+  html.rrAtlasEmbedded body > header { display:none !important; }
+  html.rrAtlasEmbedded #appRoot > :not(#mapPeriodControls):not(#rrMapRecordSummary):not(#mapViewModeBar):not(#map):not(#rrAtlasView):not(#mapDisplayHelp):not(.mapBoundaryNotice):not(#mapPrivacyNotice) { display:none !important; }
+  html.rrAtlasEmbedded #rrAtlasView #rrAtlasClose { display:none !important; }
+  html.rrAtlasEmbedded #rrAtlasView { padding:12px 10px 24px; }
+  html.rrAtlasEmbedded #appRoot { max-width:100%; }
+</style>
 </head>
 
 <body class="splashActive">
@@ -4324,8 +4337,10 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       min-height:0;
       padding-bottom:6px !important;
     }
-    #dashboard .rrFeatureTiles > a[href="./gps-art.html"] {
-      grid-column:1 / -1;
+    /* Atlas sits to the left of GPS Art in the paired feature row. */
+    #dashboard .rrFeatureTiles > a[href="./gps-art.html"],
+    #dashboard .rrFeatureTiles > a[href="./rings-atlas.html"] {
+      grid-column:auto;
     }
     #dashboard .rrFeatureTiles .dashboardFeatureLinks {
       font-size:11px;
@@ -4339,6 +4354,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     #dashboard .rrFeatureTiles > .dashboardFeatureGroup:has(> a[href="./territory.html"]) { border-color:#5cff9d; }
     #dashboard .rrFeatureTiles > a[href="./ring-tools.html"] { border-color:#65f5bb !important; }
     #dashboard .rrFeatureTiles > a[href="./gps-art.html"] { border-color:#ff9b45 !important; }
+    #dashboard .rrFeatureTiles > a[href="./rings-atlas.html"] { border-color:#74d5ff !important; }
     #dashboard .rrFeatureTiles > a[href="./today.html"],
     #dashboard .rrFeatureTiles > a[href="./rings-today.html"] { border-color:#78eaff !important; }
 
@@ -4434,6 +4450,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       <div class="dashboardFeatureLinks"><a href="./faq.html#faq-territory" style="color:#5cff9d;text-decoration:none">テリトリーのQ&amp;A ↗</a><a href="./contact.html" style="color:#cbd5e1;text-decoration:none">使い方で迷ったら聞く ↗</a></div>
     </div>
     <a href="./today.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:#172c41;color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🩵 Rings Today <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">今日のランニングを地図で見る →</span><span data-art-lang="en">Explore today's runs on a map →</span></span></a>
+    <a href="./rings-atlas.html" class="rrAtlasFeatureTile" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #74d5ff;border-radius:16px;background:#173e54;color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🌍 Rings Atlas <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">国・地域別の年輪をたどる →</span><span data-art-lang="en">Explore running rings by country and region →</span></span></a>
     <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>    <a href="./rings-people.html" class="ringsPeopleEntry" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:linear-gradient(135deg,rgba(120,234,255,.34),#173e54 54%,#342849);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎤 Rings People <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">それぞれの物語 →</span><span data-art-lang="en">Stories of all kinds →</span></span></a>
     <a href="./ring-tools.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #65f5bb;border-radius:16px;background:linear-gradient(135deg,#165653,#203a55);color:#fff;text-decoration:none;font-weight:850">🧮 Ring Tools <span style="font-size:12px;display:block;font-weight:600;margin-top:5px"><span data-art-lang="ja">ペース・ラップ・練習計算 →</span><span data-art-lang="en">Pace, splits &amp; workout tools →</span></span></a>
 
@@ -4598,7 +4615,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.06'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.07'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
