@@ -4411,6 +4411,13 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
     </div>
 
+    <!-- Atlas: existing geographic sections remain on Home by default. -->
+    <div class="rrAtlasEntry">
+      <button type="button" id="rrAtlasOpen" aria-expanded="false" aria-controls="rrAtlasView">
+        <span data-art-lang="ja">🌍 Rings Atlasで地域別記録を開く</span>
+        <span data-art-lang="en">🌍 Open regional details in Rings Atlas</span>
+      </button>
+    </div>
     <h2 id="countryHeading">
       国別
     </h2>
@@ -4464,9 +4471,20 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
         </div>
       </div>
     </details>
-
+    <!-- Original geographic nodes return before this marker on Atlas close. -->
+    <span id="rrAtlasHomeEnd" hidden></span>
   </section>
 
+  <!-- Same authenticated document; map, year/month filters and data are shared. -->
+  <section id="rrAtlasView" hidden aria-label="Rings Atlas regional statistics">
+    <button type="button" id="rrAtlasClose" aria-label="Return to dashboard">
+      <span data-art-lang="ja">← トップに戻る</span>
+      <span data-art-lang="en">← Back to dashboard</span>
+    </button>
+    <h2>🌍 Rings Atlas</h2>
+    <p><span data-art-lang="ja">あなたの走破地域を、同じ地図と集計データで振り返ります。</span><span data-art-lang="en">Explore your regions using the same map and statistics.</span></p>
+    <div id="rrAtlasContent"></div>
+  </section>
 </main>
 
   <button id="mapFullscreenExit" type="button" aria-label="地図の全画面表示を終了">✕ 地図を戻す</button>
@@ -4552,7 +4570,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.02'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -30912,6 +30930,22 @@ updateScrollToTopButton();
 <script defer src="/rr-site-nav.js?v=20261111-ofuse-support-01"></script>
 <!-- C-3: update notice module registers after load; no force activation/reload. -->
 <script defer src="/rr-pwa-update.js?v=20261107-resume-01"></script>
+<style>
+  #rrAtlasView[hidden], #dashboard[hidden] { display:none !important; }
+  .rrAtlasEntry { margin:18px 0 14px; }
+  #rrAtlasOpen, #rrAtlasClose {
+    display:block;box-sizing:border-box;min-height:48px;max-width:100%;
+    padding:12px 15px;border:2px solid #74d5ff;border-radius:12px;
+    background:#173e54;color:white;font:inherit;font-weight:700;
+    text-align:left;cursor:pointer;
+  }
+  #rrAtlasView { padding:18px 12px 28px;min-width:0;overflow-wrap:anywhere; }
+  #rrAtlasView h2 {margin-top:18px;}
+  #rrAtlasContent {min-width:0;}
+  #rrAtlasContent details {max-width:100%;}
+  @media(max-width:375px) { #rrAtlasView {padding:14px 9px 24px;} }
+</style>
+<script defer src="./rings-atlas-view.js?v=atlas-20261119-01"></script>
 <!-- Duplicate homepage translation patch retired: index.html is canonical. -->
 </body>
 </html>

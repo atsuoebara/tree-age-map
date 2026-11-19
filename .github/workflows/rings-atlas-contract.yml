@@ -1,0 +1,30 @@
+name: Rings Atlas contract checks
+
+on:
+  pull_request:
+    paths:
+      - 'rings-atlas-view.js'
+      - 'index.html'
+      - 'tests/rings-atlas/**'
+      - '.github/workflows/rings-atlas-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  atlas-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Atlas JavaScript syntax
+        run: node --check rings-atlas-view.js
+      - name: Verify Atlas relocation contract
+        run: node tests/rings-atlas/atlas-relocation-contract.cjs
+      - name: Verify map and filters stay accessible
+        run: node tests/rings-atlas/atlas-map-visibility-contract.cjs
+      - name: Verify Leaflet resize contract
+        run: node tests/rings-atlas/atlas-leaflet-layout-contract.cjs
+      - name: Exercise Atlas view lifecycle
+        run: node tests/rings-atlas/atlas-view-lifecycle.cjs
