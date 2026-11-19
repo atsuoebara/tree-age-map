@@ -3260,7 +3260,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   html.rrAtlasEmbedded #mapDisplayHelp,
   html.rrAtlasEmbedded .mapBoundaryNotice { display:none !important; }
 
-  html.rrAtlasEmbedded #rrAtlasJumpToRegions[hidden] { display:block !important; }
+  html:not(.rrAtlasEmbedded) #rrAtlasJumpToRegions { display:none !important; }
   html.rrAtlasEmbedded #rrAtlasJumpToRegions {
     display:block; margin:8px 12px 10px; min-height:44px; padding:12px;
     border:1px solid #74d5ff; border-radius:10px; color:#e1f8ff;
@@ -3272,7 +3272,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     border-radius:10px; padding:8px 10px; margin:8px 0 10px;
   }
 
-  html.rrAtlasEmbedded #appRoot > :not(#mapPeriodControls):not(#rrMapRecordSummary):not(#mapViewModeBar):not(#map):not(#rrAtlasView):not(#mapDisplayHelp):not(.mapBoundaryNotice):not(#mapPrivacyNotice) { display:none !important; }
+  html.rrAtlasEmbedded #appRoot > :not(#mapPeriodControls):not(#rrMapRecordSummary):not(#mapViewModeBar):not(#map):not(#rrAtlasView):not(#mapDisplayHelp):not(.mapBoundaryNotice):not(#mapPrivacyNotice):not(#rrAtlasJumpToRegions) { display:none !important; }
   html.rrAtlasEmbedded #rrAtlasView #rrAtlasClose { display:none !important; }
   html.rrAtlasEmbedded #rrAtlasView { padding:12px 10px 24px; }
   html.rrAtlasEmbedded #appRoot { max-width:100%; }
@@ -3813,7 +3813,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
 
 </div>
 
-  <a id="rrAtlasJumpToRegions" href="#countryHeading" hidden aria-label="地域別記録へ移動">
+  <a id="rrAtlasJumpToRegions" href="#countryHeading" aria-label="地域別記録へ移動">
     <span data-art-lang="ja">↓ 国・都道府県・市町村の記録を見る</span>
     <span data-art-lang="en">↓ View country and regional records</span>
   </a>
@@ -25704,7 +25704,7 @@ function updateDashboard(
   applyListLimit(
     cityList,
     '.cityCard',
-    10
+    document.documentElement.classList.contains('rrAtlasEmbedded') ? 5 : 10
   );
 
 }
