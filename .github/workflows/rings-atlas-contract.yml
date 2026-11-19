@@ -50,6 +50,8 @@ jobs:
         run: node tests/rings-atlas/home-feature-tile-position.cjs
       - name: Verify connection menu remains ahead of run controls on expand
         run: node tests/rings-atlas/home-connection-menu-order.cjs
+      - name: Verify connection status-based onboarding guide
+        run: node tests/rings-atlas/home-connection-guide-status.cjs
       - name: Verify connection help consolidation without hiding public guide
         run: node tests/rings-atlas/home-connection-guide-placement.cjs
       - name: Verify Timelapse button contrast when settings open
