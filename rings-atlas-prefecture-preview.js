@@ -1,12 +1,12 @@
-/* Atlas standalone: expose existing regional sections without duplicating cards.
- * The canonical renderer already shows the first five prefectures and provides
- * its own "remaining" control. Reuse it; never create a second Show All button.
+/* In the standalone Atlas, display municipality cards immediately.
+ * The canonical renderer supplies distance order and "remaining" button;
+ * show its first five rows here, while leaving home at ten.
  */
 (function () {
   'use strict';
   if (!document.documentElement.classList.contains('rrAtlasEmbedded')) return;
   const prefectures = document.getElementById('prefectureSection');
   const cities = document.getElementById('citySection');
-  if (prefectures) prefectures.open = true;
+  if (prefectures) prefectures.open = false;
   if (cities) cities.open = true;
 })();
