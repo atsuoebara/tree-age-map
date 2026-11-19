@@ -30,3 +30,7 @@ jobs:
         run: node tests/rings-atlas/atlas-view-lifecycle.cjs
       - name: Verify account and map record layout
         run: node tests/rings-atlas/home-account-record-layout.cjs
+      - name: Verify title-right account stack
+        run: node tests/rings-atlas/header-account-stack.cjs
+      - name: Check header placement syntax
+        run: node --check header-account-placement.js
