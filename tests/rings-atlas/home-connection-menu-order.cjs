@@ -8,7 +8,7 @@ function order(selector) {
   const escaped=selector.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const found=[...html.matchAll(new RegExp(escaped+'\\s*\\{([^}]+)\\}','g'))];
   assert(found.length,'selector missing '+selector);
-  const orders=found.map(x=>/\\border\\s*:\\s*(\\d+)/.exec(x[1])).filter(Boolean);
+  const orders=found.map(x=>/\border\s*:\s*(\d+)/.exec(x[1])).filter(Boolean);
   assert(orders.length,'no order declaration '+selector);
   return Number(orders[orders.length-1][1]);
 }
