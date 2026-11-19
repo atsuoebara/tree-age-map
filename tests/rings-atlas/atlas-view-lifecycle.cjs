@@ -37,6 +37,8 @@ const el = id => elements.get(id);
 ids.forEach(id => el('dashboard').appendChild(el(id)));
 el('dashboard').appendChild(el('rrAtlasHomeEnd'));
 el('rrAtlasView').hidden=true;
+// Match the real HTML's initial aria-expanded="false" attribute.
+el('rrAtlasOpen').attrs['aria-expanded']='false';
 const document = {
   getElementById: el,
   addEventListener(type,callback) {listeners[type]=callback;}
