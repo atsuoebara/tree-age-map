@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - name: Verify static Journal links
+        run: node tests/rings-atlas/journal-static-index.cjs
       - name: Check Atlas JavaScript syntax
         run: node --check rings-atlas-view.js
       - name: Verify Atlas relocation contract
