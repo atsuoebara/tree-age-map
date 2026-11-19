@@ -42,6 +42,8 @@ jobs:
         run: node tests/rings-atlas/atlas-view-lifecycle.cjs
       - name: Verify account and map record layout
         run: node tests/rings-atlas/home-account-record-layout.cjs
+      - name: Verify connection help consolidation without hiding public guide
+        run: node tests/rings-atlas/home-connection-guide-placement.cjs
       - name: Verify side-by-side memories and nearby run management
         run: node tests/rings-atlas/home-run-controls-memory-pair.cjs
       - name: Check engagement layout JavaScript syntax

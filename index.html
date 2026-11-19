@@ -3818,6 +3818,92 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
       Intervalsと連携
     </button>
   </div>
+  <!-- One signed-in connection help location: preserve existing guide, stats and links. -->
+  <details id="dataSetupGuide" class="setupGuide">
+    <summary>初期設定：データ連携・取り込み方法</summary>
+    <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
+    <div class="setupGuideOptions">
+      <div class="setupGuideOption">
+        <strong>Strava経由</strong>
+        <span>自動連携</span>
+      </div>
+      <div class="setupGuideOption">
+        <strong>Intervals.icu経由</strong>
+        <span>自動連携</span>
+      </div>
+      <div class="setupGuideOption">
+        <strong>COROSから直接</strong>
+        <span>手動取り込み</span>
+      </div>
+      <div class="setupGuideOption">
+        <strong>Garmin Connect IQ経由</strong>
+        <span>ウォッチから自動送信</span>
+      </div>
+      <div class="setupGuideOption">
+        <strong>FIT・GPX・TCX・ZIP</strong>
+        <span>ファイル取り込み</span>
+      </div>
+    </div>
+    <div class="importSharePanel" data-import-share-panel>
+      <div class="importShareTitle">現在のデータ取り込み割合</div>
+      <div class="importShareRows">
+        <div class="importShareRow">
+          <div class="importShareName">Strava</div>
+          <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="strava"></div></div>
+          <div class="importShareValue" data-import-share-value="strava">--%</div>
+        </div>
+        <div class="importShareRow">
+          <div class="importShareName">Intervals.icu</div>
+          <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="intervals"></div></div>
+          <div class="importShareValue" data-import-share-value="intervals">--%</div>
+        </div>
+        <div class="importShareRow"><div class="importShareName">Garmin</div><div class="importShareTrack"><div class="importShareFill" data-import-share-fill="garmin"></div></div><div class="importShareValue" data-import-share-value="garmin">--%</div></div>
+  <div class="importShareRow">
+          <div class="importShareName">COROS</div>
+          <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="coros"></div></div>
+          <div class="importShareValue" data-import-share-value="coros">--%</div>
+        </div>
+        <div class="importShareRow">
+          <div class="importShareName">FIT・GPX・TCX・ZIP</div>
+          <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
+          <div class="importShareValue" data-import-share-value="file">--%</div>
+        </div>
+      </div>
+      <p class="importShareNote">
+        ※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。
+      </p>
+    </div>
+    <p class="setupGuideNote">
+      ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
+    </p>
+    <a class="setupGuideLink" href="./how-to.html">
+      詳しい手順を見る →
+    </a>
+  
+    <details class="intervalsGuide">
+      <summary>
+        Intervals.icu 初期登録＋データ連携ガイド
+      </summary>
+  
+      <img
+        src="./intervals-guide-01.png.png"
+        alt="Intervals.icu 初期登録ガイド STEP1"
+        loading="lazy"
+      >
+  
+      <img
+        src="./intervals-guide-02.png.png"
+        alt="Intervals.icu 初期登録ガイド STEP2"
+        loading="lazy"
+      >
+  
+      <img
+        src="./intervals-guide-03.png.png"
+        alt="Intervals.icu 初期登録ガイド STEP3"
+        loading="lazy"
+      >
+    </details>
+  </details>
 </details>
 
 <label id="addRunButton" for="gpxInput">
@@ -4149,91 +4235,7 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
   </button>
 
 </details>
-<details id="dataSetupGuide" class="setupGuide">
-  <summary>初期設定：データ連携・取り込み方法</summary>
-  <p style="margin:0 0 12px;color:#cbd5e1;font-size:13px"><a href="./faq.html#faq-import" style="color:#ff2bd6;font-weight:800;text-decoration:none">連携で迷ったらQ&amp;Aを見る ↗</a></p>
-  <div class="setupGuideOptions">
-    <div class="setupGuideOption">
-      <strong>Strava経由</strong>
-      <span>自動連携</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>Intervals.icu経由</strong>
-      <span>自動連携</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>COROSから直接</strong>
-      <span>手動取り込み</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>Garmin Connect IQ経由</strong>
-      <span>ウォッチから自動送信</span>
-    </div>
-    <div class="setupGuideOption">
-      <strong>FIT・GPX・TCX・ZIP</strong>
-      <span>ファイル取り込み</span>
-    </div>
-  </div>
-  <div class="importSharePanel" data-import-share-panel>
-    <div class="importShareTitle">現在のデータ取り込み割合</div>
-    <div class="importShareRows">
-      <div class="importShareRow">
-        <div class="importShareName">Strava</div>
-        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="strava"></div></div>
-        <div class="importShareValue" data-import-share-value="strava">--%</div>
-      </div>
-      <div class="importShareRow">
-        <div class="importShareName">Intervals.icu</div>
-        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="intervals"></div></div>
-        <div class="importShareValue" data-import-share-value="intervals">--%</div>
-      </div>
-      <div class="importShareRow"><div class="importShareName">Garmin</div><div class="importShareTrack"><div class="importShareFill" data-import-share-fill="garmin"></div></div><div class="importShareValue" data-import-share-value="garmin">--%</div></div>
-<div class="importShareRow">
-        <div class="importShareName">COROS</div>
-        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="coros"></div></div>
-        <div class="importShareValue" data-import-share-value="coros">--%</div>
-      </div>
-      <div class="importShareRow">
-        <div class="importShareName">FIT・GPX・TCX・ZIP</div>
-        <div class="importShareTrack"><div class="importShareFill" data-import-share-fill="file"></div></div>
-        <div class="importShareValue" data-import-share-value="file">--%</div>
-      </div>
-    </div>
-    <p class="importShareNote">
-      ※Runner’s Ringsへ実際に取り込まれたランニングデータをもとに集計します。
-    </p>
-  </div>
-  <p class="setupGuideNote">
-    ※StravaとIntervals.icuは、基本的にどちらか一方を選んで連携してください。
-  </p>
-  <a class="setupGuideLink" href="./how-to.html">
-    詳しい手順を見る →
-  </a>
 
-  <details class="intervalsGuide">
-    <summary>
-      Intervals.icu 初期登録＋データ連携ガイド
-    </summary>
-
-    <img
-      src="./intervals-guide-01.png.png"
-      alt="Intervals.icu 初期登録ガイド STEP1"
-      loading="lazy"
-    >
-
-    <img
-      src="./intervals-guide-02.png.png"
-      alt="Intervals.icu 初期登録ガイド STEP2"
-      loading="lazy"
-    >
-
-    <img
-      src="./intervals-guide-03.png.png"
-      alt="Intervals.icu 初期登録ガイド STEP3"
-      loading="lazy"
-    >
-  </details>
-</details>
 <div id="status">
   データを読み込み中…
 </div>
@@ -4655,7 +4657,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.14'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.15'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
