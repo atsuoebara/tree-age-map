@@ -15,7 +15,7 @@
     if (atlas.hidden || root.hidden) return;
     for (const id of ['prefectureSection','citySection']) {
       const section = document.getElementById(id);
-      if (section && section.isConnected && !section.open) section.open = true;
+      if (section && section.isConnected !== false && !section.open) section.open = true;
     }
     // Old cached preview code could leave an extra, conflicting toggle.
     const obsolete = document.getElementById('rrAtlasShowMorePrefectures');
