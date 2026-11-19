@@ -4647,7 +4647,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.19.11'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.19.12'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -31009,6 +31009,19 @@ updateScrollToTopButton();
 <script defer src="/rr-pwa-update.js?v=20261107-resume-01"></script>
 <style>
   #rrAtlasView[hidden], #dashboard[hidden] { display:none !important; }
+  /* Atlas owns geographic details. Keep their original DOM nodes and
+     canonical render/auth state for the separate same-origin Atlas route.
+     On the ordinary home page, only the feature tile is shown. */
+  html:not(.rrAtlasEmbedded) #dashboard > .rrAtlasEntry,
+  html:not(.rrAtlasEmbedded) #dashboard > #countryHeading,
+  html:not(.rrAtlasEmbedded) #dashboard > #countryList,
+  html:not(.rrAtlasEmbedded) #dashboard > #countryDetailFlow,
+  html:not(.rrAtlasEmbedded) #dashboard > #regionSection,
+  html:not(.rrAtlasEmbedded) #dashboard > #admin2Section,
+  html:not(.rrAtlasEmbedded) #dashboard > #prefectureSection,
+  html:not(.rrAtlasEmbedded) #dashboard > #citySection {
+    display:none !important;
+  }
   .rrAtlasEntry { margin:18px 0 14px; }
   #rrAtlasOpen, #rrAtlasClose {
     display:block;box-sizing:border-box;min-height:48px;max-width:100%;
