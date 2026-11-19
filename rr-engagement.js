@@ -22,10 +22,23 @@ progressPairStyle.textContent=`
     height:100%;
     margin:0 !important;
   }
-  @media (min-width:760px) {
-    #rrProgressPair:has(> #rrYearAgoToday:not([hidden])) {
-      grid-template-columns:repeat(2,minmax(0,1fr));
-    }
+  /* Two balanced memories on iPhone too; only the missing anniversary uses one column. */
+  #rrProgressPair:has(> #rrYearAgoToday:not([hidden])) {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  @media (max-width:520px) {
+    #rrProgressPair { gap:8px !important; }
+    #rrProgressPair > #rrPersonalProgress,
+    #rrProgressPair > #rrYearAgoToday { padding:9px 8px !important; overflow-wrap:anywhere; }
+    #rrProgressPair > #rrPersonalProgress > strong,
+    #rrProgressPair > #rrYearAgoToday > strong { font-size:13px !important; line-height:1.35; display:block; }
+    #rrProgressPair #rrProgressBody,
+    #rrProgressPair #rrYearAgoBody { font-size:12px !important; line-height:1.4; }
+    #rrProgressPair #rrMonthlyVideoEntry,
+    #rrProgressPair #rrYearAgoReview { font-size:11px !important; line-height:1.4; min-height:44px; }
+  }
+  @media (max-width:350px) {
+    #rrProgressPair:has(> #rrYearAgoToday:not([hidden])) { grid-template-columns:repeat(2,minmax(0,1fr)); }
   }
 `;
 document.head.appendChild(progressPairStyle);
