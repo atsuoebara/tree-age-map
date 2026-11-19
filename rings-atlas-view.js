@@ -21,6 +21,17 @@
     const root = document.getElementById('appRoot');
     return !!root && !root.hidden && getComputedStyle(root).display !== 'none';
   }
+  // The canonical map stays outside #dashboard, but a layout switch can
+  // still leave stale Leaflet dimensions on mobile Safari. Reuse the
+  // existing Leaflet instance; never create a second map or fetch data.
+  function refreshMapLayout() {
+    requestAnimationFrame(() => {
+      if (typeof map !== 'undefined' && map &&
+          typeof map.invalidateSize === 'function') {
+        map.invalidateSize({pan:false, animate:false});
+      }
+    });
+  }
   function setAtlasView(next, focus) {
     if (next && !authenticated()) return;
     if (next === active) return;
@@ -31,6 +42,7 @@
       atlas.hidden = false;
       openButton.setAttribute('aria-expanded', 'true');
       active = true;
+      refreshMapLayout();
       if (focus) {
         atlas.scrollIntoView({block:'start',behavior:'auto'});
         closeButton.focus({preventScroll:true});
@@ -41,6 +53,7 @@
       home.hidden = false;
       openButton.setAttribute('aria-expanded', 'false');
       active = false;
+      refreshMapLayout();
       if (focus) {
         home.scrollIntoView({block:'start',behavior:'auto'});
         openButton.focus({preventScroll:true});
