@@ -31023,6 +31023,8 @@ updateScrollToTopButton();
 <script defer src="/rr-pwa-update.js?v=20261107-resume-01"></script>
 <style>
   #rrAtlasView[hidden], #dashboard[hidden] { display:none !important; }
+  /* The feature navigation now sits before #dashboard; hide it during the Atlas detail view. */
+  #appRoot:has(> #rrAtlasView:not([hidden])) > .rrFeatureTiles { display:none !important; }
   /* Atlas owns geographic details. Keep their original DOM nodes and
      canonical render/auth state for the separate same-origin Atlas route.
      On the ordinary home page, only the feature tile is shown. */
