@@ -1,0 +1,67 @@
+/* Rings Atlas – same-document geographic detail view.
+ * Reuses the EXISTING six DOM nodes, not copies or new data requests.
+ * Does not read private data, call APIs, or use persistent storage.
+ */
+(function () {
+  'use strict';
+  const ids = ['countryHeading','countryList','regionSection','admin2Section','prefectureSection','citySection'];
+  const home = document.getElementById('dashboard');
+  const atlas = document.getElementById('rrAtlasView');
+  const slot = document.getElementById('rrAtlasHomeEnd');
+  const content = document.getElementById('rrAtlasContent');
+  const openButton = document.getElementById('rrAtlasOpen');
+  const closeButton = document.getElementById('rrAtlasClose');
+  if (!home || !atlas || !slot || !content || !openButton || !closeButton ||
+      ids.some(id => !document.getElementById(id))) return;
+
+  let active = false;
+  function authenticated() {
+    // Auth continues to be owned by index.html. Merely guard against
+    // accidentally exposing the private view when the app root is hidden.
+    const root = document.getElementById('appRoot');
+    return !!root && !root.hidden && getComputedStyle(root).display !== 'none';
+  }
+  function setAtlasView(next, focus) {
+    if (next && !authenticated()) return;
+    if (next === active) return;
+    const nodes = ids.map(id => document.getElementById(id));
+    if (next) {
+      nodes.forEach(node => content.appendChild(node));
+      home.hidden = true;
+      atlas.hidden = false;
+      openButton.setAttribute('aria-expanded', 'true');
+      active = true;
+      if (focus) {
+        atlas.scrollIntoView({block:'start',behavior:'auto'});
+        closeButton.focus({preventScroll:true});
+      }
+    } else {
+      nodes.forEach(node => slot.parentNode.insertBefore(node,slot));
+      atlas.hidden = true;
+      home.hidden = false;
+      openButton.setAttribute('aria-expanded', 'false');
+      active = false;
+      if (focus) {
+        home.scrollIntoView({block:'start',behavior:'auto'});
+        openButton.focus({preventScroll:true});
+      }
+    }
+  }
+  openButton.addEventListener('click', () => setAtlasView(true,true));
+  closeButton.addEventListener('click', () => setAtlasView(false,true));
+  document.addEventListener('keydown', event => {
+    if (active && event.key === 'Escape') {event.preventDefault();setAtlasView(false,true);}
+  });
+  // A private view must never be restored without a fresh authentication
+  // decision after Safari bfcache. Return to existing home state.
+  window.addEventListener('pageshow', event => {
+    if (event.persisted && active) setAtlasView(false,false);
+  });
+  // Sign-out handling remains the canonical index.html flow. The observer
+  // does not fetch, render, or retain any activity data.
+  const root = document.getElementById('appRoot');
+  const observer = new MutationObserver(() => {
+    if (active && !authenticated()) setAtlasView(false,false);
+  });
+  if (root) observer.observe(root,{attributes:true,attributeFilter:['style','hidden','class']});
+})();
