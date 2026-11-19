@@ -42,6 +42,10 @@ jobs:
         run: node tests/rings-atlas/atlas-view-lifecycle.cjs
       - name: Verify account and map record layout
         run: node tests/rings-atlas/home-account-record-layout.cjs
+      - name: Verify side-by-side memories and nearby run management
+        run: node tests/rings-atlas/home-run-controls-memory-pair.cjs
+      - name: Check engagement layout JavaScript syntax
+        run: node --check rr-engagement.js
       - name: Verify title-right account stack
         run: node tests/rings-atlas/header-account-stack.cjs
       - name: Verify logo and bilingual two-line header
