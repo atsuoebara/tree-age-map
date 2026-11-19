@@ -8,7 +8,7 @@ for(const id of ['rrHeaderTopRow','rrHeaderAccount','accountProfileArea','accoun
   assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id+' must remain unique');
 }
 const h=html.indexOf('<header>'), row=html.indexOf('id="rrHeaderTopRow"');
-const title=html.indexOf("Runner's Rings<span class=\"brandReading\">");
+const title=html.indexOf('<span class="rrBrandEnglish">Runner\'s Rings</span>');
 const slot=html.indexOf('id="rrHeaderAccount"'), end=html.indexOf('</header>');
 assert(h<row && row<title && title<slot && slot<end,'account slot must be to the right of title');
 assert.match(html, /#rrHeaderAccount #accountProfileArea\s*\{[^}]*flex-direction:column/);
