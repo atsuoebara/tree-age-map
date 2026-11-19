@@ -34,6 +34,6 @@ assert.match(html,/const allMonthRuns=Array\.from\(perDay\.values\(\)\)\.flat\(\
 assert.match(html,/const totalMonthKm=validMonthKm\.reduce/);
 assert.match(html,/rrCalSetMode\('list'\)/);
 assert.match(html,/align-self:stretch/);
-assert.match(html,/today-dedupe-01/);
+assert.match(html,/runner_rings_archive\.js\?v=20261119-today-tile-dedupe-02/);
 assert.match(html,/p0-breakdown-01/);
 console.log('Run calendar static + date regression tests passed:',cases.length,'date cases and 16 guards');
