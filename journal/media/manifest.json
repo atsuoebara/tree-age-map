@@ -290,5 +290,9 @@
   "journal-20261118-210819-8c034445": {
     "status": "ready",
     "url": "https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/86/29ad36d0-d959-4a5a-8732-989d268e2f32.png"
+  },
+  "journal-20261119-181304-5e6866c3": {
+    "status": "ready",
+    "url": "https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/87/eb1e3c02-5318-4494-bcef-cc83f45d8862.png"
   }
 }
