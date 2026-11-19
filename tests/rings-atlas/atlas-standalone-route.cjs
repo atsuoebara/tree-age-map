@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const html=fs.readFileSync(path.resolve(__dirname,'../../index.html'),'utf8');
+const page=fs.readFileSync(path.resolve(__dirname,'../../rings-atlas.html'),'utf8');
+const js=fs.readFileSync(path.resolve(__dirname,'../../rings-atlas-view.js'),'utf8');
+const gps=html.indexOf('href="./gps-art.html" style="display:block');
+const atlas=html.indexOf('href="./rings-atlas.html" class="rrAtlasFeatureTile"');
+const today=html.indexOf('href="./today.html" style="display:block',html.indexOf('class="rrFeatureTiles"'));
+assert(today>=0 && today<atlas && atlas<gps,'feature row must put Atlas left of GPS Art');
+assert.match(html,/#dashboard \.rrFeatureTiles > a\[href="\.\/gps-art\.html"\],[\s\S]*?a\[href="\.\/rings-atlas\.html"\]\s*\{\s*grid-column:auto/);
+assert.equal((html.match(/href="\.\/rings-atlas\.html" class="rrAtlasFeatureTile"/g)||[]).length,1);
+assert.equal((page.match(/<iframe\b/g)||[]).length,1,'exactly one canonical app frame');
+assert.match(page,/src="\.\/index\.html\?atlas=embedded"/);
+assert.match(page,/target="_top"/);
+assert.match(page,/name="robots" content="noindex,nofollow"/);
+assert.doesNotMatch(page,/supabase|createClient|fetch\s*\(|localStorage|sessionStorage|indexedDB|postMessage|eval\s*\(/i);
+assert.match(html,/window\.parent !== window && new URLSearchParams\(location\.search\)\.get\('atlas'\) === 'embedded'/);
+assert.match(html,/html\.rrAtlasEmbedded #appRoot > :not\(#mapPeriodControls\)/);
+assert.match(html,/html\.rrAtlasEmbedded #rrAtlasView #rrAtlasClose \{ display:none !important; \}/);
+assert.match(js,/classList\.contains\('rrAtlasEmbedded'\)/);
+assert.match(js,/embedded && !active && authenticated\(\)/);
+assert.match(js,/if \(embedded\) window\.location\.reload\(\)/);
+assert.doesNotMatch(js,/fetch\s*\(|XMLHttpRequest|WebSocket|localStorage|sessionStorage|indexedDB|cloneNode/);
+for(const id of ['countryHeading','countryList','regionSection','admin2Section','prefectureSection','citySection'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
+console.log('PASS: Atlas on separate route left of GPS Art, one canonical app and one set of region nodes');
