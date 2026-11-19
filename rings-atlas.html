@@ -16,7 +16,7 @@
   .atlasTitle strong { display:block; font-size:19px; }
   .atlasTitle small { display:block; font-size:11px;color:#b5d4e9; }
   .atlasBack { display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 11px;border:1px solid #74d5ff;border-radius:10px;color:#dcf7ff;text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap; }
-  .atlasFrame { width:100%;height:calc(100dvh - 66px);flex:1 1 auto;min-height:500px;border:0;background:#0b1422; }
+  .atlasFrame { display:block;width:100%;height:500px;flex:0 0 auto;min-height:500px;border:0;background:#0b1422; }
   @media(max-width:375px) {
     .atlasHeader {gap:8px;padding:9px 10px;}
     .atlasTitle strong {font-size:17px;}
@@ -35,7 +35,52 @@
     <a class="atlasBack" href="./index.html" target="_top" rel="noopener">← トップに戻る</a>
   </header>
   <!-- One same-origin canonical app instance. No duplicated data client or user records. -->
-  <iframe class="atlasFrame" title="Rings Atlas：本人専用の地域別記録" src="./index.html?atlas=embedded" loading="eager" referrerpolicy="same-origin"></iframe>
+  <iframe id="rrAtlasAppFrame" class="atlasFrame" title="Rings Atlas：本人専用の地域別記録" src="./index.html?atlas=embedded" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
+<script>
+/* Size the single same-origin app to its content so iPhone has one page scroll.
+ * No postMessage, data transfer, extra auth client or iframe navigation.
+ * If access/ResizeObserver fails, the iframe keeps its native fallback scroll.
+ */
+(function () {
+  'use strict';
+  const frame = document.getElementById('rrAtlasAppFrame');
+  if (!frame) return;
+  frame.addEventListener('load', () => {
+    let child;
+    try {
+      child = frame.contentDocument;
+      if (!child || !child.body) return;
+    } catch (_) {
+      return;
+    }
+    let queued = false;
+    function resize() {
+      queued = false;
+      if (!frame.isConnected || !child.body) return;
+      const height = Math.max(500, Math.ceil(child.body.scrollHeight));
+      if (!Number.isFinite(height) || height > 40000) return;
+      if (Math.abs(frame.getBoundingClientRect().height - height) >= 2) {
+        frame.style.height = height + 'px';
+      }
+      frame.scrolling = 'no';
+    }
+    function schedule() {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(resize);
+      }
+    }
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(schedule).observe(child.body);
+    }
+    new MutationObserver(schedule).observe(child.body, {
+      childList:true, subtree:true, attributes:true,
+      attributeFilter:['hidden','open','style','class']
+    });
+    schedule();
+  });
+})();
+</script>
 </body>
 </html>
