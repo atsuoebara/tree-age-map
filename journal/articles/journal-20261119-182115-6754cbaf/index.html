@@ -1,0 +1,473 @@
+<!doctype html>
+<!-- RR_JOURNAL_GENERATED_PAGE -->
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CX6V4G2ML5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CX6V4G2ML5');
+  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="機能を増やしてきたRunner’s Rings。でも、妹が実際に使っている姿を見て気づいた。「情報が多すぎて、使いにくい！」機能を増やすだけではなく、迷わず使えるアプリへ。トップ画面の整理に取り組んだ開発日記です。">
+  <title>トップ画面を見やすくしたよ！妹のひと言から始まった大改造 | Rings Journal</title>
+  <link rel="canonical" href="https://runnersrings.com/journal/articles/journal-20261119-182115-6754cbaf/">
+  <link rel="icon" href="/icon.PNG" type="image/png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Rings Journal">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://runnersrings.com/journal/articles/journal-20261119-182115-6754cbaf/">
+  <meta property="og:title" content="トップ画面を見やすくしたよ！妹のひと言から始まった大改造">
+  <meta property="og:description" content="機能を増やしてきたRunner’s Rings。でも、妹が実際に使っている姿を見て気づいた。「情報が多すぎて、使いにくい！」機能を増やすだけではなく、迷わず使えるアプリへ。トップ画面の整理に取り組んだ開発日記です。">
+  <meta property="og:image" content="https://runnersrings.com/journal/media/journal-20261119-182115-6754cbaf-hero.jpg">
+  <meta name="twitter:image" content="https://runnersrings.com/journal/media/journal-20261119-182115-6754cbaf-hero.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="article:published_time" content="2026-11-19T09:23:59.174Z">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"トップ画面を見やすくしたよ！妹のひと言から始まった大改造","description":"機能を増やしてきたRunner’s Rings。でも、妹が実際に使っている姿を見て気づいた。「情報が多すぎて、使いにくい！」機能を増やすだけではなく、迷わず使えるアプリへ。トップ画面の整理に取り組んだ開発日記です。","inLanguage":"ja","datePublished":"2026-11-19T09:23:59.174Z","url":"https://runnersrings.com/journal/articles/journal-20261119-182115-6754cbaf/","mainEntityOfPage":{"@type":"WebPage","@id":"https://runnersrings.com/journal/articles/journal-20261119-182115-6754cbaf/"},"isPartOf":{"@type":"Blog","name":"Rings Journal","url":"https://runnersrings.com/journal.html"},"image":"https://runnersrings.com/journal/media/journal-20261119-182115-6754cbaf-hero.jpg"}</script>
+  <style>
+  *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
+  header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.feedback{min-height:1em;color:#eaff00;font-size:12px}.rr-creator-link{font-size:12px;line-height:1.7;color:#9ba8b9;margin:16px 0 4px}.rr-creator-link a{color:#cbd5e1;text-underline-offset:3px;overflow-wrap:anywhere}.rr-creator-link a:hover{color:#ff2bd6}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
+  </style>
+</head>
+<body>
+  <header><div class="inner"><strong>Rings Journal</strong><nav><button type="button" id="ja" class="active">日本語</button> <button type="button" id="en">EN</button></nav></div></header>
+  <main>
+    <article data-lang="ja" >
+      <div class="category">development</div>
+      <time datetime="2026-11-19">2026-11-19</time>
+      <h1>トップ画面を見やすくしたよ！妹のひと言から始まった大改造</h1>
+      <img class="hero" src="/journal/media/journal-20261119-182115-6754cbaf-hero.webp" alt="" loading="lazy">
+      <p class="summary">機能を増やしてきたRunner’s Rings。でも、妹が実際に使っている姿を見て気づいた。「情報が多すぎて、使いにくい！」機能を増やすだけではなく、迷わず使えるアプリへ。トップ画面の整理に取り組んだ開発日記です。</p>
+      <div class="body">■ 機能を増やせば、便利になると思っていた。
+
+Runner’s Ringsを作り始めてから、いろいろな機能を追加してきた。
+
+走った道を地図に残す。
+過去のランニングを振り返る。
+タイムラプスで走った軌跡を見る。
+地域ごとの年輪を楽しむ。
+記録を比較する。
+
+思いついたアイデアを、チャッピーと一緒に形にしてきた。
+
+新しい機能ができるたびに、うれしかった。
+
+「これもできる！」
+「あれも追加したい！」
+
+気づけば、トップ画面にはたくさんの機能が並んでいた。
+
+自分では便利になったと思っていた。
+
+ところが……。
+
+■ 妹が使っている姿を見て、気づいた。
+
+ある日、妹がRunner’s Ringsを使ってくれていた。
+
+私はその様子を見ていた。
+
+すると、気になることがあった。
+
+画面に情報が多い。
+
+どこに何があるのか、わかりにくい。
+
+アカウントやタイムラプスなど、開いたり閉じたりできる場所もある。
+
+でも、開くとさらに情報が増えてしまう。
+
+しかも、どこを開いているのかがわかりにくい。
+
+閉じた状態と開いた状態の違いも、もっとはっきりさせたい。
+
+そして、最初にこんな問題もあった。
+
+「登録できたのかわからない」
+
+……これは困った。
+
+作っている本人には、どこに何があるのかわかる。
+
+でも、初めて使う人にはわからない。
+
+当たり前のことなのに、実際に使ってもらうまで気づかなかった。
+
+■ チャッピー、ちょっと待て！
+
+私はチャッピーに相談した。
+
+「ランリング、情報量が多すぎない？」
+
+「機能がたくさんあるのに、そこまでたどり着けないんだよ」
+
+チャッピーと一緒に、画面の構成を見直すことにした。
+
+大切なのは、機能を減らすことではない。
+
+必要な機能を、必要なときに見つけやすくすること。
+
+便利な機能があっても、見つけられなければ使ってもらえない。
+
+それでは、せっかく作った意味がない。
+
+■ トップ画面の整理を開始！
+
+今回取り組んだのは、画面の情報整理だ。
+
+まず、地域ごとの年輪に関する表示を見直した。
+
+トップ画面に集まっていた情報の一部を、Atlas側へ移動。
+
+地域の情報は、地域の情報を見る場所へ。
+
+同じような内容が複数の場所に並ばないようにする。
+
+そして、地図を見ながら使う機能は、地図との関係がわかりやすい場所へ。
+
+「あなたの国・地域別の年輪をたどる」
+
+そんな案内文も、利用者に伝わりやすい表現へ整えた。
+
+実際にスマートフォンで確認すると、操作しにくい場所も見つかった。
+
+画面を引っ張らないと表示されない位置にあるボタン。
+
+これでは、使いたくても使えない。
+
+そこで、配置や操作方法も見直した。
+
+小さなことに見えるかもしれない。
+
+でも、使う人にとっては大きな違いだ。
+
+■ まだまだ、整理したい。
+
+「今月のあなたの年輪」と「1年前の今日」。
+
+この二つは、並べて見られるようにしたい。
+
+今の自分と、過去の自分。
+
+Runner’s Ringsらしい楽しみ方ができる場所だからだ。
+
+さらに、端末保存やランニング記録に関する操作も、ラン追加の近くにまとめたい。
+
+使う目的が同じものは、近くにある方がわかりやすい。
+
+機能を一つ追加することより、配置を少し変えることの方が、使いやすさにつながる場合もある。
+
+今回の整理を通して、そんなことを感じた。
+
+■ 開発者には見えないものがある。
+
+自分で作っているアプリは、どうしても自分の目線で見てしまう。
+
+どこを押せば何が起きるか知っている。
+
+どんな機能があるかも知っている。
+
+だから、多少複雑でも使えてしまう。
+
+でも、初めて使う人は違う。
+
+「これ、何？」
+
+「どこを押すの？」
+
+「登録できた？」
+
+そんな疑問が出る。
+
+今回は妹が実際に使ってくれたことで、その問題に気づけた。
+
+開発者が何時間も画面を眺めるより、初めて使う人の数分間の操作から学べることもある。
+
+■ 増やす開発から、整える開発へ。
+
+これまでの私は、どちらかというと機能を増やすことが好きだった。
+
+新しいアイデアが浮かぶと、すぐ形にしたくなる。
+
+もちろん、これからも新しい機能は作りたい。
+
+でも、Runner’s Ringsをもっと多くの人に使ってもらうためには、それだけでは足りない。
+
+初めて使う人が迷わないこと。
+
+自分の記録をすぐに見つけられること。
+
+使いたい機能に自然にたどり着けること。
+
+そして、走った道を地図に積み重ねる楽しさが、ちゃんと伝わること。
+
+これからは、そんな部分も大切にしていきたい。
+
+妹よ、使ってくれてありがとう。
+
+そしてチャッピー。
+
+新機能もいいけど、まずは画面を片付けよう！（笑）
+
+Runner’s Ringsは、まだまだ成長途中。
+
+走った道が積み重なるように、使いやすさも少しずつ積み重ねていこう。</div>
+      <div class="share">
+        <button type="button" class="copy">リンクをコピー</button>
+        <button type="button" class="native-share" hidden>共有</button>
+        <a href="https://twitter.com/intent/tweet?text=%E3%83%88%E3%83%83%E3%83%97%E7%94%BB%E9%9D%A2%E3%82%92%E8%A6%8B%E3%82%84%E3%81%99%E3%81%8F%E3%81%97%E3%81%9F%E3%82%88%EF%BC%81%E5%A6%B9%E3%81%AE%E3%81%B2%E3%81%A8%E8%A8%80%E3%81%8B%E3%82%89%E5%A7%8B%E3%81%BE%E3%81%A3%E3%81%9F%E5%A4%A7%E6%94%B9%E9%80%A0&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261119-182115-6754cbaf%2F" target="_blank" rel="noopener noreferrer">Xで共有</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <p class="rr-creator-link">作っている人：<a href="https://www.instagram.com/atsuoebarun/" target="_blank" rel="noopener noreferrer" aria-label="Atsuo Ebaraの個人Instagram">Atsuo Ebara · Instagram</a><span>（個人アカウント）</span></p>
+      <a class="back" href="/journal.html">Journal一覧へ戻る</a>
+    </article>
+    <article data-lang="en" hidden>
+      <div class="category">development</div>
+      <time datetime="2026-11-19">2026-11-19</time>
+      <h1>We Made the Home Screen Easier to Use! It All Started with My Sister</h1>
+      <img class="hero" src="/journal/media/journal-20261119-182115-6754cbaf-hero.webp" alt="" loading="lazy">
+      <p class="summary">Runner’s Rings has gained many features, but watching my sister use the app revealed a problem: too much information and too many things to navigate. This development diary shares how we began reorganizing the home screen to make the app simpler and easier to use.</p>
+      <div class="body">■ I Thought More Features Meant a Better App.
+
+Since I started building Runner’s Rings, I’ve added many features.
+
+Saving running routes on a map.
+Looking back at past runs.
+Watching routes appear through time-lapse.
+Exploring regional growth rings.
+Comparing running records.
+
+Every new idea was something I wanted to build with Chappy, my AI development partner.
+
+And every new feature made me happy.
+
+“We can do this now!”
+
+“Let’s add that next!”
+
+Before I knew it, the home screen was full of features.
+
+I thought the app was becoming more convenient.
+
+But then something happened.
+
+■ Watching My Sister Use the App Changed My Perspective.
+
+One day, my sister was using Runner’s Rings.
+
+I watched how she interacted with it.
+
+And I noticed something.
+
+There was too much information on the screen.
+
+It wasn’t always clear where to find things.
+
+Sections such as Account and Time-lapse could be expanded or collapsed.
+
+But opening them made the screen even busier.
+
+It was also difficult to tell which sections were currently open.
+
+The difference between expanded and collapsed sections needed to be clearer.
+
+And there was another problem right at the beginning.
+
+She couldn’t tell whether registration had succeeded.
+
+That was a serious usability issue.
+
+As the creator, I know where everything is.
+
+I know which buttons to press.
+
+But someone using the app for the first time doesn’t have that knowledge.
+
+It sounds obvious.
+
+Yet I hadn’t fully realized it until I watched someone else use the app.
+
+■ Chappy, We Need to Talk!
+
+I brought the problem to Chappy.
+
+“Isn’t there too much information on the screen?”
+
+“We have lots of features, but people can’t easily find them.”
+
+So we started reviewing the layout.
+
+The goal wasn’t to remove useful features.
+
+It was to make them easier to discover.
+
+A feature isn’t truly useful if people can’t find it.
+
+No matter how much effort went into building it.
+
+■ Reorganizing the Home Screen.
+
+This time, we focused on simplifying the layout.
+
+First, we reviewed how regional growth ring information was displayed.
+
+Some information that had been concentrated on the home screen was moved toward Atlas.
+
+Regional information belongs in a place designed for exploring regions.
+
+We also wanted to avoid displaying similar information in multiple places.
+
+Features related to the map should be positioned where their relationship to the map is easy to understand.
+
+We improved the wording of navigation links, including one inviting users to explore their growth rings by country and region.
+
+Testing on a smartphone also revealed some awkward interactions.
+
+One button was positioned so that it could only be seen after pulling the screen.
+
+That made it difficult to use.
+
+So we reviewed its placement and behavior.
+
+These may seem like small changes.
+
+But small changes can make a big difference to the person using the app.
+
+■ There’s Still More to Improve.
+
+I also want to place “Your Growth Rings This Month” and “On This Day One Year Ago” side by side.
+
+Seeing the present and the past together is one of the things that makes Runner’s Rings special.
+
+I also want to move device storage and running record controls closer to the Add Run area.
+
+Features serving similar purposes should be grouped together.
+
+Sometimes moving a button can improve usability more than adding an entirely new feature.
+
+That’s something this redesign has taught me.
+
+■ Developers Have Blind Spots.
+
+When you build an app yourself, you naturally see it from the developer’s perspective.
+
+You know what every button does.
+
+You know where every feature is located.
+
+And you know how the whole system works.
+
+So even a complicated interface can feel perfectly normal.
+
+But first-time users see things differently.
+
+“What does this mean?”
+
+“Where should I tap?”
+
+“Did my registration work?”
+
+Those questions matter.
+
+Watching my sister use Runner’s Rings helped me recognize problems I had overlooked.
+
+Sometimes a few minutes of watching a new user can teach you more than hours of staring at your own design.
+
+■ From Adding Features to Improving the Experience.
+
+Until now, I’ve mostly enjoyed adding new features.
+
+Whenever I get an idea, I want to turn it into something real.
+
+And I still want to keep building new things.
+
+But if Runner’s Rings is going to become useful to more people, adding features isn’t enough.
+
+New users should feel comfortable.
+
+Running records should be easy to find.
+
+Navigation should feel natural.
+
+And most importantly, the joy of seeing your running journey grow on a map should be easy to experience.
+
+That’s what I want to focus on next.
+
+To my sister: thank you for trying the app.
+
+And to Chappy:
+
+New features are great, but let’s clean up the home screen first! (LOL)
+
+Runner’s Rings is still growing.
+
+Just as our running routes accumulate over time, we’ll keep improving the experience, one step at a time.</div>
+      <div class="share">
+        <button type="button" class="copy">Copy link</button>
+        <button type="button" class="native-share" hidden>Share</button>
+        <a href="https://twitter.com/intent/tweet?text=We%20Made%20the%20Home%20Screen%20Easier%20to%20Use!%20It%20All%20Started%20with%20My%20Sister&amp;url=https%3A%2F%2Frunnersrings.com%2Fjournal%2Farticles%2Fjournal-20261119-182115-6754cbaf%2F" target="_blank" rel="noopener noreferrer">Share to X</a>
+      </div><p class="feedback" aria-live="polite"></p>
+      <p class="rr-creator-link">Made by：<a href="https://www.instagram.com/atsuoebarun/" target="_blank" rel="noopener noreferrer" aria-label="Atsuo Ebara personal Instagram">Atsuo Ebara · Instagram</a><span> (personal account)</span></p>
+      <a class="back" href="/journal.html">Back to Journal</a>
+    </article></main>
+  <footer>© 2026 Runner's Rings</footer>
+  <script>
+  (()=>{
+    'use strict';
+    const permalink="https://runnersrings.com/journal/articles/journal-20261119-182115-6754cbaf/";
+    const labels={ja:'URLをコピーしました',en:'Link copied'};
+    const copyFallback=(text)=>{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.left='-9999px';
+      area.style.top='0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      area.setSelectionRange(0,area.value.length);
+      let ok=false;
+      try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();
+      return ok;
+    };
+    const copyText=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){
+        try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+      }
+      return copyFallback(text);
+    };
+    let lang=localStorage.getItem('runners-rings-language')==='en'?'en':'ja';
+    const show=()=>{
+      document.documentElement.lang=lang;
+      document.querySelectorAll('article[data-lang]').forEach(a=>a.hidden=a.dataset.lang!==lang);
+      ['ja','en'].forEach(s=>document.getElementById(s).classList.toggle('active',s===lang));
+    };
+    ['ja','en'].forEach(s=>document.getElementById(s).addEventListener('click',()=>{lang=s;localStorage.setItem('runners-rings-language',s);show();}));
+    document.querySelectorAll('article').forEach(a=>{
+      const feedback=a.querySelector('.feedback');
+      a.querySelector('.copy').addEventListener('click',async()=>{
+        const ok=await copyText(permalink);
+        if(ok){feedback.textContent=labels[a.dataset.lang];return;}
+        window.prompt(a.dataset.lang==='ja'?'記事URLをコピーしてください':'Copy article URL',permalink);
+      });
+      if(navigator.share){
+        const btn=a.querySelector('.native-share');
+        btn.hidden=false;
+        btn.addEventListener('click',async()=>{
+          try{await navigator.share({title:a.querySelector('h1').textContent,url:permalink});}
+          catch(e){if(e.name!=='AbortError')feedback.textContent=a.dataset.lang==='ja'?'共有できませんでした':'Share failed';}
+        });
+      }
+    });
+    show();
+  })();
+  </script>
+  <script defer src="/rr-ondevice-translate.js"></script>
+</body>
+</html>
