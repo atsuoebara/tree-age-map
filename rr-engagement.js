@@ -11,9 +11,10 @@ card.innerHTML='<strong style="color:#78eaff;font-size:16px">🌱 今月のあ�
 // Keep month and anniversary summaries together without altering their actions.
 const progressPair=document.createElement('div');
 progressPair.id='rrProgressPair';
-progressPair.style.cssText='display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;min-width:0;box-sizing:border-box;align-items:stretch';
+progressPair.style.cssText='display:grid;gap:10px;width:100%;min-width:0;box-sizing:border-box;align-items:stretch';
 const progressPairStyle=document.createElement('style');
 progressPairStyle.textContent=`
+  #rrProgressPair { grid-template-columns:minmax(0,1fr); }
   #rrProgressPair > #rrPersonalProgress,
   #rrProgressPair > #rrYearAgoToday {
     width:100% !important;
