@@ -554,6 +554,26 @@
   outline-offset:2px;
 }
 
+/* Keep signed-in account access at the upper-right; retain existing control IDs. */
+#accountBar #rrDataConnectionMenu { order:1; }
+#accountBar #addRunButton { order:2; }
+#accountBar #accountProfileArea { order:3; margin-left:auto; }
+#accountBar #accountProfileText { max-width:clamp(100px,19vw,220px); }
+#rrMapRecordSummary { margin:8px 0 12px; padding:12px; border-radius:14px; background:#14283c; }
+#rrMapRecordSummary h2 { margin:0 0 6px; font-size:18px; }
+#rrMapRecordSummary p { margin:0 0 10px; font-size:12px; line-height:1.5; }
+#rrMapRecordSummary .summary { margin:0; }
+@media (max-width:520px) {
+  #accountBar #accountProfileArea {
+    order:0; flex:0 1 100%; width:100%; justify-content:flex-end; margin-left:auto;
+  }
+  #accountBar #accountProfileText { max-width:min(45vw,190px); }
+  #rrMapRecordSummary { padding:10px 8px; margin:7px 0 10px; }
+  #rrMapRecordSummary .summary { gap:6px; }
+  #rrMapRecordSummary .card { min-width:0; padding:8px 5px; }
+  #rrMapRecordSummary .value { overflow-wrap:anywhere; }
+}
+
 @media (max-width:520px){
   /* Phase 1 final polish: keep every action visible while reclaiming vertical space. */
   #accountBar{
@@ -3783,6 +3803,33 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     </select>
   </div>
   </div>
+  <!-- Canonical per-period stats moved above the map; no duplicate data/rendering. -->
+  <section id="rrMapRecordSummary" aria-label="あなたの記録">
+  <h2>あなたの記録</h2>
+      <p>
+        総距離・ラン数・走破地域数・地図は、あなた本人だけに表示されています。
+      </p>
+  
+      <div class="summary">
+  
+        <div class="card">
+          <div id="distanceLabel" class="label">総距離</div>
+          <span id="totalDistance" class="value">--</span>
+          <span class="unit">km</span>
+        </div>
+  
+        <div class="card">
+          <div id="runCountLabel" class="label">ラン数</div>
+          <div id="runCount" class="value">--</div>
+        </div>
+  
+        <div class="card">
+          <div id="cityCountLabel" class="label">走破地域数</div>
+          <div id="cityCount" class="value">--</div>
+        </div>
+  
+      </div>
+  </section>
   <div id="mapViewModeBar" aria-label="地図の表示モード">
     <span class="mapViewModeLabel">表示</span>
     <button class="mapViewModeButton isActive" type="button" data-map-view-mode="auto">自動</button>
@@ -4383,31 +4430,6 @@ html:not([lang="en"]) [data-art-lang="en"],html[lang="en"] [data-art-lang="ja"]{
     <a href="./today.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:#172c41;color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🩵 Rings Today <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">今日のランニングを地図で見る →</span><span data-art-lang="en">Explore today's runs on a map →</span></span></a>
     <a href="./gps-art.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #ff9b45;border-radius:16px;background:linear-gradient(135deg,#654021,#203a55);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎨 <span data-art-lang="ja">下手ウマ画伯のGPSアート（β）</span><span data-art-lang="en">Charming cartoon GPS art (beta)</span><span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">走らなくても、下絵づくりで画伯と遊ぼう →</span><span data-art-lang="en">Play with the artist—no run needed →</span></span><small style="display:block;font-size:12px;font-weight:500"><span data-art-lang="ja">生成にはログインが必要です。利用上限・生成失敗があります。</span><span data-art-lang="en">Sign-in required to generate. Usage limits and generation failures may occur.</span></small></a>    <a href="./rings-people.html" class="ringsPeopleEntry" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #78eaff;border-radius:16px;background:linear-gradient(135deg,rgba(120,234,255,.34),#173e54 54%,#342849);color:#fff;text-decoration:none;font-size:18px;font-weight:900;line-height:1.55">🎤 Rings People <span style="display:block;margin-top:2px;font-size:14px;font-weight:600"><span data-art-lang="ja">それぞれの物語 →</span><span data-art-lang="en">Stories of all kinds →</span></span></a>
     <a href="./ring-tools.html" style="display:block;margin:0 0 18px;padding:18px 20px;border:3px solid #65f5bb;border-radius:16px;background:linear-gradient(135deg,#165653,#203a55);color:#fff;text-decoration:none;font-weight:850">🧮 Ring Tools <span style="font-size:12px;display:block;font-weight:600;margin-top:5px"><span data-art-lang="ja">ペース・ラップ・練習計算 →</span><span data-art-lang="en">Pace, splits &amp; workout tools →</span></span></a>
-
-    </div>
-
-    <h2>あなたの記録</h2>
-    <p>
-      総距離・ラン数・走破地域数・地図は、あなた本人だけに表示されています。
-    </p>
-
-    <div class="summary">
-
-      <div class="card">
-        <div id="distanceLabel" class="label">総距離</div>
-        <span id="totalDistance" class="value">--</span>
-        <span class="unit">km</span>
-      </div>
-
-      <div class="card">
-        <div id="runCountLabel" class="label">ラン数</div>
-        <div id="runCount" class="value">--</div>
-      </div>
-
-      <div class="card">
-        <div id="cityCountLabel" class="label">走破地域数</div>
-        <div id="cityCount" class="value">--</div>
-      </div>
 
     </div>
 
