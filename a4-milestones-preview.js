@@ -2,9 +2,9 @@
 (function(root){
   'use strict';
   function init(){
-    const anchor=document.getElementById('cloudRunsButton');
+    const destination=document.getElementById('timelapsePanel');
     const app=document.getElementById('appRoot');
-    if(!anchor||!app||!root.RunnerMilestones)return;
+    if(!destination||!app||!root.RunnerMilestones)return;
     const button=document.createElement('button');
     button.type='button';
     button.id='a4MilestonePreviewButton';
@@ -105,8 +105,9 @@
     breakdownContent.style.cssText='padding:10px 0 0;font-size:13px;line-height:1.65;overflow-wrap:anywhere';
     breakdown.append(breakdownToggle,breakdownContent);
     panel.append(title,result,note,openList,hundredWrap,futureWrap,breakdown);
-    anchor.insertAdjacentElement('afterend',button);
-    document.getElementById('importArea')?.insertAdjacentElement('afterend',panel);
+    // Record/analysis area below the map. Only relocate existing controls.
+    destination.insertAdjacentElement('afterend',button);
+    button.insertAdjacentElement('afterend',panel);
     let epoch=0;
     let owner=null;
     let lastState=null;
