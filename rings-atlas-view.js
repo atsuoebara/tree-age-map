@@ -14,6 +14,9 @@
   if (!home || !atlas || !slot || !content || !openButton || !closeButton ||
       ids.some(id => !document.getElementById(id))) return;
 
+  // Only the one existing authenticated index document runs inside the Atlas page.
+  const embedded = !!(document.documentElement &&
+      document.documentElement.classList.contains('rrAtlasEmbedded'));
   let active = false;
   function authenticated() {
     // Auth continues to be owned by index.html. Merely guard against
@@ -63,18 +66,23 @@
   openButton.addEventListener('click', () => setAtlasView(true,true));
   closeButton.addEventListener('click', () => setAtlasView(false,true));
   document.addEventListener('keydown', event => {
-    if (active && event.key === 'Escape') {event.preventDefault();setAtlasView(false,true);}
+    if (!embedded && active && event.key === 'Escape') {event.preventDefault();setAtlasView(false,true);}
   });
   // A private view must never be restored without a fresh authentication
   // decision after Safari bfcache. Return to existing home state.
   window.addEventListener('pageshow', event => {
-    if (event.persisted && active) setAtlasView(false,false);
+    if (!event.persisted) return;
+    if (active) setAtlasView(false,false);
+    // Always re-run the canonical auth lifecycle after bfcache on the separate route.
+    if (embedded) window.location.reload();
   });
   // Sign-out handling remains the canonical index.html flow. The observer
   // does not fetch, render, or retain any activity data.
   const root = document.getElementById('appRoot');
   const observer = new MutationObserver(() => {
     if (active && !authenticated()) setAtlasView(false,false);
+    else if (embedded && !active && authenticated()) setAtlasView(true,false);
   });
   if (root) observer.observe(root,{attributes:true,attributeFilter:['style','hidden','class']});
+  if (embedded && authenticated()) setAtlasView(true,false);
 })();
