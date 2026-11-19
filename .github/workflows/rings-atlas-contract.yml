@@ -32,5 +32,7 @@ jobs:
         run: node tests/rings-atlas/home-account-record-layout.cjs
       - name: Verify title-right account stack
         run: node tests/rings-atlas/header-account-stack.cjs
+      - name: Verify logo and bilingual two-line header
+        run: node tests/rings-atlas/header-brand-logo-two-lines.cjs
       - name: Check header placement syntax
         run: node --check header-account-placement.js
