@@ -34,6 +34,8 @@ button[aria-pressed=true]{border-color:#eaff00;color:#eaff00}
 footer{color:#b2c7d8;font-size:13px;border-top:1px solid #273c50;margin-top:30px}
 [hidden]{display:none!important}
 @media(max-width:600px){header{align-items:flex-start}.hero{padding:26px 20px}.grid{grid-template-columns:1fr}.person{width:100%}}
+.rrStaticIndex{margin:18px 0;padding:15px;border:1px solid #456078;border-radius:14px;background:#13273e}.rrStaticIndex h3{margin:0 0 12px;font-size:17px}.rrStaticIndex ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.rrStaticIndex li{border-bottom:1px solid #36516c;padding:5px 0;overflow-wrap:anywhere}.rrStaticIndex a{color:#b9eafd;text-decoration:underline}.rrStaticIndex[hidden]{display:none!important}
+html:not([lang="en"]) .rrStaticIndex[data-static-lang="en"],html[lang="en"] .rrStaticIndex[data-static-lang="ja"]{display:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -41,7 +43,33 @@ footer{color:#b2c7d8;font-size:13px;border-top:1px solid #273c50;margin-top:30px
 <header><a class="brand" href="./index.html">Runner's <span>Rings</span></a><nav><a href="./index.html" data-ja="トップ" data-en="Home">トップ</a><a href="./journal.html" data-ja="Journalの記事一覧" data-en="Rings Journal">Journalの記事一覧</a><button type="button" id="ja" aria-pressed="true">日本語</button><button type="button" id="en" aria-pressed="false">English</button></nav></header>
 <main><section class="hero"><div class="eyebrow">RUNNER'S RINGS / INTERVIEWS</div><h1>Rings People</h1><p class="lead" data-ja="走る人も、競技に挑む人も、支える人も。ときにはAIも。立場や肩書きにとらわれず、それぞれの経験や挑戦をインタビューで紹介します。" data-en="Runners, athletes, supporters, and sometimes even an AI guest. Rings People shares different experiences and challenges through interviews, beyond labels or disciplines.">走る人も、競技に挑む人も、支える人も。ときにはAIも。立場や肩書きにとらわれず、それぞれの経験や挑戦をインタビューで紹介します。</p></section>
 <div class="sectionHead"><h2 data-ja="それぞれの物語" data-en="Stories of all kinds">それぞれの物語</h2></div>
-<div id="status" class="message" role="status" aria-live="polite"></div><div id="cards" class="grid" hidden></div>
+<div id="status" class="message" role="status" aria-live="polite" hidden></div><div id="cards" class="grid" hidden></div>
+<section id="rrStaticPeople">
+<!-- RR_STATIC_PEOPLE_JA_START -->
+<nav class="rrStaticIndex" data-static-lang="ja" aria-label="Rings Peopleの公開済みインタビュー">
+<h3>Rings Peopleの公開済みインタビュー</h3>
+<ul>
+<li><a href="/journal/articles/journal-20261110-000623-67fe81a7/">Rings People｜junichisanさん：ロードバイクの骨折から始まった、走る楽しさと仲間との挑戦</a></li>
+<li><a href="/journal/articles/journal-20261109-200553-13a4d8a3/">Rings People｜監査AI「むせ」が語る、チャッピーの弱点とAtsuoの決断</a></li>
+<li><a href="/journal/articles/journal-20261106-112345-a854c4c9/">Rings People｜パトさん、世界への挑戦。ぐんまマラソン優勝からオリンピックへ</a></li>
+<li><a href="/journal/articles/journal-20261031-055124-cfb879f1/">Rings People #2｜60歳、なおサブ3に挑む。100マイルを走り抜いたSteve Speirsのランニング人生</a></li>
+<li><a href="/journal/articles/journal-20261030-234612-4e1b458e/">Rings People 第1回｜開発AIチャッピーを監査役むせが直撃！失敗、無茶ぶり、そしてRunner’s Ringsの未来</a></li>
+</ul>
+</nav>
+<!-- RR_STATIC_PEOPLE_JA_END -->
+<!-- RR_STATIC_PEOPLE_EN_START -->
+<nav class="rrStaticIndex" data-static-lang="en" aria-label="Published Rings People interviews">
+<h3>Published Rings People interviews</h3>
+<ul>
+<li><a href="/journal/articles/journal-20261110-000623-67fe81a7/">Rings People | junichisan: From a Cycling Accident to a New Love of Running</a></li>
+<li><a href="/journal/articles/journal-20261109-200553-13a4d8a3/">Rings People | Muse, the AI Auditor: Chappy’s Weaknesses and Atsuo’s Decisions</a></li>
+<li><a href="/journal/articles/journal-20261106-112345-a854c4c9/">Rings People | Pato’s Olympic Dream: From Gunma Marathon Victory to the World Stage</a></li>
+<li><a href="/journal/articles/journal-20261031-055124-cfb879f1/">Rings People #2 | Steve Speirs: 100-Mile Ultras, 21 Years of Sub-3 Marathons, and a New Challenge at 60</a></li>
+<li><a href="/journal/articles/journal-20261030-234612-4e1b458e/">Rings People #1 | Chappy Under Questioning: Mistakes, Challenges, and the Future of Runner’s Rings</a></li>
+</ul>
+</nav>
+<!-- RR_STATIC_PEOPLE_EN_END -->
+</section>
 </main><footer>© Runner's Rings · <a href="./journal.html?category=rings-people" data-ja="JournalのRings People記事" data-en="Rings People in Journal">JournalのRings People記事</a></footer>
 <script>
 (()=>{
@@ -55,7 +83,7 @@ function photoURL(value){try{const u=new URL(value);if(u.protocol==='https:'&&u.
 function setLanguage(lang){mode=lang;document.documentElement.lang=lang;try{localStorage.setItem('runners-rings-language',lang);}catch(_){}document.querySelectorAll('[data-ja][data-en]').forEach(el=>el.textContent=el.dataset[lang]);for(const v of ['ja','en'])document.getElementById(v).setAttribute('aria-pressed',String(v===lang));render();}
 function item(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=txt||'';return el;}
 function isRecentPublished(publishedAt){if(typeof publishedAt!=='string'||!publishedAt.trim())return false;const published=Date.parse(publishedAt),now=Date.now();if(!Number.isFinite(published)||published>now)return false;const offset=9*60*60*1000,day=24*60*60*1000;const age=Math.floor((now+offset)/day)-Math.floor((published+offset)/day);return age>=0&&age<7;}
-function render(){root.replaceChildren();root.hidden=true;status.hidden=false;if(state!=='ready'){status.textContent=dictionary[mode][state];return;}if(!posts.length){status.textContent=dictionary[mode].empty;return;}for(const post of posts){if(!post.slug||!/^[a-zA-Z0-9_-]+$/.test(post.slug))continue;const a=document.createElement('a');a.className='person';a.href='./journal/articles/'+encodeURIComponent(post.slug)+'/';const src=photoURL(post.image_url);if(src){const img=document.createElement('img');img.className='photo';img.loading='lazy';img.decoding='async';img.onerror=()=>{img.onerror=null;img.src=src;};img.src='/journal/media/'+encodeURIComponent(post.slug)+'.webp';img.alt='';a.append(img);}else{const placeholder=item('div','placeholder','🏃');placeholder.setAttribute('aria-hidden','true');a.append(placeholder);}const detail=item('div','details');const heading=item('div','name',post['title_'+mode]||post.title_ja||post.title_en||'Rings People');if(isRecentPublished(post.published_at)){const badge=item('span','personNewBadge','NEW');badge.setAttribute('aria-label',mode==='en'?'New interview':'新しいインタビュー');heading.append(badge);}detail.append(heading);detail.append(item('div','summary',post['summary_'+mode]||post.summary_ja||post.summary_en||''));detail.append(item('div','read',dictionary[mode].read));a.append(detail);root.append(a);}if(!root.childElementCount){status.textContent=dictionary[mode].empty;return;}status.hidden=true;root.hidden=false;}
+function render(){root.replaceChildren();root.hidden=true;status.hidden=false;document.getElementById('rrStaticPeople').hidden=state==='ready';if(state!=='ready'){status.textContent=dictionary[mode][state];return;}if(!posts.length){status.textContent=dictionary[mode].empty;return;}for(const post of posts){if(!post.slug||!/^[a-zA-Z0-9_-]+$/.test(post.slug))continue;const a=document.createElement('a');a.className='person';a.href='./journal/articles/'+encodeURIComponent(post.slug)+'/';const src=photoURL(post.image_url);if(src){const img=document.createElement('img');img.className='photo';img.loading='lazy';img.decoding='async';img.onerror=()=>{img.onerror=null;img.src=src;};img.src='/journal/media/'+encodeURIComponent(post.slug)+'.webp';img.alt='';a.append(img);}else{const placeholder=item('div','placeholder','🏃');placeholder.setAttribute('aria-hidden','true');a.append(placeholder);}const detail=item('div','details');const heading=item('div','name',post['title_'+mode]||post.title_ja||post.title_en||'Rings People');if(isRecentPublished(post.published_at)){const badge=item('span','personNewBadge','NEW');badge.setAttribute('aria-label',mode==='en'?'New interview':'新しいインタビュー');heading.append(badge);}detail.append(heading);detail.append(item('div','summary',post['summary_'+mode]||post.summary_ja||post.summary_en||''));detail.append(item('div','read',dictionary[mode].read));a.append(detail);root.append(a);}if(!root.childElementCount){status.textContent=dictionary[mode].empty;return;}status.hidden=true;root.hidden=false;}
 document.getElementById('ja').addEventListener('click',()=>setLanguage('ja'));document.getElementById('en').addEventListener('click',()=>setLanguage('en'));
 // Synchronize the independently rendered interview cards with the shared navbar language.
 new MutationObserver(()=>{const next=document.documentElement.lang==='en'?'en':'ja';if(next!==mode)setLanguage(next);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});

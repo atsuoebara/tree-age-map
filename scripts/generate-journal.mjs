@@ -7,6 +7,7 @@
  */
 import { mkdir, writeFile, readdir, readFile, rm } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
+import { replaceIndex } from './journal-static-links.mjs';
 
 const DRY_RUN = process.env.DRY_RUN !== 'false';
 const FIXTURE_PREVIEW = process.env.FIXTURE_PREVIEW === 'true';
@@ -280,6 +281,17 @@ for (const post of posts) {
     await writeFile(join(directory, 'index.html'), contents, 'utf8');
   }
   console.log(`${DRY_RUN ? '[DRY RUN] Validated' : 'Generated'}: ${slug}`);
+}
+
+// Synchronize initial HTML article links with the same published data as static pages.
+// Dry-run validates the markers without changing public content; fixture mode skips hubs.
+if(!FIXTURE_PREVIEW){
+ for(const [file,kind,items] of [['journal.html','journal',posts],['rings-people.html','people',posts.filter(p=>p.category==='rings-people')]]){
+   const old=await readFile(resolve(file),'utf8');
+   let next=old;
+   for(const lang of ['ja','en'])next=replaceIndex(next,kind,lang,items);
+   if(!DRY_RUN&&next!==old){await writeFile(resolve(file),next,'utf8');console.log('Updated public static index: '+file+' ('+items.length+')');}
+ }
 }
 
 // Keep sitemap in sync with published Journal rows whenever pages are generated.
