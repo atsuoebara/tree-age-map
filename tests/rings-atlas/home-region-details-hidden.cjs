@@ -21,7 +21,8 @@ assert(html.includes('href="./rings-atlas.html" class="rrAtlasFeatureTile"'),'At
 assert(html.includes('あなたの国・地域別の年輪をたどる →'),'approved tile copy retained');
 assert(atlas.includes('src="./index.html?atlas=embedded"'),'Atlas still uses same app');
 assert(script.includes('const ids = [\'countryHeading\',\'countryList\',\'regionSection\',\'admin2Section\',\'prefectureSection\',\'citySection\']'),'canonical relocation remains');
-assert(html.includes('const APP_BUILD = \'2026.11.19.12\''));
 const sw=fs.readFileSync(path.resolve(__dirname,'../../sw.js'),'utf8');
-assert(sw.includes('const RR_BUILD = \'2026.11.19.12\''));
+const appBuild=html.match(/const APP_BUILD = '([^']+)'/)?.[1];
+const swBuild=sw.match(/const RR_BUILD = '([^']+)'/)?.[1];
+assert(appBuild && swBuild && appBuild===swBuild,'C-3 app/service-worker build must match');
 console.log('PASS: home region details/legacy button hidden; Atlas feature, DOM, auth/data bridge and C-3 preserved');
