@@ -35,6 +35,10 @@ class Node {
 for (const id of [...ids,'dashboard','rrAtlasView','rrAtlasHomeEnd','rrAtlasContent','rrAtlasOpen','rrAtlasClose','appRoot']) elements.set(id,new Node(id));
 const el = id => elements.get(id);
 ids.forEach(id => el('dashboard').appendChild(el(id)));
+// Simulate canonical render and map-highlight listeners attached before relocation.
+let regionalClickCount = 0;
+el('countryList').addEventListener('click', () => { regionalClickCount++; });
+el('countryList').textContent = 'initial period';
 el('dashboard').appendChild(el('rrAtlasHomeEnd'));
 el('rrAtlasView').hidden=true;
 // Match the real HTML's initial aria-expanded="false" attribute.
@@ -75,8 +79,17 @@ function assertAtlas() {
 }
 assertHome();
 el('rrAtlasOpen').click(); assertAtlas();
+// The canonical dashboard renderer continues to mutate the exact same node.
+el('countryList').textContent = 'updated month';
+el('countryList').click();
+assert.equal(regionalClickCount, 1, 'regional click listener lost while in Atlas');
+assert.equal(el('rrAtlasContent').children[1].textContent, 'updated month');
 assert.equal(focused,'rrAtlasClose');assert.equal(resizeCount,1);
 el('rrAtlasClose').click();assertHome();
+assert.equal(el('countryList').textContent, 'updated month',
+  'month update lost on return to dashboard');
+el('countryList').click();
+assert.equal(regionalClickCount, 2, 'original listener lost on return home');
 assert.equal(focused,'rrAtlasOpen');assert.equal(resizeCount,2);
 el('rrAtlasOpen').click(); assertAtlas();
 listeners.keydown({key:'Escape',preventDefault(){this.prevented=true;}});
