@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
+const closed=html.match(/#timelapseOpenButton\s*\{([^}]+)\}/);
+const opened=html.match(/#timelapseLaunchArea:has\(\+ #timelapsePanel\.isOpen\) #timelapseOpenButton\s*\{([^}]+)\}/);
+assert(closed&&opened,'closed and opened button rules exist');
+assert.match(closed[1],/background:linear-gradient\(90deg,#ff2bd6,#ff7b71 52%,#ffe600\)/,'closed rainbow appearance intact');
+assert.match(closed[1],/color:#07101d/,'closed text retains dark contrast');
+assert.match(opened[1],/background:rgba\(84,192,225,\.2\)/,'opened blue state retained');
+assert.match(opened[1],/color:#fff\s*;/,'opened button uses readable white text');
+assert(html.includes('id="timelapseOpenButton"'),'Timelapse button retained');
+assert(html.includes('class="timelapseFaqLink" href="./faq.html#faq-video"'),'FAQ link retained');
+assert(html.includes('id="timelapsePanel"'),'Timelapse settings retained');
+assert(html.includes("timelapsePanel.classList.toggle("),'panel toggle unchanged');
+const app=html.match(/const APP_BUILD = '([^']+)'/),worker=sw.match(/const RR_BUILD = '([^']+)'/);
+assert(app&&worker);assert.equal(app[1],worker[1]);
+console.log('PASS: Timelapse opened text is readable; closed rainbow and actions retained');
