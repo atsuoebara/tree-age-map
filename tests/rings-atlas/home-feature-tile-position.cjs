@@ -23,6 +23,7 @@ assert(!html.includes('#dashboard .rrFeatureTiles'),'no dashboard-only styling')
 assert(html.includes('id="authImportGuide"'),'public setup guidance unchanged');
 assert(html.includes('<div class="authPublicLinks"')||html.includes('class="authPublicLinks"'),'public discovery links retained');
 assert(html.includes('<div class="rrAtlasEntry">'),'Atlas node retained');
+assert(html.includes('#appRoot:has(> #rrAtlasView:not([hidden])) > .rrFeatureTiles { display:none !important; }'),'Atlas details hide relocated feature tiles');
 const a=html.match(/const APP_BUILD = '([^']+)'/),b=sw.match(/const RR_BUILD = '([^']+)'/);
 assert(a&&b);assert.equal(a[1],b[1]);
 console.log('PASS: feature links moved nearer map; private controls, Atlas, public discovery preserved');
