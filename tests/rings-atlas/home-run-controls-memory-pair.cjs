@@ -24,7 +24,11 @@ assert(engagement.includes('progressPair.appendChild(card)'));
 assert(engagement.includes('progressPair.appendChild(anniversary)'));
 assert(engagement.includes('#rrProgressPair:has(> #rrYearAgoToday:not([hidden])) {\n    grid-template-columns:repeat(2,minmax(0,1fr));'),'side-by-side when both cards are visible, including iPhone');
 assert(engagement.includes('@media (max-width:520px)'),'compact mobile layout');
-assert(html.includes('rr-engagement.js?v=20261119-mobile-pair-01'),'mobile Safari uses current layout asset');
-assert(html.includes("const APP_BUILD = '2026.11.19.13'"));
-assert(sw.includes("const RR_BUILD = '2026.11.19.13'"));
+assert(html.includes('rr-engagement.js?v=20261119-mobile-pair-02'),'mobile Safari uses current layout asset');
+const appBuild=html.match(/const APP_BUILD = '([^']+)'/);
+const swBuild=sw.match(/const RR_BUILD = '([^']+)'/);
+assert(appBuild && swBuild,'both build labels must exist');
+assert.equal(appBuild[1],swBuild[1],'APP_BUILD/RR_BUILD must match');
+assert(!engagement.includes("progressPair.style.cssText='display:grid;grid-template-columns:"),
+ 'mobile two-column stylesheet must not be shadowed by an inline column rule');
 console.log('PASS: paired memory cards on mobile and unique run controls adjacent to add-run, preserving functionality');
