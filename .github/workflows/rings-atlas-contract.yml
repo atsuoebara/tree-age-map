@@ -42,6 +42,8 @@ jobs:
         run: node tests/rings-atlas/atlas-view-lifecycle.cjs
       - name: Verify account and map record layout
         run: node tests/rings-atlas/home-account-record-layout.cjs
+      - name: Verify feature tile navigation nearer map
+        run: node tests/rings-atlas/home-feature-tile-position.cjs
       - name: Verify connection menu remains ahead of run controls on expand
         run: node tests/rings-atlas/home-connection-menu-order.cjs
       - name: Verify connection help consolidation without hiding public guide

@@ -10,7 +10,7 @@ const gps=html.indexOf('href="./gps-art.html" style="display:block');
 const atlas=html.indexOf('href="./rings-atlas.html" class="rrAtlasFeatureTile"');
 const today=html.indexOf('href="./today.html" style="display:block',html.indexOf('class="rrFeatureTiles"'));
 assert(today>=0 && today<atlas && atlas<gps,'feature row must put Atlas left of GPS Art');
-assert.match(html,/#dashboard \.rrFeatureTiles > a\[href="\.\/gps-art\.html"\],[\s\S]*?a\[href="\.\/rings-atlas\.html"\]\s*\{\s*grid-column:auto/);
+assert.match(html,/#appRoot \.rrFeatureTiles > a\[href="\.\/gps-art\.html"\],[\s\S]*?a\[href="\.\/rings-atlas\.html"\]\s*\{\s*grid-column:auto/);
 assert.equal((html.match(/href="\.\/rings-atlas\.html" class="rrAtlasFeatureTile"/g)||[]).length,1);
 assert.equal((page.match(/<iframe\b/g)||[]).length,1,'exactly one canonical app frame');
 assert.match(page,/src="\.\/index\.html\?atlas=embedded"/);
