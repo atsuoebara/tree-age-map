@@ -12,7 +12,11 @@ assertContains(html,'height:240px !important; min-height:240px !important; max-h
 assertContains(html,"document.documentElement.classList.contains('rrAtlasEmbedded') ? 5 : 10");
 assertContains(html,'id="rrAtlasJumpToRegions"');
 assertContains(html,':not(#rrAtlasJumpToRegions)');
-assertContains(page,'position:sticky;top:0;z-index:500');
+assertContains(page,'position:fixed;inset:0 0 auto;z-index:10000');
+assertContains(page,'padding-top:calc(66px + env(safe-area-inset-top))');
+assertContains(page,'min-height:calc(66px + env(safe-area-inset-top))');
+assertContains(page,'target="_top" rel="noopener"');
+assert(!page.includes('position:sticky;top:0;z-index:500'),'sticky header must not return');
 assertContains(page,'class="atlasFooterReturn" href="./index.html"');
 assertContains(page,'href="./journal.html"');
 assertContains(page,'href="./ranking.html"');
@@ -71,4 +75,4 @@ assert.equal(sections.prefectureSection.open,false,'home must remain unchanged')
 assert.equal(sections.citySection.open,false,'home must remain unchanged');
 assertContains(html,'rings-atlas-prefecture-preview.js?v=20261119-10');
 assertContains(html,'html.rrAtlasEmbedded #rrAtlasShowMorePrefectures { display:none !important; }');
-console.log('PASS: Atlas sticky header/footer, 240px map, city and prefecture reopened after redraw, no duplicate toggle; home unchanged');
+console.log('PASS: Atlas fixed top return header/footer, 240px map, city and prefecture reopened after redraw, no duplicate toggle; home unchanged');
