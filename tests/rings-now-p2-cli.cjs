@@ -95,4 +95,4 @@ if(require.main===module)main().catch(()=>{
  process.stderr.write('P2_FAIL_OR_NOT_PROVEN: unhandled failure\n');
  process.exitCode=1;
 });
-module.exports={inspectCliPreflight,main};
+module.exports={inspectCliPreflight,safeDiagnostics,main};
