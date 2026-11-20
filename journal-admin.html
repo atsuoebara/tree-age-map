@@ -133,7 +133,7 @@
           <label for="interviewSocial" style="margin-top:12px">公開を許可されたSNS・Webリンク（任意）</label>
           <input id="interviewSocial" type="url" placeholder="https://...">
           <button type="button" class="secondary" id="insertInterviewProfile">プロフィールを日本語本文の先頭に挿入</button>
-          <div class="help">挿入後は通常の本文として編集・下書き保存できます。写真は既存の画像欄から1枚登録してください。</div>
+          <div class="help">挿入後は通常の本文として編集・下書き保存できます。写真はメイン1枚＋追加最大4枚を登録できます。</div>
           <label style="margin-top:16px"><input id="interviewApproved" type="checkbox" style="width:auto;min-height:auto;margin-right:8px">本人が完成記事・掲載名・写真・リンクの公開を了承済み</label>
           <div class="help">公開時に必須。確認記録はこの画面のチェックのみで、DBには保存されません。下書きを読み直した場合は再確認してください。</div>
         </div>
@@ -143,6 +143,13 @@
           <div class="help">画像のみ、5MB以下。保存前にプレビューできます。</div>
           <img id="imagePreview" class="preview hidden" alt="選択した画像のプレビュー">
           <div id="imageInfo" class="help" aria-live="polite"></div>
+        </div>
+        <div id="interviewGalleryFields" class="field hidden">
+          <label for="journalGallery">Rings People 追加写真（最大4枚、メインと合わせて5枚）</label>
+          <input id="journalGallery" type="file" accept="image/*" multiple>
+          <div class="help">1枚5MB以下。既存の追加写真は保持され、新しく選んだ写真を末尾に追加します。画像アップロード前に「下書き保存」を押してください。</div>
+          <div id="galleryPreview" class="previewPanel" aria-live="polite"></div>
+          <button id="clearGallery" type="button" class="secondary">追加写真をすべて外す</button>
         </div>
         <div class="buttonRow">
           <button id="saveDraftButton" type="submit">下書き保存</button>
@@ -174,6 +181,9 @@
     const publishButton = $('publishButton');
     const saveMessage = $('saveMessage');
     const imageInput = $('journalImage');
+    const galleryInput = $('journalGallery');
+    const galleryPreview = $('galleryPreview');
+    let pendingGalleryUrls = [];
     const preview = $('imagePreview');
     const imageInfo = $('imageInfo');
     const loader = $('draftLoader');
@@ -235,7 +245,7 @@
       try {
         await requireAdmin();
         const { data, error } = await supabaseClient.from('journal_posts')
-          .select('id,status,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,category,image_url')
+          .select('id,status,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,category,image_url,gallery_urls')
           .eq('id', id).eq('status', 'draft').single();
         if (error || !data) throw new Error('下書きを取得できません。IDと権限を確認してください。');
         const names = ['titleJa','titleEn','summaryJa','summaryEn','bodyJa','bodyEn','category'];
@@ -243,6 +253,9 @@
         names.forEach((name, i) => { $(name).value = data[columns[i]] || (name === 'category' ? 'development' : ''); });
         draftId = data.id;
         pendingImageUrl = data.image_url || null;
+        pendingGalleryUrls = Array.isArray(data.gallery_urls) ? data.gallery_urls.slice(0,4) : [];
+        galleryInput.value = '';
+        renderGalleryPreview();
         imageStoragePath = null;
         initialImage = null;
         imageInput.value = '';
@@ -286,6 +299,16 @@
         img.src = url;
         img.alt = '記事画像';
         articlePreview.appendChild(img);
+      }
+      if (fields.category === 'rings-people') {
+        const images = [...pendingGalleryUrls.map(u=>({url:u})),...Array.from(galleryInput.files||[]).map(f=>({file:f}))];
+        images.forEach(entry => {
+          const img=document.createElement('img');
+          img.src=entry.url||URL.createObjectURL(entry.file);
+          img.alt='追加写真'; img.style.maxWidth='46%';img.style.margin='6px';
+          if(entry.file)img.onload=()=>URL.revokeObjectURL(img.src);
+          articlePreview.appendChild(img);
+        });
       }
       articlePreview.classList.remove('hidden');
       articlePreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -353,12 +376,33 @@
         if ([...$('category').options].some(option => option.value === category)) $('category').value = category;
       }
       updateInterviewFields();
+      renderGalleryPreview();
       showStatus(output, found.size + '項目を反映しました。画像は下の欄から選択してください。', 'ok');
     });
 
     function updateInterviewFields() {
-      $('interviewFields').classList.toggle('hidden', $('category').value !== 'rings-people');
+      const isInterview=$('category').value === 'rings-people';
+      $('interviewFields').classList.toggle('hidden', !isInterview);
+      $('interviewGalleryFields').classList.toggle('hidden', !isInterview);
     }
+    function renderGalleryPreview() {
+      galleryPreview.replaceChildren();
+      const existing=document.createElement('p');
+      existing.textContent='保存済み追加写真：'+pendingGalleryUrls.length+'枚';
+      galleryPreview.appendChild(existing);
+      for(const url of pendingGalleryUrls){
+        const img=document.createElement('img');img.src=url;img.alt='保存済み追加写真';
+        img.style.maxWidth='45%';img.style.margin='4px';galleryPreview.appendChild(img);
+      }
+      const files=Array.from(galleryInput.files||[]);
+      for(const file of files){const img=document.createElement('img');const obj=URL.createObjectURL(file);img.src=obj;img.alt='追加予定写真';img.style.maxWidth='45%';img.style.margin='4px';img.onload=()=>URL.revokeObjectURL(obj);galleryPreview.appendChild(img);}
+      const count=document.createElement('p');count.textContent='今回選択：'+files.length+'枚 / 合計：'+(pendingGalleryUrls.length+files.length)+'枚（最大4枚）';galleryPreview.appendChild(count);
+    }
+    galleryInput.addEventListener('change', renderGalleryPreview);
+    $('clearGallery').addEventListener('click',()=>{
+      if(!window.confirm('この記事の追加写真をすべて外しますか？次の下書き保存で反映されます。'))return;
+      pendingGalleryUrls=[];galleryInput.value='';renderGalleryPreview();
+    });
     $('category').addEventListener('change', updateInterviewFields);
     $('insertInterviewProfile').addEventListener('click', () => {
       const name = $('interviewName').value.trim();
@@ -404,6 +448,18 @@
       if (error) throw error;
       draftId = data.id;
       return draftId;
+    }
+    async function uploadGalleryFiles(files) {
+      const uploaded=[];
+      for(const file of files){
+        validateImage(file);
+        const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'})[file.type] || 'img';
+        const path='posts/'+draftId+'/gallery-'+crypto.randomUUID()+'.'+ext;
+        const {error}=await supabaseClient.storage.from(BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+        if(error)throw error;
+        uploaded.push(supabaseClient.storage.from(BUCKET).getPublicUrl(path).data.publicUrl);
+      }
+      return uploaded;
     }
     async function uploadImage(file) {
       // 公開バケットへのアップロードでも、Storage側のINSERTポリシーが必要。
@@ -457,6 +513,10 @@
         fields = collectFields();
         file = imageInput.files?.[0] || null;
         validateImage(file);
+        const extraFiles=Array.from(galleryInput.files||[]);
+        if(fields.category!=='rings-people' && extraFiles.length)throw new Error('追加写真はRings Peopleでのみ登録できます。');
+        if(fields.category==='rings-people' && pendingGalleryUrls.length+extraFiles.length>4)throw new Error('追加写真は最大4枚です。');
+        extraFiles.forEach(validateImage);
         if (draftId != null && imageStoragePath && file && file !== initialImage) {
           throw new Error('画像アップロード済みです。この画面では画像変更せず再保存してください。');
         }
@@ -476,6 +536,17 @@
         if (file && !imageStoragePath) {
           initialImage = file;
           await uploadImage(file);
+        }
+        if(fields.category==='rings-people') {
+          const files=Array.from(galleryInput.files||[]);
+          if(files.length){
+            const urls=await uploadGalleryFiles(files);
+            pendingGalleryUrls.push(...urls);
+            galleryInput.value='';renderGalleryPreview();
+          }
+          const {error:galleryError}=await supabaseClient.from('journal_posts')
+            .update({gallery_urls:pendingGalleryUrls}).eq('id',draftId).eq('status','draft');
+          if(galleryError)throw galleryError;
         }
         if (pendingImageUrl) {
           const { error } = await supabaseClient.from('journal_posts')
