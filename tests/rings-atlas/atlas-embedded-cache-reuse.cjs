@@ -21,7 +21,7 @@ const predicate=extractFunction(html,'shouldSkipBackgroundCloudRefresh');
 function evaluate(embedded,savedAt){
   const classes=embedded?['rrAtlasEmbedded']:[];
   const sandbox={document:{documentElement:{classList:{contains:k=>classes.includes(k)}}},cloudRowsCacheSavedAt:savedAt};
-  return vm.runInNewContext(predicate+'\\n;shouldSkipBackgroundCloudRefresh()',sandbox);
+  return vm.runInNewContext(predicate+'\n;shouldSkipBackgroundCloudRefresh()',sandbox);
 }
 const now=Date.now();
 assert.equal(evaluate(true,new Date(now-1000).toISOString()),true,'recent embedded cache must skip');
