@@ -97,6 +97,8 @@ function articlePage(post) {
   const bodyJa = String(post.body_ja || post.body_en || '');
   const bodyEn = String(post.body_en || post.body_ja || '');
   const img = absoluteImage(post.image_url);
+  const gallery = post.category === 'rings-people' && Array.isArray(post.gallery_urls) ? post.gallery_urls.slice(0,4).map(absoluteImage).filter(Boolean) : [];
+  const galleryHtml = gallery.length ? `<div class="gallery" aria-label="Interview photos">${gallery.map(src=>`<img src="${html(src)}" alt="Interview photo" loading="lazy">`).join('')}</div>` : '';
   const dateObj = new Date(post.published_at);
   if (!Number.isFinite(dateObj.getTime())) throw new Error(`Invalid published_at for ${slug}`);
   const pubDate = dateObj.toISOString().slice(0, 10);
@@ -111,6 +113,7 @@ function articlePage(post) {
       ${visibleImage}
       ${summary ? `<p class="summary">${html(summary)}</p>` : ''}
       ${articleBodyWithAffiliate(slug, language, body)}
+      ${galleryHtml}
       <div class="share">
         <button type="button" class="copy">${language === 'ja' ? 'リンクをコピー' : 'Copy link'}</button>
         <button type="button" class="native-share" hidden>${language === 'ja' ? '共有' : 'Share'}</button>
@@ -146,6 +149,7 @@ function articlePage(post) {
   <meta property="article:published_time" content="${html(dateObj.toISOString())}">
   <script type="application/ld+json">${jsonLd}</script>
   <style>
+  .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:22px 0}.gallery img{width:100%;max-height:470px;object-fit:contain;background:#111e2b;border-radius:12px}
   *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
   header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
   header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button.active{background:#ff2bd6;border-color:#ff2bd6}
@@ -219,7 +223,7 @@ async function fetchPublished() {
   const all = [];
   for (let offset = 0; ; offset += PER_PAGE) {
     const qs = new URLSearchParams({
-      select: 'slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,category,published_at',
+      select: 'slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,gallery_urls,category,published_at',
       status: 'eq.published', order: 'published_at.desc', limit: String(PER_PAGE), offset: String(offset)
     });
     const response = await fetch(`${API_URL}/rest/v1/journal_posts?${qs}`, {
