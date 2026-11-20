@@ -41,7 +41,8 @@ function safeDiagnostics(result){
    index,
    stage:STAGES.includes(entry?.name)?entry.name:'UNKNOWN',
    status:STATES.includes(entry?.status)?entry.status:'UNKNOWN',
-   attempted:entry?.attempted===true,\n   overran:entry?.overran===true
+   attempted:entry?.attempted===true,
+   overran:entry?.overran===true
   })),
   stageRecordCount:records.length,
   opsSummary:{
