@@ -21,7 +21,7 @@ function inspectCliPreflight(argv,checkedInManifest,environment={}){
 // Diagnostic projection is intentionally allowlisted: never print raw stage
 // objects, Docker identifiers, errors, SQL, environment, tokens or paths.
 const STAGES=Object.freeze(['execute','cleanup','verify']);
-const STATES=Object.freeze(['PASS','FAIL','CLEAN','BLOCKED','SKIPPED','TIMEOUT']);
+const STATES=Object.freeze(['PASS','FAIL','CLEAN','VERIFIED','NOT_PROVEN']);
 const OPS=Object.freeze([
  'started:postgres','started:gotrue','started:postgrest',
  'postgres_candidate_sql_and_authenticator_cli_reported',
@@ -39,9 +39,9 @@ function safeDiagnostics(result){
  return {
   stageRecords:records.slice(0,12).map((entry,index)=>({
    index,
-   stage:STAGES.includes(entry?.stage)?entry.stage:'UNKNOWN',
+   stage:STAGES.includes(entry?.name)?entry.name:'UNKNOWN',
    status:STATES.includes(entry?.status)?entry.status:'UNKNOWN',
-   verified:entry?.verified===true?true:entry?.verified===false?false:null
+   attempted:entry?.attempted===true,\n   overran:entry?.overran===true
   })),
   stageRecordCount:records.length,
   opsSummary:{
