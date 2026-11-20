@@ -21,6 +21,7 @@
 .shareRow button,.shareRow a { display:inline-block;text-decoration:none;font-size:13px;font-weight:700;color:#fff;background:#24384f;border:1px solid #64748b;border-radius:999px;padding:10px 13px;cursor:pointer; }
 .shareMessage { font-size:12px;color:#eaff00;min-height:18px;margin:0 0 12px; }
 .shareRow button:focus-visible,.shareRow a:focus-visible {outline:2px solid #eaff00;outline-offset:2px}
+ .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.gallery img{width:100%;max-height:470px;object-fit:contain;border-radius:12px;background:#111e2b}
 </style>
 </head>
 <body>
@@ -60,6 +61,11 @@ function draw(){
   if(img){const picture=document.createElement('img');picture.src=img;picture.className='hero';picture.alt='';root.append(picture);}
   if(desc)root.append(item('p','summary',desc));
   root.append(item('div','body',body));
+  if(post.category==='rings-people'&&Array.isArray(post.gallery_urls)&&post.gallery_urls.length){
+    const gallery=document.createElement('div');gallery.className='gallery';gallery.setAttribute('aria-label','Interview photos');
+    for(const url of post.gallery_urls.slice(0,4)){const safe=validImage(url);if(!safe)continue;const pic=document.createElement('img');pic.src=safe;pic.alt='Interview photo';pic.loading='lazy';gallery.appendChild(pic);}
+    root.append(gallery);
+  }
   const row=document.createElement('div');row.className='shareRow';
   const msg=item('p','shareMessage','');msg.setAttribute('role','status');
   const copy=item('button','',lang==='ja'?'リンクをコピー':'Copy link');copy.type='button';
@@ -87,7 +93,7 @@ function draw(){
 if(!slug||slug.length>220||!/^[-a-zA-Z0-9_]+$/.test(slug)){draw();return;}
 if(!window.supabase){root.className='notice';root.textContent='読み込みライブラリが利用できません。';return;}
 const db=window.supabase.createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,category,published_at').eq('slug',slug).eq('status','published').maybeSingle().then(({data,error})=>{if(error){console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';return;}post=data;draw();}).catch(error=>{console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';});
+db.from('journal_posts').select('slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,gallery_urls,category,published_at').eq('slug',slug).eq('status','published').maybeSingle().then(({data,error})=>{if(error){console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';return;}post=data;draw();}).catch(error=>{console.error(error);root.className='notice';root.textContent='記事の取得に失敗しました。';});
 })();
 </script>
 <script defer src="/rr-ondevice-translate.js"></script>
