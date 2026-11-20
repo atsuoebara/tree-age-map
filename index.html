@@ -4675,7 +4675,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.20.01'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.20.02'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -8317,7 +8317,11 @@ function openDatabase() {
 
 
 
+let cloudRowsCacheSavedAt = null;
+
 async function loadCloudRowsCache() {
+
+  cloudRowsCacheSavedAt = null;
 
   if (
     !currentUser
@@ -8349,7 +8353,8 @@ async function loadCloudRowsCache() {
             );
 
         request.onsuccess =
-          () =>
+          () => {
+            cloudRowsCacheSavedAt = request.result?.savedAt ?? null;
             resolve(
               Array.isArray(
                 request.result?.rows
@@ -8357,6 +8362,7 @@ async function loadCloudRowsCache() {
                 ? request.result.rows
                 : []
             );
+          };
 
         request.onerror =
           () =>
@@ -8489,20 +8495,15 @@ let cloudBackgroundRefreshStarted =
 
 function shouldSkipBackgroundCloudRefresh() {
 
-  // Atlas (embedded) renders the same per-user startup cache as the top
-  // page. Re-downloading every run in the background there would duplicate
-  // the full fetch the top page already performs on every visit. Cache
-  // records are keyed by user id and are only ever written from complete
-  // fetchCloudRuns() results, so a cache that was used at startup is a
-  // complete snapshot for the signed-in user. Add, delete and import
-  // flows still re-fetch and re-save the cache themselves, and the top
-  // page keeps refreshing it on every normal visit.
-  return document.documentElement.classList.contains(
-    'rrAtlasEmbedded'
-  );
+  // A recent user-scoped snapshot avoids redundant Atlas requests.
+  // Direct Atlas entry with an old/unknown timestamp still refreshes.
+  const savedAt = Date.parse(cloudRowsCacheSavedAt || '');
+  const ageMs = Date.now() - savedAt;
+  const maxAgeMs = 5 * 60 * 1000;
+  return document.documentElement.classList.contains('rrAtlasEmbedded') &&
+    Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= maxAgeMs;
 
 }
-
 
 async function refreshCloudRowsInBackground(
   cachedRows
