@@ -43,6 +43,8 @@ function articlePage(post) {
   const bodyJa = String(post.body_ja || post.body_en || '');
   const bodyEn = String(post.body_en || post.body_ja || '');
   const img = absoluteImage(post.image_url);
+  const gallery = post.category === 'rings-people' && Array.isArray(post.gallery_urls) ? post.gallery_urls.slice(0,4).map(absoluteImage).filter(Boolean) : [];
+  const galleryHtml = gallery.length ? `<div class="gallery" aria-label="Interview photos">${gallery.map(u=>`<img src="${html(u)}" alt="Interview photo" loading="lazy">`).join('')}</div>` : '';
   const dateObj = new Date(post.published_at);
   if (!Number.isFinite(dateObj.getTime())) throw new Error(`Invalid published_at for ${slug}`);
   const pubDate = dateObj.toISOString().slice(0, 10);
@@ -57,6 +59,7 @@ function articlePage(post) {
       ${visibleImage}
       ${summary ? `<p class="summary">${html(summary)}</p>` : ''}
       <div class="body">${html(body)}</div>
+       ${galleryHtml}
       <div class="share">
         <button type="button" class="copy">${language === 'ja' ? 'リンクをコピー' : 'Copy link'}</button>
         <button type="button" class="native-share" hidden>${language === 'ja' ? '共有' : 'Share'}</button>
@@ -85,7 +88,7 @@ function articlePage(post) {
   *{box-sizing:border-box}html,body{margin:0;background:#0b1422;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(255,43,214,.12),transparent 26%),#0b1422}
   header{background:#0f1d2f;padding:18px 16px;border-bottom:1px solid #28364a}.inner{max-width:760px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
   header strong{font-size:19px}button{cursor:pointer;background:#25384e;color:white;border:1px solid #61738a;border-radius:20px;padding:9px 13px}button.active{background:#ff2bd6;border-color:#ff2bd6}
-  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}
+  main{max-width:760px;margin:auto;padding:35px 16px 65px}article h1{font-size:clamp(23px,5vw,32px);line-height:1.5}.category{font-size:12px;color:#eaff00;font-weight:bold}time{display:block;margin-top:10px;color:#9eacc0;font-size:12px}.summary{font-size:16px;line-height:1.8;color:#d6e0ee}.body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;font-size:15px;color:#c4d0e0;margin:24px 0 38px}.hero{display:block;margin:20px auto;max-width:100%;max-height:600px;object-fit:contain;border-radius:12px}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.gallery img{width:100%;height:auto;max-height:450px;object-fit:contain;border-radius:12px;background:#0c1726}
   .share{display:flex;flex-wrap:wrap;gap:10px}.share a{color:#fff;border:1px solid #61738a;background:#25384e;border-radius:20px;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:bold}.feedback{min-height:1em;color:#eaff00;font-size:12px}.back{display:inline-block;color:#fff;text-decoration:none;background:#ff2bd6;border-radius:25px;padding:11px 20px;margin-top:14px;font-size:13px;font-weight:bold}footer{text-align:center;color:#9ba8b9;border-top:1px solid #2b3543;padding:20px;font-size:12px}
   </style>
 </head>
@@ -124,7 +127,7 @@ async function fetchPublished() {
   const all = [];
   for (let offset = 0; ; offset += PER_PAGE) {
     const qs = new URLSearchParams({
-      select: 'slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,category,published_at',
+      select: 'slug,title_ja,title_en,summary_ja,summary_en,body_ja,body_en,image_url,gallery_urls,category,published_at',
       status: 'eq.published', order: 'published_at.desc', limit: String(PER_PAGE), offset: String(offset)
     });
     const response = await fetch(`${API_URL}/rest/v1/journal_posts?${qs}`, {
