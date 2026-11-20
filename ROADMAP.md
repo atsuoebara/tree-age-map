@@ -1,3 +1,16 @@
+## Rings People 複数写真（2026-11-20）
+
+- [x] 既存Journalのメイン写真1枚を維持。Rings Peopleカテゴリに限り、追加写真最大4枚（合計最大5枚）を選択可能にする（journal-admin.html）。1枚5MB制限・プレビュー・既存追加写真を保持・全件クリア可能。
+- [x] Supabase journal_posts.gallery_urls text[] NOT NULL DEFAULT '{}' を追加（既存本文・メイン画像・公開状態には触れない）。Storageは既存journal-images／管理者INSERT RLSを流用。
+- [x] 下書き本人確認URLのサーバー応答へ gallery_urls を追加（journal-review Edge Function v2）し、review画面に表示。
+- [x] 記事の静的生成正本 scripts/generate-journal.mjs と動的表示 journal-post.html へギャラリー表示を追加。旧Journalは表示・書込対象から除外。
+- [x] GitHub内のクライアントJS構文チェックPASS、実行経路のファイル・保存カラムを確認。
+- [ ] 管理者で記事ID92を読み込み、メイン写真1枚＋追加写真3枚を登録し、下書き保存／再読込で同順・同数になることを実機確認。
+- [ ] 確認URLを**最終保存後**に再発行。4枚が日英プレビューで見えることを確認、むせ監査後に本人へ送付。既存URLは再保存で失効。
+- [ ] 本番静的生成後の4枚表示を別記事の公開済みRings Peopleで確認。未承認のID92は絶対に公開しない。
+- [ ] 本番iPhone/iPad実機QAとむせ監査未完のため合格宣言は禁止。
+- コミット：管理画面 225fc183、非公開プレビュー 24d7b5cc、公開生成 scripts d2fd59dc、動的記事 b23f7560。ルートの generate-journal.mjs も同期（3b47b4f）。
+
 ## Rings People トップページ入口（2026-10-31）
 
 - [x] index.html のdashboard内、Rings Journalの直後に「Rings People」専用ボタンを追加。Journalのカテゴリー絞り込みURL journal.html?category=rings-people に移動する。既存Journalとその他のナビは保持。
