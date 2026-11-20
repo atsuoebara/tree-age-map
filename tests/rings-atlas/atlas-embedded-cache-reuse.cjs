@@ -18,13 +18,20 @@ function extractFunction(source,name){
 // 1. The skip predicate is decided only by the embedded marker that the
 //    Atlas shell route sets on <html> before the app script runs.
 const predicate=extractFunction(html,'shouldSkipBackgroundCloudRefresh');
-function evaluate(embedded){
+function evaluate(embedded,savedAt){
   const classes=embedded?['rrAtlasEmbedded']:[];
-  const sandbox={document:{documentElement:{classList:{contains:k=>classes.includes(k)}}}};
-  return vm.runInNewContext(predicate+'\n;shouldSkipBackgroundCloudRefresh()',sandbox);
+  const sandbox={document:{documentElement:{classList:{contains:k=>classes.includes(k)}}},cloudRowsCacheSavedAt:savedAt};
+  return vm.runInNewContext(predicate+'\\n;shouldSkipBackgroundCloudRefresh()',sandbox);
 }
-assert.equal(evaluate(true),true,'embedded Atlas must skip the background refetch when the startup cache was used');
-assert.equal(evaluate(false),false,'normal top page must keep the background refresh');
+const now=Date.now();
+assert.equal(evaluate(true,new Date(now-1000).toISOString()),true,'recent embedded cache must skip');
+assert.equal(evaluate(false,new Date(now-1000).toISOString()),false,'normal top page must refresh');
+assert.equal(evaluate(true,new Date(now-6*60*1000).toISOString()),false,'old direct Atlas cache must refresh');
+assert.equal(evaluate(true,null),false,'missing timestamp must refresh');
+assert.equal(evaluate(true,'invalid'),false,'invalid timestamp must refresh');
+assert.equal(evaluate(true,new Date(now+60*1000).toISOString()),false,'future timestamp must refresh');
+assert(html.includes('cloudRowsCacheSavedAt = request.result?.savedAt ?? null;'),'cache read retains savedAt');
+assert(html.includes('cloudRowsCacheSavedAt = null;'),'freshness resets on cache read');
 
 // 2. The startup path only skips when a per-user cache was actually used,
 //    and the refresh itself is unchanged for every other path.
