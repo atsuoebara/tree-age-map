@@ -36,6 +36,8 @@ jobs:
         run: node --check rings-atlas-prefecture-preview.js
       - name: Exercise embedded sign-in and bfcache lifecycle
         run: node tests/rings-atlas/atlas-embedded-lifecycle.cjs
+      - name: Verify embedded Atlas reuses startup cache without refetch
+        run: node tests/rings-atlas/atlas-embedded-cache-reuse.cjs
       - name: Verify map and filters stay accessible
         run: node tests/rings-atlas/atlas-map-visibility-contract.cjs
       - name: Verify Leaflet resize contract
