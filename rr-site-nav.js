@@ -12,7 +12,7 @@ const links=[
 ['./about-runners-rings.html','About','About'],['./team.html','チーム','Team'],['./how-to.html','使い方','How to use'],
 ['./partners.html','パートナー','Partners'],['./contact.html','お問い合わせ','Contact']];
 const css=document.createElement('style');css.textContent=`
-#rrGlobalNavigation{position:sticky;top:0;z-index:2147483000;isolation:isolate;pointer-events:auto;padding:8px 12px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
+#rrGlobalNavigation{position:fixed;inset:0 0 auto 0;width:100%;z-index:2147483000;isolation:isolate;pointer-events:auto;padding:calc(8px + env(safe-area-inset-top, 0px)) 12px 8px;background:#0e1b2d;border-bottom:1px solid #44556c;color:#fff;font:600 13px/1.5 system-ui,sans-serif}
 #rrGlobalNavigation *,#rrGlobalNavigation *:before{box-sizing:border-box}
 #rrGlobalNavigation .rrNavRow{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1120px;margin:0 auto}
 #rrGlobalNavigation .rrNavBrand{color:#fff;font-weight:850;text-decoration:none;letter-spacing:.2px;white-space:nowrap}
@@ -137,6 +137,16 @@ languageBox.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',
 updateLanguageBox();
 document.addEventListener('click',event=>{if(event.target.closest('[data-language],#jaBtn,#enBtn'))setTimeout(updateLanguageBox,0)});
 const firstHeader=document.querySelector('body > header');if(firstHeader)firstHeader.before(nav);else document.body.prepend(nav);
+// Reserve exactly the fixed header's height so content never sits behind it.
+// ResizeObserver handles responsive wrapping, language labels, and rotation.
+const navSpacer=document.createElement('div');
+navSpacer.id='rrGlobalNavigationSpacer';
+navSpacer.setAttribute('aria-hidden','true');
+nav.after(navSpacer);
+function syncNavSpacer(){navSpacer.style.height=nav.getBoundingClientRect().height+'px';}
+syncNavSpacer();
+if(typeof ResizeObserver==='function')new ResizeObserver(syncNavSpacer).observe(nav);
+else window.addEventListener('resize',syncNavSpacer,{passive:true});
 // Legacy navigation is superseded by the shared menu.
 document.querySelectorAll('.rrAuditNav').forEach(el=>el.remove());
 dropdown.addEventListener('click',e=>{if(e.target.closest('a'))details.open=false;});
