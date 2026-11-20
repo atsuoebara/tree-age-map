@@ -18,6 +18,46 @@ function inspectCliPreflight(argv,checkedInManifest,environment={}){
  for(const issue of effective.failures)if(!issues.includes(issue))issues.push(issue);
  return Object.freeze({pass:issues.length===0,issues:Object.freeze(issues)});
 }
+// Diagnostic projection is intentionally allowlisted: never print raw stage
+// objects, Docker identifiers, errors, SQL, environment, tokens or paths.
+const STAGES=Object.freeze(['execute','cleanup','verify']);
+const STATES=Object.freeze(['PASS','FAIL','CLEAN','BLOCKED','SKIPPED','TIMEOUT']);
+const OPS=Object.freeze([
+ 'started:postgres','started:gotrue','started:postgrest',
+ 'postgres_candidate_sql_and_authenticator_cli_reported',
+ 'snapshot_candidate_cli_reported_not_rls_proof',
+ 'sql_rls_boundary_cli_reported_not_http_jwt_proof',
+ 'gotrue_migration_cli_reported',
+ 'h1_gotrue_http_five_cases_cli_reported_not_g4_proof',
+ 'h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof',
+ 'h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof',
+ 'internal_postgrest_http_empty_owner_cli_reported_not_g4'
+]);
+function safeDiagnostics(result){
+ const records=Array.isArray(result.stageRecords)?result.stageRecords:[];
+ const actions=Array.isArray(result.cleanupActions)?result.cleanupActions:[];
+ return {
+  stageRecords:records.slice(0,12).map((entry,index)=>({
+   index,
+   stage:STAGES.includes(entry?.stage)?entry.stage:'UNKNOWN',
+   status:STATES.includes(entry?.status)?entry.status:'UNKNOWN',
+   verified:entry?.verified===true?true:entry?.verified===false?false:null
+  })),
+  stageRecordCount:records.length,
+  opsSummary:{
+   known:actions.filter(x=>OPS.includes(x)).map(x=>x),
+   started:actions.filter(x=>typeof x==='string'&&/^started:(postgres|gotrue|postgrest)$/.test(x)).length,
+   stopped:actions.filter(x=>typeof x==='string'&&/^stop:rn_p2_[a-z0-9]{8,32}_(postgres|gotrue|postgrest)$/.test(x)).length,
+   removed:actions.filter(x=>typeof x==='string'&&/^remove:rn_p2_[a-z0-9]{8,32}_(postgres|gotrue|postgrest)$/.test(x)).length,
+   networksRemoved:actions.filter(x=>typeof x==='string'&&/^network:rn_p2_[a-z0-9]{8,32}$/.test(x)).length,
+   total:actions.length
+  },
+  coordinatorFailed:result.coordinatorFailed===true,
+  emergencyCleanupAttempted:result.emergencyCleanupAttempted===true,
+  emergencyCleanupStatus:['NOT_NEEDED','CLI_CLEAN_REPORTED','FAIL','BASELINE_UNTRUSTED'].includes(result.emergencyCleanupStatus)?result.emergencyCleanupStatus:'UNKNOWN',
+  emergencyVerifyStatus:['NOT_NEEDED','CLI_EMPTY_REPORTED','FAIL','NOT_PROVEN'].includes(result.emergencyVerifyStatus)?result.emergencyVerifyStatus:'UNKNOWN'
+ };
+}
 async function main(){
  const gate=inspectCliPreflight(process.argv.slice(2),manifest,process.env);
  if(!gate.pass){
@@ -43,7 +83,8 @@ async function main(){
   // A CLI self-report is NOT independent evidence of real cleanup or H1-H6.
   g3Verified:false,
   actualP2Proven:false,
-  resourceTerminationProven:false
+  resourceTerminationProven:false,
+  diagnostics:safeDiagnostics(result)
  };
  process.stdout.write(JSON.stringify(report)+'\n');
  // Never return success until separately audited H1-H6 evidence has been
