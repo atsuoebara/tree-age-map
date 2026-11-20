@@ -1,3 +1,10 @@
+## Rings People 写真更新時の本人確認リンク失効修正（2026-11-20）
+
+- Supabase migration `journal_review_revision_touch_on_update_20261120` を適用。`public.journal_posts` の全UPDATEで `updated_at` を `greatest(clock_timestamp(), old.updated_at + 1 microsecond)` に自動更新する BEFORE UPDATE trigger を設置。
+- 対象ID 92 の既存確認URLは rev=`2026-11-20T13:03:17.439671+00:00` のため、保存リビジョンの更新により旧URLは失効。新しいレビューURLは管理者のログイン済み画面で発行する。
+- 実証：ID92 rev 13:03:17.439671 UTC→13:38:34.553711 UTC。日英本文MD5不変（JA d2a11f24e6495528244ee6ab3d119030、EN 911fd5a29223978860b408e94e922416）、メイン1枚＋追加3枚維持、status=draft維持。
+- 完了後に管理者が新URLを発行。実機の4枚表示をむせが再監査し、本人の掲載OKとAtsuoの最終承認までは非公開。
+
 ## Rings People 複数写真（2026-11-20）
 
 - [x] 既存Journalのメイン写真1枚を維持。Rings Peopleカテゴリに限り、追加写真最大4枚（合計最大5枚）を選択可能にする（journal-admin.html）。1枚5MB制限・プレビュー・既存追加写真を保持・全件クリア可能。
