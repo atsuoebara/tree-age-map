@@ -87,6 +87,7 @@ async function runRealP2DockerLifecycle({
  try{
  const ops=[],knownContainers=new Set(),knownNetworks=new Set();
  let baseline=false,executionFailed=false,cleanupFailed=false,verificationFailed=false;
+ let executeStep='NOT_STARTED',failedExecuteStep=null;
  let finalInventory=null;
  const runStage=async(stage,{timeoutMs})=>{
   // #188's deadline reserves real cleanup and verification time. #200 CLI
@@ -95,14 +96,17 @@ async function runRealP2DockerLifecycle({
   if(stage==='execute'){
    const stageDeadlineMs=performance.now()+timeoutMs;
    try{
+    executeStep='BASELINE_INVENTORY';
     const before=await driver.listOwned(runId);
     if(!validInventory(before,runId)||before.length)throw Error('owned_baseline_not_empty');
     baseline=true;
+    executeStep='CREATE_NETWORK';
     const net=await driver.createNetwork({name:runId,owner:runId,internal:true,attachable:false});
     if(net!==runId)throw Error('network_identity_invalid');
     knownNetworks.add(net);
     for(const service of SERVICES){
      const name=runId+'_'+service;
+     executeStep='CREATE_CONTAINER';
      const created=await driver.createContainer({
       name,owner:runId,network:runId,service,
       image:manifest.images[service].reference,
@@ -113,6 +117,7 @@ async function runRealP2DockerLifecycle({
      });
      if(created!==name)throw Error('container_identity_invalid');
      knownContainers.add(name);
+     executeStep='START_CONTAINER';
      await driver.startContainer(name);
      ops.push('started:'+service);
      if(runtime?.bootstrapSqlFile&&service==='postgres'){
@@ -120,26 +125,30 @@ async function runRealP2DockerLifecycle({
       // bounded number of times; never proceed to PostgREST before SQL.
       let ready=false;
       for(let attempt=0;attempt<8&&!ready;attempt++){
-       try{await driver.postgresReady(runId);ready=true;}
+       try{executeStep='POSTGRES_READY';await driver.postgresReady(runId);ready=true;}
        catch{
         if(attempt<7)await new Promise(resolve=>setTimeout(resolve,250));
        }
       }
       if(!ready)throw Error('postgres_not_ready');
+      executeStep='BOOTSTRAP_POSTGRES';
       await driver.bootstrapPostgres({
        runId,authenticatorSqlFile:runtime.bootstrapSqlFile
       });
       ops.push('postgres_candidate_sql_and_authenticator_cli_reported');
       // The original immutable snapshot RPC candidate is installed only
       // after fixture + authenticator succeeded, before Auth/PostgREST.
+      executeStep='APPLY_SNAPSHOT';
       await driver.applySnapshotCandidate(runId);
       ops.push('snapshot_candidate_cli_reported_not_rls_proof');
       // Prove isolated DB role/row behavior with transactional synthetic
       // fixtures (ROLLBACK); this is still not HTTP or signed-JWT proof.
+      executeStep='SQL_RLS_PROBE';
       await driver.probeSqlRlsBoundary(runId);
       ops.push('sql_rls_boundary_cli_reported_not_http_jwt_proof');
      }
      if(runtime?.bootstrapSqlFile&&service==='gotrue'){
+      executeStep='INIT_GOTRUE';
       await driver.initializeGoTrue(runId);
       ops.push('gotrue_migration_cli_reported');
      }
@@ -151,6 +160,7 @@ async function runRealP2DockerLifecycle({
      // label and private files before any secret-bearing Docker copy.
      assert.ok(runtime.h1Users&&runtime.h1EphemeralDir,'partial H1 runtime');
      assert.equal(typeof driver.probeInternalGoTrue,'function','H1 adapter missing');
+     executeStep='H1_GOTRUE';
      const h1=await collectH1OverTransport({
       users:runtime.h1Users,
       transport:({caseId,request})=>driver.probeInternalGoTrue({
@@ -167,6 +177,7 @@ async function runRealP2DockerLifecycle({
      // This candidate change does NOT grant those approvals.
      if(commandFactory===createBoundedDockerCommand){
       const executeDeadlineMs=stageDeadlineMs;
+      executeStep='H2_GOTRUE';
       const bridged=await runOriginalGoTrueH2Stage({
        h1,runtime,driver,runId,executeDeadlineMs,
        cleanupReserveMs:reserveMs,verifyReserveMs
@@ -186,6 +197,7 @@ async function runRealP2DockerLifecycle({
       assert.equal(typeof driver.seedH2DisposableOwners,'function');
       assert.equal(typeof driver.probeInternalH2,'function');
       const nowSeconds=Math.floor(Date.now()/1000);
+      executeStep='H2_SYNTHETIC';
       const h2=await collectH2OverTransport({
        h1,nowSeconds,
        seedDisposableSql:({sql,ownerA,ownerB})=>
@@ -213,14 +225,16 @@ async function runRealP2DockerLifecycle({
      // This is a real Docker-network HTTP attempt, NOT a completed G4
      // owner-isolation or 1000/1001 signed-JWT proof.
      const requestFile=runtime.prepareHttpProbe();
+     executeStep='POSTGREST_HTTP';
      const response=await driver.probeInternalPostgrest({runId,requestFile});
      assertSnapshotRpcResult(response,{
       subject:'00000000-0000-4000-8000-000000000001',expectedCount:0
      });
      ops.push('internal_postgrest_http_empty_owner_cli_reported_not_g4');
     }
+    executeStep='DONE';
     return {status:'PASS'};
-   }catch{executionFailed=true;return {status:'FAIL'};}
+   }catch{executionFailed=true;failedExecuteStep=executeStep;return {status:'FAIL'};}
   }
   if(stage==='cleanup'){
    if(!baseline){cleanupFailed=true;return {status:'FAIL'};}
@@ -285,7 +299,7 @@ async function runRealP2DockerLifecycle({
   status:'FAIL',attempted:true,realDockerInvoked:true,
   verification:'NOT_PROVEN',coordinatorFailed:true,
   emergencyCleanupAttempted,emergencyCleanupStatus,emergencyVerifyStatus,
-  cleanupActions:Object.freeze(ops),
+  cleanupActions:Object.freeze(ops),failedExecuteStep,
   remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
   resourceTerminationProven:false,serviceStartupVerified:false,
   g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
@@ -297,7 +311,7 @@ async function runRealP2DockerLifecycle({
  return Object.freeze({
   status:consistent?'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF':'FAIL_OR_NOT_PROVEN',
   attempted:true,realDockerInvoked:true,
-  stageRecords:budget.stageRecords,
+  stageRecords:budget.stageRecords,failedExecuteStep,
   cleanupActions:Object.freeze(ops),
   remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
   verification:'CLI_SELF_REPORTED_ONLY',
