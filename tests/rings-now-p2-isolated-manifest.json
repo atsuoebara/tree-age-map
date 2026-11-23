@@ -15,7 +15,7 @@
       "digest": "sha256:c847127074bd26e1b8d3f7c0e6e01e5346f4b85dd34f5d699fd230af960827c0"
     }
   },
-  "checkoutCommit": null,
+  "checkoutCommit": "9514f98ab5f6cbba6a8cd5f366c3daab4be9afcc",
   "authJwtCompatibility": "NOT_PROVEN",
   "billingZeroAdditionalCost": "NOT_VERIFIED",
   "independentAudit": "PENDING",
