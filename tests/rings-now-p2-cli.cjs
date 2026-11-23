@@ -22,6 +22,12 @@ function inspectCliPreflight(argv,checkedInManifest,environment={}){
 // objects, Docker identifiers, errors, SQL, environment, tokens or paths.
 const STAGES=Object.freeze(['execute','cleanup','verify']);
 const STATES=Object.freeze(['PASS','FAIL','CLEAN','VERIFIED','NOT_PROVEN']);
+const EXECUTE_STEPS=Object.freeze([
+ 'NOT_STARTED','BASELINE_INVENTORY','CREATE_NETWORK','CREATE_CONTAINER',
+ 'START_CONTAINER','POSTGRES_READY','BOOTSTRAP_POSTGRES','APPLY_SNAPSHOT',
+ 'SQL_RLS_PROBE','INIT_GOTRUE','H1_GOTRUE','H2_GOTRUE',
+ 'H2_SYNTHETIC','POSTGREST_HTTP','DONE'
+]);
 const OPS=Object.freeze([
  'started:postgres','started:gotrue','started:postgrest',
  'postgres_candidate_sql_and_authenticator_cli_reported',
@@ -45,6 +51,7 @@ function safeDiagnostics(result){
    overran:entry?.overran===true
   })),
   stageRecordCount:records.length,
+  failedExecuteStep:EXECUTE_STEPS.includes(result.failedExecuteStep)?result.failedExecuteStep:null,
   opsSummary:{
    known:actions.filter(x=>OPS.includes(x)).map(x=>x),
    started:actions.filter(x=>typeof x==='string'&&/^started:(postgres|gotrue|postgrest)$/.test(x)).length,
