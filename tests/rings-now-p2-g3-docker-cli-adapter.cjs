@@ -386,41 +386,8 @@ function createDockerCliAdapter({command}={}){
    await inspect('container',name,runId);
    const pg=runId+'_postgres';
    await inspect('container',pg,runId);
-   // Normal GoTrue startup performs its own migrations. Do not launch a
-   // concurrent migration process. Probe only the internal fixed endpoint.
-   await invoke(['container','exec',pg,'/bin/bash','-ec',"exec 3<>/dev/tcp/gotrue/9999; printf 'GET /health HTTP/1.1\\r\\nHost: gotrue:9999\\r\\nConnection: close\\r\\n\\r\\n' >&3; IFS= read -r -t 2 line <&3; [[ \"$line\" == 
-  },
-  async startContainer(name){
-   safeId(name);
-   // Never start based on user-provided name alone; enforce run-owner label.
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','start',name]);
-  },
-  async stopContainer(name){
-   safeId(name);
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','stop','--time','1',name]);
-  },
-  async removeContainer(name){
-   safeId(name);
-   const owner=name.replace(/_(postgres|gotrue|postgrest)$/,'');
-   safeRun(owner);
-   await inspect('container',name,owner);
-   await invoke(['container','rm','--force',name]);
-  },
-  async removeNetwork(name){
-   safeRun(name);
-   await inspect('network',name,name);
-   await invoke(['network','rm',name]);
-  }
- });
-}
-module.exports={createDockerCliAdapter,LABEL,TIMEOUT_MS};
-HTTP/1.1 200 OK\\r' ]]"]);
+   // Normal startup runs migrations; probe the fixed internal health endpoint.
+   await invoke(['container','exec',pg,'/bin/bash','-ec',"exec 3<>/dev/tcp/gotrue/9999; printf 'GET /health HTTP/1.1\\r\\nHost: gotrue:9999\\r\\nConnection: close\\r\\n\\r\\n' >&3; IFS= read -r -t 2 line <&3; line=\"$(printf '%s' \"$line\" | tr -d '\\r')\"; [[ \"$line\" == 'HTTP/1.1 200 OK' ]]"]);
    return 'CLI_GOTRUE_HEALTH_REPORTED_NOT_AUTH_PROOF';
   },
   async startContainer(name){
