@@ -384,8 +384,11 @@ function createDockerCliAdapter({command}={}){
    safeRun(runId);
    const name=runId+'_gotrue';
    await inspect('container',name,runId);
-   await invoke(['container','exec',name,'gotrue','migrate']);
-   return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';
+   const pg=runId+'_postgres';
+   await inspect('container',pg,runId);
+   // Normal startup runs migrations; probe the fixed internal health endpoint.
+   await invoke(['container','exec',pg,'/bin/bash','-ec',"exec 3<>/dev/tcp/gotrue/9999; printf 'GET /health HTTP/1.1\\r\\nHost: gotrue:9999\\r\\nConnection: close\\r\\n\\r\\n' >&3; IFS= read -r -t 2 line <&3; line=\"$(printf '%s' \"$line\" | tr -d '\\r')\"; [[ \"$line\" == 'HTTP/1.1 200 OK' ]]"]);
+   return 'CLI_GOTRUE_HEALTH_REPORTED_NOT_AUTH_PROOF';
   },
   async startContainer(name){
    safeId(name);
