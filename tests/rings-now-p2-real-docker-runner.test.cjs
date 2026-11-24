@@ -259,7 +259,7 @@ test('service startup orders PG readiness and SQL bootstrap before Auth/PostgRES
    bootstrapPostgres:async()=>{steps.push('sql');return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';},
    applySnapshotCandidate:async()=>{steps.push('snapshot');return 'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF';},
    probeSqlRlsBoundary:async()=>{steps.push('sqlRls');return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';},
-   initializeGoTrue:async()=>{steps.push('authMigrate');return 'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF';}
+   initializeGoTrue:async()=>{steps.push('authMigrate');return 'CLI_GOTRUE_HEALTH_REPORTED_NOT_AUTH_PROOF';}
   };
  };
  const r=await runRealP2DockerLifecycle({...base,nowMs:clock(),
