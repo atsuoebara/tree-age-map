@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: rings-now-p2-isolated-manual
   cancel-in-progress: false
@@ -21,6 +22,11 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 2 # B: one parent is required to verify source binding
+      - name: Prove one-shot execution eligibility (dormant)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tests/rings-now-p2-one-shot-history-cli.cjs
       - name: Verify exact checkout and canonical manifest before CLI (dormant)
         shell: bash
         run: |
