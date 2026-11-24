@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
+    if: ${{ true }} # audit remains PENDING: manifest preflight MUST block execution
     runs-on: ubuntu-latest
     timeout-minutes: 12 # dormant upper bound; billing and actual runtime NOT VERIFIED
     steps:
