@@ -152,8 +152,17 @@ async function runRealP2DockerLifecycle({
      }
      if(runtime?.bootstrapSqlFile&&service==='gotrue'){
       executeStep='INIT_GOTRUE';
-      await driver.initializeGoTrue(runId);
-      ops.push('gotrue_migration_cli_reported');
+      const readyDeadline=Math.min(stageDeadlineMs,performance.now()+30000);
+      let ready=false;
+      for(let attempt=0;attempt<30&&!ready&&performance.now()<readyDeadline;attempt++){
+       try{await driver.initializeGoTrue(runId);ready=true;}
+       catch{
+        if(attempt<29&&performance.now()<readyDeadline)
+         await new Promise(resolve=>setTimeout(resolve,Math.min(1000,Math.max(0,readyDeadline-performance.now()))));
+       }
+      }
+      if(!ready)throw Error('gotrue_not_ready');
+      ops.push('gotrue_health_cli_reported_not_auth_proof');
      }
     }
     let h2Completed=false;
