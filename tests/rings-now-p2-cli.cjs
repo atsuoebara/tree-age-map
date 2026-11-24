@@ -33,7 +33,7 @@ const OPS=Object.freeze([
  'postgres_candidate_sql_and_authenticator_cli_reported',
  'snapshot_candidate_cli_reported_not_rls_proof',
  'sql_rls_boundary_cli_reported_not_http_jwt_proof',
- 'gotrue_migration_cli_reported',
+ 'gotrue_health_cli_reported_not_auth_proof',
  'h1_gotrue_http_five_cases_cli_reported_not_g4_proof',
  'h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof',
  'h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof',
