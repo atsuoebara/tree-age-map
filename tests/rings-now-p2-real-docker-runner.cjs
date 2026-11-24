@@ -124,10 +124,13 @@ async function runRealP2DockerLifecycle({
       // Fail closed until postgres accepts connections. Only retry a
       // bounded number of times; never proceed to PostgREST before SQL.
       let ready=false;
-      for(let attempt=0;attempt<8&&!ready;attempt++){
+      // Bound the startup polling window; preserve the shared execute deadline.
+      const readyDeadline=Math.min(stageDeadlineMs,performance.now()+30000);
+      for(let attempt=0;attempt<30&&!ready&&performance.now()<readyDeadline;attempt++){
        try{executeStep='POSTGRES_READY';await driver.postgresReady(runId);ready=true;}
        catch{
-        if(attempt<7)await new Promise(resolve=>setTimeout(resolve,250));
+        if(attempt<29&&performance.now()<readyDeadline)
+         await new Promise(resolve=>setTimeout(resolve,Math.min(1000,Math.max(0,readyDeadline-performance.now()))));
        }
       }
       if(!ready)throw Error('postgres_not_ready');
