@@ -104,7 +104,10 @@ function createDockerCliAdapter({command}={}){
     const tmpfs=spec.service==='postgres'
      ? ['/var/lib/postgresql/data:rw,nosuid,nodev,size=128m','/var/run/postgresql:rw,nosuid,nodev,size=8m','/tmp:rw,nosuid,nodev,size=16m']
      : ['/tmp:rw,nosuid,nodev,size=16m'];
-    runtimeArgs=['--env-file',file,...tmpfs.flatMap(x=>['--tmpfs',x])];
+    // Official postgres entrypoint starts as root to prepare/chown tmpfs, then
+    // drops to postgres via gosu. Restore only those initialization capabilities.
+    const caps=spec.service==='postgres'?['CHOWN','DAC_OVERRIDE','SETGID','SETUID']:[];
+    runtimeArgs=[...caps.flatMap(x=>['--cap-add',x]),'--env-file',file,...tmpfs.flatMap(x=>['--tmpfs',x])];
    }
    // No -p, --volume, --privileged, --env KEY=secret, host network.
    await invoke(['container','create','--name',spec.name,'--label',
@@ -120,7 +123,7 @@ function createDockerCliAdapter({command}={}){
    const name=runId+'_postgres';
    await inspect('container',name,runId);
    // The readiness probe proves a server socket is listening, not SQL/RLS.
-   await invoke(['container','exec',name,'pg_isready','-U','postgres','-d','rings_now_p2']);
+   await invoke(['container','exec',name,'pg_isready','-h','127.0.0.1','-U','postgres','-d','rings_now_p2']);
    return true;
   },
   async bootstrapPostgres({runId,authenticatorSqlFile}={}){

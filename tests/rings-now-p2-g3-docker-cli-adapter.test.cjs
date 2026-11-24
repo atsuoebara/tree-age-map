@@ -133,6 +133,12 @@ test('ephemeral service config uses env-file and tmpfs without argv credentials'
  }
  const pg=created.find(x=>x.includes(R+'_postgres'));
  assert.ok(pg.includes('/var/lib/postgresql/data:rw,nosuid,nodev,size=128m'));
+ const caps=args=>args.flatMap((v,i)=>v==='--cap-add'?[args[i+1]]:[]);
+ assert.deepEqual(caps(pg),['CHOWN','DAC_OVERRIDE','SETGID','SETUID']);
+ for(const args of created.filter(x=>x!==pg))assert.deepEqual(caps(args),[]);
+ assert.ok(created.every(x=>x.includes('--read-only')&&x.includes('ALL')&&x.includes('no-new-privileges')));
+ await d.adapter.postgresReady(R);
+ assert.deepEqual(d.calls.at(-1),['container','exec',R+'_postgres','pg_isready','-h','127.0.0.1','-U','postgres','-d','rings_now_p2']);
 });
 test('reject invalid env-file location and wrong service file before Docker',async()=>{
  const invalid=['/etc/passwd','/tmp/rn-p2-abcdefghi/gotrue.env',
