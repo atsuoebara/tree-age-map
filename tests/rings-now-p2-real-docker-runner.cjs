@@ -237,7 +237,9 @@ async function runRealP2DockerLifecycle({
     }
     executeStep='DONE';
     return {status:'PASS'};
-   }catch{executionFailed=true;failedExecuteStep=executeStep;return {status:'FAIL'};}
+   }catch(e){executionFailed=true;failedExecuteStep=executeStep;
+    if(executeStep==='BOOTSTRAP_POSTGRES'&&['BOOTSTRAP_VALIDATE','BOOTSTRAP_MKDIR','BOOTSTRAP_TRANSFER','BOOTSTRAP_SCHEMA_SQL','BOOTSTRAP_ROLE_SQL'].includes(e?.message))failedExecuteStep=e.message;
+    return {status:'FAIL'};}
   }
   if(stage==='cleanup'){
    if(!baseline){cleanupFailed=true;return {status:'FAIL'};}
