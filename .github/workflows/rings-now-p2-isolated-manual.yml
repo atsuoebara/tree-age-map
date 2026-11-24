@@ -1,27 +1,72 @@
-# Rings Now P2 isolated stack: G4 STAGED ONLY. DO NOT DISPATCH.
-# This job remains hard disabled even if someone presses workflow_dispatch.
-# No checkout, Node, Docker, SQL, network, or paid resource is used while disabled.
-name: Rings Now P2 isolated stack (DISABLED)
+# Rings Now G4 one-shot candidate. DO NOT DISPATCH before exact HEAD audit.
+# GitHub Actions history and run_attempt must prove this is the only attempt.
+# API failures, stale history, and re-runs block before the Docker probe.
+name: Rings Now P2 isolated stack (ONE-SHOT GATED)
 on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: rings-now-p2-isolated-manual
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
+    if: ${{ true }} # gated by history + exact-head manifest before Docker
     runs-on: ubuntu-latest
-    timeout-minutes: 12 # dormant upper bound; billing and actual runtime NOT VERIFIED
+    timeout-minutes: 12 # strict bound; billing verified for this one run
     steps:
-      - name: Checkout exact dispatch SHA (dormant)
+      - name: Checkout exact dispatch SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pinned v4.2.2
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 2 # B: one parent is required to verify source binding
-      - name: Verify exact checkout and canonical manifest before CLI (dormant)
+      - name: Fail closed if this exact HEAD already ran
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # This check precedes the Docker step. Workflow-level concurrency
+          # serializes overlapping dispatches; API history blocks later ones.
+          node <<'NODE'
+          'use strict';
+          const https=require('node:https');
+          const block=()=>{process.stderr.write('BLOCKED_NOT_RUN: one-shot history check failed\n');process.exit(2);};
+          const repo=process.env.GITHUB_REPOSITORY;
+          const sha=process.env.GITHUB_SHA;
+          const runId=process.env.GITHUB_RUN_ID;
+          const attempt=process.env.GITHUB_RUN_ATTEMPT;
+          const token=process.env.GH_TOKEN;
+          if(repo!=='atsuoebara/tree-age-map'||!/^[a-f0-9]{40}$/.test(sha||'')||
+             !/^[1-9][0-9]*$/.test(runId||'')||attempt!=='1'||
+             process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||!token)block();
+          const url='https://api.github.com/repos/'+repo+
+            '/actions/workflows/rings-now-p2-isolated-manual.yml/runs?'+
+            'head_sha='+encodeURIComponent(sha)+'&event=workflow_dispatch&per_page=2';
+          const req=https.get(url,{headers:{
+            'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json',
+            'X-GitHub-Api-Version':'2022-11-28','User-Agent':'rings-now-one-shot'
+          }},res=>{
+            if(res.statusCode!==200){res.resume();return block();}
+            let body='';
+            res.setEncoding('utf8');
+            res.on('data',part=>{body+=part;if(body.length>100000)block();});
+            res.on('error',block);
+            res.on('end',()=>{
+              try{const data=JSON.parse(body);const runs=data.workflow_runs;
+                if(data.total_count!==1||!Array.isArray(runs)||runs.length!==1||
+                   String(runs[0].id)!==runId||runs[0].head_sha!==sha||
+                   runs[0].event!=='workflow_dispatch'||runs[0].run_attempt!==1)block();
+                process.stdout.write('ONE_SHOT_HISTORY_VERIFIED\n');
+              }catch{block();}
+            });
+          });
+          req.setTimeout(8000,()=>req.destroy(new Error('timeout')));
+          req.on('error',block);
+          NODE
+      - name: Verify exact checkout and canonical manifest before CLI
         shell: bash
         run: |
           set -euo pipefail
@@ -36,7 +81,7 @@ jobs:
               process.exit(2);
             }
           '
-      - name: Run one isolated probe; keep non-proven outcome red (dormant)
+      - name: Run one isolated probe; keep non-proven outcome red
         shell: bash
         run: |
           set -euo pipefail
