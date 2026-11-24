@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "BLOCKED_NOT_RUN",
+  "status": "READY_FOR_REVIEW",
   "images": {
     "postgres": {
       "reference": "docker.io/library/postgres@sha256:6f7593c161689b6b02c78668b314af7da8811b592c5519108c57a49d0b6ad788",
@@ -15,10 +15,11 @@
       "digest": "sha256:c847127074bd26e1b8d3f7c0e6e01e5346f4b85dd34f5d699fd230af960827c0"
     }
   },
-  "checkoutCommit": null,
+  "checkoutCommit": "dd3481c4fd0547f2cf3be022b81ea3acd102230e",
   "authJwtCompatibility": "NOT_PROVEN",
-  "billingZeroAdditionalCost": "NOT_VERIFIED",
-  "independentAudit": "PENDING",
-  "explicitExecutionApproval": false,
-  "productionAccess": false
+  "billingZeroAdditionalCost": "VERIFIED_FOR_THIS_RUN",
+  "independentAudit": "APPROVED_FOR_EXACT_HEAD",
+  "explicitExecutionApproval": true,
+  "productionAccess": false,
+  "approvalWindowStart": "2026-11-24T23:09:45Z"
 }
