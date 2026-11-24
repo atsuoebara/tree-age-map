@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ true }} # gated by history + exact-head manifest before Docker
+    if: ${{ false }} # gated by history + exact-head manifest before Docker
     runs-on: ubuntu-latest
     timeout-minutes: 12 # strict bound; billing verified for this one run
     steps:
