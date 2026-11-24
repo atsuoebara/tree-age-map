@@ -8,8 +8,10 @@ function fake(overrides={}){
  const name=(s)=>R+'_'+s;
  const container=(n)=>({Name:'/'+n,Config:{Labels:{[LABEL]:R}}});
  const network=(n)=>({Name:n,Labels:{[LABEL]:R}});
- function run({executable,argv,environment,shell,timeoutMs,captureLimitBytes}){
+ function run({executable,argv,environment,shell,timeoutMs,captureLimitBytes,attachStdin,stdinBytes}){
   calls.push([...argv]);
+  if(attachStdin){assert.ok(Buffer.isBuffer(stdinBytes));assert.ok(stdinBytes.length>0);assert.equal(argv[2],'-i');}
+  else assert.equal(stdinBytes,undefined);
   assert.equal(executable,'docker');assert.deepEqual(environment,{});
   assert.equal(shell,false);assert.ok(timeoutMs>0&&timeoutMs<=15000);
   assert.equal(captureLimitBytes,65536);
@@ -164,7 +166,7 @@ test('bootstrap applies exact candidate SQL before authenticator and GoTrue migr
   const outcome=await d.adapter.bootstrapPostgres({
    runId:R,authenticatorSqlFile:runtime.bootstrapSqlFile});
   assert.equal(outcome,'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF');
-  const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+  const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x[2]==='-i');
   assert.equal(copies.length,3);
   const scripts=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('psql'));
   assert.equal(scripts.length,2);
@@ -197,10 +199,10 @@ test('snapshot candidate uses exact audited SQL and owner-checked disposable Pos
  await d.adapter.createContainer(c('postgres'));
  const out=await d.adapter.applySnapshotCandidate(R);
  assert.equal(out,'CLI_SNAPSHOT_CANDIDATE_APPLIED_NOT_RLS_PROOF');
- const cp=d.calls.filter(a=>a[0]==='container'&&a[1]==='cp');
+ const cp=d.calls.filter(a=>a[0]==='container'&&a[1]==='exec'&&a[2]==='-i');
  assert.equal(cp.length,1);
- assert.ok(cp[0][2].endsWith('/docs/rings-now-single-statement-snapshot-CANDIDATE.sql'));
- assert.equal(cp[0][3],R+'_postgres:/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql');
+ assert.equal(cp[0][3],R+'_postgres');
+ assert.equal(cp[0].at(-1),'/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql');
  const apply=d.calls.filter(a=>a[0]==='container'&&a[1]==='exec'&&a.includes('psql'));
  assert.equal(apply.length,1);
  assert.ok(apply[0].includes('ON_ERROR_STOP=1'));
@@ -209,7 +211,7 @@ test('snapshot candidate uses exact audited SQL and owner-checked disposable Pos
 test('snapshot SQL owner spoof forbids candidate cp and psql',async()=>{
  const d=fake({forgeOwner:true});
  await assert.rejects(()=>d.adapter.applySnapshotCandidate(R));
- assert.ok(!d.calls.some(a=>a.includes('cp')||a.includes('psql')));
+ assert.ok(!d.calls.some(a=>a.includes('-i')||a.includes('psql')));
 });
 test('snapshot SQL cannot target a foreign run identifier',async()=>{
  const d=fake();
@@ -229,10 +231,10 @@ test('run-owned Docker-internal HTTP probe copies private token and uses no port
   const req=runtime.prepareHttpProbe();
   const result=await d.adapter.probeInternalPostgrest({runId:R,requestFile:req});
   assert.deepEqual(result,{status:200,body:{status:'candidate_snapshot',rows:[]}});
-  const cps=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+  const cps=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x[2]==='-i');
   assert.equal(cps.length,2);
-  assert.ok(cps.some(x=>x[2]===req&&x[3]===R+'_postgres:/tmp/rn-p2/http-probe.req'));
-  assert.ok(cps.some(x=>x[3]===R+'_postgres:/tmp/rn-p2/http-probe.bash'));
+  assert.ok(cps.some(x=>x[3]===R+'_postgres'&&x.at(-1)==='/tmp/rn-p2/http-probe.req'));
+  assert.ok(cps.some(x=>x[3]===R+'_postgres'&&x.at(-1)==='/tmp/rn-p2/http-probe.bash'));
   const exec=d.calls.find(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('/tmp/rn-p2/http-probe.bash'));
   assert.deepEqual(exec,['container','exec',R+'_postgres','/bin/bash','/tmp/rn-p2/http-probe.bash']);
   const tok=require('node:fs').readFileSync(req,'utf8')
@@ -248,7 +250,7 @@ test('Docker-internal HTTP rejects invalid request path and forged run owner',as
  try{
   const req=r.prepareHttpProbe();
   await assert.rejects(()=>fakeOwner.adapter.probeInternalPostgrest({runId:R,requestFile:req}));
-  assert.ok(!fakeOwner.calls.some(x=>x[0]==='container'&&x[1]==='cp'));
+  assert.ok(!fakeOwner.calls.some(x=>x[0]==='container'&&x[1]==='exec'&&x[2]==='-i'));
   const other=fake();
   await assert.rejects(()=>other.adapter.probeInternalPostgrest({runId:R,requestFile:'/etc/passwd'}));
   assert.equal(other.calls.length,0);
@@ -284,10 +286,10 @@ test('SQL RLS probe copies only checksum-pinned candidate to owned disposable po
  await d.adapter.createContainer(c('postgres'));
  const r=await d.adapter.probeSqlRlsBoundary(R);
  assert.equal(r,'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF');
- const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='cp');
+ const copies=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x[2]==='-i');
  assert.equal(copies.length,1);
- assert.ok(copies[0][2].endsWith('/tests/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql'));
- assert.equal(copies[0][3],R+'_postgres:/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+ assert.equal(copies[0][3],R+'_postgres');
+ assert.equal(copies[0].at(-1),'/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
  const sqls=d.calls.filter(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('psql'));
  assert.equal(sqls.length,1);assert.ok(sqls[0].includes('ON_ERROR_STOP=1'));
  assert.ok(sqls[0].includes('/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql'));
@@ -357,6 +359,6 @@ test('isolated H1 transport rejects foreign run owner and invalid request before
   assert.equal(d.calls.length,0);
   const bad=fake({forgeOwner:true});
   await assert.rejects(()=>bad.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signup_a',request:req,ephemeralDir:dir}));
-  assert.ok(!bad.calls.some(a=>a[0]==='container'&&a[1]==='cp'));
+  assert.ok(!bad.calls.some(a=>a[0]==='container'&&a[1]==='exec'&&a[2]==='-i'));
  }finally{runtime.dispose();}
 });

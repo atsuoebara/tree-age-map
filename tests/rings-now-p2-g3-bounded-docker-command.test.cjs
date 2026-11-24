@@ -36,3 +36,12 @@ test('oversized output is not accepted',async()=>{
  const run=createBoundedDockerCommand({execFileImpl:(b,a,o,cb)=>cb(null,'x'.repeat(65537),'')});
  await assert.rejects(()=>run(spec));
 });
+
+test('stdin accepts only fixed owned transfer shape and sends bytes privately',async()=>{
+ const bytes=Buffer.from('fixture');let sent;
+ const run=createBoundedDockerCommand({execFileImpl:(bin,args,opts,cb)=>({stdin:{on(){},end(x){sent=x;cb(null,'','');}}})});
+ const transfer={...spec,attachStdin:true,stdinBytes:bytes,argv:['container','exec','-i','rn_p2_abcdefgh_postgres','/bin/bash','-c',"umask 077; cat > \"$1\"",'rn-p2-transfer','/tmp/rn-p2/authenticator.sql']};
+ await run(transfer);assert.deepEqual(sent,bytes);
+ await assert.rejects(()=>run({...transfer,argv:[...transfer.argv.slice(0,-1),'/etc/passwd']}));
+ await assert.rejects(()=>run({...transfer,stdinBytes:Buffer.alloc(65537)}));
+});

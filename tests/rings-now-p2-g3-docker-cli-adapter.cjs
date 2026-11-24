@@ -29,11 +29,12 @@ function createDockerCliAdapter({command}={}){
  assert.equal(typeof command,'function','explicit bounded command runner required');
  // command receives argv, timeout and empty env; a future audited adapter
  // must prove the injected runner actually enforces timeout + process teardown.
- async function invoke(argv){
+ async function invoke(argv,stdinBytes){
   assert.ok(Array.isArray(argv)&&argv.every(x=>typeof x==='string'&&x.length<512));
   return checked(await command(Object.freeze({
    executable:'docker',argv:Object.freeze(argv),timeoutMs:TIMEOUT_MS,
-   environment:Object.freeze({}),shell:false,attachStdin:false,
+   environment:Object.freeze({}),shell:false,attachStdin:stdinBytes!==undefined,
+   ...(stdinBytes===undefined?{}:{stdinBytes}),
    captureLimitBytes:65536
   })));
  }
@@ -44,6 +45,17 @@ function createDockerCliAdapter({command}={}){
   assert.equal(obj.Name?.replace(/^\//,''),id);
   assert.equal(obj.Labels?.[LABEL]||obj.Config?.Labels?.[LABEL],runId);
   return obj;
+ }
+ async function transfer(from,to){
+  const split=to.indexOf(':');
+  const name=to.slice(0,split),dest=to.slice(split+1);
+  const runId=name.replace(/_postgres$/,'');
+  safeRun(runId);assert.equal(name,runId+'_postgres');
+  assert.ok(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql"].includes(dest));
+  await inspect('container',name,runId);
+  const stat=fs.lstatSync(from);assert.ok(stat.isFile()&&stat.size>0&&stat.size<=65536);
+  const bytes=fs.readFileSync(from);
+  await invoke(['container','exec','-i',name,'/bin/bash','-c',"umask 077; cat > \"$1\"",'rn-p2-transfer',dest],bytes);
  }
  async function listType(kind,runId){
   const args=kind==='container'
@@ -136,6 +148,8 @@ function createDockerCliAdapter({command}={}){
     [uid,'7518222c475a2b5b7ef68b2d6776d5e0e6823ae5']
    ];
    const gitBlobSha=content=>createHash('sha1').update('blob '+content.length+'\0').update(content).digest('hex');
+   let bootstrapPhase='VALIDATE';
+   try{
    for(const [file,sha] of digests){
     assert.equal(gitBlobSha(fs.readFileSync(file)),sha,'candidate SQL bytes changed');
    }
@@ -145,6 +159,7 @@ function createDockerCliAdapter({command}={}){
    assert.ok(stat.isFile()&&stat.mode%512===0o600,'private role SQL file required');
    const roleSql=fs.readFileSync(authenticatorSqlFile,'utf8');
    assert.match(roleSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
+   bootstrapPhase='MKDIR';
    await inspect('container',name,runId);
    await invoke(['container','exec',name,'mkdir','-p','/tmp/rn-p2/fixtures']);
    const copies=[
@@ -152,17 +167,20 @@ function createDockerCliAdapter({command}={}){
     [fixture,name+':/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql'],
     [authenticatorSqlFile,name+':/tmp/rn-p2/authenticator.sql']
    ];
-   for(const [from,to] of copies)await invoke(['container','cp',from,to]);
+   bootstrapPhase='TRANSFER';
+   for(const [from,to] of copies)await transfer(from,to);
    for(const sql of [
     '/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql',
     '/tmp/rn-p2/authenticator.sql'
    ]){
+    bootstrapPhase=sql.endsWith('/authenticator.sql')?'ROLE_SQL':'SCHEMA_SQL';
     await inspect('container',name,runId);
     await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
      '-v','ON_ERROR_STOP=1','-f',sql]);
    }
    // Database initialization command completion is not RLS proof.
    return 'CLI_BOOTSTRAP_REPORTED_NOT_SQL_PROOF';
+   }catch{throw Error('BOOTSTRAP_'+bootstrapPhase);}
   },
   async applySnapshotCandidate(runId){
    safeRun(runId);
@@ -176,7 +194,7 @@ function createDockerCliAdapter({command}={}){
    // Only the audited SQL is copied. No arbitrary runtime SQL paths or
    // production URLs, and the PostgreSQL target is already owner-checked.
    const target=name+':/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql';
-   await invoke(['container','cp',snapshot,target]);
+   await transfer(snapshot,target);
    await inspect('container',name,runId);
    await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
     '-v','ON_ERROR_STOP=1','-f',
@@ -200,9 +218,9 @@ function createDockerCliAdapter({command}={}){
    await inspect('container',name,runId);
    // Raw JWT is copied inside the owned container's ephemeral /tmp.
    // No credentials or JWTs appear in docker argv, shell args or logs.
-   await invoke(['container','cp',bash,name+':/tmp/rn-p2/http-probe.bash']);
+   await transfer(bash,name+':/tmp/rn-p2/http-probe.bash');
    await inspect('container',name,runId);
-   await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/http-probe.req']);
+   await transfer(requestFile,name+':/tmp/rn-p2/http-probe.req');
    await inspect('container',name,runId);
    const wire=await invoke(['container','exec',name,'/bin/bash',
     '/tmp/rn-p2/http-probe.bash']);
@@ -226,7 +244,7 @@ function createDockerCliAdapter({command}={}){
     try{fs.writeFileSync(fd,sql,{encoding:'utf8'});}
     finally{fs.closeSync(fd);}
     assert.equal(fs.lstatSync(filename).mode&0o777,0o600);
-    await invoke(['container','cp',filename,name+':/tmp/rn-p2/h2-isolated-seed.sql']);
+    await transfer(filename,name+':/tmp/rn-p2/h2-isolated-seed.sql');
     await inspect('container',name,runId);
     await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
      '-v','ON_ERROR_STOP=1','-f','/tmp/rn-p2/h2-isolated-seed.sql']);
@@ -272,10 +290,10 @@ function createDockerCliAdapter({command}={}){
     try{fs.writeFileSync(fd,request,{encoding:'utf8'});}
     finally{fs.closeSync(fd);}
     assert.equal(fs.lstatSync(requestFile).mode&0o777,0o600);
-    await invoke(['container','cp',bash,name+':/tmp/rn-p2/http-probe.bash']);
+    await transfer(bash,name+':/tmp/rn-p2/http-probe.bash');
     await inspect('container',name,runId);
     // Existing pinned Bash reads this fixed container target.
-    await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/http-probe.req']);
+    await transfer(requestFile,name+':/tmp/rn-p2/http-probe.req');
     await inspect('container',name,runId);
     const wire=await invoke(['container','exec',name,'/bin/bash',
      '/tmp/rn-p2/http-probe.bash']);
@@ -329,9 +347,9 @@ function createDockerCliAdapter({command}={}){
    }finally{fs.closeSync(fd);}
    try{
     assert.equal(fs.statSync(requestFile).mode&0o777,0o600);
-    await invoke(['container','cp',script,name+':/tmp/rn-p2/gotrue-h1.bash']);
+    await transfer(script,name+':/tmp/rn-p2/gotrue-h1.bash');
     await inspect('container',name,runId);
-    await invoke(['container','cp',requestFile,name+':/tmp/rn-p2/gotrue-h1.req']);
+    await transfer(requestFile,name+':/tmp/rn-p2/gotrue-h1.req');
     await inspect('container',name,runId);
     // stdout contains private GoTrue body; consume only inside this module.
     const wire=await invoke(['container','exec',name,'/bin/bash',
@@ -352,8 +370,8 @@ function createDockerCliAdapter({command}={}){
    assert.equal(sha,'b0f323d8c5b17a50f23b41e199f456bbc8caa8aa',
     'RLS probe fixture bytes changed');
    await inspect('container',name,runId);
-   await invoke(['container','cp',probe,
-    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+   await transfer(probe,
+    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
    await inspect('container',name,runId);
    // ON_ERROR_STOP makes ANY SQL assertion failure a nonzero CLI result.
    // DO NOT interpret success as actual signed JWT or HTTP evidence.
