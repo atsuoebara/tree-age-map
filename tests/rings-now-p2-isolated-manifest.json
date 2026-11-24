@@ -15,10 +15,11 @@
       "digest": "sha256:c847127074bd26e1b8d3f7c0e6e01e5346f4b85dd34f5d699fd230af960827c0"
     }
   },
-  "checkoutCommit": null,
+  "checkoutCommit": "d1eb4da49ec613c7ee3b4ba74b32c4234362284f",
   "authJwtCompatibility": "NOT_PROVEN",
   "billingZeroAdditionalCost": "NOT_VERIFIED",
   "independentAudit": "PENDING",
   "explicitExecutionApproval": false,
-  "productionAccess": false
+  "productionAccess": false,
+  "approvalWindowStart": "2026-11-24T13:48:13Z"
 }

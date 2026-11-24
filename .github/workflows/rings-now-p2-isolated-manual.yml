@@ -1,7 +1,7 @@
-# Rings Now P2 isolated stack: G4 STAGED ONLY. DO NOT DISPATCH.
+# Rings Now P2 isolated stack: 2026-11-24 new G4 candidate. DO NOT DISPATCH.
 # This job remains hard disabled even if someone presses workflow_dispatch.
 # No checkout, Node, Docker, SQL, network, or paid resource is used while disabled.
-name: Rings Now P2 isolated stack (DISABLED)
+name: Rings Now P2 isolated stack (NEW CANDIDATE DISABLED)
 on:
   workflow_dispatch:
 permissions:
@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
+    if: ${{ false }} # new approval intent received; exact-HEAD audit, billing, and execution gating still pending
     runs-on: ubuntu-latest
     timeout-minutes: 12 # dormant upper bound; billing and actual runtime NOT VERIFIED
     steps:
