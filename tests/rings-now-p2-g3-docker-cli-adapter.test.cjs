@@ -182,8 +182,9 @@ test('bootstrap applies exact candidate SQL before authenticator and GoTrue migr
    environment:'EPHEMERAL_SERVICE_ENV_FILE',
    runtime:{envFile:runtime.envFiles.gotrue,networkOnly:true}});
   assert.equal(await d.adapter.initializeGoTrue(R),
-   'CLI_GOTRUE_MIGRATE_REPORTED_NOT_AUTH_PROOF');
-  assert.ok(d.calls.some(x=>x.includes('migrate')));
+   'CLI_GOTRUE_HEALTH_REPORTED_NOT_AUTH_PROOF');
+  assert.ok(d.calls.some(x=>x[0]==='container'&&x[1]==='exec'&&x[2]===R+'_postgres'&&x[3]==='/bin/bash'&&x[4]==='-ec'&&x[5].includes('/dev/tcp/gotrue/9999')&&x[5].includes('GET /health')));
+  assert.ok(!d.calls.some(x=>x.includes('migrate')));
  }finally{runtime.dispose();}
 });
 test('bootstrap rejects a non-run-owned SQL path before any Docker bootstrap command',async()=>{
@@ -235,7 +236,7 @@ test('run-owned Docker-internal HTTP probe copies private token and uses no port
   assert.equal(cps.length,2);
   assert.ok(cps.some(x=>x[3]===R+'_postgres'&&x.at(-1)==='/tmp/rn-p2/http-probe.req'));
   assert.ok(cps.some(x=>x[3]===R+'_postgres'&&x.at(-1)==='/tmp/rn-p2/http-probe.bash'));
-  const exec=d.calls.find(x=>x[0]==='container'&&x[1]==='exec'&&x.includes('/tmp/rn-p2/http-probe.bash'));
+  const exec=d.calls.find(x=>x[0]==='container'&&x[1]==='exec'&&x[2]!=='-i'&&x.includes('/tmp/rn-p2/http-probe.bash'));
   assert.deepEqual(exec,['container','exec',R+'_postgres','/bin/bash','/tmp/rn-p2/http-probe.bash']);
   const tok=require('node:fs').readFileSync(req,'utf8')
    .match(/Authorization: Bearer ([A-Za-z0-9_.-]+)/)[1];
@@ -361,4 +362,12 @@ test('isolated H1 transport rejects foreign run owner and invalid request before
   await assert.rejects(()=>bad.adapter.probeInternalGoTrue({runId:R,caseId:'h1_signup_a',request:req,ephemeralDir:dir}));
   assert.ok(!bad.calls.some(a=>a[0]==='container'&&a[1]==='exec'&&a[2]==='-i'));
  }finally{runtime.dispose();}
+});
+
+test('GoTrue readiness rejects failed health command and foreign ownership',async()=>{
+ const d=fake({throwOn:'-ec'});
+ await assert.rejects(()=>d.adapter.initializeGoTrue(R));
+ const bad=fake({forgeOwner:true});
+ await assert.rejects(()=>bad.adapter.initializeGoTrue(R));
+ assert.ok(!bad.calls.some(x=>x.includes('-ec')));
 });
