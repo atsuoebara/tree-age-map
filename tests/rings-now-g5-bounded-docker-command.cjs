@@ -6,7 +6,7 @@ const {execFile}=require('node:child_process');
 const assert=require('node:assert/strict');
 const {classifyLog}=require('./rings-now-p2-h1-internal-error.cjs');
 const MAX_MS=15000,MAX_BYTES=65536;
-const TRANSFER_TARGETS=Object.freeze(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql"]);
+const TRANSFER_TARGETS=Object.freeze(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql"]);
 const TRANSFER_SCRIPT="umask 077; cat > \"$1\"";
 
 function createG5BoundedDockerCommand({execFileImpl=execFile}={}){
