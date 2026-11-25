@@ -66,7 +66,13 @@ async function collectG5OverTransport({h1,nowSeconds,readNowSeconds,seedDisposab
   const subject=caseId==='h2_owner_b'?h.idB:h.idA;
   observations.push(checkG5H2Response(caseId,response,{subject,expectedRows:1}));
  }
- const getResponse=await transport({caseId:'g5_get_owner_a',request:buildG5GetRequest({caseId:'h2_owner_a',...options,nowSeconds:readNowSeconds?readNowSeconds():nowSeconds})});
+ const getNow=readNowSeconds?readNowSeconds():nowSeconds;
+ assert.ok(Number.isSafeInteger(getNow)&&getNow>=lastNow&&claimsOf(h.ownerA).exp>getNow,'GET requires live owner and monotonic clock');
+ mark('REQUEST','g5_get_owner_a');
+ const getRequest=buildG5GetRequest({caseId:'h2_owner_a',...options,nowSeconds:getNow});
+ mark('TRANSPORT','g5_get_owner_a');
+ const getResponse=await transport({caseId:'g5_get_owner_a',request:getRequest});
+ mark('RESPONSE','g5_get_owner_a',getResponse?.status);
  checkG5GetResponse(getResponse);
  mark('SUMMARY');
  const summary=summarizeH2Observations(observations);
