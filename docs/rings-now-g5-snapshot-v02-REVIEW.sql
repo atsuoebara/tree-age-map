@@ -7,7 +7,10 @@ SET LOCAL statement_timeout = '10s';
 CREATE FUNCTION public.rings_now_snapshot_candidate_v02()
 RETURNS jsonb
 LANGUAGE plpgsql
-STABLE
+-- Wall-clock admission can vary within a statement; do not promise STABLE.
+-- PostgREST POST uses a read-write transaction, but this body performs no DML.
+-- All run rows and checks are derived from one SELECT snapshot.
+VOLATILE
 SECURITY INVOKER
 SET search_path = ''
 AS $rings_now_v02$
