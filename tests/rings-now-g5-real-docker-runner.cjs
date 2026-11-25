@@ -196,7 +196,7 @@ async function runRealG5DockerLifecycle({
       const executeDeadlineMs=stageDeadlineMs;
       executeStep='H2_GOTRUE';
       const bridged=await runG5OriginalGoTrueH2Stage({
-       mark:(phase,caseId,httpStatus)=>{h2Diagnostic=require('./rings-now-p2-h2-diagnostic.cjs').safeH2Diagnostic({phase,caseId,httpStatus});},
+       mark:(phase,caseId,httpStatus)=>{h2Diagnostic=require('./rings-now-g5-h2-diagnostic.cjs').safeH2Diagnostic({phase,caseId,httpStatus});},
        h1,runtime,driver,runId,executeDeadlineMs,
        cleanupReserveMs:reserveMs,verifyReserveMs
       });
@@ -254,6 +254,7 @@ async function runRealG5DockerLifecycle({
      });
      ops.push('internal_postgrest_http_empty_owner_cli_reported_not_g4');
     }
+    assert.equal(h2Completed,true,'G5 full H2 sequence required');
     executeStep='DONE';
     return {status:'PASS'};
    }catch(e){executionFailed=true;failedExecuteStep=executeStep;
