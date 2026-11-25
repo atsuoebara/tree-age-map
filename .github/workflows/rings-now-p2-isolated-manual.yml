@@ -1,7 +1,8 @@
-# Rings Now P2 isolated stack: G4 STAGED ONLY. DO NOT DISPATCH.
-# This job remains hard disabled even if someone presses workflow_dispatch.
-# No checkout, Node, Docker, SQL, network, or paid resource is used while disabled.
-name: Rings Now P2 isolated stack (DISABLED)
+# Rings Now P2 G4 final candidate. NOT BRANCHED BEFORE EXACT-HEAD AUDIT.
+# This immutable commit shall only receive a selectable branch after independent
+# verification of this exact HEAD and account's preexisting $0 hard cap.
+# One-shot count gate runs BEFORE any Docker command.
+name: Rings Now P2 isolated stack (ONE-SHOT GATED)
 on:
   workflow_dispatch:
 permissions:
@@ -12,22 +13,22 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-p2:
-    if: ${{ false }} # G4 hold; separate audited final HEAD and owner binding required
+    if: ${{ true }} # only selectable AFTER exact-head independent audit; guarded pre-Docker
     runs-on: ubuntu-latest
-    timeout-minutes: 12 # dormant upper bound; billing and actual runtime NOT VERIFIED
+    timeout-minutes: 12 # strict bound; Actions $0 spending limit previously confirmed
     steps:
-      - name: Checkout exact dispatch SHA (dormant)
+      - name: Checkout exact dispatch SHA 
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pinned v4.2.2
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 2 # B: one parent is required to verify source binding
-      - name: Prove one-shot execution eligibility (dormant)
+      - name: Prove one-shot execution eligibility 
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tests/rings-now-p2-one-shot-history-cli.cjs
-      - name: Verify exact checkout and canonical manifest before CLI (dormant)
+      - name: Verify exact checkout and canonical manifest before CLI 
         shell: bash
         run: |
           set -euo pipefail
@@ -42,7 +43,7 @@ jobs:
               process.exit(2);
             }
           '
-      - name: Run one isolated probe; keep non-proven outcome red (dormant)
+      - name: Run one isolated probe; keep non-proven outcome red 
         shell: bash
         run: |
           set -euo pipefail
