@@ -69,16 +69,26 @@ async function collectH1OverTransport({transport,users}={}){
  assert.equal(typeof transport,'function');
  const observations=[],tokens={},ids={};
  for(const caseId of ORDER){
+  let phase='REQUEST',status=null;
+  try{
   const request=buildGoTrueRequest(caseId,users);
   // Transport MUST be the audited run-owned private Docker-network path.
   // No response body, request, password or JWT appears in evidence output.
+  phase='TRANSPORT';
   const response=await transport({caseId,request});
+  status=Number.isInteger(response?.status)&&response.status>=100&&response.status<=599?response.status:null;
+  phase='RESPONSE';
   const checked=inspectGoTrueResponse(caseId,response);
   observations.push(checked.observation);
   if(checked.token){
    const who=caseId.endsWith('_a')?'a':'b';
    tokens[who]=checked.token;
    ids[who]=checked.userId;
+  }
+  }catch{
+   const error=Error('H1_CASE_FAILED');
+   error.h1Diagnostic=Object.freeze({caseId,phase,httpStatus:status});
+   throw error;
   }
  }
  assert.ok(tokens.a&&tokens.b&&ids.a&&ids.b&&ids.a!==ids.b,'independent users required');
