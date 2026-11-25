@@ -19,6 +19,14 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.match(auth.GOTRUE_JWT_SECRET,/^[0-9a-f]{96}$/);
   assert.equal(auth.GOTRUE_JWT_SECRET,rest.PGRST_JWT_SECRET);
   assert.ok(auth.GOTRUE_DB_DATABASE_URL.includes(pg.POSTGRES_PASSWORD));
+  const authUri=new URL(auth.GOTRUE_DB_DATABASE_URL);
+  assert.equal(authUri.hostname,'postgres');
+  assert.equal(authUri.port,'5432');
+  assert.equal(authUri.pathname,'/rings_now_p2');
+  assert.equal(authUri.searchParams.get('sslmode'),'disable');
+  assert.equal(authUri.searchParams.get('options'),'-csearch_path=auth');
+  assert.deepEqual([...authUri.searchParams.keys()],['sslmode','options']);
+  assert.equal(new URL(rest.PGRST_DB_URI).searchParams.has('options'),false);
   assert.match(rest.PGRST_DB_URI,/^postgres:\/\/authenticator:[a-f0-9]{64}@postgres:5432\/rings_now_p2\?sslmode=disable$/);
   assert.ok(!rest.PGRST_DB_URI.includes(pg.POSTGRES_PASSWORD));
   assert.equal(fs.statSync(runtime.bootstrapSqlFile).mode&0o777,0o600);

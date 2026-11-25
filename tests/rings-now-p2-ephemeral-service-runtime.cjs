@@ -37,7 +37,10 @@ function createEphemeralP2Runtime(){
    GOTRUE_DB_DRIVER:'postgres',
    // Explicit GoTrue namespace, confined to the disposable auth service.
    DB_NAMESPACE:'auth',
-   GOTRUE_DB_DATABASE_URL:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable',
+   // Namespace selects migration schema, but unqualified runtime queries
+   // also need the auth search path (upstream supabase/auth issue #1265).
+   // Connection-local only: do not alter the postgres role/database defaults.
+   GOTRUE_DB_DATABASE_URL:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable&options=-csearch_path%3Dauth',
    // Five minutes, only for the disposable per-run GoTrue container.
    // Never shorten JWT lifetime in production or claim expiration proof.
    GOTRUE_JWT_SECRET:jwt,GOTRUE_JWT_AUD:'authenticated',
