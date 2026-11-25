@@ -150,6 +150,9 @@ async function runRealG5DockerLifecycle({
       // fixtures (ROLLBACK); this is still not HTTP or signed-JWT proof.
       executeStep='SQL_RLS_PROBE';
       await driver.probeG5SqlBoundary(runId);
+      executeStep='G5_CONCURRENT_PROBE';
+      assert.equal(await driver.probeG5ConcurrentBoundary(runId),'G5_CONCURRENT_CLI_REPORTED_NOT_PROOF');
+      ops.push('g5_concurrent_cli_reported_not_proof');
       ops.push('sql_rls_boundary_cli_reported_not_http_jwt_proof');
      }
      if(runtime?.bootstrapSqlFile&&service==='gotrue'){
