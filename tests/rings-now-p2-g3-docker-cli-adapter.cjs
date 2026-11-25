@@ -380,6 +380,19 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
    return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
   },
+  async diagnoseH1InternalError(runId){
+   safeRun(runId);
+   const {safeCategories}=require('./rings-now-p2-h1-internal-error.cjs');
+   const result={};
+   for(const service of ['gotrue','postgres']){
+    try{
+     const name=runId+'_'+service;
+     await inspect('container',name,runId);
+     result[service]=safeCategories(JSON.parse(await invoke(['container','logs','--tail','80',name])));
+    }catch{result[service]=['UNAVAILABLE'];}
+   }
+   return Object.freeze(result);
+  },
   async initializeGoTrue(runId){
    safeRun(runId);
    const name=runId+'_gotrue';

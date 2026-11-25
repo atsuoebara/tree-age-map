@@ -4,6 +4,7 @@
 // execFile timeout bounds *CLI invocation only*, NOT daemon-side operations.
 const {execFile}=require('node:child_process');
 const assert=require('node:assert/strict');
+const {classifyLog}=require('./rings-now-p2-h1-internal-error.cjs');
 const MAX_MS=15000,MAX_BYTES=65536;
 const TRANSFER_TARGETS=Object.freeze(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-p2-isolated-schema-v2-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-single-statement-snapshot-CANDIDATE.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql"]);
 const TRANSFER_SCRIPT="umask 077; cat > \"$1\"";
@@ -34,6 +35,9 @@ function createBoundedDockerCommand({execFileImpl=execFile}={}){
     if(error)return reject(Error('DOCKER_CLI_FAILED_OR_TIMED_OUT'));
     if(typeof stdout!=='string'||Buffer.byteLength(stdout)>MAX_BYTES)
      return reject(Error('DOCKER_STDOUT_INVALID'));
+    // Fixed owned-container logs command returns categories, not raw streams.
+    if(spec.argv.length===5&&spec.argv[0]==='container'&&spec.argv[1]==='logs'&&spec.argv[2]==='--tail'&&spec.argv[3]==='80'&&/^rn_p2_[a-z0-9]{8,32}_(gotrue|postgres)$/.test(spec.argv[4]))
+     return resolve(Object.freeze({exitCode:0,stdout:JSON.stringify(classifyLog(stdout,stderr))}));
     // Never forward stderr or stdout to the application logs here.
     resolve(Object.freeze({exitCode:0,stdout}));
    });

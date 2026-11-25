@@ -87,7 +87,7 @@ async function runRealP2DockerLifecycle({
  try{
  const ops=[],knownContainers=new Set(),knownNetworks=new Set();
  let baseline=false,executionFailed=false,cleanupFailed=false,verificationFailed=false;
- let executeStep='NOT_STARTED',failedExecuteStep=null,h1Diagnostic=null;
+ let executeStep='NOT_STARTED',failedExecuteStep=null,h1Diagnostic=null,h1InternalError=null;
  let finalInventory=null;
  const runStage=async(stage,{timeoutMs})=>{
   // #188's deadline reserves real cleanup and verification time. #200 CLI
@@ -248,6 +248,11 @@ async function runRealP2DockerLifecycle({
     return {status:'PASS'};
    }catch(e){executionFailed=true;failedExecuteStep=executeStep;
     if(executeStep==='H1_GOTRUE'&&e?.message==='H1_CASE_FAILED')h1Diagnostic=e.h1Diagnostic;
+    // Four bounded commands (ownership checks + logs); never consume cleanup reserve.
+    if(commandFactory===createBoundedDockerCommand&&h1Diagnostic?.httpStatus===500&&
+     stageDeadlineMs-performance.now()>65000){
+     try{h1InternalError=await driver.diagnoseH1InternalError(runId);}catch{}
+    }
     if(executeStep==='BOOTSTRAP_POSTGRES'&&['BOOTSTRAP_VALIDATE','BOOTSTRAP_MKDIR','BOOTSTRAP_TRANSFER','BOOTSTRAP_SCHEMA_SQL','BOOTSTRAP_ROLE_SQL'].includes(e?.message))failedExecuteStep=e.message;
     return {status:'FAIL'};}
   }
@@ -314,7 +319,7 @@ async function runRealP2DockerLifecycle({
   status:'FAIL',attempted:true,realDockerInvoked:true,
   verification:'NOT_PROVEN',coordinatorFailed:true,
   emergencyCleanupAttempted,emergencyCleanupStatus,emergencyVerifyStatus,
-  cleanupActions:Object.freeze(ops),failedExecuteStep,h1Diagnostic,
+  cleanupActions:Object.freeze(ops),failedExecuteStep,h1Diagnostic,h1InternalError,
   remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
   resourceTerminationProven:false,serviceStartupVerified:false,
   g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
@@ -326,7 +331,7 @@ async function runRealP2DockerLifecycle({
  return Object.freeze({
   status:consistent?'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF':'FAIL_OR_NOT_PROVEN',
   attempted:true,realDockerInvoked:true,
-  stageRecords:budget.stageRecords,failedExecuteStep,h1Diagnostic,
+  stageRecords:budget.stageRecords,failedExecuteStep,h1Diagnostic,h1InternalError,
   cleanupActions:Object.freeze(ops),
   remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
   verification:'CLI_SELF_REPORTED_ONLY',
