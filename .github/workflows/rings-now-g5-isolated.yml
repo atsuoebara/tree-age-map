@@ -17,7 +17,7 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 2
-      - name: Offline checks only
+      - name: Offline checks and gated isolated candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -25,4 +25,4 @@ jobs:
           bash -n tests/fixtures/rings-now-g5-concurrent-probe.bash
           for f in tests/rings-now-g5-*.cjs; do node --check "$f"; done
           node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs
-          node tests/rings-now-g5-isolated-cli.cjs --review-only
+          node tests/rings-now-g5-isolated-cli.cjs --isolated-once
