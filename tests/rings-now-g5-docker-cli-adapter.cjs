@@ -52,7 +52,7 @@ function createG5DockerCliAdapter({command}={}){
   const name=to.slice(0,split),dest=to.slice(split+1);
   const runId=name.replace(/_postgres$/,'');
   safeRun(runId);assert.equal(name,runId+'_postgres');
-  assert.ok(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql"].includes(dest));
+  assert.ok(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql"].includes(dest));
   await inspect('container',name,runId);
   const stat=fs.lstatSync(from);assert.ok(stat.isFile()&&stat.size>0&&stat.size<=65536);
   const bytes=fs.readFileSync(from);
@@ -364,23 +364,23 @@ function createG5DockerCliAdapter({command}={}){
     // teardown. No claim of runtime secret erasure or independent proof here.
    }
   },
-  async probeSqlRlsBoundary(runId){
+  async probeG5SqlBoundary(runId){
    safeRun(runId);
    const name=runId+'_postgres';
-   const probe=path.resolve(__dirname,'fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+   const probe=path.resolve(__dirname,'fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql');
    const bytes=fs.readFileSync(probe);
    const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
-   assert.equal(sha,'b0f323d8c5b17a50f23b41e199f456bbc8caa8aa',
+   assert.equal(sha,'7e0e885db4a4ef64c279f8691803369189dc512a',
     'RLS probe fixture bytes changed');
    await inspect('container',name,runId);
    await transfer(probe,
-    name+':/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql');
+    name+':/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql');
    await inspect('container',name,runId);
    // ON_ERROR_STOP makes ANY SQL assertion failure a nonzero CLI result.
    // DO NOT interpret success as actual signed JWT or HTTP evidence.
    await invoke(['container','exec',name,'psql','-U','postgres','-d','rings_now_p2',
     '-v','ON_ERROR_STOP=1','-f',
-    '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
+    '/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql']);
    return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
   },
   async diagnoseH2InternalError(runId,caseId){
