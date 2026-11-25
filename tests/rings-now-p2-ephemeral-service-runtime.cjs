@@ -58,6 +58,7 @@ function createEphemeralP2Runtime(){
    PGRST_DB_URI:'postgres://authenticator:'+authPw+'@postgres:5432/rings_now_p2?sslmode=disable',
    PGRST_DB_SCHEMAS:'public',
    PGRST_DB_ANON_ROLE:'anon',
+   PGRST_DB_PRE_REQUEST:'p2_guard.strict_jwt_expiry',
    PGRST_JWT_SECRET:jwt,
    PGRST_JWT_ROLE_CLAIM_KEY:'.role',
    PGRST_SERVER_HOST:'0.0.0.0',
@@ -84,7 +85,8 @@ function createEphemeralP2Runtime(){
   const sql='BEGIN;\n'+
    "CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '"+authPw+"';\n"+
    'GRANT anon TO authenticator;\n'+
-   'GRANT authenticated TO authenticator;\nCOMMIT;\n';
+   'GRANT authenticated TO authenticator;\n'+
+   "CREATE SCHEMA p2_guard;\nREVOKE ALL ON SCHEMA p2_guard FROM PUBLIC;\nCREATE FUNCTION p2_guard.strict_jwt_expiry() RETURNS void\nLANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path = ''\nAS $guard$\nDECLARE claims jsonb; expiry numeric;\nBEGIN\n  claims := NULLIF(current_setting('request.jwt.claims', true), '')::jsonb;\n  IF current_user = 'anon' AND (claims IS NULL OR claims = '{}'::jsonb OR claims = '{\"role\":\"anon\"}'::jsonb) THEN\n    RETURN;\n  END IF;\n  IF jsonb_typeof(claims -> 'exp') IS DISTINCT FROM 'number' THEN\n    RAISE SQLSTATE 'PT401' USING MESSAGE = 'Invalid or expired token';\n  END IF;\n  expiry := (claims ->> 'exp')::numeric;\n  IF expiry <= extract(epoch FROM clock_timestamp()) THEN\n    RAISE SQLSTATE 'PT401' USING MESSAGE = 'Invalid or expired token';\n  END IF;\nEND;\n$guard$;\nREVOKE ALL ON FUNCTION p2_guard.strict_jwt_expiry() FROM PUBLIC;\nGRANT USAGE ON SCHEMA p2_guard TO anon, authenticated;\nGRANT EXECUTE ON FUNCTION p2_guard.strict_jwt_expiry() TO anon, authenticated;\n"+'COMMIT;\n';
   const fd=fs.openSync(bootstrapSqlFile,'wx',0o600);
   try{fs.writeFileSync(fd,sql,{encoding:'utf8'});}
   finally{fs.closeSync(fd);}

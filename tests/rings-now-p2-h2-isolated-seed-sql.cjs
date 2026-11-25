@@ -45,6 +45,9 @@ $preflight$;
 CREATE ROLE p2_h2_no_rpc NOLOGIN NOINHERIT;
 GRANT p2_h2_no_rpc TO authenticator;
 GRANT USAGE ON SCHEMA public TO p2_h2_no_rpc;
+-- Permit only the pre-request guard, not the snapshot RPC.
+GRANT USAGE ON SCHEMA p2_guard TO p2_h2_no_rpc;
+GRANT EXECUTE ON FUNCTION p2_guard.strict_jwt_expiry() TO p2_h2_no_rpc;
 REVOKE ALL ON FUNCTION public.rings_now_snapshot_candidate_v01()
  FROM p2_h2_no_rpc;
 -- One durable row per H1-issued UUID; foreign A must not see B.
