@@ -20,3 +20,16 @@ Official references: https://www.postgresql.org/docs/17/xfunc-volatility.html ; 
 
 ## Isolation preparation acceptance delta (review only; not executable authorization)
 References confirmed: https://www.postgresql.org/docs/17/xfunc-volatility.html ; https://www.postgresql.org/docs/17/functions-datetime.html ; https://docs.postgrest.org/en/v14/references/transactions.html ; https://docs.postgrest.org/en/v14/references/api/options.html ; https://docs.postgrest.org/en/v14/references/auth.html ; https://docs.postgrest.org/en/v14/references/errors.html . PostgREST v14 VOLATILE RPC permits POST/OPTIONS; POST uses READ WRITE. Assert no DML in exact body, no global pre-request guard, correct ACL/RLS and unchanged original data SELECT. Check POST success, GET/HEAD rejection, real JWT expiry at/after boundary (deterministic equality separately from real-clock timing), malformed/missing exp, owner isolation, 0/1000/1001, deleted and null, concurrent mutation snapshot coherence and unchanged existing endpoints. Explicitly distinguish data statement snapshot from outer request snapshot. Reuse G4 runner and evidence where valid, but no dispatch until exact runner candidate independently audited and authorized. The changelog HTML was accessible but the retrieved index was stale (latest visible July 30 2026); current November coverage, PT401 details, remaining metadata and actual isolated runner wiring are not yet verified. No production or isolated SQL execution for this revision.
+
+### Offline HTTP contract evidence (2026-11-25)
+
+- Tested source HEAD `ee0124d80d6af4419a7165ceae826834ca053d47`.
+- Local Node.js v22.16.0, `node --test rings-now-g5-http-contract.test.cjs`: 5 passed, 0 failed, 0 skipped. No HTTP connections, Docker, production DB or Actions dispatch.
+- All six locally reconstructed files verified byte-identical using `git hash-object` against GitHub blob IDs:
+  - `rings-now-g5-http-contract.cjs` `6c322a36c26ed79b2a8d219518b9ff30ba4102e3`
+  - `rings-now-g5-http-contract.test.cjs` `4a4514be5d652ec29a646bd33021845da158f7b0`
+  - `rings-now-p2-docker-internal-http.cjs` `74293c0dc946c217f566bba8000be78ea04932fd`
+  - `rings-now-p2-h1-h2-evidence.cjs` `4a25d6ac95b3686591417f6b9862d4bea27cde83`
+  - `rings-now-p2-h2-postgrest-http.cjs` `641281206e8e50c6851efc95b4cc0e3309fa46c3`
+  - `rings-now-p2-loopback-transport.cjs` `080d9675635ead0075427b3bf94bcf84eaf35d87`
+- Scope is offline contract only. Runner integration, concurrent mutation, exact-time equality proof, real HTTP/JWT and SQL remain unproven. No new approval is implied.
