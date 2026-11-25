@@ -35,6 +35,8 @@ function createEphemeralP2Runtime(){
    GOTRUE_SITE_URL:'http://localhost',
    GOTRUE_API_HOST:'0.0.0.0',GOTRUE_API_PORT:'9999',
    GOTRUE_DB_DRIVER:'postgres',
+   // Explicit GoTrue namespace, confined to the disposable auth service.
+   DB_NAMESPACE:'auth',
    GOTRUE_DB_DATABASE_URL:'postgres://postgres:'+pw+'@postgres:5432/rings_now_p2?sslmode=disable',
    // Five minutes, only for the disposable per-run GoTrue container.
    // Never shorten JWT lifetime in production or claim expiration proof.

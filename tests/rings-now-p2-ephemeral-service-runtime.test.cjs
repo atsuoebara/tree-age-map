@@ -24,6 +24,9 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.equal(fs.statSync(runtime.bootstrapSqlFile).mode&0o777,0o600);
   const authSql=fs.readFileSync(runtime.bootstrapSqlFile,'utf8');
   assert.match(authSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
+  assert.equal(auth.DB_NAMESPACE,'auth');
+  assert.equal(pg.DB_NAMESPACE,undefined);
+  assert.equal(rest.DB_NAMESPACE,undefined);
   assert.equal(auth.GOTRUE_EXTERNAL_EMAIL_ENABLED,'true');
   assert.equal(auth.GOTRUE_MAILER_AUTOCONFIRM,'true');
   assert.equal(auth.GOTRUE_EXTERNAL_PHONE_ENABLED,'false');
