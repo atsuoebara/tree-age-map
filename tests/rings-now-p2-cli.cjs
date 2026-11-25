@@ -56,6 +56,10 @@ function safeDiagnostics(result){
    caseId:result.h1Diagnostic.caseId,phase:result.h1Diagnostic.phase,
    httpStatus:Number.isInteger(result.h1Diagnostic.httpStatus)&&result.h1Diagnostic.httpStatus>=100&&result.h1Diagnostic.httpStatus<=599?result.h1Diagnostic.httpStatus:null
   }:null,
+  h1InternalError:result.failedExecuteStep==='H1_GOTRUE'&&result.h1Diagnostic?.httpStatus===500&&result.h1InternalError?{
+   gotrue:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h1InternalError.gotrue),
+   postgres:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h1InternalError.postgres)
+  }:null,
   opsSummary:{
    known:actions.filter(x=>OPS.includes(x)).map(x=>x),
    started:actions.filter(x=>typeof x==='string'&&/^started:(postgres|gotrue|postgrest)$/.test(x)).length,
