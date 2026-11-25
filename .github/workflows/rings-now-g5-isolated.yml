@@ -24,5 +24,5 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           bash -n tests/fixtures/rings-now-g5-concurrent-probe.bash
           for f in tests/rings-now-g5-*.cjs; do node --check "$f"; done
-          node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs
+          node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs tests/rings-now-g5-activation-gate.test.cjs
           node tests/rings-now-g5-isolated-cli.cjs --isolated-once
