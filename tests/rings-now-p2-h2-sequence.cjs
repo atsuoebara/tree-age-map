@@ -15,14 +15,17 @@ function validateH1(h1,nowSeconds){
  const seedSql=buildH2IsolatedSeedSql({ownerA:idA,ownerB:idB});
  return {ownerA,ownerB,idA,idB,seedSql};
 }
-async function collectH2OverTransport({h1,nowSeconds,readNowSeconds,seedDisposableSql,provideExpiredToken,provideDeniedToken,transport}={}){
+async function collectH2OverTransport({h1,nowSeconds,readNowSeconds,seedDisposableSql,provideExpiredToken,provideDeniedToken,transport,mark=()=>{}}={}){
  for(const fn of [seedDisposableSql,provideExpiredToken,provideDeniedToken,transport])
   assert.equal(typeof fn,'function','missing H2 prerequisite callback');
+ mark('PREPARE');
  const h=validateH1(h1,nowSeconds);
  // Caller must independently check run ownership and actual A/B rows.
+ mark('SEED');
  const seed=await seedDisposableSql({sql:h.seedSql,ownerA:h.idA,ownerB:h.idB});
  assert.equal(seed?.status,'ISOLATED_TWO_OWNERS_CLI_REPORTED','seed prerequisite absent');
  // Tokens are provided by audited future mechanisms; never forge expiry.
+ mark('TOKEN_CHECK');
  const expired=await provideExpiredToken({ownerA:h.idA});
  const denied=await provideDeniedToken({ownerA:h.idA,role:'p2_h2_no_rpc'});
  // Validate ALL prerequisite token claims BEFORE the first H2 transport.
@@ -40,6 +43,7 @@ async function collectH2OverTransport({h1,nowSeconds,readNowSeconds,seedDisposab
  const observations=[];
  let lastNow=nowSeconds;
  for(const caseId of CASES){
+  mark('REQUEST',caseId);
   // Real runner supplies a fresh wall-clock value before every request.
   // Older offline contracts may omit the callback; they retain fixed-time
   // semantics and cannot be promoted to genuine expiry evidence.
@@ -54,10 +58,13 @@ async function collectH2OverTransport({h1,nowSeconds,readNowSeconds,seedDisposab
    assert.ok(ec.exp<current,'original token is not expired');
   }
   const request=buildH2Request({caseId,...options,nowSeconds:current});
+  mark('TRANSPORT',caseId);
   const response=await transport({caseId,request});
+  mark('RESPONSE',caseId,response?.status);
   const subject=caseId==='h2_owner_b'?h.idB:h.idA;
   observations.push(checkH2Response(caseId,response,{subject,expectedRows:1}));
  }
+ mark('SUMMARY');
  const summary=summarizeH2Observations(observations);
  assert.equal(summary.missingCases.length,0);
  return Object.freeze({

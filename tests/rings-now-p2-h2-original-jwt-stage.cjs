@@ -12,7 +12,7 @@ const {prepareRefreshedH2Sessions}=
 
 async function prepareOriginalJwtH2({
  originalH1,gotrueEnv,observedAtSeconds,executeRemainingMs,
- postWaitReserveMs,waitForOriginalExpiry,refreshOwners,readWallSeconds
+ postWaitReserveMs,waitForOriginalExpiry,refreshOwners,readWallSeconds,mark=()=>{}
 }={}){
  assert.equal(typeof waitForOriginalExpiry,'function');
  assert.equal(typeof refreshOwners,'function');
@@ -21,12 +21,14 @@ async function prepareOriginalJwtH2({
   'reserve time for refresh, seed and seven H2 requests');
  // This execute budget is already net of cleanup/verify. Subtract only
  // the work after waiting, never cleanup/verify a second time.
+ mark('BUDGET');
  const budget=checkIsolatedGoTrueTtl({
   env:gotrueEnv,executeRemainingMs,setupReserveMs:postWaitReserveMs
  });
  if(budget.status!=='TTL_BUDGET_FEASIBLE_NOT_REALTIME_PROOF')
   return Object.freeze({status:'BLOCKED_ORIGINAL_JWT_BUDGET_NOT_RUN',
    attempted:false,realElapsedTimeVerified:false,g4Verified:false});
+ mark('RECEIPT');
  const receipt=captureGoTrueH1Receipt({
   h1:originalH1,observedAtSeconds
  });
@@ -35,10 +37,12 @@ async function prepareOriginalJwtH2({
  });
  // The wait callback must be a separately reviewed real-clock bridge; the
  // claims-only output is never treated as evidence of actual elapsed time.
+ mark('WAIT');
  const waited=await waitForOriginalExpiry({receipt});
  if(waited?.status==='BLOCKED_EXPIRY_EXCEEDS_BUDGET')
   return Object.freeze({status:'BLOCKED_ORIGINAL_JWT_WAIT_NOT_RUN',
    attempted:false,realElapsedTimeVerified:false,g4Verified:false});
+ mark('WAIT_CHECK');
  assert.equal(waited?.status,
   'ORIGINAL_JWT_RELEASED_AFTER_INJECTED_CLOCKS_NOT_G4_PROOF');
  assert.equal(waited?.privateExpiredJwt,receipt.privateOriginalJwt,
@@ -50,7 +54,9 @@ async function prepareOriginalJwtH2({
   'original JWT is not strictly expired on current wall clock');
  // Only after expiration, ask the caller to issue NEW GoTrue signin requests
  // for both original identities; never reuse the expired owner tokens.
+ mark('REFRESH');
  const refreshedH1=await refreshOwners();
+ mark('HANDOFF');
  const afterRefreshSeconds=readWallSeconds();
  assert.ok(Number.isSafeInteger(afterRefreshSeconds)&&
   afterRefreshSeconds>=afterWaitSeconds,

@@ -380,6 +380,21 @@ function createDockerCliAdapter({command}={}){
     '/tmp/rn-p2/fixtures/rings-now-p2-sql-rls-assertions-CANDIDATE.sql']);
    return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
   },
+  async diagnoseH2InternalError(runId,caseId){
+   safeRun(runId);
+   const {safeCategories}=require('./rings-now-p2-h1-internal-error.cjs');
+   const service=['h1_signin_a','h1_signin_b'].includes(caseId)?'gotrue':'postgrest';
+   const result={service};
+   for(const target of [service,'postgres']){
+    const key=target==='postgres'?'postgres':'serviceCategories';
+    try{
+     const name=runId+'_'+target;
+     await inspect('container',name,runId);
+     result[key]=safeCategories(JSON.parse(await invoke(['container','logs','--tail','80',name])));
+    }catch{result[key]=['UNAVAILABLE'];}
+   }
+   return Object.freeze(result);
+  },
   async diagnoseH1InternalError(runId){
    safeRun(runId);
    const {safeCategories}=require('./rings-now-p2-h1-internal-error.cjs');

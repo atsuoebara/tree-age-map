@@ -93,3 +93,12 @@ test('callbacks mandatory; pure validation generates SQL without running it',asy
  await assert.rejects(()=>collectH2OverTransport({h1:x.args.h1,nowSeconds:2000000000}));
  assert.ok(validateH1(h1(),2000000000).seedSql.includes('H2_REQUIRES_EMPTY_DISPOSABLE_TABLE'));
 });
+
+test('H2 diagnostic identifies seed and each response without retaining raw body',async()=>{
+ const marks=[];const mark=(...x)=>marks.push(x);
+ const seed=fixture({mark,seedDisposableSql:async()=>{throw Error('private');}});
+ await assert.rejects(()=>collectH2OverTransport(seed.args));assert.deepEqual(marks.at(-1),['SEED']);
+ for(const target of CASES){marks.length=0;const x=fixture();const original=x.args.transport;x.args.mark=mark;x.args.transport=async q=>q.caseId===target?{status:500,body:{secret:'private'}}:original(q);
+ await assert.rejects(()=>collectH2OverTransport(x.args));assert.deepEqual(marks.at(-1),['RESPONSE',target,500]);assert.ok(!JSON.stringify(marks).includes('private'));}
+ const {safeH2Diagnostic}=require('./rings-now-p2-h2-diagnostic.cjs');assert.equal(safeH2Diagnostic({phase:'private'}),null);assert.deepEqual(safeH2Diagnostic({phase:'RESPONSE',caseId:'private',httpStatus:'secret'}),{phase:'RESPONSE',caseId:null,httpStatus:null});
+});

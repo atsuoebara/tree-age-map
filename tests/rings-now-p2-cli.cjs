@@ -60,6 +60,12 @@ function safeDiagnostics(result){
    gotrue:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h1InternalError.gotrue),
    postgres:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h1InternalError.postgres)
   }:null,
+  h2Diagnostic:result.failedExecuteStep==='H2_GOTRUE'?require('./rings-now-p2-h2-diagnostic.cjs').safeH2Diagnostic(result.h2Diagnostic):null,
+  h2InternalError:result.failedExecuteStep==='H2_GOTRUE'&&result.h2InternalError?{
+   service:['gotrue','postgrest'].includes(result.h2InternalError.service)?result.h2InternalError.service:null,
+   serviceCategories:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h2InternalError.serviceCategories),
+   postgres:require('./rings-now-p2-h1-internal-error.cjs').safeCategories(result.h2InternalError.postgres)
+  }:null,
   opsSummary:{
    known:actions.filter(x=>OPS.includes(x)).map(x=>x),
    started:actions.filter(x=>typeof x==='string'&&/^started:(postgres|gotrue|postgrest)$/.test(x)).length,

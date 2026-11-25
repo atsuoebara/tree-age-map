@@ -71,3 +71,7 @@ test('malformed current wall clock rejects before any H2 HTTP',async()=>{
  await assert.rejects(()=>collectH2OverTransport(x.args));
  assert.equal(x.requests(),0);
 });
+
+test('refresh marks failing A/B response without raw body',async()=>{
+ const marks=[];await assert.rejects(()=>refreshOriginalOwners({users,mark:(...x)=>marks.push(x),transport:async()=>({status:500,body:{secret:'private'}})}));assert.deepEqual(marks.at(-1),['RESPONSE','h1_signin_a',500]);assert.ok(!JSON.stringify(marks).includes('private'));
+});
