@@ -35,7 +35,7 @@ const OPS=Object.freeze([
  'sql_rls_boundary_cli_reported_not_http_jwt_proof','g5_concurrent_cli_reported_not_proof',
  'gotrue_health_cli_reported_not_auth_proof',
  'h1_gotrue_http_five_cases_cli_reported_not_g4_proof',
- 'h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof',
+ 'h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof','g5_get_seven_security_cases_cli_reported_not_proof',
  'h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof',
  'internal_postgrest_http_empty_owner_cli_reported_not_g4'
 ]);

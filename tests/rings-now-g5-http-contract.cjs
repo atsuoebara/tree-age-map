@@ -11,7 +11,7 @@ function buildG5H2Request(options){
  return V02+raw.slice(V01.length);
 }
 function buildG5GetRequest(options){
- assert.equal(options.caseId,'h2_owner_a');
+ assert.ok(CASES.includes(options.caseId));
  const raw=buildG5H2Request(options);
  const headers=raw.split('\r\n\r\n')[0].split('\r\n');
  assert.equal(headers.shift(),V02);
@@ -42,8 +42,13 @@ function parseG5ExpiredResponse(wire){
   return Object.freeze({status:401,rpcExpiryConfirmed:true});
  }catch{throw Error('G5_RPC_EXPIRY_EVIDENCE_REJECTED');}
 }
-function checkG5GetResponse(response){
- assert.equal(response.status,405,'VOLATILE RPC must reject GET');
+function checkG5GetResponse(caseId,response,expected){
+ const result=checkG5H2Response(caseId,response,expected);
+ if(['h2_owner_a','h2_owner_b','h2_foreign_a'].includes(caseId)){
+  assert.deepEqual(Object.keys(response.body).sort(),['rows','status']);
+  for(const row of response.body.rows)assert.deepEqual(Object.keys(row).sort(),['activity_date','deleted_at','distance_km','id','started_at','user_id']);
+ }
+ return result;
 }
 function assertNoGlobalGuard(envText){
  assert.equal(typeof envText,'string');

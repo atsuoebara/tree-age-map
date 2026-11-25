@@ -117,7 +117,7 @@ async function runG5OriginalGoTrueH2Stage({
  assert.ok(performance.now()<=executeDeadlineMs,
   'H2 exceeded execute stage time budget');
  return Object.freeze({status:'ORIGINAL_GOTRUE_H2_SEVEN_CLI_REPORTED_NOT_G4_PROOF',
-  count:result.summary.observations.length,rpcExpiryConfirmed:result.rpcExpiryConfirmed,getRejected:result.getRejected,g4Verified:false,h2Verified:false});
+  count:result.summary.observations.length,rpcExpiryConfirmed:result.rpcExpiryConfirmed,getCount:result.getSummary.observations.length,getSecurityChecked:result.getSecurityChecked,g4Verified:false,h2Verified:false});
 }
 module.exports={readDisposableGoTruePolicy,refreshOriginalOwners,
  runG5OriginalGoTrueH2Stage,POST_WAIT_RESERVE_MS};
