@@ -31,7 +31,16 @@ test('files contain three isolated service configs, shared JWT and random DB sec
   assert.ok(!rest.PGRST_DB_URI.includes(pg.POSTGRES_PASSWORD));
   assert.equal(fs.statSync(runtime.bootstrapSqlFile).mode&0o777,0o600);
   const authSql=fs.readFileSync(runtime.bootstrapSqlFile,'utf8');
-  assert.match(authSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
+  assert.match(authSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCREATE SCHEMA p2_guard;/);
+  assert.equal(rest.PGRST_DB_PRE_REQUEST,'p2_guard.strict_jwt_expiry');
+  assert.equal(auth.PGRST_DB_PRE_REQUEST,undefined);
+  assert.equal(pg.PGRST_DB_PRE_REQUEST,undefined);
+  assert.ok(authSql.includes("expiry <= extract(epoch FROM clock_timestamp())"));
+  assert.ok(authSql.includes("jsonb_typeof(claims -> 'exp') IS DISTINCT FROM 'number'"));
+  assert.ok(authSql.includes("RAISE SQLSTATE 'PT401'"));
+  assert.ok(authSql.includes('SECURITY INVOKER SET search_path'));
+  assert.ok(authSql.includes('REVOKE ALL ON FUNCTION p2_guard.strict_jwt_expiry() FROM PUBLIC'));
+  assert.ok(authSql.endsWith('COMMIT;\n'));
   assert.equal(auth.DB_NAMESPACE,'auth');
   assert.equal(pg.DB_NAMESPACE,undefined);
   assert.equal(rest.DB_NAMESPACE,undefined);
