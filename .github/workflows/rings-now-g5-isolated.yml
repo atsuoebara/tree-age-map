@@ -1,0 +1,28 @@
+name: Rings Now G5 isolated candidate (disabled)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rings-now-g5-isolated-manual
+  cancel-in-progress: false
+jobs:
+  isolated-g5:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Offline checks only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          bash -n tests/fixtures/rings-now-g5-concurrent-probe.bash
+          for f in tests/rings-now-g5-*.cjs; do node --check "$f"; done
+          node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs
+          node tests/rings-now-g5-isolated-cli.cjs --review-only
