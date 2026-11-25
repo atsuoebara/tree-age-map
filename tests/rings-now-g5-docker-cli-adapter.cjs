@@ -52,7 +52,7 @@ function createG5DockerCliAdapter({command}={}){
   const name=to.slice(0,split),dest=to.slice(split+1);
   const runId=name.replace(/_postgres$/,'');
   safeRun(runId);assert.equal(name,runId+'_postgres');
-  assert.ok(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql"].includes(dest));
+  assert.ok(["/tmp/rn-p2/rings-now-p2-auth-uid-guc-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-isolated-schema-CANDIDATE.sql","/tmp/rn-p2/authenticator.sql","/tmp/rn-p2/rings-now-g5-snapshot-v02-REVIEW.sql","/tmp/rn-p2/http-probe.bash","/tmp/rn-p2/http-probe.req","/tmp/rn-p2/h2-isolated-seed.sql","/tmp/rn-p2/gotrue-h1.bash","/tmp/rn-p2/gotrue-h1.req","/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql","/tmp/rn-p2/fixtures/rings-now-g5-concurrent-probe.bash"].includes(dest));
   await inspect('container',name,runId);
   const stat=fs.lstatSync(from);assert.ok(stat.isFile()&&stat.size>0&&stat.size<=65536);
   const bytes=fs.readFileSync(from);
@@ -382,6 +382,20 @@ function createG5DockerCliAdapter({command}={}){
     '-v','ON_ERROR_STOP=1','-f',
     '/tmp/rn-p2/fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql']);
    return 'CLI_SQL_RLS_ASSERTIONS_REPORTED_NOT_HTTP_JWT_PROOF';
+  },
+  async probeG5ConcurrentBoundary(runId){
+   safeRun(runId);
+   const name=runId+'_postgres';
+   const probe=path.resolve(__dirname,'fixtures/rings-now-g5-concurrent-probe.bash');
+   const bytes=fs.readFileSync(probe);
+   const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+   assert.equal(sha,'b3ac5b7b8803a943bda1da716639728757e905e1','G5 concurrent fixture bytes changed');
+   await inspect('container',name,runId);
+   await transfer(probe,name+':/tmp/rn-p2/fixtures/rings-now-g5-concurrent-probe.bash');
+   await inspect('container',name,runId);
+   const stdout=await invoke(['container','exec',name,'/bin/bash','/tmp/rn-p2/fixtures/rings-now-g5-concurrent-probe.bash']);
+   assert.equal(stdout.trim().split('\n').at(-1),'G5_CONCURRENT_CLI_REPORTED_NOT_PROOF');
+   return 'G5_CONCURRENT_CLI_REPORTED_NOT_PROOF';
   },
   async diagnoseH2InternalError(runId,caseId){
    safeRun(runId);
