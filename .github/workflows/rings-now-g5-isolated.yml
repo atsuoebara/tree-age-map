@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: rings-now-g5-isolated-manual
   cancel-in-progress: false
@@ -17,12 +18,17 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 2
-      - name: Offline checks only
+      - name: Prove one-shot execution eligibility
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tests/rings-now-g5-one-shot-history-cli.cjs
+      - name: Offline checks and gated isolated candidate
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           bash -n tests/fixtures/rings-now-g5-concurrent-probe.bash
           for f in tests/rings-now-g5-*.cjs; do node --check "$f"; done
-          node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs
-          node tests/rings-now-g5-isolated-cli.cjs --review-only
+          node --test tests/rings-now-g5-http-contract.test.cjs tests/rings-now-g5-h2-sequence.test.cjs tests/rings-now-g5-activation-gate.test.cjs tests/rings-now-g5-one-shot-history.test.cjs
+          node tests/rings-now-g5-isolated-cli.cjs --isolated-once

@@ -60,12 +60,12 @@ async function runRealG5DockerLifecycle({
  // No Docker execFile, daemon query, process spawn or network before gates.
  const gate=validateLiveManifest(manifest);
  // Hard stop: this source candidate is not authorized for real execution.
- if(commandFactory===createG5BoundedDockerCommand)return Object.freeze({status:'BLOCKED_NOT_RUN',attempted:false,realDockerInvoked:false,g5Verified:false});
+ if(commandFactory===createG5BoundedDockerCommand && !require('./rings-now-g5-activation-gate.cjs').inspectActivation().pass)return Object.freeze({status:'BLOCKED_NOT_RUN',attempted:false,realDockerInvoked:false,g5Verified:false});
  // Test fixtures may inject a fake manifest only when they also inject a
  // nondefault command factory. The real executable backend must consume the
  // actual imported manifest, never a caller-supplied forged approval object.
  const realBackendManifestMismatch=commandFactory===createG5BoundedDockerCommand&&
-  (manifest!==activeManifest||runtimeFactory!==createEphemeralG5Runtime);
+  (manifest!==activeManifest||runtimeFactory!==createEphemeralG5Runtime||adapterFactory!==createG5DockerCliAdapter);
  if(!gate.pass||realBackendManifestMismatch)return Object.freeze({
   status:'BLOCKED_NOT_RUN',preflightIssues:Object.freeze([
    ...gate.failures,...(realBackendManifestMismatch?['noncanonical_real_backend_manifest']:[])]),
