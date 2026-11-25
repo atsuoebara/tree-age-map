@@ -1,4 +1,4 @@
-name: Rings Now G5 isolated candidate (disabled)
+name: Rings Now G5 isolated candidate (approval pending)
 on:
   workflow_dispatch:
 permissions:
@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   isolated-g5:
-    if: ${{ false }}
+    if: ${{ true }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
