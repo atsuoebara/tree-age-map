@@ -74,3 +74,12 @@ test('missing user or failed transport cannot fabricate a complete report',async
  await assert.rejects(()=>collectH1OverTransport({transport:async()=>({status:200,body:{}}),users}));
  await assert.rejects(()=>collectH1OverTransport({transport:async()=>{throw Error('disconnected');},users}));
 });
+
+test('H1 failure diagnostics expose only fixed case, phase and numeric status',async()=>{
+ await assert.rejects(()=>collectH1OverTransport({users,transport:async()=>({status:422,body:{secret:users.a.password}})}),e=>{
+  assert.equal(e.message,'H1_CASE_FAILED');assert.deepEqual(e.h1Diagnostic,{caseId:'h1_signup_a',phase:'RESPONSE',httpStatus:422});assert.ok(!JSON.stringify(e).includes(users.a.password));return true;
+ });
+ await assert.rejects(()=>collectH1OverTransport({users,transport:async()=>{throw Error(users.a.password);}}),e=>{
+  assert.deepEqual(e.h1Diagnostic,{caseId:'h1_signup_a',phase:'TRANSPORT',httpStatus:null});assert.ok(!JSON.stringify(e).includes(users.a.password));return true;
+ });
+});
