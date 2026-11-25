@@ -31,15 +31,18 @@ function readDisposableGoTruePolicy(runtime){
  }
  return Object.freeze(values);
 }
-async function refreshOriginalOwners({users,transport}={}){
+async function refreshOriginalOwners({users,transport,mark=()=>{}}={}){
  assert.ok(users?.a&&users?.b);
  assert.equal(typeof transport,'function');
  const tokens={},ids={};
  for(const who of ['a','b']){
   const caseId='h1_signin_'+who;
+  mark('REQUEST',caseId);
   const request=buildGoTrueRequest(caseId,users);
-  const checked=inspectGoTrueResponse(caseId,
-   await transport({caseId,request}));
+  mark('TRANSPORT',caseId);
+  const response=await transport({caseId,request});
+  mark('RESPONSE',caseId,response?.status);
+  const checked=inspectGoTrueResponse(caseId,response);
   assert.ok(checked.token&&checked.userId,'fresh signin required');
   tokens[who]=checked.token;ids[who]=checked.userId;
  }
@@ -52,8 +55,9 @@ async function refreshOriginalOwners({users,transport}={}){
 }
 async function runOriginalGoTrueH2Stage({
  h1,runtime,driver,runId,executeDeadlineMs,
- cleanupReserveMs,verifyReserveMs
+ cleanupReserveMs,verifyReserveMs,mark=()=>{}
 }={}){
+ mark('PREPARE');
  assert.ok(Number.isFinite(executeDeadlineMs)&&executeDeadlineMs>performance.now());
  assert.ok(Number.isSafeInteger(cleanupReserveMs)&&cleanupReserveMs>0);
  assert.ok(Number.isSafeInteger(verifyReserveMs)&&verifyReserveMs>0&&
@@ -65,7 +69,9 @@ async function runOriginalGoTrueH2Stage({
  const observedAtSeconds=wall();
  const executeRemainingMs=Math.max(0,
   Math.floor(executeDeadlineMs-performance.now()));
+ mark('POLICY');
  const stage=await prepareOriginalJwtH2({
+  mark,
   originalH1:h1,gotrueEnv:readDisposableGoTruePolicy(runtime),
   observedAtSeconds,executeRemainingMs,
   postWaitReserveMs:POST_WAIT_RESERVE_MS,readWallSeconds:wall,
@@ -75,7 +81,7 @@ async function runOriginalGoTrueH2Stage({
     cleanupReserveMs,verifyReserveMs
    }),
   refreshOwners:()=>refreshOriginalOwners({
-   users:runtime.h1Users,
+   mark,users:runtime.h1Users,
    transport:({caseId,request})=>driver.probeInternalGoTrue({
     runId,caseId,request,ephemeralDir:runtime.h1EphemeralDir
    })
@@ -88,6 +94,7 @@ async function runOriginalGoTrueH2Stage({
  // The expired positive-role JWT is ALWAYS the unchanged GoTrue H1 token.
  const nowSeconds=wall();
  const result=await collectH2OverTransport({
+  mark,
   h1:stage.privateRefreshedH1,nowSeconds,readNowSeconds:wall,
   seedDisposableSql:({sql,ownerA,ownerB})=>
    driver.seedH2DisposableOwners({runId,ownerA,ownerB,sql,
@@ -104,6 +111,7 @@ async function runOriginalGoTrueH2Stage({
    });
   }
  });
+ mark('SUMMARY');
  assert.equal(result.g4Verified,false);
  assert.equal(result.h2Verified,false);
  assert.ok(performance.now()<=executeDeadlineMs,
