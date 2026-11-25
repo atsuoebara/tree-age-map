@@ -370,7 +370,7 @@ function createG5DockerCliAdapter({command}={}){
    const probe=path.resolve(__dirname,'fixtures/rings-now-g5-sql-boundary-CANDIDATE.sql');
    const bytes=fs.readFileSync(probe);
    const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
-   assert.equal(sha,'7e0e885db4a4ef64c279f8691803369189dc512a',
+   assert.equal(sha,'0e32cac5fd3d39b7a7cdaa031ca58fd63b8a57dc',
     'RLS probe fixture bytes changed');
    await inspect('container',name,runId);
    await transfer(probe,
