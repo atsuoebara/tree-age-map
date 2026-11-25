@@ -52,6 +52,10 @@ function safeDiagnostics(result){
   })),
   stageRecordCount:records.length,
   failedExecuteStep:EXECUTE_STEPS.includes(result.failedExecuteStep)?result.failedExecuteStep:null,
+  h1Diagnostic:result.failedExecuteStep==='H1_GOTRUE'&&['h1_signup_a','h1_signin_a','h1_signup_b','h1_signin_b','h1_bad_password'].includes(result.h1Diagnostic?.caseId)&&['REQUEST','TRANSPORT','RESPONSE'].includes(result.h1Diagnostic?.phase)?{
+   caseId:result.h1Diagnostic.caseId,phase:result.h1Diagnostic.phase,
+   httpStatus:Number.isInteger(result.h1Diagnostic.httpStatus)&&result.h1Diagnostic.httpStatus>=100&&result.h1Diagnostic.httpStatus<=599?result.h1Diagnostic.httpStatus:null
+  }:null,
   opsSummary:{
    known:actions.filter(x=>OPS.includes(x)).map(x=>x),
    started:actions.filter(x=>typeof x==='string'&&/^started:(postgres|gotrue|postgrest)$/.test(x)).length,
