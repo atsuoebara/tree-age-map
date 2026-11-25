@@ -1,0 +1,4 @@
+# G5 GET security correction
+Run 45587144385, ad1a620f: independent auditor reports all seven POST cases passed including exact PT401; last GET owner A returned 200 rather than assumed 405. Cleanup complete. Approval consumed. No rerun.
+
+Do not require HTTP method refusal as a substitute for owner isolation. Keep v02 SQL and G4 unchanged. Apply all seven POST security cases to GET, require same owner/count and exact six-field shape for successful GET, exact PT401 for original expired token. Both expiry probes occur first to stay within the existing 30-second leeway. No broader endpoint, no increased execution ceiling, no approval flags changed. Added requests must fit the existing 60-second post-wait reserve and 480-second execute budget; actual runtime unknown. HEAD and intermediary cache behavior remain separate unverified production exposure questions; this PR does not claim proof for them. Offline tests require independent execution. No production, no dispatch.

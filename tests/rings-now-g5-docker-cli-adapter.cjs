@@ -259,21 +259,23 @@ function createG5DockerCliAdapter({command}={}){
    // runner in a FUTURE PR. Reuse SHA-pinned PostgREST internal probe.
    safeRun(runId);
    const allowed=['h2_anonymous','h2_owner_a','h2_foreign_a','h2_owner_b',
-    'h2_bad_signature','h2_expired_token','h2_no_rpc_grant','g5_get_owner_a'];
-   assert.ok(allowed.includes(caseId),'unknown H2 case');
+    'h2_bad_signature','h2_expired_token','h2_no_rpc_grant'];
+   const isGet=typeof caseId==='string'&&caseId.startsWith('g5_get_');
+   const logicalCase=isGet?'h2_'+caseId.slice(7):caseId;
+   assert.ok(allowed.includes(logicalCase),'unknown H2 case');
    assert.match(ephemeralDir||'',/^\/tmp\/rn-p2-[a-zA-Z0-9_-]{6,64}$/);
    const dirStat=fs.lstatSync(ephemeralDir);
    assert.ok(dirStat.isDirectory()&&(dirStat.mode&0o777)===0o700,
     'H2 private 0700 directory required');
    assert.equal(typeof request,'string');
    assert.ok(Buffer.byteLength(request,'utf8')<4096,'H2 request oversized');
-   const prefix=(caseId==='g5_get_owner_a'?'GET':'POST')+' /rpc/rings_now_snapshot_candidate_v02 HTTP/1.1\r\n'+
+   const prefix=(isGet?'GET':'POST')+' /rpc/rings_now_snapshot_candidate_v02 HTTP/1.1\r\n'+
     'Host: postgrest:3000\r\n';
-   const suffix=caseId==='g5_get_owner_a'?'Accept: application/json\r\nConnection: close\r\n\r\n':'Accept: application/json\r\n'+
+   const suffix=isGet?'Accept: application/json\r\nConnection: close\r\n\r\n':'Accept: application/json\r\n'+
     'Content-Type: application/json\r\n'+
     'Content-Length: 2\r\nConnection: close\r\n\r\n{}';
    let authorization='';
-   if(caseId!=='h2_anonymous'){
+   if(logicalCase!=='h2_anonymous'){
     const line=request.slice(prefix.length).split('\r\n')[0];
     assert.match(line,/^Authorization: Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
     authorization=line+'\r\n';
@@ -300,7 +302,7 @@ function createG5DockerCliAdapter({command}={}){
     await inspect('container',name,runId);
     const wire=await invoke(['container','exec',name,'/bin/bash',
      '/tmp/rn-p2/http-probe.bash']);
-    return caseId==='h2_expired_token'?parseG5ExpiredResponse(wire):parseInternalHttpResponse(wire);
+    return logicalCase==='h2_expired_token'?parseG5ExpiredResponse(wire):parseInternalHttpResponse(wire);
    }finally{
     fs.rmSync(requestFile,{force:true});
     // Container tmpfs deleted only upon owned container teardown.

@@ -15,17 +15,20 @@ test('all seven fixed H2 envelopes change only the endpoint',()=>{
   assert.equal(next,old.replace('candidate_v01 HTTP/1.1','candidate_v02 HTTP/1.1'));
  }
 });
-test('GET uses owner A only, no body or body headers',()=>{
+test('GET uses fixed case credentials, no body or body headers',()=>{
  const req=buildG5GetRequest({...options,caseId:'h2_owner_a'});
  assert.ok(req.startsWith('GET /rpc/rings_now_snapshot_candidate_v02 HTTP/1.1\r\n'));
  assert.ok(req.includes('Authorization: Bearer '+options.ownerA+'\r\n'));
  assert.ok(req.endsWith('\r\n\r\n'));
  assert.doesNotMatch(req,/Content-(Type|Length):/i);
- assert.throws(()=>buildG5GetRequest({...options,caseId:'h2_anonymous'}));
+ assert.doesNotMatch(buildG5GetRequest({...options,caseId:'h2_anonymous'}),/Authorization:/i);
+ for(const caseId of CASES)assert.ok(buildG5GetRequest({...options,caseId}).startsWith('GET '));
 });
 test('HTTP status checks reject false success',()=>{
- checkG5GetResponse({status:405});
- for(const status of [200,401,403,404,500])assert.throws(()=>checkG5GetResponse({status}));
+ for(const status of [200,405,500])assert.throws(()=>checkG5GetResponse('h2_anonymous',{status}));
+ checkG5GetResponse('h2_anonymous',{status:401});
+ checkG5GetResponse('h2_expired_token',{status:401,rpcExpiryConfirmed:true});
+ assert.throws(()=>checkG5GetResponse('h2_expired_token',{status:401}));
  checkG5H2Response('h2_expired_token',{status:401,rpcExpiryConfirmed:true});
  assert.throws(()=>checkG5H2Response('h2_expired_token',{status:401}));
  for(const status of [200,403,404,500])assert.throws(()=>checkG5H2Response('h2_expired_token',{status}));

@@ -205,9 +205,11 @@ async function runRealG5DockerLifecycle({
        'ORIGINAL_GOTRUE_H2_SEVEN_CLI_REPORTED_NOT_G4_PROOF');
       assert.equal(bridged.count,7);
       assert.equal(bridged.rpcExpiryConfirmed,true);
-      assert.equal(bridged.getRejected,true);
+      assert.equal(bridged.getCount,7);
+      assert.equal(bridged.getSecurityChecked,true);
       h2Completed=true;
       ops.push('h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof');
+      ops.push('g5_get_seven_security_cases_cli_reported_not_proof');
      }
      // Fake driver regression only: synthetic expiry remains non-G4 evidence.
      // Never use the synthetic expired JWT for the canonical backend.
@@ -238,7 +240,8 @@ async function runRealG5DockerLifecycle({
       assert.equal(h2.g4Verified,false);
       assert.equal(h2.summary.observations.length,7);
       assert.equal(h2.rpcExpiryConfirmed,true);
-      assert.equal(h2.getRejected,true);
+      assert.equal(h2.getSummary.observations.length,7);
+      assert.equal(h2.getSecurityChecked,true);
       h2Completed=true;
       ops.push('h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof');
      }

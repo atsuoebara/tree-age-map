@@ -43,43 +43,38 @@ async function collectG5OverTransport({h1,nowSeconds,readNowSeconds,seedDisposab
  const options={ownerA:h.ownerA,ownerB:h.ownerB,expired,denied,nowSeconds};
  const observations=[];
  let lastNow=nowSeconds;
+ const getObservations=[];
+ // Both expired requests first: same original token, same leeway window.
+ // Keep the POST case order; interleave only the new GET cases.
  for(const caseId of ['h2_expired_token',...CASES.filter(x=>x!=='h2_expired_token')]){
-  mark('REQUEST',caseId);
-  // Real runner supplies a fresh wall-clock value before every request.
-  // Older offline contracts may omit the callback; they retain fixed-time
-  // semantics and cannot be promoted to genuine expiry evidence.
-  const current=readNowSeconds===undefined?nowSeconds:readNowSeconds();
-  assert.ok(Number.isSafeInteger(current)&&current>=lastNow,
-   'H2 clock regressed or became invalid');
-  lastNow=current;
-  if(readNowSeconds!==undefined){
-   const ac=claimsOf(h.ownerA),bc=claimsOf(h.ownerB),dc=claimsOf(denied);
-   assert.ok(ac.exp>current&&bc.exp>current&&dc.exp>current,
-    'owner or negative-role token expired during H2');
+  for(const method of ['POST','GET']){
+   const wireCase=method==='GET'?'g5_get_'+caseId.slice(3):caseId;
+   mark('REQUEST',wireCase);
+   const current=readNowSeconds===undefined?nowSeconds:readNowSeconds();
+   assert.ok(Number.isSafeInteger(current)&&current>=lastNow,'H2 clock regressed or became invalid');
+   lastNow=current;
+   const ac=claimsOf(h.ownerA),bc=claimsOf(h.ownerB);
+   assert.ok(ac.exp>current&&bc.exp>current&&dc.exp>current,'live tokens required');
    assert.ok(ec.exp<current,'original token is not expired');
+   if(caseId==='h2_expired_token')assert.ok(current-ec.exp<30,'expiry leeway window missed; no proof');
+   const request=(method==='GET'?buildG5GetRequest:buildG5H2Request)({caseId,...options,nowSeconds:current});
+   mark('TRANSPORT',wireCase);
+   const response=await transport({caseId:wireCase,request});
+   mark('RESPONSE',wireCase,response?.status);
+   const subject=caseId==='h2_owner_b'?h.idB:h.idA;
+   const expected={subject,expectedRows:1};
+   if(method==='POST')observations.push(checkG5H2Response(caseId,response,expected));
+   else getObservations.push(checkG5GetResponse(caseId,response,expected));
   }
-  if(caseId==='h2_expired_token')assert.ok(current-ec.exp<30,'expiry leeway window missed; no proof');
-  const request=buildG5H2Request({caseId,...options,nowSeconds:current});
-  mark('TRANSPORT',caseId);
-  const response=await transport({caseId,request});
-  mark('RESPONSE',caseId,response?.status);
-  const subject=caseId==='h2_owner_b'?h.idB:h.idA;
-  observations.push(checkG5H2Response(caseId,response,{subject,expectedRows:1}));
  }
- const getNow=readNowSeconds?readNowSeconds():nowSeconds;
- assert.ok(Number.isSafeInteger(getNow)&&getNow>=lastNow&&claimsOf(h.ownerA).exp>getNow,'GET requires live owner and monotonic clock');
- mark('REQUEST','g5_get_owner_a');
- const getRequest=buildG5GetRequest({caseId:'h2_owner_a',...options,nowSeconds:getNow});
- mark('TRANSPORT','g5_get_owner_a');
- const getResponse=await transport({caseId:'g5_get_owner_a',request:getRequest});
- mark('RESPONSE','g5_get_owner_a',getResponse?.status);
- checkG5GetResponse(getResponse);
  mark('SUMMARY');
  const summary=summarizeH2Observations(observations);
  assert.equal(summary.missingCases.length,0);
+ const getSummary=summarizeH2Observations(getObservations);
+ assert.equal(getSummary.missingCases.length,0);
  return Object.freeze({
   status:'H2_SEVEN_CASES_CLI_REPORTED_NOT_G4_PROOF',
-  summary,rpcExpiryConfirmed:true,getRejected:true,h1Verified:false,h2Verified:false,g4Verified:false
+  summary,getSummary,rpcExpiryConfirmed:true,getSecurityChecked:true,h1Verified:false,h2Verified:false,g4Verified:false
  });
 }
 module.exports={validateH1,collectG5OverTransport};
