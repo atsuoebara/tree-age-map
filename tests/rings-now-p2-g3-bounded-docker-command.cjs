@@ -36,7 +36,7 @@ function createBoundedDockerCommand({execFileImpl=execFile}={}){
     if(typeof stdout!=='string'||Buffer.byteLength(stdout)>MAX_BYTES)
      return reject(Error('DOCKER_STDOUT_INVALID'));
     // Fixed owned-container logs command returns categories, not raw streams.
-    if(spec.argv.length===5&&spec.argv[0]==='container'&&spec.argv[1]==='logs'&&spec.argv[2]==='--tail'&&spec.argv[3]==='80'&&/^rn_p2_[a-z0-9]{8,32}_(gotrue|postgres)$/.test(spec.argv[4]))
+    if(spec.argv.length===5&&spec.argv[0]==='container'&&spec.argv[1]==='logs'&&spec.argv[2]==='--tail'&&spec.argv[3]==='80'&&/^rn_p2_[a-z0-9]{8,32}_(gotrue|postgres|postgrest)$/.test(spec.argv[4]))
      return resolve(Object.freeze({exitCode:0,stdout:JSON.stringify(classifyLog(stdout,stderr))}));
     // Never forward stderr or stdout to the application logs here.
     resolve(Object.freeze({exitCode:0,stdout}));
