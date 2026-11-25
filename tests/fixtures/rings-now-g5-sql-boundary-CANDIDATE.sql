@@ -62,6 +62,23 @@ BEGIN
  IF NOT denied THEN RAISE EXCEPTION 'G5_EXP_FAILED'; END IF;
  END LOOP;
 END $check$;
+-- Deterministic equality check of the exact comparator, separate from live-clock rejection.
+-- This does not pretend that two clock_timestamp() calls return the same instant.
+DO $boundary$
+DECLARE t numeric := 1800000000.123456;
+BEGIN
+ IF NOT (t <= t) OR NOT (t-0.000001 <= t) OR (t+0.000001 <= t) THEN
+  RAISE EXCEPTION 'G5_EXP_COMPARATOR_BOUNDARY_FAILED';
+ END IF;
+END $boundary$;
+-- Verify invalid expiry cannot be bypassed by a valid owner claim.
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub','00000000-0000-4000-8000-000000000001','role','authenticated','exp',extract(epoch FROM clock_timestamp())+600)::text,true);
+DO $check$
+BEGIN
+ IF public.rings_now_snapshot_candidate_v02() IS DISTINCT FROM '{"status":"blocked","reason":"missing_required_fields"}'::jsonb THEN
+  RAISE EXCEPTION 'G5_VALID_EXPIRY_CONTROL_FAILED';
+ END IF;
+END $check$;
 RESET ROLE;
 SET LOCAL ROLE anon;
 DO $check$
