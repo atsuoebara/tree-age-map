@@ -158,7 +158,8 @@ function createDockerCliAdapter({command}={}){
    const stat=fs.statSync(authenticatorSqlFile);
    assert.ok(stat.isFile()&&stat.mode%512===0o600,'private role SQL file required');
    const roleSql=fs.readFileSync(authenticatorSqlFile,'utf8');
-   assert.match(roleSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCOMMIT;\n$/);
+   assert.match(roleSql,/^BEGIN;\nCREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '[a-f0-9]{64}';\nGRANT anon TO authenticator;\nGRANT authenticated TO authenticator;\nCREATE SCHEMA p2_guard;\nREVOKE ALL ON SCHEMA p2_guard FROM PUBLIC;\nCREATE FUNCTION p2_guard\.strict_jwt_expiry\(\) RETURNS void\nLANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path = ''\nAS \$guard\$\nDECLARE claims jsonb; expiry numeric;\nBEGIN\n  claims := NULLIF\(current_setting\('request\.jwt\.claims', true\), ''\)::jsonb;\n  IF current_user = 'anon' AND \(claims IS NULL OR claims = '\{\}'::jsonb OR claims = '\{"role":"anon"\}'::jsonb\) THEN\n    RETURN;\n  END IF;\n  IF jsonb_typeof\(claims -> 'exp'\) IS DISTINCT FROM 'number' THEN\n    RAISE SQLSTATE 'PT401' USING MESSAGE = 'Invalid or expired token';\n  END IF;\n  expiry := \(claims ->> 'exp'\)::numeric;\n  IF expiry <= extract\(epoch FROM clock_timestamp\(\)\) THEN\n    RAISE SQLSTATE 'PT401' USING MESSAGE = 'Invalid or expired token';\n  END IF;\nEND;\n\$guard\$;\nREVOKE ALL ON FUNCTION p2_guard\.strict_jwt_expiry\(\) FROM PUBLIC;\nGRANT USAGE ON SCHEMA p2_guard TO anon, authenticated;\nGRANT EXECUTE ON FUNCTION p2_guard\.strict_jwt_expiry\(\) TO anon, authenticated;\nCOMMIT;\n$/);
+   assert.ok(roleSql.endsWith('COMMIT;\n'),'exact role SQL terminator required');
    bootstrapPhase='MKDIR';
    await inspect('container',name,runId);
    await invoke(['container','exec',name,'mkdir','-p','/tmp/rn-p2/fixtures']);
