@@ -122,8 +122,8 @@ function createEphemeralG5Runtime(){
    assert.equal(expired,role==='authenticated','only an authenticated expired token or valid denied role');
    const claims={
     sub:subject,role,aud:'authenticated',
-    iat:expired?nowSeconds-120:nowSeconds-1,
-    exp:expired?nowSeconds-60:nowSeconds+3600
+    iat:expired?nowSeconds-301:nowSeconds-1,
+    exp:expired?nowSeconds-1:nowSeconds+3600
    };
    const encode=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
    const input=encode({alg:'HS256',typ:'JWT'})+'.'+encode(claims);
