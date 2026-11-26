@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://fhwvntpzwyenendhcgbw.supabase.co; base-uri 'none'; form-action 'none'">
+<title>リングスナウ 一時検証</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;margin:24px auto;padding:0 16px;max-width:600px;color:#18232d;background:#fafafa}
+button{font:inherit;padding:14px 20px;width:100%;min-height:48px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;padding:16px;border:1px solid #ccc}
+</style>
+</head>
+<body>
+<main>
+<h1>リングスナウ 一時検証</h1>
+<p id="status" role="status">ログイン状態を確認中</p>
+<button id="run" type="button" hidden disabled>本番HTTP確認を実行</button>
+<pre id="result" aria-live="polite" hidden></pre>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+(() => {
+  const status = document.getElementById("status");
+  const run = document.getElementById("run");
+  const output = document.getElementById("result");
+  const url = "https://fhwvntpzwyenendhcgbw.supabase.co";
+  const key = "sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM";
+  const endpoint = url + "/rest/v1/rpc/rings_now_snapshot_candidate_v02";
+  const allowed = ["activity_date","deleted_at","distance_km","id","started_at","user_id"];
+  const safeKeys = (obj, permitted) => {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
+    return Object.keys(obj).map(k => permitted.includes(k) ? k : "[unexpected key]").sort();
+  };
+  const summarize = (body, uid, includeKeys) => {
+    const rows = body && Array.isArray(body.rows) ? body.rows : null;
+    const summary = {
+      rows: rows === null ? null : rows.length,
+      all_owner: rows === null ? null : rows.every(r => r && typeof r === "object" && r.user_id === uid)
+    };
+    if (includeKeys) {
+      summary.body_keys = safeKeys(body, ["status","rows","reason","code","message","details","hint"]);
+      summary.row_key_sets = rows === null ? null : [...new Set(rows.map(r => JSON.stringify(safeKeys(r, allowed))))].map(s => JSON.parse(s));
+    }
+    return summary;
+  };
+  // Reuse the site's default storage key, but never refresh, persist, or process URL sessions here.
+  // A read-only storage adapter blocks any SDK writes (including expiration cleanup).
+  const storage = {
+    getItem: k => window.localStorage.getItem(k),
+    setItem: () => {},
+    removeItem: () => {}
+  };
+  let client;
+  let ready = false;
+  async function session() {
+    const {data,error} = await client.auth.getSession();
+    if (error || !data.session || !data.session.access_token || !data.session.user?.id) return null;
+    if (!Number.isFinite(data.session.expires_at) || data.session.expires_at <= Date.now()/1000 + 60) return null;
+    return data.session;
+  }
+  // The SDK may refresh within getSession even with autoRefreshToken disabled.
+  // Prevent ALL SDK network traffic; this page only accepts a currently valid stored session.
+  async function init() {
+    try {
+      client = window.supabase.createClient(url,key,{
+        auth:{storage,persistSession:true,autoRefreshToken:false,detectSessionInUrl:false},
+        global:{fetch:async () => { throw new Error("SDK network disabled"); }}
+      });
+      if (!await session()) { status.textContent = "ログインしていません"; return; }
+      ready = true;
+      status.textContent = "ログイン済み";
+      run.hidden = false;
+      run.disabled = false;
+    } catch {
+      status.textContent = "ログインしていません";
+    }
+  }
+  async function request(method, token, uid) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const headers = {apikey:key,Authorization:"Bearer "+token};
+      const options = {method,headers,signal:controller.signal,cache:"no-store",credentials:"omit",redirect:"error",referrerPolicy:"no-referrer"};
+      if (method === "POST") { headers["Content-Type"]="application/json"; options.body="{}"; }
+      const response = await fetch(endpoint, options);
+      const result = {status:response.status};
+      if (method === "POST") {
+        result.cf_cache_status = response.headers.get("CF-Cache-Status");
+        const cc = response.headers.get("Cache-Control");
+        result.cache_control_visible = cc !== null;
+        result.cache_control = cc;
+      }
+      if (method !== "HEAD") {
+        let body = null;
+        try { body = await response.json(); } catch {}
+        Object.assign(result,summarize(body,uid,method==="POST"));
+      }
+      return result;
+    } catch {
+      return {status:null, error:"通信失敗"};
+    } finally { clearTimeout(timeout); }
+  }
+  run.addEventListener("click", async () => {
+    if (!ready) return;
+    ready = false;
+    run.disabled = true;
+    output.hidden = true;
+    output.textContent = "";
+    status.textContent = "確認中";
+    try {
+      const s = await session();
+      if (!s) { status.textContent = "ログインしていません"; run.hidden = true; return; }
+      const result = {};
+      for (const method of ["POST","GET","HEAD"]) {
+        const current = await session();
+        if (!current || current.user.id !== s.user.id || current.access_token !== s.access_token) {
+          status.textContent = "セッションが変化したため中止";
+          return;
+        }
+        result[method] = await request(method,s.access_token,s.user.id);
+      }
+      const current = await session();
+      if (!current || current.user.id !== s.user.id || current.access_token !== s.access_token) {
+        status.textContent = "セッションが変化したため中止";
+        return;
+      }
+      output.textContent = JSON.stringify(result,null,2);
+      output.hidden = false;
+      status.textContent = "確認終了（期限切れJWT：未実施）";
+    } catch {
+      status.textContent = "確認中止";
+    }
+  });
+  window.addEventListener("pagehide", () => { ready=false; run.disabled=true; output.textContent=""; output.hidden=true; });
+  init();
+})();
+</script>
+</body>
+</html>
