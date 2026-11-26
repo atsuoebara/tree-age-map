@@ -1,0 +1,362 @@
+'use strict';
+// DORMANT, REAL-DOCKER-BACKEND WIRING FOR FUTURE ISOLATED P2.
+// No work on import. No Actions entrypoint. Active manifest BLOCKS operation.
+// The only default executor when permission gates are met is #200's real
+// bounded execFile command; NEVER call #199's synthetic-only lifecycle with it.
+const assert=require('node:assert/strict');
+const {performance}=require('node:perf_hooks');
+const {inspectP2Preflight}=require('./rings-now-p2-stack-static-gate.cjs');
+const {runWithSharedTimeBudget}=require('./rings-now-p2-shared-time-budget.cjs');
+const {createG5DockerCliAdapter}=require('./rings-now-p3-v03-docker-cli-adapter.cjs');
+const {createG5BoundedDockerCommand}=require('./rings-now-p3-v03-bounded-docker-command.cjs');
+const {createEphemeralG5Runtime}=require('./rings-now-p3-v03-ephemeral-service-runtime.cjs');
+const {assertSnapshotRpcResult}=require('./rings-now-p2-loopback-transport.cjs');
+const {collectH1OverTransport}=require('./rings-now-p2-h1-gotrue-http.cjs');
+const {collectV03OverTransport}=require('./rings-now-p3-v03-h2-sequence.cjs');
+const {runG5OriginalGoTrueH2Stage}=require('./rings-now-p3-v03-h2-runner-bridge.cjs');
+const activeManifest=require('./rings-now-p3-v03-isolated-manifest.json');
+const SERVICES=Object.freeze(['postgres','gotrue','postgrest']);
+const REPO=Object.freeze({postgres:'docker.io/library/postgres',
+ gotrue:'docker.io/supabase/gotrue',postgrest:'docker.io/postgrest/postgrest'});
+const RUN=/^rn_p2_[a-z0-9]{8,32}$/;
+const P2_TOTAL_MS=600000;
+const P2_CLEANUP_RESERVE_MS=120000;
+const P2_VERIFY_RESERVE_MS=30000;
+function validateLiveManifest(manifest){
+ const failures=[];
+ const result=inspectP2Preflight(manifest,{});
+ if(!result.pass)failures.push(...result.failures);
+ if(manifest?.productionAccess!==false)failures.push('production_access_denied_required');
+ if(Object.keys(manifest?.images||{}).sort().join(',')!==SERVICES.slice().sort().join(','))
+  failures.push('image_set_mismatch');
+ for(const service of SERVICES){
+  const a=manifest?.images?.[service];
+  if(!a||a.reference!==REPO[service]+'@'+a.digest)failures.push('image_repo_mismatch_'+service);
+ }
+ return Object.freeze({pass:failures.length===0,failures:Object.freeze(failures)});
+}
+function validInventory(items,id){
+ return Array.isArray(items)&&items.every(x=>x&&x.owner===id&&
+  ['container','network'].includes(x.type)&&typeof x.id==='string'&&
+  /^[a-z0-9][a-z0-9_-]{0,100}$/.test(x.id))&&
+  new Set(items.map(x=>x.type+':'+x.id)).size===items.length;
+}
+// Future integration with real Auth/JWT/SQL must be separately reviewed.
+// This restricted #200 Docker adapter currently makes containers without
+// environment or writable paths. Therefore startup is an ATTEMPT, not proof
+// of a usable Postgres/GoTrue/PostgREST service.
+async function runRealG5DockerLifecycle({
+ runId,manifest=activeManifest,nowMs=()=>performance.now(),
+ // Use the shared coordinator's existing 600s hard ceiling, retaining the
+ // complete 120s cleanup/verify reserve. H2 still blocks unless >=361s
+ // remain after startup/H1; elapsed Docker time is NOT proven by this change.
+ totalMs=P2_TOTAL_MS,reserveMs=P2_CLEANUP_RESERVE_MS,
+ verifyReserveMs=P2_VERIFY_RESERVE_MS,
+ commandFactory=createG5BoundedDockerCommand,
+ adapterFactory=createG5DockerCliAdapter,
+ runtimeFactory=createEphemeralG5Runtime
+}={}){
+ assert.match(runId||'',RUN);
+ // No Docker execFile, daemon query, process spawn or network before gates.
+ const gate=validateLiveManifest(manifest);
+ // Hard stop: this source candidate is not authorized for real execution.
+ if(commandFactory===createG5BoundedDockerCommand && !require('./rings-now-p3-v03-activation-gate.cjs').inspectActivation().pass)return Object.freeze({status:'BLOCKED_NOT_RUN',attempted:false,realDockerInvoked:false,g5Verified:false});
+ // Test fixtures may inject a fake manifest only when they also inject a
+ // nondefault command factory. The real executable backend must consume the
+ // actual imported manifest, never a caller-supplied forged approval object.
+ const realBackendManifestMismatch=commandFactory===createG5BoundedDockerCommand&&
+  (manifest!==activeManifest||runtimeFactory!==createEphemeralG5Runtime||adapterFactory!==createG5DockerCliAdapter);
+ if(!gate.pass||realBackendManifestMismatch)return Object.freeze({
+  status:'BLOCKED_NOT_RUN',preflightIssues:Object.freeze([
+   ...gate.failures,...(realBackendManifestMismatch?['noncanonical_real_backend_manifest']:[])]),
+  attempted:false,realDockerInvoked:false,g3Verified:false,
+  actualP2Proven:false,p2ExecutionAuthorized:false
+ });
+ // The separate H2 wiring-only stop is retired for this SOURCE CANDIDATE.
+ // The canonical imported manifest remains BLOCKED_NOT_RUN and must still
+ // satisfy validateLiveManifest BEFORE any commandFactory, runtime, Docker
+ // command, timer or network can be constructed. Workflow if:false is intact.
+ // Removing this redundant stop does NOT approve execution or prove H1/H2.
+ assert.equal(typeof commandFactory,'function');
+ assert.equal(typeof adapterFactory,'function');
+ assert.equal(typeof nowMs,'function');
+ const command=commandFactory(),driver=adapterFactory({command});
+ assert.equal(driver.evidenceKind,'DOCKER_CLI_ADAPTER_NOT_ADMITTED');
+ // Create real runtime files only after manifest authorization and solely
+ // with the canonical backend. Tests may inject a fake runtime with fake CLI.
+ const runtime=commandFactory===createG5BoundedDockerCommand||
+  runtimeFactory!==createEphemeralG5Runtime?runtimeFactory():null;
+ try{
+ const ops=[],knownContainers=new Set(),knownNetworks=new Set();
+ let baseline=false,executionFailed=false,cleanupFailed=false,verificationFailed=false;
+ let executeStep='NOT_STARTED',failedExecuteStep=null,h1Diagnostic=null,h1InternalError=null,h2Diagnostic=null,h2InternalError=null;
+ let finalInventory=null;
+ const runStage=async(stage,{timeoutMs})=>{
+  // #188's deadline reserves real cleanup and verification time. #200 CLI
+  // calls each have separate 15s bounded timeouts. This does not guarantee
+  // Docker daemon teardown, and a hung injected callback remains possible.
+  if(stage==='execute'){
+   const stageDeadlineMs=performance.now()+timeoutMs;
+   try{
+    executeStep='BASELINE_INVENTORY';
+    const before=await driver.listOwned(runId);
+    if(!validInventory(before,runId)||before.length)throw Error('owned_baseline_not_empty');
+    baseline=true;
+    executeStep='CREATE_NETWORK';
+    const net=await driver.createNetwork({name:runId,owner:runId,internal:true,attachable:false});
+    if(net!==runId)throw Error('network_identity_invalid');
+    knownNetworks.add(net);
+    for(const service of SERVICES){
+     const name=runId+'_'+service;
+     executeStep='CREATE_CONTAINER';
+     const created=await driver.createContainer({
+      name,owner:runId,network:runId,service,
+      image:manifest.images[service].reference,
+      platform:'linux/amd64',publishPorts:false,privileged:false,
+      readOnlyRootfs:true,persistentVolumes:false,
+      environment:runtime?'EPHEMERAL_SERVICE_ENV_FILE':'SYNTHETIC_EMPTY',
+      runtime:runtime?{envFile:runtime.envFiles[service],networkOnly:true}:undefined
+     });
+     if(created!==name)throw Error('container_identity_invalid');
+     knownContainers.add(name);
+     executeStep='START_CONTAINER';
+     await driver.startContainer(name);
+     ops.push('started:'+service);
+     if(runtime?.bootstrapSqlFile&&service==='postgres'){
+      // Fail closed until postgres accepts connections. Only retry a
+      // bounded number of times; never proceed to PostgREST before SQL.
+      let ready=false;
+      // Bound the startup polling window; preserve the shared execute deadline.
+      const readyDeadline=Math.min(stageDeadlineMs,performance.now()+30000);
+      for(let attempt=0;attempt<30&&!ready&&performance.now()<readyDeadline;attempt++){
+       try{executeStep='POSTGRES_READY';await driver.postgresReady(runId);ready=true;}
+       catch{
+        if(attempt<29&&performance.now()<readyDeadline)
+         await new Promise(resolve=>setTimeout(resolve,Math.min(1000,Math.max(0,readyDeadline-performance.now()))));
+       }
+      }
+      if(!ready)throw Error('postgres_not_ready');
+      executeStep='BOOTSTRAP_POSTGRES';
+      await driver.bootstrapPostgres({
+       runId,authenticatorSqlFile:runtime.bootstrapSqlFile
+      });
+      ops.push('postgres_candidate_sql_and_authenticator_cli_reported');
+      // The original immutable snapshot RPC candidate is installed only
+      // after fixture + authenticator succeeded, before Auth/PostgREST.
+      executeStep='APPLY_SNAPSHOT';
+      await driver.applySnapshotCandidate(runId);
+      ops.push('snapshot_candidate_cli_reported_not_rls_proof');
+      // Prove isolated DB role/row behavior with transactional synthetic
+      // fixtures (ROLLBACK); this is still not HTTP or signed-JWT proof.
+      executeStep='SQL_RLS_PROBE';
+      await driver.probeG5SqlBoundary(runId);
+      executeStep='G5_CONCURRENT_PROBE';
+      assert.equal(await driver.probeG5ConcurrentBoundary(runId),'V03_CONCURRENT_CLI_REPORTED_NOT_PROOF');
+      ops.push('g5_concurrent_cli_reported_not_proof');
+      ops.push('sql_rls_boundary_cli_reported_not_http_jwt_proof');
+     }
+     if(runtime?.bootstrapSqlFile&&service==='gotrue'){
+      executeStep='INIT_GOTRUE';
+      const readyDeadline=Math.min(stageDeadlineMs,performance.now()+30000);
+      let ready=false;
+      for(let attempt=0;attempt<30&&!ready&&performance.now()<readyDeadline;attempt++){
+       try{await driver.initializeGoTrue(runId);ready=true;}
+       catch{
+        if(attempt<29&&performance.now()<readyDeadline)
+         await new Promise(resolve=>setTimeout(resolve,Math.min(1000,Math.max(0,readyDeadline-performance.now()))));
+       }
+      }
+      if(!ready)throw Error('gotrue_not_ready');
+      ops.push('gotrue_health_cli_reported_not_auth_proof');
+     }
+    }
+    let h2Completed=false;
+    if(runtime?.h1Users||runtime?.h1EphemeralDir){
+     // H1 is invoked ONLY after the three run-owned containers exist and
+     // after GoTrue migration. The adapter validates the fixed request, owner
+     // label and private files before any secret-bearing Docker copy.
+     assert.ok(runtime.h1Users&&runtime.h1EphemeralDir,'partial H1 runtime');
+     assert.equal(typeof driver.probeInternalGoTrue,'function','H1 adapter missing');
+     executeStep='H1_GOTRUE';
+     const h1=await collectH1OverTransport({
+      users:runtime.h1Users,
+      transport:({caseId,request})=>driver.probeInternalGoTrue({
+       runId,caseId,request,ephemeralDir:runtime.h1EphemeralDir
+      })
+     });
+     assert.equal(h1.evidence.observations.length,5);
+     assert.equal(h1.h1Verified,false);
+     // Keep raw tokens only within collector scope. No result, op, stage
+     // record, logs or final evidence object may include them.
+     ops.push('h1_gotrue_http_five_cases_cli_reported_not_g4_proof');
+     // Canonical real backend reaches this only AFTER all separate manifest
+     // approval gates pass and the disabled workflow is explicitly activated.
+     // This candidate change does NOT grant those approvals.
+     if(commandFactory===createG5BoundedDockerCommand){
+      const executeDeadlineMs=stageDeadlineMs;
+      executeStep='H2_GOTRUE';
+      const bridged=await runG5OriginalGoTrueH2Stage({
+       mark:(phase,caseId,httpStatus)=>{h2Diagnostic=require('./rings-now-p3-v03-h2-diagnostic.cjs').safeH2Diagnostic({phase,caseId,httpStatus});},
+       h1,runtime,driver,runId,executeDeadlineMs,
+       cleanupReserveMs:reserveMs,verifyReserveMs
+      });
+      if(bridged.blocked)throw Error('original_gotrue_expiry_budget_blocked');
+      assert.equal(bridged.status,
+       'ORIGINAL_GOTRUE_H2_SEVEN_CLI_REPORTED_NOT_G4_PROOF');
+      assert.equal(bridged.count,7);
+      assert.equal(bridged.rpcExpiryConfirmed,true);
+      assert.equal(bridged.getCount,7);
+      assert.equal(bridged.getSecurityChecked,true);
+      h2Completed=true;
+      ops.push('h2_original_gotrue_jwt_seven_cases_cli_reported_not_g4_proof');
+      ops.push('v03_get_seven_security_cases_cli_reported_not_proof');
+     }
+     // Fake driver regression only: synthetic expiry remains non-G4 evidence.
+     // Never use the synthetic expired JWT for the canonical backend.
+     // Signed synthetic tokens are NOT GoTrue-issued expiry evidence.
+     if(commandFactory!==createG5BoundedDockerCommand&&runtime.issueH2SignedTestToken){
+      assert.equal(typeof runtime.issueH2SignedTestToken,'function');
+      assert.equal(typeof driver.seedH2DisposableOwners,'function');
+      assert.equal(typeof driver.probeInternalH2,'function');
+      const nowSeconds=Math.floor(Date.now()/1000);
+      executeStep='H2_SYNTHETIC';
+      const h2=await collectV03OverTransport({
+       h1,nowSeconds,
+       seedDisposableSql:({sql,ownerA,ownerB})=>
+        driver.seedH2DisposableOwners({
+         runId,ownerA,ownerB,sql,ephemeralDir:runtime.h1EphemeralDir
+        }),
+       provideExpiredToken:({ownerA})=>runtime.issueH2SignedTestToken({
+        subject:ownerA,role:'authenticated',nowSeconds,expired:true
+       }),
+       provideDeniedToken:({ownerA})=>runtime.issueH2SignedTestToken({
+        subject:ownerA,role:'p2_h2_no_rpc',nowSeconds,expired:false
+       }),
+       transport:({caseId,request})=>driver.probeInternalH2({
+        runId,caseId,request,ephemeralDir:runtime.h1EphemeralDir
+       })
+      });
+      assert.equal(h2.h2Verified,false);
+      assert.equal(h2.g4Verified,false);
+      assert.equal(h2.summary.observations.length,7);
+      assert.equal(h2.rpcExpiryConfirmed,true);
+      assert.equal(h2.getSummary.observations.length,7);
+      assert.equal(h2.getSecurityChecked,true);
+      h2Completed=true;
+      ops.push('h2_seven_internal_cases_cli_reported_synthetic_jwt_not_g4_proof');
+     }
+    }
+    if(runtime?.prepareHttpProbe&&!h2Completed){
+     // This is a real Docker-network HTTP attempt, NOT a completed G4
+     // owner-isolation or 1000/1001 signed-JWT proof.
+     const requestFile=runtime.prepareHttpProbe();
+     executeStep='POSTGREST_HTTP';
+     const response=await driver.probeInternalPostgrest({runId,requestFile});
+     assertSnapshotRpcResult(response,{
+      subject:'00000000-0000-4000-8000-000000000001',expectedCount:0
+     });
+     ops.push('internal_postgrest_http_empty_owner_cli_reported_not_g4');
+    }
+    assert.equal(h2Completed,true,'G5 full H2 sequence required');
+    executeStep='DONE';
+    return {status:'PASS'};
+   }catch(e){executionFailed=true;failedExecuteStep=executeStep;
+    if(executeStep==='H1_GOTRUE'&&e?.message==='H1_CASE_FAILED')h1Diagnostic=e.h1Diagnostic;
+    // Four bounded commands (ownership checks + logs); never consume cleanup reserve.
+    if(commandFactory===createG5BoundedDockerCommand&&h1Diagnostic?.httpStatus===500&&
+     stageDeadlineMs-performance.now()>65000){
+     try{h1InternalError=await driver.diagnoseH1InternalError(runId);}catch{}
+    }
+    if(executeStep==='H2_GOTRUE'&&commandFactory===createG5BoundedDockerCommand&&
+     (h2Diagnostic?.httpStatus===500||h2Diagnostic?.phase==='SEED')&&stageDeadlineMs-performance.now()>65000){
+     try{h2InternalError=await driver.diagnoseH2InternalError(runId,h2Diagnostic.caseId);}catch{}
+    }
+    if(executeStep==='BOOTSTRAP_POSTGRES'&&['BOOTSTRAP_VALIDATE','BOOTSTRAP_MKDIR','BOOTSTRAP_TRANSFER','BOOTSTRAP_SCHEMA_SQL','BOOTSTRAP_ROLE_SQL'].includes(e?.message))failedExecuteStep=e.message;
+    return {status:'FAIL'};}
+  }
+  if(stage==='cleanup'){
+   if(!baseline){cleanupFailed=true;return {status:'FAIL'};}
+   let observed=[];
+   try{
+    observed=await driver.listOwned(runId);
+    if(!validInventory(observed,runId))throw Error('untrusted_inventory');
+    for(const item of observed) {
+     if(item.type==='container')knownContainers.add(item.id);
+     else knownNetworks.add(item.id);
+    }
+   }catch{cleanupFailed=true;}
+   for(const name of [...knownContainers].reverse()){
+    try{await driver.stopContainer(name);ops.push('stop:'+name);}
+    catch{cleanupFailed=true;}
+    try{await driver.removeContainer(name);ops.push('remove:'+name);}
+    catch{cleanupFailed=true;}
+   }
+   for(const name of knownNetworks){
+    try{await driver.removeNetwork(name);ops.push('network:'+name);}
+    catch{cleanupFailed=true;}
+   }
+   return {status:cleanupFailed?'FAIL':'CLEAN'};
+  }
+  if(stage==='verify'){
+   try{
+    const after=await driver.listOwned(runId);
+    finalInventory=after;
+    if(!baseline||!validInventory(after,runId)||after.length!==0){
+     verificationFailed=true;return {verified:false};
+    }
+    return {verified:true};
+   }catch{verificationFailed=true;return {verified:false};}
+  }
+  throw Error('unexpected stage');
+ };
+ let budget,coordinatorFailed=false,emergencyCleanupAttempted=false;
+ let emergencyCleanupStatus='NOT_NEEDED',emergencyVerifyStatus='NOT_NEEDED';
+ try{budget=await runWithSharedTimeBudget({runStage,nowMs,totalMs,
+  reserveMs,verifyReserveMs});}
+ catch{
+  coordinatorFailed=true;
+  // This covers coordinator clock/validation exceptions AFTER resource
+  // creation. Never return before a best-effort owned-resource reconciliation.
+  // Do not clean a runId whose empty baseline was not established: collision.
+  if(baseline){
+   emergencyCleanupAttempted=true;
+   try{
+    const cleaned=await runStage('cleanup',{timeoutMs:15000});
+    emergencyCleanupStatus=cleaned?.status==='CLEAN'?'CLI_CLEAN_REPORTED':'FAIL';
+   }catch{emergencyCleanupStatus='FAIL';}
+   try{
+    const check=await runStage('verify',{timeoutMs:15000});
+    emergencyVerifyStatus=check?.verified===true?'CLI_EMPTY_REPORTED':'FAIL';
+   }catch{emergencyVerifyStatus='FAIL';}
+  }else{
+   emergencyCleanupStatus='BASELINE_UNTRUSTED';
+   emergencyVerifyStatus='NOT_PROVEN';
+  }
+ }
+ if(coordinatorFailed)return Object.freeze({
+  status:'FAIL',attempted:true,realDockerInvoked:true,
+  verification:'NOT_PROVEN',coordinatorFailed:true,
+  emergencyCleanupAttempted,emergencyCleanupStatus,emergencyVerifyStatus,
+  cleanupActions:Object.freeze(ops),failedExecuteStep,h1Diagnostic,h1InternalError,h2Diagnostic,h2InternalError,
+  remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
+  resourceTerminationProven:false,serviceStartupVerified:false,
+  g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
+ });
+ // Even if all CLI operations reported success, daemon-side resource
+ // termination and service startup/HTTP/JWT/SQL remain unverified.
+ const consistent=budget.status==='PASS'&&!executionFailed&&!cleanupFailed&&
+  !verificationFailed&&Array.isArray(finalInventory)&&finalInventory.length===0;
+ return Object.freeze({
+  status:consistent?'DOCKER_CLI_LIFECYCLE_REPORTED_CLEAN_NOT_G3_PROOF':'FAIL_OR_NOT_PROVEN',
+  attempted:true,realDockerInvoked:true,
+  stageRecords:budget.stageRecords,failedExecuteStep,h1Diagnostic,h1InternalError,h2Diagnostic,h2InternalError,
+  cleanupActions:Object.freeze(ops),
+  remainingCliReportedResources:Array.isArray(finalInventory)?finalInventory.length:null,
+  verification:'CLI_SELF_REPORTED_ONLY',
+  resourceTerminationProven:false,serviceStartupVerified:false,
+  g3Verified:false,actualP2Proven:false,p2ExecutionAuthorized:false
+ });
+ }finally{runtime?.dispose();}
+}
+module.exports={runRealG5DockerLifecycle,validateLiveManifest,
+ P2_TOTAL_MS,P2_CLEANUP_RESERVE_MS,P2_VERIFY_RESERVE_MS};
