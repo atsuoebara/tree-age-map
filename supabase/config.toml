@@ -6,3 +6,7 @@ verify_jwt = false
 # Secret-path webhook; /drain verifies a dedicated Vault token inside the handler.
 [functions.garmin-activity-push]
 verify_jwt = false
+
+# Candidate only: anonymous fixed control signal, not deployed. No user token or FIT.
+[functions.rings-now-control]
+verify_jwt = false
