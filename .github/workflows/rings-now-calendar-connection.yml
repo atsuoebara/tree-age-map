@@ -1,0 +1,18 @@
+name: Rings Now calendar connection
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'src/rings-now-*.mjs'
+      - 'tests/rings-now-calendar-connection.test.mjs'
+      - 'tests/ima-wo-shirou-calendar-entry-disabled.test.cjs'
+      - '.github/workflows/rings-now-calendar-connection.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test tests/rings-now-calendar-connection.test.mjs tests/ima-wo-shirou-calendar-entry-disabled.test.cjs tests/rings-now-calendar-source-preflight.test.mjs tests/rings-now-calendar-selection-adapter.test.mjs tests/rings-now-rpc-envelope-review.test.mjs tests/rings-now-auth-transition-epoch-gate.test.mjs

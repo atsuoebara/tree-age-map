@@ -13640,33 +13640,62 @@ function rrCalDate(row){
 // Never make this user-controlled or infer launch time from the current clock.
 const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;
 const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;
+let rrRingsNowConnection=null,rrRingsNowEpoch=0;
+const rrRingsNowAuthListeners=new Set();
+function rrRingsNowClear(){
+ rrRingsNowEpoch++;
+ const previous=rrRingsNowConnection;rrRingsNowConnection=null;
+ previous?.destroy();
+}
 async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,statusNode){
  if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED)return;
- if(!currentUser?.id||currentUser.id!==selectionOwnerId||
-    rrCalOwner!==selectionOwnerId||rrCalMode!=='calendar'||rrCalDay===null)return;
- if(rrCalDate(row)!==selectionDate)return;
- if(!cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId))return;
- // Fail closed: feature rollout boundary must be explicitly approved/configured.
+ rrRingsNowClear();
+ const epoch=rrRingsNowEpoch;
+ const current=()=>epoch===rrRingsNowEpoch&&currentUser?.id===selectionOwnerId&&
+  rrCalOwner===selectionOwnerId&&rrCalMode==='calendar'&&rrCalDay!==null&&
+  rrCalDate(row)===selectionDate&&statusNode.isConnected&&
+  cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId&&r.deleted_at==null);
+ if(!current())return;
+ const english=rrCalEnglish();
  if(!Number.isSafeInteger(RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS)){
-  statusNode.textContent=rrCalEnglish()?'This feature is not enabled yet.':'「今を知ろう」はまだ利用できません。';
-  return;
+  statusNode.textContent=english?'Rings Now is not enabled yet.':'リングスナウはまだ利用できません。';return;
  }
- const {reviewSelectedCalendarRun}=await import('./src/ima-wo-shirou-calendar-selection-review.mjs');
- // Guard again after async import (logout, account change or day change).
- if(!currentUser?.id||currentUser.id!==selectionOwnerId||
-    rrCalOwner!==selectionOwnerId||rrCalMode!=='calendar'||rrCalDate(row)!==selectionDate||
-    !cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId)||
-    !statusNode.isConnected)return;
- const verdict=reviewSelectedCalendarRun({
-  row,currentUserId:selectionOwnerId,selectedAsGachiRun:true,
-  nowMs:Date.now(),featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS
- });
- statusNode.textContent=verdict.eligible
-  ? (rrCalEnglish()?'Within 8 days; analysis is not yet available.':'8日間の対象期間内です。解析はまだ利用できません。')
-  : (rrCalEnglish()?'This run cannot be analysed.':'このランは解析できません。');
+ statusNode.textContent=english?'Checking selected run…':'選択したランを確認中…';
+ try{
+  const {createRingsNowCalendarConnection}=await import('./src/rings-now-calendar-connection.mjs');
+  if(!current())return;
+  const {data,error}=await supabaseClient.auth.getSession();
+  if(!current()||error||data?.session?.user?.id!==selectionOwnerId)return;
+  const session=data.session;
+  const connection=createRingsNowCalendarConnection({
+   client:supabaseClient,readSession:()=>current()?session:null,
+   subscribeAuthChanges:fn=>{rrRingsNowAuthListeners.add(fn);return ()=>rrRingsNowAuthListeners.delete(fn)},
+   nowMs:Date.now,featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS,
+   onInvalidate:()=>{statusNode.replaceChildren()}
+  });
+  rrRingsNowConnection=connection;
+  const chosen=await connection.choose(row.id,selectionOwnerId,selectionDate);
+  if(!current())return;
+  if(chosen.status!=='gachi_confirmation_required'){
+   statusNode.textContent=english?'This run cannot be analysed.':'このランは解析対象外です。';return;
+  }
+  const confirm=document.createElement('button');confirm.type='button';
+  confirm.textContent=english?'Confirm as a hard run':'ガチランとして選択';
+  confirm.onclick=()=>{
+   if(!current())return;
+   const result=connection.confirmGachi(true);
+   statusNode.textContent=result.status==='selected_preview_only'
+    ? (english?'Run selected. Analysis is not yet available.':'ガチランを選択しました。解析はまだ利用できません。')
+    : (english?'Selection expired.':'選択が無効になりました。');
+  };
+  statusNode.replaceChildren(confirm);
+ }catch{
+  if(current())statusNode.textContent=english?'Could not check the run.':'ランを確認できませんでした。';
+ }
  // No FIT auto-link, no 1km result, no writes, no provider calls.
 }
 function rrCalRender(){
+ rrRingsNowClear();
  if(rrCalMode!=='calendar')return;
  const english=rrCalEnglish(),logged=!!currentUser?.id&&rrCalOwner===currentUser.id;
  rrCalShareButton.disabled=!logged;
@@ -13733,7 +13762,7 @@ function rrCalRender(){
   if(RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED){
    const action=document.createElement('button');action.type='button';
    action.className='rrRunCalendarEntry';
-   action.textContent=english?'Review this run':'このランで今を知ろう';
+   action.textContent=english?'Rings Now: select this run':'リングスナウでこのランを選択';
    const status=document.createElement('p');status.setAttribute('role','status');
    rrCalRecords.append(action,status);
    const selectionOwnerId=currentUser.id,selectionDate=rrCalDate(row);
@@ -13858,6 +13887,7 @@ rrCalShareButton.onclick=async()=>{
 };
 
 function rrCalSetMode(mode){
+ rrRingsNowClear();
  rrCalMode=mode==='calendar'?'calendar':'list';
  const calendar=rrCalMode==='calendar';
  document.getElementById('cloudRunsList').style.display=calendar?'none':'';
@@ -13873,6 +13903,8 @@ document.getElementById('rrRunCalendarMonthSelect').onchange=e=>{rrCalMonth=Numb
 document.getElementById('rrRunCalendarPrev').onclick=()=>{if(rrCalMonth===0){rrCalYear--;rrCalMonth=11}else rrCalMonth--;rrCalDay=null;rrCalRender()};
 document.getElementById('rrRunCalendarNext').onclick=()=>{if(rrCalMonth===11){rrCalYear++;rrCalMonth=0}else rrCalMonth++;rrCalDay=null;rrCalRender()};
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
+ for(const listener of [...rrRingsNowAuthListeners])listener();
+ rrRingsNowClear();
  if(!session?.user?.id || (rrCalOwner && session.user.id!==rrCalOwner)){
   rrCalOwner=null;rrCalDay=null;rrCalClosePreview();
   rrCalSetMode('list');
