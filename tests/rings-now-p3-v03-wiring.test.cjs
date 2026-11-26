@@ -1,0 +1,11 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {inspectActivationFacts}=require('./rings-now-p3-v03-activation-gate.cjs');
+const {inspectOneShotHistory}=require('./rings-now-p3-v03-one-shot-history.cjs');
+const {inspectCliPreflight}=require('./rings-now-p3-v03-isolated-cli.cjs');
+const {runRealG5DockerLifecycle}=require('./rings-now-p3-v03-real-docker-runner.cjs');
+const manifest=require('./rings-now-p3-v03-isolated-manifest.json');
+test('checked-in manifest and CLI block',async()=>{assert.equal(inspectCliPreflight(['--isolated-once'],manifest,{}).pass,false);assert.equal((await runRealG5DockerLifecycle({runId:'rn_p2_abcdefgh'})).attempted,false);});
+test('activation and history reject incomplete evidence',()=>{assert.equal(inspectActivationFacts({manifest,env:{}}).pass,false);assert.equal(inspectOneShotHistory({}).pass,false);});
+test('workflow remains disabled and only manually triggered',()=>{const s=fs.readFileSync(path.join(__dirname,'../.github/workflows/rings-now-p3-v03-isolated.yml'),'utf8');assert.match(s,/workflow_dispatch:/);assert.match(s,/if: \$\{\{ false \}\}/);assert.match(s,/timeout-minutes: 12/);});
+test('adapter uses v03 route, database and exact fixture pins',()=>{const s=fs.readFileSync(path.join(__dirname,'rings-now-p3-v03-docker-cli-adapter.cjs'),'utf8');assert.ok(!s.includes('candidate_v02'));assert.ok(!s.includes('rings_now_p2'));assert.ok(s.includes('2130f2fadebdace0f944c5164cd1ee1b429fb7c1'));assert.ok(s.includes('11fe060fba72895aaa66118ed396c174ee3e21fc'));assert.ok(s.includes('ded7aa03b143d4712b503c0f05c6a489966315d5'));assert.ok(s.includes('V03_SQL_FIXTURE_PASS'));});
