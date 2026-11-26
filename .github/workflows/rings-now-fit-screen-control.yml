@@ -1,0 +1,23 @@
+name: Rings Now fit screen control
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'rings-now-fit-frame.html'
+      - 'src/rings-now-*.mjs'
+      - 'supabase/functions/rings-now-control/**'
+      - 'tests/rings-now-fit-screen-control.test.mjs'
+      - '.github/workflows/rings-now-fit-screen-control.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/rings-now-fit-screen-control.test.mjs tests/rings-now-control-endpoint.test.mjs tests/rings-now-selected-fit-handoff.test.mjs tests/ima-wo-shirou-calendar-entry-disabled.test.cjs

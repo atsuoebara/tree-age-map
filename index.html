@@ -4675,7 +4675,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.20.03'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.20.04'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -13640,6 +13640,7 @@ function rrCalDate(row){
 // Never make this user-controlled or infer launch time from the current clock.
 const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;
 const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;
+const RR_RINGS_NOW_REAL_FIT_READ_ENABLED=false;
 let rrRingsNowConnection=null,rrRingsNowEpoch=0;
 const rrRingsNowAuthListeners=new Set();
 function rrRingsNowClear(){
@@ -13681,18 +13682,32 @@ async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate
   }
   const confirm=document.createElement('button');confirm.type='button';
   confirm.textContent=english?'Confirm as a hard run':'ガチランとして選択';
-  confirm.onclick=()=>{
+  confirm.onclick=async()=>{
    if(!current())return;
    const result=connection.confirmGachi(true);
-   statusNode.textContent=result.status==='selected_preview_only'
-    ? (english?'Run selected. Analysis is not yet available.':'ガチランを選択しました。解析はまだ利用できません。')
-    : (english?'Selection expired.':'選択が無効になりました。');
+   if(result.status!=='selected_preview_only'){
+    statusNode.textContent=english?'Selection expired.':'選択が無効になりました。';return;
+   }
+   confirm.disabled=true;
+   try{
+    const [{mountRingsNowFitScreen},{createRingsNowControlRequest}]=await Promise.all([
+     import('./src/rings-now-fit-screen-host.mjs'),import('./src/rings-now-control-client.mjs')
+    ]);
+    if(!current()||!connection.readContext())return;
+    mountRingsNowFitScreen({container:statusNode,connection,
+     isCurrent:()=>current()&&!rrCalEl.hidden&&cloudRunsPanel.classList.contains('open'),
+     document,window,featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS,
+     realFitReadEnabled:RR_RINGS_NOW_REAL_FIT_READ_ENABLED,
+     requestControl:createRingsNowControlRequest({enabled:RR_RINGS_NOW_REAL_FIT_READ_ENABLED}),english});
+   }catch{
+    if(current())statusNode.textContent=english?'Could not open Rings Now.':'リングスナウを開けませんでした。';
+   }
   };
   statusNode.replaceChildren(confirm);
  }catch{
   if(current())statusNode.textContent=english?'Could not check the run.':'ランを確認できませんでした。';
  }
- // No FIT auto-link, no 1km result, no writes, no provider calls.
+ // No FIT auto-link, no 1km result, no writes, no provider calls in the top page.
 }
 function rrCalRender(){
  rrRingsNowClear();
@@ -13763,7 +13778,7 @@ function rrCalRender(){
    const action=document.createElement('button');action.type='button';
    action.className='rrRunCalendarEntry';
    action.textContent=english?'Rings Now: select this run':'リングスナウでこのランを選択';
-   const status=document.createElement('p');status.setAttribute('role','status');
+   const status=document.createElement('div');status.setAttribute('role','status');
    rrCalRecords.append(action,status);
    const selectionOwnerId=currentUser.id,selectionDate=rrCalDate(row);
    action.onclick=()=>rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,status);
