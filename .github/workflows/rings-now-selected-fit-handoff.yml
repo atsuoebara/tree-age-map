@@ -1,0 +1,16 @@
+name: Rings Now selected FIT handoff
+on:
+  pull_request:
+    paths:
+      - 'src/rings-now-*.mjs'
+      - 'tests/rings-now-selected-fit-handoff.test.mjs'
+      - '.github/workflows/rings-now-selected-fit-handoff.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test tests/rings-now-selected-fit-handoff.test.mjs tests/rings-now-calendar-connection.test.mjs tests/rings-now-iphone-isolated-handoff.test.mjs tests/rings-now-private-fit-input-gate.test.mjs tests/ima-wo-shirou-fit-link-review.test.mjs
