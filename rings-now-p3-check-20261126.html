@@ -46,7 +46,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
     // Client milliseconds cannot establish the exact server microsecond boundary.
     summary.all_within_8d_client_envelope = rows === null || rows.length === 0 ? null :
       rows.every(r => {
-        if (typeof r?.started_at !== "string" || !/(?:Z|[+-]\\d{2}:\\d{2})$/.test(r.started_at)) return false;
+        if (typeof r?.started_at !== "string" || !/(?:Z|[+-]\d{2}:\d{2})$/.test(r.started_at)) return false;
         const ms = Date.parse(r.started_at);
         return Number.isFinite(ms) && ms >= requestStartMs - 691200000 && ms <= responseEndMs;
       });
