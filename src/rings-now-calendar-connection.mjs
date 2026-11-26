@@ -10,6 +10,7 @@ export function createRingsNowCalendarConnection({client,readSession,subscribeAu
     typeof subscribeAuthChanges!=='function'||typeof nowMs!=='function')
   throw new TypeError('Explicit authenticated client and lifecycle required');
  let adapter,disposed=false,revision=0;
+ const invalidationListeners=new Set();
  const boundary=createRingsNowAuthSnapshotBoundary({readSession,async readOwnerScopedRows(ownerId){
   if(!Number.isSafeInteger(featureStartedAtMs)||featureStartedAtMs<0)
    throw new Error('rollout_not_configured');
@@ -19,7 +20,13 @@ export function createRingsNowCalendarConnection({client,readSession,subscribeAu
   if(checked.status!=='rpc_envelope_review_only')throw new Error('snapshot_blocked');
   return {ownerId,ownerScoped:true,unmodifiedSnapshot:true,rows:checked.rows};
  }});
- const invalidate=()=>{revision++;adapter?.invalidate();onInvalidate()};
+ const invalidate=()=>{
+  revision++;adapter?.invalidate();
+  for(const listener of [...invalidationListeners]){
+   try{listener()}catch{/* one observer cannot prevent other invalidations */}
+  }
+  onInvalidate();
+ };
  const gate=createRingsNowAuthTransitionEpochGate({boundary,subscribeAuthChanges,onInvalidateSelection:invalidate});
  adapter=createRingsNowCalendarSelectionAdapter({readRows:gate.readRows,
   readCurrentUserId:gate.readCurrentUserId,nowMs,featureStartedAtMs});
@@ -39,9 +46,15 @@ export function createRingsNowCalendarConnection({client,readSession,subscribeAu
  }
  function confirmGachi(value){
   if(disposed)return blocked();
-  return adapter.confirmGachi(value);
+  const result=adapter.confirmGachi(value);
+  if(result.status!=='selected_preview_only')gate.clear();
+  return result;
  }
  return Object.freeze({choose,confirmGachi,readContext:()=>disposed?null:adapter.readContext(),
+  subscribeInvalidation(listener){
+   if(disposed||typeof listener!=='function')throw new TypeError('active connection and listener required');
+   invalidationListeners.add(listener);return ()=>invalidationListeners.delete(listener);
+  },
   clear:()=>{if(!disposed)gate.clear()},
-  destroy(){if(!disposed){disposed=true;gate.destroy()}}});
+  destroy(){if(!disposed){disposed=true;try{gate.destroy()}finally{invalidationListeners.clear()}}}});
 }
