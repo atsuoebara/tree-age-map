@@ -15,7 +15,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
 </head>
 <body>
 <main>
-<h1>リングスナウ 一時検証</h1>
+<h1>リングスナウ 一時検証（理由表示版）</h1>
 <p id="status" role="status">ログイン状態を確認中</p>
 <button id="run" type="button" hidden disabled>本番HTTP確認を実行</button>
 <pre id="result" aria-live="polite" hidden></pre>
@@ -41,6 +41,10 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
       rows: rows === null ? null : rows.length,
       all_owner: rows === null ? null : rows.every(r => r && typeof r === "object" && r.user_id === uid)
     };
+    // Only fixed contract literals may leave the response body.
+    summary.rpc_status = ["blocked","candidate_snapshot"].includes(body?.status) ? body.status : null;
+    summary.reason = ["too_many_rows","missing_required_fields","unauthenticated"].includes(body?.reason)
+      ? body.reason : (body && Object.prototype.hasOwnProperty.call(body,"reason") ? "[unexpected reason]" : null);
     if (includeKeys) {
       summary.body_keys = safeKeys(body, ["status","rows","reason","code","message","details","hint"]);
       summary.row_key_sets = rows === null ? null : [...new Set(rows.map(r => JSON.stringify(safeKeys(r, allowed))))].map(s => JSON.parse(s));
