@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://fhwvntpzwyenendhcgbw.supabase.co; base-uri 'none'; form-action 'none'">
-<title>リングスナウ 一時検証</title>
+<title>リングスナウ 一時検証（v03・8日間版）</title>
 <style>
 body{font:16px/1.6 system-ui,sans-serif;margin:24px auto;padding:0 16px;max-width:600px;color:#18232d;background:#fafafa}
 button{font:inherit;padding:14px 20px;width:100%;min-height:48px}
@@ -15,7 +15,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
 </head>
 <body>
 <main>
-<h1>リングスナウ 一時検証（理由表示版）</h1>
+<h1>リングスナウ 一時検証（v03・8日間版）</h1>
 <p id="status" role="status">ログイン状態を確認中</p>
 <button id="run" type="button" hidden disabled>本番HTTP確認を実行</button>
 <pre id="result" aria-live="polite" hidden></pre>
@@ -29,18 +29,31 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
   const output = document.getElementById("result");
   const url = "https://fhwvntpzwyenendhcgbw.supabase.co";
   const key = "sb_publishable_8ZhwV5lVHGbud8v6AS3YBQ_C78JbXyM";
-  const endpoint = url + "/rest/v1/rpc/rings_now_snapshot_candidate_v02";
+  const endpoint = url + "/rest/v1/rpc/rings_now_snapshot_candidate_v03";
   const allowed = ["activity_date","deleted_at","distance_km","id","started_at","user_id"];
   const safeKeys = (obj, permitted) => {
     if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
     return Object.keys(obj).map(k => permitted.includes(k) ? k : "[unexpected key]").sort();
   };
-  const summarize = (body, uid, includeKeys) => {
+  const summarize = (body, uid, includeKeys, requestStartMs, responseEndMs) => {
     const rows = body && Array.isArray(body.rows) ? body.rows : null;
     const summary = {
       rows: rows === null ? null : rows.length,
       all_owner: rows === null ? null : rows.every(r => r && typeof r === "object" && r.user_id === uid)
     };
+    // A server observation lies between request and response, assuming aligned clocks.
+    // Allow only this measured interval, not an arbitrary grace period.
+    // Client milliseconds cannot establish the exact server microsecond boundary.
+    summary.all_within_8d_client_envelope = rows === null || rows.length === 0 ? null :
+      rows.every(r => {
+        if (typeof r?.started_at !== "string" || !/(?:Z|[+-]\\d{2}:\\d{2})$/.test(r.started_at)) return false;
+        const ms = Date.parse(r.started_at);
+        return Number.isFinite(ms) && ms >= requestStartMs - 691200000 && ms <= responseEndMs;
+      });
+    summary.all_six_keys = rows === null || rows.length === 0 ? null :
+      rows.every(r => JSON.stringify(safeKeys(r, allowed)) === JSON.stringify(allowed));
+    summary.all_undeleted = rows === null || rows.length === 0 ? null :
+      rows.every(r => r?.deleted_at === null);
     // Only fixed contract literals may leave the response body.
     summary.rpc_status = ["blocked","candidate_snapshot"].includes(body?.status) ? body.status : null;
     summary.reason = ["too_many_rows","missing_required_fields","unauthenticated"].includes(body?.reason)
@@ -90,6 +103,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
       const headers = {apikey:key,Authorization:"Bearer "+token};
       const options = {method,headers,signal:controller.signal,cache:"no-store",credentials:"omit",redirect:"error",referrerPolicy:"no-referrer"};
       if (method === "POST") { headers["Content-Type"]="application/json"; options.body="{}"; }
+      const requestStartMs = Date.now();
       const response = await fetch(endpoint, options);
       const result = {status:response.status};
       if (method === "POST") {
@@ -101,7 +115,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;p
       if (method !== "HEAD") {
         let body = null;
         try { body = await response.json(); } catch {}
-        Object.assign(result,summarize(body,uid,method==="POST"));
+        Object.assign(result,summarize(body,uid,method==="POST",requestStartMs,Date.now()));
       }
       return result;
     } catch {
