@@ -8,6 +8,8 @@ on:
       - 'src/rings-now-*.mjs'
       - 'supabase/functions/rings-now-control/**'
       - 'tests/rings-now-fit-screen-control.test.mjs'
+      - 'tests/rings-now-owner-trial.test.mjs'
+      - 'supabase/functions/rings-now-owner-trial/**'
       - '.github/workflows/rings-now-fit-screen-control.yml'
 permissions:
   contents: read
@@ -20,4 +22,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/rings-now-fit-screen-control.test.mjs tests/rings-now-control-endpoint.test.mjs tests/rings-now-selected-fit-handoff.test.mjs tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
+      - run: node --test tests/rings-now-owner-trial.test.mjs tests/rings-now-fit-screen-control.test.mjs tests/rings-now-control-endpoint.test.mjs tests/rings-now-selected-fit-handoff.test.mjs tests/ima-wo-shirou-calendar-entry-disabled.test.cjs
