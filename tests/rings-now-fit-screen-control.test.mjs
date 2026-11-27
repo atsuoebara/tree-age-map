@@ -49,6 +49,6 @@ test('published document and host retain disabled gates, opaque frame, no file i
  assert.match(child,/event\.source!==window\.parent/);
  assert.match(child,/event\.origin!==PARENT_ORIGIN/);
  assert.match(child,/window\.origin!=='null'/);
- assert.match(html,/APP_BUILD = '2026\.11\.20\.04'/);
- assert.match(sw,/RR_BUILD = '2026\.11\.20\.04'/);
+ assert.match(html,/APP_BUILD = '2026\.11\.20\.05'/);
+ assert.match(sw,/RR_BUILD = '2026\.11\.20\.05'/);
 });
