@@ -4675,7 +4675,7 @@ const REPO = 'tree-age-map';
 const BRANCH = 'main';
 
 const APP_VERSION = '1.0';
-const APP_BUILD = '2026.11.20.05'; // Increment for each future index.html release.
+const APP_BUILD = '2026.11.20.06'; // Increment for each future index.html release.
 document.getElementById('appVersion').textContent =
   `Version ${APP_VERSION} ｜ Build ${APP_BUILD}`;
 
@@ -13641,8 +13641,10 @@ function rrCalDate(row){
 const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;
 const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;
 const RR_RINGS_NOW_REAL_FIT_READ_ENABLED=false;
-const RR_RINGS_NOW_OWNER_TRIAL_ENABLED=false;
-const RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS=null;
+const RR_RINGS_NOW_OWNER_TRIAL_ENABLED=true;
+const RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS=1795771800000;
+const RR_RINGS_NOW_OWNER_TRIAL_END_MS=1795858200000;
+function rrOwnerTrialWindowOpen(){const now=Date.now();return RR_RINGS_NOW_OWNER_TRIAL_ENABLED===true&&now>=RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS&&now<RR_RINGS_NOW_OWNER_TRIAL_END_MS}
 let rrRingsNowConnection=null,rrRingsNowEpoch=0;
 const rrRingsNowAuthListeners=new Set();
 function rrRingsNowClear(){
@@ -13654,11 +13656,12 @@ async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate
  if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED&&!RR_RINGS_NOW_OWNER_TRIAL_ENABLED)return;
  rrRingsNowClear();
  const epoch=rrRingsNowEpoch;
- const current=()=>epoch===rrRingsNowEpoch&&currentUser?.id===selectionOwnerId&&
+ const current=()=> (RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED||rrOwnerTrialWindowOpen())&&epoch===rrRingsNowEpoch&&currentUser?.id===selectionOwnerId&&
   rrCalOwner===selectionOwnerId&&rrCalMode==='calendar'&&rrCalDay!==null&&
   rrCalDate(row)===selectionDate&&statusNode.isConnected&&
   cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId&&r.deleted_at==null);
  if(!current())return;
+ if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED&&!rrOwnerTrialWindowOpen())return;
  const english=rrCalEnglish();
  const trial=RR_RINGS_NOW_OWNER_TRIAL_ENABLED===true&&RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED===false;
  const startedAt=trial?RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS;
@@ -13785,7 +13788,7 @@ function rrCalRender(){
  // One owner authorization per render, regardless of the number of runs.
  let trialPermission=null;
  const trialOwner=currentUser?.id,trialEpoch=rrRingsNowEpoch;
- const trialLive=()=>trialEpoch===rrRingsNowEpoch&&currentUser?.id===trialOwner&&rrCalOwner===trialOwner&&rrCalMode==='calendar'&&!rrCalEl.hidden;
+ const trialLive=()=>rrOwnerTrialWindowOpen()&&trialEpoch===rrRingsNowEpoch&&currentUser?.id===trialOwner&&rrCalOwner===trialOwner&&rrCalMode==='calendar'&&!rrCalEl.hidden;
  const trialAllowed=()=>trialPermission??=(async()=>{
   try{
    if(!trialLive()||!Number.isSafeInteger(RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS))return false;
@@ -13812,7 +13815,7 @@ function rrCalRender(){
    rrCalRecords.append(action,status);
    const selectionOwnerId=currentUser.id,selectionDate=rrCalDate(row);
    action.onclick=()=>rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,status);
-  }else if(RR_RINGS_NOW_OWNER_TRIAL_ENABLED){
+  }else if(rrOwnerTrialWindowOpen()){
    const owner=trialOwner;
    void (async()=>{try{
     if(!await trialAllowed()||!trialLive()||!b.isConnected)return;
