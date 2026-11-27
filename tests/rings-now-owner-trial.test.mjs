@@ -26,12 +26,14 @@ test('parent transport is disabled by default and sends only bearer to fixed end
  assert.equal(await createOwnerTrialRequest({readSession,fetchImpl})(),null);assert.equal(calls,0);
  assert.equal((await createOwnerTrialRequest({enabled:true,readSession,fetchImpl})()).enabled,true);assert.equal(calls,1);
 });
-test('public and private trial remain OFF; no token passed to frame',()=>{
+test('public gates remain OFF; owner trial window set; no token passed to frame',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
  const html=read('index.html'),child=read('src/rings-now-fit-frame.mjs'),host=read('src/rings-now-fit-screen-host.mjs');
- for(const name of ['RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED','RR_RINGS_NOW_REAL_FIT_READ_ENABLED','RR_RINGS_NOW_OWNER_TRIAL_ENABLED'])assert.ok(html.includes('const '+name+'=false;'));
- assert.ok(html.includes('const RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS=null;'));
- assert.ok(child.includes('const OWNER_TRIAL_SCREEN_ENABLED=false;'));
+ for(const name of ['RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED','RR_RINGS_NOW_REAL_FIT_READ_ENABLED'])assert.ok(html.includes('const '+name+'=false;'));
+ assert.ok(html.includes('const RR_RINGS_NOW_OWNER_TRIAL_ENABLED=true;'));
+ assert.ok(html.includes('const RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS=1795771800000;'));
+ assert.ok(html.includes('const RR_RINGS_NOW_OWNER_TRIAL_END_MS=1795858200000;'));
+ assert.ok(child.includes('const OWNER_TRIAL_SCREEN_ENABLED=true;'));
  assert.doesNotMatch(host,/access_token|authorization:/);
 });
 

@@ -1,7 +1,7 @@
 // Opaque sandbox frame. No network APIs, provider clients, storage, or FIT egress.
 import {createRingsNowSelectedFitHandoff} from './rings-now-selected-fit-handoff.mjs';
 const REAL_FIT_SCREEN_ENABLED=false; // Public gate remains disabled.
-const OWNER_TRIAL_SCREEN_ENABLED=false; // Separate explicit approval required.
+const OWNER_TRIAL_SCREEN_ENABLED=true; // Separate explicit approval required.
 const PARENT_ORIGIN='https://runnersrings.com';
 const state=document.getElementById('state'),screen=document.getElementById('screen');
 const exact=(v,keys)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).sort().join(',')===keys;
