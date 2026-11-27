@@ -34,3 +34,28 @@ test('public and private trial remain OFF; no token passed to frame',()=>{
  assert.ok(child.includes('const OWNER_TRIAL_SCREEN_ENABLED=false;'));
  assert.doesNotMatch(host,/access_token|authorization:/);
 });
+
+test('runtime empty body stream reaches authorization while OFF remains a 200 denial',async()=>{
+ const empty=()=>new ReadableStream({start(c){c.close()}});
+ for(const [enabled,expected] of [['false',false],['true',true]]){
+  let verified=0;
+  const r=await call('valid',{...cfg,enabled,verifyUser:async()=>{verified++;return {id:ownerId}}},{body:empty(),duplex:'half'});
+  assert.equal(r.status,200);assert.equal((await r.json()).enabled,expected);assert.equal(verified,expected?1:0);
+ }
+});
+test('nonempty, malformed, excessive empty chunks and stalled streams deny before auth',async()=>{
+ let verified=0;
+ const config={...cfg,verifyUser:async()=>{verified++;return {id:ownerId}}};
+ const streams=[
+  new ReadableStream({start(c){c.enqueue(new Uint8Array([1]));c.close()}}),
+  new ReadableStream({start(c){c.error(new Error('broken'))}}),
+  new ReadableStream({pull(c){c.enqueue(new Uint8Array(0))}}),
+  new ReadableStream({})
+ ];
+ for(const body of streams){
+  const r=await call('valid',config,{body,duplex:'half'});
+  assert.equal(r.status,400);assert.equal((await r.json()).enabled,false);
+ }
+ const r=await call('valid',config,{headers:{origin,authorization:'Bearer valid','content-length':'1'}});
+ assert.equal(r.status,400);assert.equal(verified,0);
+});
