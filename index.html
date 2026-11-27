@@ -13641,6 +13641,8 @@ function rrCalDate(row){
 const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;
 const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;
 const RR_RINGS_NOW_REAL_FIT_READ_ENABLED=false;
+const RR_RINGS_NOW_OWNER_TRIAL_ENABLED=false;
+const RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS=null;
 let rrRingsNowConnection=null,rrRingsNowEpoch=0;
 const rrRingsNowAuthListeners=new Set();
 function rrRingsNowClear(){
@@ -13649,7 +13651,7 @@ function rrRingsNowClear(){
  previous?.destroy();
 }
 async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,statusNode){
- if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED)return;
+ if(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED&&!RR_RINGS_NOW_OWNER_TRIAL_ENABLED)return;
  rrRingsNowClear();
  const epoch=rrRingsNowEpoch;
  const current=()=>epoch===rrRingsNowEpoch&&currentUser?.id===selectionOwnerId&&
@@ -13658,7 +13660,9 @@ async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate
   cloudRows.some(r=>String(r.id)===String(row.id)&&r.user_id===selectionOwnerId&&r.deleted_at==null);
  if(!current())return;
  const english=rrCalEnglish();
- if(!Number.isSafeInteger(RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS)){
+ const trial=RR_RINGS_NOW_OWNER_TRIAL_ENABLED===true&&RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED===false;
+ const startedAt=trial?RR_RINGS_NOW_OWNER_TRIAL_STARTED_AT_MS:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS;
+ if(!Number.isSafeInteger(startedAt)){
   statusNode.textContent=english?'Rings Now is not enabled yet.':'リングスナウはまだ利用できません。';return;
  }
  statusNode.textContent=english?'Checking selected run…':'選択したランを確認中…';
@@ -13668,10 +13672,20 @@ async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate
   const {data,error}=await supabaseClient.auth.getSession();
   if(!current()||error||data?.session?.user?.id!==selectionOwnerId)return;
   const session=data.session;
+  let requestTrial=null;
+  if(trial){
+   const {createOwnerTrialRequest}=await import('./src/rings-now-owner-trial-client.mjs');
+   requestTrial=createOwnerTrialRequest({enabled:true,readSession:async()=>{
+    if(!current())return null;
+    const {data,error}=await supabaseClient.auth.getSession();
+    return !error&&current()&&data?.session?.user?.id===selectionOwnerId?data.session:null;
+   }});
+   if((await requestTrial())?.enabled!==true||!current())return;
+  }
   const connection=createRingsNowCalendarConnection({
    client:supabaseClient,readSession:()=>current()?session:null,
    subscribeAuthChanges:fn=>{rrRingsNowAuthListeners.add(fn);return ()=>rrRingsNowAuthListeners.delete(fn)},
-   nowMs:Date.now,featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS,
+   nowMs:Date.now,featureStartedAtMs:startedAt,
    onInvalidate:()=>{statusNode.replaceChildren()}
   });
   rrRingsNowConnection=connection;
@@ -13696,9 +13710,9 @@ async function rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate
     if(!current()||!connection.readContext())return;
     mountRingsNowFitScreen({container:statusNode,connection,
      isCurrent:()=>current()&&!rrCalEl.hidden&&cloudRunsPanel.classList.contains('open'),
-     document,window,featureStartedAtMs:RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS,
-     realFitReadEnabled:RR_RINGS_NOW_REAL_FIT_READ_ENABLED,
-     requestControl:createRingsNowControlRequest({enabled:RR_RINGS_NOW_REAL_FIT_READ_ENABLED}),english});
+     document,window,featureStartedAtMs:startedAt,
+     realFitReadEnabled:trial||RR_RINGS_NOW_REAL_FIT_READ_ENABLED,
+     requestControl:trial?requestTrial:createRingsNowControlRequest({enabled:RR_RINGS_NOW_REAL_FIT_READ_ENABLED}),english});
    }catch{
     if(current())statusNode.textContent=english?'Could not open Rings Now.':'リングスナウを開けませんでした。';
    }
@@ -13782,6 +13796,23 @@ function rrCalRender(){
    rrCalRecords.append(action,status);
    const selectionOwnerId=currentUser.id,selectionDate=rrCalDate(row);
    action.onclick=()=>rrImaWoShirouSelectCalendarRun(row,selectionOwnerId,selectionDate,status);
+  }else if(RR_RINGS_NOW_OWNER_TRIAL_ENABLED){
+   const owner=currentUser.id,epoch=rrRingsNowEpoch;
+   const live=()=>epoch===rrRingsNowEpoch&&currentUser?.id===owner&&rrCalOwner===owner&&rrCalMode==='calendar'&&b.isConnected;
+   void (async()=>{try{
+    const {createOwnerTrialRequest}=await import('./src/rings-now-owner-trial-client.mjs');
+    const request=createOwnerTrialRequest({enabled:true,readSession:async()=>{
+     if(!live())return null;
+     const {data,error}=await supabaseClient.auth.getSession();
+     return !error&&live()&&data?.session?.user?.id===owner?data.session:null;
+    }});
+    if((await request())?.enabled!==true||!live())return;
+    const action=document.createElement('button');action.type='button';action.className='rrRunCalendarEntry';
+    action.textContent=english?'Rings Now: private trial':'リングスナウ：本人限定試験';
+    const status=document.createElement('div');status.setAttribute('role','status');
+    b.after(action,status);
+    action.onclick=()=>rrImaWoShirouSelectCalendarRun(row,owner,rrCalDate(row),status);
+   }catch{/* deny */}})();
   }
  }
 }
