@@ -10,3 +10,7 @@ verify_jwt = false
 # Candidate only: anonymous fixed control signal, not deployed. No user token or FIT.
 [functions.rings-now-control]
 verify_jwt = false
+
+# Candidate only; handler verifies user with Auth, never accepts anonymous permission.
+[functions.rings-now-owner-trial]
+verify_jwt = false

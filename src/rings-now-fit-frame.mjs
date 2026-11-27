@@ -1,6 +1,7 @@
 // Opaque sandbox frame. No network APIs, provider clients, storage, or FIT egress.
 import {createRingsNowSelectedFitHandoff} from './rings-now-selected-fit-handoff.mjs';
-const REAL_FIT_SCREEN_ENABLED=false; // Separate explicit approval required.
+const REAL_FIT_SCREEN_ENABLED=false; // Public gate remains disabled.
+const OWNER_TRIAL_SCREEN_ENABLED=false; // Separate explicit approval required.
 const PARENT_ORIGIN='https://runnersrings.com';
 const state=document.getElementById('state'),screen=document.getElementById('screen');
 const exact=(v,keys)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).sort().join(',')===keys;
@@ -30,7 +31,7 @@ function requestControl(){
 function render(msg){
  const en=msg.english===true,t=(ja,english)=>en?english:ja;
  document.documentElement.lang=en?'en':'ja';
- if(REAL_FIT_SCREEN_ENABLED!==true||msg.realFitReadEnabled!==true){
+ if((REAL_FIT_SCREEN_ENABLED!==true&&OWNER_TRIAL_SCREEN_ENABLED!==true)||msg.realFitReadEnabled!==true){
   state.textContent=t('現在は利用できません。','Not available yet.');return;
  }
  context=msg.context;
@@ -65,7 +66,7 @@ function render(msg){
  handoff=createRingsNowSelectedFitHandoff({connection,
   elements:{fileInput,ownerCheckbox,gachiCheckbox,sameActivityCheckbox,reviewButton,cancelButton,statusNode,lapsNode},
   document,pageEvents:window,visibilityEvents:document,nowMs:Date.now,
-  featureStartedAtMs:msg.featureStartedAtMs,realFitReadEnabled:REAL_FIT_SCREEN_ENABLED,requestControl});
+  featureStartedAtMs:msg.featureStartedAtMs,realFitReadEnabled:REAL_FIT_SCREEN_ENABLED||OWNER_TRIAL_SCREEN_ENABLED,requestControl});
 }
 window.addEventListener('message',event=>{
  if(port||closed||window.parent===window||window.origin!=='null'||

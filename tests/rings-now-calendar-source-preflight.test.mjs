@@ -17,7 +17,7 @@ test('production entry is still disabled and rollout start remains null',()=>{
  assert.match(index,/const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;/);
  const entry=index.match(/async function rrImaWoShirouSelectCalendarRun\([\s\S]*?\n}\nfunction rrCalRender\(/);
  assert.ok(entry,'Rings Now calendar handler must remain present but isolated');
- assert.match(entry[0],/if\(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED\)return;/);
+ assert.match(entry[0],/if\(!RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED&&!RR_RINGS_NOW_OWNER_TRIAL_ENABLED\)return;/);
 });
 test('current calendar is display-oriented with a distinct IndexedDB cache path',()=>{
  assert.match(index,/async function fetchCloudRuns\(options = \{\}\)/);
