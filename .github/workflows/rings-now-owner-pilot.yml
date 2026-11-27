@@ -1,0 +1,15 @@
+name: Rings Now owner pilot contract
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/rings-now-owner-pilot/**'
+      - 'tests/rings-now-owner-pilot.test.mjs'
+      - '.github/workflows/rings-now-owner-pilot.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test tests/rings-now-owner-pilot.test.mjs
