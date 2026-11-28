@@ -68,7 +68,8 @@ test('auth event during permission check cannot start FIT read',async()=>{
 test('new selection, cancel and pagehide erase same-activity and visible result',async()=>{
  for(const event of ['new','cancel','hide','file','uncheck']){
   const f=await fixture();f.select();await f.review();
-  assert.equal(f.elements.lapsNode.children.length,1);
+  assert.equal(f.elements.lapsNode.children.length,2);
+  assert.match(f.elements.lapsNode.children[1].textContent,/FIT記録範囲/);
   if(event==='new')await f.connection.choose(row.id,owner,row.activity_date);
   if(event==='cancel')f.elements.cancelButton.dispatch('click');
   if(event==='hide')f.pageEvents.dispatch('pagehide');
