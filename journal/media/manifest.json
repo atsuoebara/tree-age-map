@@ -346,5 +346,9 @@
   "journal-20261128-073801-52f5cc33": {
     "status": "ready",
     "url": "https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/101/c8e1291d-9436-4e7f-8a1a-eb922775c7b6.png"
+  },
+  "journal-20261128-205105-43a64c7e": {
+    "status": "ready",
+    "url": "https://fhwvntpzwyenendhcgbw.supabase.co/storage/v1/object/public/journal-images/posts/102/5e708808-25fb-4ab7-a021-10e6bd373dea.png"
   }
 }
