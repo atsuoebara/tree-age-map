@@ -52,7 +52,8 @@ test('pagehide, bfcache and visibility clear visible results and revoke selectio
  for(const evt of ['pagehide','pageshow','visibilitychange']){
   const f=fixture(),e=f.elements;f.select();
   await e.reviewButton.dispatch('click')[0];
-  assert.equal(e.lapsNode.children.length,1);
+  assert.equal(e.lapsNode.children.length,2);
+  assert.match(e.lapsNode.children[1].textContent,/FIT記録範囲/);
   if(evt==='visibilitychange'){f.visibilityEvents.hidden=true;f.visibilityEvents.dispatch(evt);f.visibilityEvents.hidden=false}
   else f.pageEvents.dispatch(evt,{persisted:true});
   assert.equal(e.lapsNode.children.length,0,evt);

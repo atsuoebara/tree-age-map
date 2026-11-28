@@ -70,7 +70,24 @@ export function createRingsNowPrivateFitController({
         time.textContent=seconds(segment.clockElapsedS);
         row.append(label,time);table.append(row);
       }
-      e.lapsNode.replaceChildren(table);
+      const distanceValid=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0;
+      const km=v=>distanceValid(v)?(v/1000).toFixed(2)+' km':'不明';
+      const summary=document.createElement('p');
+      summary.textContent='FIT記録範囲：'+km(result.firstObservedDistanceM)+' ～ '+km(result.lastObservedDistanceM)+' ／ FIT全体距離：'+km(result.sessionTotalDistanceM);
+      const notes=document.createElement('p');
+      const warnings=[];
+      if(distanceValid(result.firstObservedDistanceM)&&result.firstObservedDistanceM>0)
+        warnings.push('最初の記録が0mではないため、開始区間は解析対象外です。');
+      if(distanceValid(result.lastObservedDistanceM)&&distanceValid(result.sessionTotalDistanceM)){
+        const tolerance=Math.max(20,result.sessionTotalDistanceM*.005);
+        const gap=result.sessionTotalDistanceM-result.lastObservedDistanceM;
+        if(gap>tolerance)
+          warnings.push('FITの記録が全体距離に達していないため、一部の区間のみ表示しています。');
+        else if(gap < -tolerance)
+          warnings.push('FITの末尾距離と全体距離が一致していません。');
+      }else warnings.push('FITの記録範囲または全体距離を確認できません。');
+      notes.textContent=warnings.join(' ');
+      e.lapsNode.replaceChildren(table,summary,...(warnings.length?[notes]:[]));
       e.statusNode.textContent='参考候補・未認証（正式な分析結果ではありません）。'+DISCLAIMER;
     }catch{
       if(current())e.statusNode.textContent='端末内で確認できませんでした';

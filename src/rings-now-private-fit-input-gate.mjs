@@ -39,7 +39,13 @@ export async function inspectRingsNowPrivateFit({
        s.index<1 || !Number.isFinite(s.distanceM)||s.distanceM<0||
        !Number.isFinite(s.clockElapsedS)||s.clockElapsedS<0))
       return denied('invalid_segments');
+    const validDistance=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0;
+    const recordDistanceM=validDistance(result.distanceM)?result.distanceM:null;
+    const firstObservedDistanceM=validDistance(result.firstObservedDistanceM)?result.firstObservedDistanceM:null;
+    const lastObservedDistanceM=recordDistanceM!==null&&firstObservedDistanceM!==null&&validDistance(recordDistanceM+firstObservedDistanceM)?recordDistanceM+firstObservedDistanceM:null;
+    const sessionTotalDistanceM=validDistance(result.sessionTotalDistanceM)?result.sessionTotalDistanceM:null;
     return {status:'reference_only_unverified',segments,
+      recordDistanceM,firstObservedDistanceM,lastObservedDistanceM,sessionTotalDistanceM,
       flags:Array.isArray(result.flags)?result.flags.filter(s=>typeof s==='string').slice(0,64):[],
       qualityCertified:false,analysisAllowed:false,writeAllowed:false,providerDataCombined:false};
   }catch{
