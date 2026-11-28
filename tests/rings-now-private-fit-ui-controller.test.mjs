@@ -12,11 +12,11 @@ class Element {
   append(...nodes){this.children.push(...nodes);}
 }
 const keys=['fileInput','ownerCheckbox','gachiCheckbox','reviewButton','cancelButton','statusNode','lapsNode'];
-const fixture=()=>{
+const fixture=(inspect)=>{
  const elements=Object.fromEntries(keys.map(k=>[k,new Element()]));
  const document={createElement:()=>new Element()};
  let context=true;
- const controller=create({elements,document,isContextCurrent:()=>context});
+ const controller=create({elements,document,isContextCurrent:()=>context,...(inspect?{inspect}:{})});
  return {e:elements,controller,context:(v)=>context=v};
 };
 const bytes=makeSyntheticRaceFit();
@@ -101,4 +101,15 @@ test('no public entrypoints, network, persistence, run auto-link or production u
  assert.match(live,/const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;/);
  assert.match(src,/inspectRingsNowPrivateFit/);
  assert.doesNotMatch(src,/\bfetch\s*\(|XMLHttpRequest|WebSocket|localStorage|sessionStorage|indexedDB|sendBeacon|\.from\(['"]runs['"]\)|innerHTML|postMessage|console\.log/);
+});
+
+test('distance disclosure distinguishes missing tail, complete FIT and unknown values and clears on cancel',async()=>{
+ for(const [first,last,total,expected] of [[12,9500,11070,/一部の区間/],[0,11070,11070,null],[null,null,null,/確認できません/],[0,12000,11070,/一致していません/]]){
+  const {e,controller}=fixture(async()=>({status:'reference_only_unverified',segments:[{index:2,clockElapsedS:350}],qualityCertified:false,analysisAllowed:false,writeAllowed:false,providerDataCombined:false,firstObservedDistanceM:first,lastObservedDistanceM:last,sessionTotalDistanceM:total}));
+  e.fileInput.files=[file()];e.fileInput.dispatch('change');consent(e);await e.reviewButton.dispatch('click');
+  assert.match(e.lapsNode.children[1].textContent,/FIT記録範囲/);
+  if(expected)assert.match(e.lapsNode.children[2].textContent,expected);else assert.equal(e.lapsNode.children.length,2);
+  if(first===12)assert.match(e.lapsNode.children[2].textContent,/開始区間/);
+  e.cancelButton.dispatch('click');assert.equal(e.lapsNode.children.length,0);controller.destroy();
+ }
 });
