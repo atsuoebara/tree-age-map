@@ -216,6 +216,7 @@ function articlePage(post) {
   })();
   </script>
   <script defer src="/rr-ondevice-translate.js"></script>
+  <script defer src="/rr-admax.js"></script>
 </body>
 </html>\n`;
 }
