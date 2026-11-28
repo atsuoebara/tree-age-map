@@ -104,4 +104,5 @@ async function exportTree(saveOnly){$('share').disabled=$('save').disabled=true;
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);$('status').textContent='画像を保存しました。Instagramで選んで投稿できます。';
  }catch(e){console.error(e);$('status').textContent='画像の生成に失敗しました。もう一度お試しください。';}finally{$('share').disabled=$('save').disabled=!summary?.runs;}}
 $('share').onclick=()=>exportTree(false);$('save').onclick=()=>exportTree(true);load();
-</script></body></html>
+</script><script defer src="/rr-admax.js"></script>
+</body></html>
