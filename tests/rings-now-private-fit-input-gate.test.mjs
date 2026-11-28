@@ -71,3 +71,10 @@ test('the new gate is unconnected to production or public test pages and has no 
  assert.match(index,/const RR_IMA_WO_SHIROU_CALENDAR_ENTRY_ENABLED=false;/);
  assert.match(index,/const RR_IMA_WO_SHIROU_FEATURE_STARTED_AT_MS=null;/);
 });
+
+test('FIT distance diagnostics are numeric allowlisted local summaries, not raw records',async()=>{
+ const result=await inspect({file:makeFile(),...yes});
+ assert.equal(result.status,'reference_only_unverified');
+ for(const key of ['recordDistanceM','firstObservedDistanceM','lastObservedDistanceM','sessionTotalDistanceM'])assert.ok(Number.isFinite(result[key])&&result[key]>=0,key);
+ assert.equal(result.lastObservedDistanceM,result.firstObservedDistanceM+result.recordDistanceM);
+});
