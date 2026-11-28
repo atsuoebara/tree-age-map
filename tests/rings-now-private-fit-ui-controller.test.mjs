@@ -104,7 +104,7 @@ test('no public entrypoints, network, persistence, run auto-link or production u
 });
 
 test('distance disclosure distinguishes missing tail, complete FIT and unknown values and clears on cancel',async()=>{
- for(const [first,last,total,expected] of [[12,9500,11070,/一部の区間/],[0,11070,11070,null],[null,null,null,/確認できません/],[0,12000,11070,/一致していません/]]){
+ for(const [first,last,total,expected] of [[12,9500,11070,/一部の区間/],[0,11070,11070,null],[0,11065,11070,null],[0,9950,10000,null],[0,9949,10000,/一部の区間/],[0,10050,10000,null],[0,10051,10000,/一致していません/],[0,980,1000,null],[0,979,1000,/一部の区間/],[null,null,null,/確認できません/],[0,12000,11070,/一致していません/]]){
   const {e,controller}=fixture(async()=>({status:'reference_only_unverified',segments:[{index:2,clockElapsedS:350}],qualityCertified:false,analysisAllowed:false,writeAllowed:false,providerDataCombined:false,firstObservedDistanceM:first,lastObservedDistanceM:last,sessionTotalDistanceM:total}));
   e.fileInput.files=[file()];e.fileInput.dispatch('change');consent(e);await e.reviewButton.dispatch('click');
   assert.match(e.lapsNode.children[1].textContent,/FIT記録範囲/);
