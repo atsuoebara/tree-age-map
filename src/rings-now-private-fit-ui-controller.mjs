@@ -79,9 +79,11 @@ export function createRingsNowPrivateFitController({
       if(distanceValid(result.firstObservedDistanceM)&&result.firstObservedDistanceM>0)
         warnings.push('最初の記録が0mではないため、開始区間は解析対象外です。');
       if(distanceValid(result.lastObservedDistanceM)&&distanceValid(result.sessionTotalDistanceM)){
-        if(result.lastObservedDistanceM<result.sessionTotalDistanceM)
+        const tolerance=Math.max(20,result.sessionTotalDistanceM*.005);
+        const gap=result.sessionTotalDistanceM-result.lastObservedDistanceM;
+        if(gap>tolerance)
           warnings.push('FITの記録が全体距離に達していないため、一部の区間のみ表示しています。');
-        else if(result.lastObservedDistanceM>result.sessionTotalDistanceM)
+        else if(gap < -tolerance)
           warnings.push('FITの末尾距離と全体距離が一致していません。');
       }else warnings.push('FITの記録範囲または全体距離を確認できません。');
       notes.textContent=warnings.join(' ');
